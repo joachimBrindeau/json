@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { JsonCompare } from '@/components/features/viewer/json-compare';
+import { ViewerCompare } from '@/components/features/viewer';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useBackendStore } from '@/lib/store/backend';
 import { UnifiedButton } from '@/components/ui/unified-button';
 import { Input } from '@/components/ui/input';
 import { Search, GitCompare, RotateCcw } from 'lucide-react';
-import { JsonActionButtons } from '@/components/features/viewer/json-action-buttons';
+import { ViewerActions } from '@/components/features/viewer';
 
 export default function ComparePage() {
   const { currentJson, lastActiveTab, setLastActiveTab } = useBackendStore();
@@ -45,7 +45,7 @@ export default function ComparePage() {
               }}
               title="Compare JSONs"
             />
-            <JsonActionButtons />
+            <ViewerActions />
           </div>
         </div>
 
@@ -73,7 +73,7 @@ export default function ComparePage() {
         {/* Main content area */}
         <div className="flex-1 overflow-hidden">
           <ErrorBoundary>
-            <JsonCompare 
+            <ViewerCompare 
               initialJson1={currentJson}
               activeView={activeTab} 
               onViewChange={(tab) => {

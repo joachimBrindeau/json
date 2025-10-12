@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { TabsNav } from '@/components/layout/tabs-nav';
 import { JsonEditor } from '@/components/features/editor/json-editor';
-import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { Viewer } from '@/components/features/viewer';
 import { useBackendStore } from '@/lib/store/backend';
 import { Card } from '@/components/ui/card';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
@@ -47,7 +47,7 @@ export default function CodePage() {
     if (activeTab === 'flow' || activeTab === 'tree' || activeTab === 'list') {
       return currentJson ? (
         <div className="h-full rounded-none overflow-hidden">
-          <UltraJsonViewer
+          <Viewer
             content={currentJson}
             maxNodes={50000}
             virtualizeThreshold={1000}

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SmartJsonViewer } from '@/components/features/viewer/smart-json-viewer';
-import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { Viewer } from '@/components/features/viewer';
 import { JsonEditor } from '@/components/features/editor/json-editor';
 import { TabsNav } from '@/components/layout/tabs-nav';
 import { Button } from '@/components/ui/button';
@@ -182,7 +181,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     if (viewMode === 'flow') {
       return (
         <div className="h-full">
-          <UltraJsonViewer
+          <Viewer
             content={jsonData}
             maxNodes={50000}
             virtualizeThreshold={1000}
@@ -195,7 +194,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     if (viewMode === 'tree') {
       return (
         <div className="h-full">
-          <UltraJsonViewer
+          <Viewer
             content={jsonData}
             maxNodes={50000}
             virtualizeThreshold={1000}
@@ -208,7 +207,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     if (viewMode === 'list') {
       return (
         <div className="h-full">
-          <UltraJsonViewer
+          <Viewer
             content={jsonData}
             maxNodes={50000}
             virtualizeThreshold={1000}
@@ -231,7 +230,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
       if (activeTab === 'flow' || activeTab === 'tree' || activeTab === 'list') {
         return (
           <div className="h-full">
-            <UltraJsonViewer
+            <Viewer
               content={jsonData}
               maxNodes={50000}
               virtualizeThreshold={1000}
@@ -245,7 +244,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     // Default: smart viewer
     return (
       <div className="h-full overflow-hidden">
-        <SmartJsonViewer
+        <Viewer
           jsonString={jsonData}
           height={height - (showTabs ? 120 : 60)} // Account for header and tabs
         />

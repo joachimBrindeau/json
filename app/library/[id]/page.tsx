@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
 import { TabsNav } from '@/components/layout/tabs-nav';
-import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { Viewer } from '@/components/features/viewer';
 import { FileJson } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
@@ -118,7 +118,7 @@ export default function LibraryViewerPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-hidden">
-          <UltraJsonViewer 
+          <Viewer 
             content={jsonContent} 
             maxNodes={50000} 
             virtualizeThreshold={1000}

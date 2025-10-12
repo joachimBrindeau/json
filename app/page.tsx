@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { JsonEditor } from '@/components/features/editor/json-editor';
 import { TabsNav } from '@/components/layout/tabs-nav';
-import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { Viewer } from '@/components/features/viewer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -410,7 +410,7 @@ export default function HomePage() {
                     {activeTab === 'editor' ? (
                       <JsonEditor />
                     ) : (
-                      <UltraJsonViewer 
+                      <Viewer 
                         content={currentJson} 
                         maxNodes={1000} 
                         virtualizeThreshold={100}
