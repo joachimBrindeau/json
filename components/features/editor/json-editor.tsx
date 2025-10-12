@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
 import { validateJson } from '@/lib/json';
 import { Search, Zap, AlertTriangle } from 'lucide-react';
-import { JsonActionButtons } from '@/components/features/viewer/json-action-buttons';
+import { ViewerActions } from '@/components/features/viewer';
 import dynamic from 'next/dynamic';
 import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
@@ -320,7 +320,7 @@ function JsonEditorComponent() {
             <Zap className="h-3 w-3 mr-1" />
             Format
           </Button>
-          <JsonActionButtons />
+          <ViewerActions />
         </div>
       </div>
 
