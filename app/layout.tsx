@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthSessionProvider } from '@/components/shared/providers/session-provider';
 import { NavigationProvider } from '@/components/shared/providers/navigation-provider';
-import { GlobalLoginModal } from '@/components/features/modals/global-login-modal';
+import { GlobalLoginModal } from '@/components/features/modals';
 import { WebVitals } from '@/components/shared/seo/web-vitals';
 import { VersionChecker } from '@/components/shared/version-checker';
 import { ServiceWorkerManager } from '@/components/shared/service-worker-manager';
