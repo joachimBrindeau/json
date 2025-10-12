@@ -35,11 +35,14 @@ export const LazyEmbedModal = lazy(() =>
   }))
 );
 
-export const LazyUnifiedShareModal = lazy(() => 
-  import('@/components/features/modals/unified-share-modal').then(module => ({ 
-    default: module.UnifiedShareModal 
+export const LazyShareModal = lazy(() =>
+  import('@/components/features/modals/share-modal').then(module => ({
+    default: module.ShareModal
   }))
 );
+
+// Backwards compatibility
+export const LazyUnifiedShareModal = LazyShareModal;
 
 // Wrapper components with appropriate loading states
 interface LazyComponentWrapperProps {
@@ -96,13 +99,16 @@ export function LazyEmbedModalWithSuspense(props: any) {
   );
 }
 
-export function LazyUnifiedShareModalWithSuspense(props: any) {
+export function LazyShareModalWithSuspense(props: any) {
   return (
     <LazyWrapper fallback={null}>
-      <LazyUnifiedShareModal {...props} />
+      <LazyShareModal {...props} />
     </LazyWrapper>
   );
 }
+
+// Backwards compatibility
+export const LazyUnifiedShareModalWithSuspense = LazyShareModalWithSuspense;
 
 // Generic lazy component loader with retry logic
 export function createLazyComponent<T extends ComponentType<any>>(

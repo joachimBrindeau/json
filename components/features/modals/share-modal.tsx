@@ -44,7 +44,7 @@ import {
   suggestTags,
 } from '@/lib/tags/tag-utils';
 
-interface UnifiedShareModalProps {
+interface ShareModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   shareId: string;
@@ -62,14 +62,14 @@ const CATEGORIES = [
   'Example',
 ] as const;
 
-export function UnifiedShareModal({ 
+export function ShareModal({
   open, 
   onOpenChange, 
   shareId, 
   currentTitle,
   currentVisibility = 'private',
   onUpdated 
-}: UnifiedShareModalProps) {
+}: ShareModalProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);

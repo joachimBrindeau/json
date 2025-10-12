@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { isSuperAdmin } from '@/lib/auth/admin'
-import { SuperAdminDashboard } from '@/components/features/admin/SuperAdminDashboard'
+import { SuperAdminDashboard } from '@/components/features/admin/super-admin-dashboard'
 
 export const metadata: Metadata = {
   title: 'Superadmin Dashboard - JSON Viewer',

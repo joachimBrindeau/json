@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { UserList } from './UserList'
-import { TagAnalytics } from './TagAnalytics'
-import { SystemStats } from './SystemStats'
-import { SEOManager } from './SEOManager'
+import { UserList } from './user-list'
+import { TagAnalytics } from './tag-analytics'
+import { SystemStats } from './system-stats'
+import { SEOManager } from './seo-manager'
 import { useAdminStats } from '@/hooks/use-admin-stats'
 
 export function SuperAdminDashboard() {

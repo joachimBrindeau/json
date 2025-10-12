@@ -12,7 +12,7 @@ import { Copy, Download, Share2, Code, Save, MoreHorizontal, Trash2 } from 'luci
 import { useBackendStore } from '@/lib/store/backend';
 import { useToast } from '@/hooks/use-toast';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json';
-import { UnifiedShareModal } from '@/components/features/modals/unified-share-modal';
+import { ShareModal } from '@/components/features/modals';
 import { EmbedModal } from '@/components/features/modals/embed-modal';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
@@ -31,7 +31,7 @@ export function ViewerActions() {
     isDirty,
   } = useBackendStore();
 
-  const [unifiedShareModalOpen, setUnifiedShareModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [embedModalOpen, setEmbedModalOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,7 +61,7 @@ export function ViewerActions() {
 
     // If it's a new document (no currentDocument) and has no title, open share modal for title input
     if (!currentDocument) {
-      setUnifiedShareModalOpen(true);
+      setShareModalOpen(true);
       return;
     }
 
@@ -105,12 +105,12 @@ export function ViewerActions() {
 
     try {
       await shareJson();
-      // Only open modal after shareJson completes successfully 
-      setUnifiedShareModalOpen(true);
+      // Only open modal after shareJson completes successfully
+      setShareModalOpen(true);
     } catch (error) {
       console.error('Share error:', error);
       // Even if sharing fails, still open the modal - it can handle creating/saving the JSON
-      setUnifiedShareModalOpen(true);
+      setShareModalOpen(true);
       showToast('Info', 'Opening share dialog...', 'default');
     } finally {
       setIsSharing(false);
@@ -308,9 +308,9 @@ export function ViewerActions() {
         </DropdownMenu>
       </div>
 
-      <UnifiedShareModal 
-        open={unifiedShareModalOpen} 
-        onOpenChange={setUnifiedShareModalOpen} 
+      <ShareModal
+        open={shareModalOpen}
+        onOpenChange={setShareModalOpen}
         shareId={shareId || ''} 
         currentTitle={currentDocument?.title}
         currentVisibility={currentDocument?.visibility as 'public' | 'private'}

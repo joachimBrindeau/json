@@ -2,26 +2,26 @@
 // This reduces duplication across the codebase
 
 // Base Components
-export { BaseModal, ConfirmationModal, InfoModal, SuccessModal } from './BaseModal';
-export type { BaseModalProps, BaseModalRef } from './BaseModal';
+export { BaseModal, ConfirmationModal, InfoModal, SuccessModal } from './base-modal';
+export type { BaseModalProps, BaseModalRef } from './base-modal';
 
-export { JsonViewerBase } from './JsonViewerBase';
-export type { JsonViewerBaseProps, ViewerMode } from './JsonViewerBase';
+export { JsonViewerBase } from './json-viewer-base';
+export type { JsonViewerBaseProps, ViewerMode } from './json-viewer-base';
 
 // Node Rendering
-export { 
-  NodeRenderer, 
-  CompactNodeRenderer, 
-  ListNodeRenderer, 
+export {
+  NodeRenderer,
+  CompactNodeRenderer,
+  ListNodeRenderer,
   TreeNodeRenderer,
-  useNodeRenderer 
-} from './NodeRenderer';
-export type { 
-  NodeRendererProps, 
-  CompactNodeRendererProps, 
-  ListNodeRendererProps, 
-  TreeNodeRendererProps 
-} from './NodeRenderer';
+  useNodeRenderer
+} from './node-renderer';
+export type {
+  NodeRendererProps,
+  CompactNodeRendererProps,
+  ListNodeRendererProps,
+  TreeNodeRendererProps
+} from './node-renderer';
 
 // Empty States
 export {
@@ -38,7 +38,7 @@ export {
   LoadingErrorState,
   LoadingState,
   PerformanceWarningState,
-} from './EmptyStates';
+} from './empty-states';
 
 // Hooks
 export {
@@ -60,4 +60,4 @@ export type {
 // Re-export commonly used types and utilities
 export type {
   ViewerMode,
-} from './JsonViewerBase';
+} from './json-viewer-base';
