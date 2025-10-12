@@ -125,7 +125,7 @@
                         - button "Sign in" [ref=e150] [cursor=pointer]:
                           - img
                           - text: Sign in
-                        - button "Copy" [ref=e151] [cursor=pointer]:
+                        - button "Copy" [active] [ref=e151] [cursor=pointer]:
                           - img
                           - text: Copy
                         - button "Export" [ref=e152] [cursor=pointer]:
@@ -165,461 +165,468 @@
                         - generic [ref=e196]: "15"
                         - generic [ref=e198]: "16"
                         - generic [ref=e200]: "17"
-                      - generic [ref=e222]:
-                        - generic [ref=e225]: "{"
-                        - generic [ref=e227]:
-                          - generic [ref=e229]: "\"user\""
-                          - generic [ref=e230]: ":"
-                          - generic [ref=e232]: "{"
-                        - generic [ref=e234]:
-                          - generic [ref=e236]: "\"id\""
-                          - generic [ref=e237]: ":"
-                          - generic [ref=e239]: "1"
-                          - generic [ref=e240]: ","
-                        - generic [ref=e242]:
-                          - generic [ref=e244]: "\"name\""
-                          - generic [ref=e245]: ":"
-                          - generic [ref=e247]: "\"John Doe\""
-                          - generic [ref=e248]: ","
-                        - generic [ref=e250]:
-                          - generic [ref=e252]: "\"email\""
-                          - generic [ref=e253]: ":"
-                          - generic [ref=e255]: "\"john@example.com\""
-                          - generic [ref=e256]: ","
-                        - generic [ref=e258]:
-                          - generic [ref=e260]: "\"active\""
-                          - generic [ref=e261]: ":"
-                          - generic [ref=e263]: "true"
-                          - generic [ref=e264]: ","
-                        - generic [ref=e266]:
-                          - generic [ref=e268]: "\"profile\""
-                          - generic [ref=e269]: ":"
-                          - generic [ref=e271]: "{"
-                        - generic [ref=e273]:
-                          - generic [ref=e275]: "\"age\""
-                          - generic [ref=e276]: ":"
-                          - generic [ref=e278]: "30"
-                          - generic [ref=e279]: ","
-                        - generic [ref=e281]:
-                          - generic [ref=e283]: "\"city\""
-                          - generic [ref=e284]: ":"
-                          - generic [ref=e286]: "\"New York\""
-                          - generic [ref=e287]: ","
-                        - generic [ref=e289]:
-                          - generic [ref=e291]: "\"interests\""
-                          - generic [ref=e292]: ":"
-                          - generic [ref=e294]: "["
-                        - generic [ref=e296]:
-                          - generic [ref=e298]: "\"reading\""
-                          - generic [ref=e299]: ","
-                        - generic [ref=e301]:
-                          - generic [ref=e303]: "\"coding\""
-                          - generic [ref=e304]: ","
-                        - generic [ref=e308]: "\"music\""
-                        - generic [ref=e312]: "]"
-                        - generic [ref=e316]: "}"
-                        - generic [ref=e320]: "}"
-                        - generic [ref=e323]: "}"
-                      - textbox "The editor is not accessible at this time." [active] [ref=e326]
-                  - generic [ref=e327]:
-                    - generic [ref=e328]:
-                      - generic [ref=e329]: "Lines: 17"
-                      - generic [ref=e330]: "Characters: 257"
-                      - generic [ref=e331]: "Words: 28"
-                    - generic [ref=e333]: ✓ Valid JSON
-              - generic [ref=e334]:
-                - link "Open Full Editor" [ref=e335] [cursor=pointer]:
+                      - generic [ref=e220]:
+                        - generic [ref=e223]: "{"
+                        - generic [ref=e225]:
+                          - generic [ref=e227]: "\"user\""
+                          - generic [ref=e228]: ":"
+                          - generic [ref=e230]: "{"
+                        - generic [ref=e232]:
+                          - generic [ref=e234]: "\"id\""
+                          - generic [ref=e235]: ":"
+                          - generic [ref=e237]: "1"
+                          - generic [ref=e238]: ","
+                        - generic [ref=e240]:
+                          - generic [ref=e242]: "\"name\""
+                          - generic [ref=e243]: ":"
+                          - generic [ref=e245]: "\"John Doe\""
+                          - generic [ref=e246]: ","
+                        - generic [ref=e248]:
+                          - generic [ref=e250]: "\"email\""
+                          - generic [ref=e251]: ":"
+                          - generic [ref=e253]: "\"john@example.com\""
+                          - generic [ref=e254]: ","
+                        - generic [ref=e256]:
+                          - generic [ref=e258]: "\"active\""
+                          - generic [ref=e259]: ":"
+                          - generic [ref=e261]: "true"
+                          - generic [ref=e262]: ","
+                        - generic [ref=e264]:
+                          - generic [ref=e266]: "\"profile\""
+                          - generic [ref=e267]: ":"
+                          - generic [ref=e269]: "{"
+                        - generic [ref=e271]:
+                          - generic [ref=e273]: "\"age\""
+                          - generic [ref=e274]: ":"
+                          - generic [ref=e276]: "30"
+                          - generic [ref=e277]: ","
+                        - generic [ref=e279]:
+                          - generic [ref=e281]: "\"city\""
+                          - generic [ref=e282]: ":"
+                          - generic [ref=e284]: "\"New York\""
+                          - generic [ref=e285]: ","
+                        - generic [ref=e287]:
+                          - generic [ref=e289]: "\"interests\""
+                          - generic [ref=e290]: ":"
+                          - generic [ref=e292]: "["
+                        - generic [ref=e294]:
+                          - generic [ref=e296]: "\"reading\""
+                          - generic [ref=e297]: ","
+                        - generic [ref=e299]:
+                          - generic [ref=e301]: "\"coding\""
+                          - generic [ref=e302]: ","
+                        - generic [ref=e306]: "\"music\""
+                        - generic [ref=e310]: "]"
+                        - generic [ref=e314]: "}"
+                        - generic [ref=e318]: "}"
+                        - generic [ref=e321]: "}"
+                      - textbox "The editor is not accessible at this time." [ref=e323]
+                  - generic [ref=e324]:
+                    - generic [ref=e325]:
+                      - generic [ref=e326]: "Lines: 17"
+                      - generic [ref=e327]: "Characters: 257"
+                      - generic [ref=e328]: "Words: 28"
+                    - generic [ref=e330]: ✓ Valid JSON
+              - generic [ref=e331]:
+                - link "Open Full Editor" [ref=e332] [cursor=pointer]:
                   - /url: /edit
-                  - button "Open Full Editor" [ref=e336] [cursor=pointer]:
+                  - button "Open Full Editor" [ref=e333] [cursor=pointer]:
                     - img
                     - text: Open Full Editor
                     - img
-                - link "Format JSON" [ref=e337] [cursor=pointer]:
+                - link "Format JSON" [ref=e334] [cursor=pointer]:
                   - /url: /format
-                  - button "Format JSON" [ref=e338] [cursor=pointer]:
+                  - button "Format JSON" [ref=e335] [cursor=pointer]:
                     - img
                     - text: Format JSON
-                - link "Compare JSON" [ref=e339] [cursor=pointer]:
+                - link "Compare JSON" [ref=e336] [cursor=pointer]:
                   - /url: /compare
-                  - button "Compare JSON" [ref=e340] [cursor=pointer]:
+                  - button "Compare JSON" [ref=e337] [cursor=pointer]:
                     - img
                     - text: Compare JSON
-                - link "Convert JSON" [ref=e341] [cursor=pointer]:
+                - link "Convert JSON" [ref=e338] [cursor=pointer]:
                   - /url: /convert
-                  - button "Convert JSON" [ref=e342] [cursor=pointer]:
+                  - button "Convert JSON" [ref=e339] [cursor=pointer]:
                     - img
                     - text: Convert JSON
-                - link "Browse Examples" [ref=e343] [cursor=pointer]:
+                - link "Browse Examples" [ref=e340] [cursor=pointer]:
                   - /url: /library
-                  - button "Browse Examples" [ref=e344] [cursor=pointer]:
+                  - button "Browse Examples" [ref=e341] [cursor=pointer]:
                     - img
                     - text: Browse Examples
-          - region "Complete JSON Toolkit" [ref=e345]:
-            - generic [ref=e346]:
+          - region "Complete JSON Toolkit" [ref=e342]:
+            - generic [ref=e343]:
+              - generic [ref=e344]:
+                - heading "Complete JSON Toolkit" [level=2] [ref=e345]
+                - paragraph [ref=e346]: Professional tools for modern development workflows
               - generic [ref=e347]:
-                - heading "Complete JSON Toolkit" [level=2] [ref=e348]
-                - paragraph [ref=e349]: Professional tools for modern development workflows
-              - generic [ref=e350]:
-                - link "Advanced JSON Editor Professional code editor with intelligent syntax highlighting, auto-completion, bracket matching, and error detection in real-time Explore" [ref=e351] [cursor=pointer]:
+                - link "Advanced JSON Editor Professional code editor with intelligent syntax highlighting, auto-completion, bracket matching, and error detection in real-time Explore" [ref=e348] [cursor=pointer]:
                   - /url: /edit
-                  - generic [ref=e353] [cursor=pointer]:
-                    - generic [ref=e354] [cursor=pointer]:
-                      - img [ref=e356] [cursor=pointer]
-                      - heading "Advanced JSON Editor" [level=3] [ref=e360] [cursor=pointer]
-                    - paragraph [ref=e361] [cursor=pointer]: Professional code editor with intelligent syntax highlighting, auto-completion, bracket matching, and error detection in real-time
-                    - generic [ref=e362] [cursor=pointer]:
+                  - generic [ref=e350] [cursor=pointer]:
+                    - generic [ref=e351] [cursor=pointer]:
+                      - img [ref=e353] [cursor=pointer]
+                      - heading "Advanced JSON Editor" [level=3] [ref=e357] [cursor=pointer]
+                    - paragraph [ref=e358] [cursor=pointer]: Professional code editor with intelligent syntax highlighting, auto-completion, bracket matching, and error detection in real-time
+                    - generic [ref=e359] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e363] [cursor=pointer]
-                - link "Interactive Tree View Navigate complex JSON structures with collapsible tree visualization, deep search, and node filtering capabilities Explore" [ref=e365] [cursor=pointer]:
+                      - img [ref=e360] [cursor=pointer]
+                - link "Interactive Tree View Navigate complex JSON structures with collapsible tree visualization, deep search, and node filtering capabilities Explore" [ref=e362] [cursor=pointer]:
                   - /url: /
-                  - generic [ref=e367] [cursor=pointer]:
-                    - generic [ref=e368] [cursor=pointer]:
-                      - img [ref=e370] [cursor=pointer]
-                      - heading "Interactive Tree View" [level=3] [ref=e372] [cursor=pointer]
-                    - paragraph [ref=e373] [cursor=pointer]: Navigate complex JSON structures with collapsible tree visualization, deep search, and node filtering capabilities
-                    - generic [ref=e374] [cursor=pointer]:
+                  - generic [ref=e364] [cursor=pointer]:
+                    - generic [ref=e365] [cursor=pointer]:
+                      - img [ref=e367] [cursor=pointer]
+                      - heading "Interactive Tree View" [level=3] [ref=e369] [cursor=pointer]
+                    - paragraph [ref=e370] [cursor=pointer]: Navigate complex JSON structures with collapsible tree visualization, deep search, and node filtering capabilities
+                    - generic [ref=e371] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e375] [cursor=pointer]
-                - link "Real-time Validation Instant JSON validation with detailed error messages, line-by-line syntax checking, and smart suggestions Explore" [ref=e377] [cursor=pointer]:
+                      - img [ref=e372] [cursor=pointer]
+                - link "Real-time Validation Instant JSON validation with detailed error messages, line-by-line syntax checking, and smart suggestions Explore" [ref=e374] [cursor=pointer]:
                   - /url: /format
-                  - generic [ref=e379] [cursor=pointer]:
-                    - generic [ref=e380] [cursor=pointer]:
-                      - img [ref=e382] [cursor=pointer]
-                      - heading "Real-time Validation" [level=3] [ref=e384] [cursor=pointer]
-                    - paragraph [ref=e385] [cursor=pointer]: Instant JSON validation with detailed error messages, line-by-line syntax checking, and smart suggestions
-                    - generic [ref=e386] [cursor=pointer]:
+                  - generic [ref=e376] [cursor=pointer]:
+                    - generic [ref=e377] [cursor=pointer]:
+                      - img [ref=e379] [cursor=pointer]
+                      - heading "Real-time Validation" [level=3] [ref=e381] [cursor=pointer]
+                    - paragraph [ref=e382] [cursor=pointer]: Instant JSON validation with detailed error messages, line-by-line syntax checking, and smart suggestions
+                    - generic [ref=e383] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e387] [cursor=pointer]
-                - link "Share & Collaborate Generate secure shareable links, collaborate with team members, and publish JSON datasets to our community library Explore" [ref=e389] [cursor=pointer]:
+                      - img [ref=e384] [cursor=pointer]
+                - link "Share & Collaborate Generate secure shareable links, collaborate with team members, and publish JSON datasets to our community library Explore" [ref=e386] [cursor=pointer]:
                   - /url: /library
-                  - generic [ref=e391] [cursor=pointer]:
-                    - generic [ref=e392] [cursor=pointer]:
-                      - img [ref=e394] [cursor=pointer]
-                      - heading "Share & Collaborate" [level=3] [ref=e400] [cursor=pointer]
-                    - paragraph [ref=e401] [cursor=pointer]: Generate secure shareable links, collaborate with team members, and publish JSON datasets to our community library
-                    - generic [ref=e402] [cursor=pointer]:
+                  - generic [ref=e388] [cursor=pointer]:
+                    - generic [ref=e389] [cursor=pointer]:
+                      - img [ref=e391] [cursor=pointer]
+                      - heading "Share & Collaborate" [level=3] [ref=e397] [cursor=pointer]
+                    - paragraph [ref=e398] [cursor=pointer]: Generate secure shareable links, collaborate with team members, and publish JSON datasets to our community library
+                    - generic [ref=e399] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e403] [cursor=pointer]
-                - link "Format & Transform Beautify messy JSON, minify for production, convert between formats, and apply custom formatting rules Explore" [ref=e405] [cursor=pointer]:
+                      - img [ref=e400] [cursor=pointer]
+                - link "Format & Transform Beautify messy JSON, minify for production, convert between formats, and apply custom formatting rules Explore" [ref=e402] [cursor=pointer]:
                   - /url: /format
-                  - generic [ref=e407] [cursor=pointer]:
-                    - generic [ref=e408] [cursor=pointer]:
-                      - img [ref=e410] [cursor=pointer]
-                      - heading "Format & Transform" [level=3] [ref=e415] [cursor=pointer]
-                    - paragraph [ref=e416] [cursor=pointer]: Beautify messy JSON, minify for production, convert between formats, and apply custom formatting rules
-                    - generic [ref=e417] [cursor=pointer]:
+                  - generic [ref=e404] [cursor=pointer]:
+                    - generic [ref=e405] [cursor=pointer]:
+                      - img [ref=e407] [cursor=pointer]
+                      - heading "Format & Transform" [level=3] [ref=e412] [cursor=pointer]
+                    - paragraph [ref=e413] [cursor=pointer]: Beautify messy JSON, minify for production, convert between formats, and apply custom formatting rules
+                    - generic [ref=e414] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e418] [cursor=pointer]
-                - link "Privacy & Security Client-side processing, optional encryption, automatic data cleanup, and enterprise-grade security features Explore" [ref=e420] [cursor=pointer]:
+                      - img [ref=e415] [cursor=pointer]
+                - link "Privacy & Security Client-side processing, optional encryption, automatic data cleanup, and enterprise-grade security features Explore" [ref=e417] [cursor=pointer]:
                   - /url: /profile
-                  - generic [ref=e422] [cursor=pointer]:
-                    - generic [ref=e423] [cursor=pointer]:
-                      - img [ref=e425] [cursor=pointer]
-                      - heading "Privacy & Security" [level=3] [ref=e427] [cursor=pointer]
-                    - paragraph [ref=e428] [cursor=pointer]: Client-side processing, optional encryption, automatic data cleanup, and enterprise-grade security features
-                    - generic [ref=e429] [cursor=pointer]:
+                  - generic [ref=e419] [cursor=pointer]:
+                    - generic [ref=e420] [cursor=pointer]:
+                      - img [ref=e422] [cursor=pointer]
+                      - heading "Privacy & Security" [level=3] [ref=e424] [cursor=pointer]
+                    - paragraph [ref=e425] [cursor=pointer]: Client-side processing, optional encryption, automatic data cleanup, and enterprise-grade security features
+                    - generic [ref=e426] [cursor=pointer]:
                       - text: Explore
-                      - img [ref=e430] [cursor=pointer]
-          - region "Why Choose Our Tools" [ref=e432]:
-            - generic [ref=e434]:
+                      - img [ref=e427] [cursor=pointer]
+          - region "Why Choose Our Tools" [ref=e429]:
+            - generic [ref=e431]:
+              - generic [ref=e432]:
+                - heading "Why Choose Our Tools" [level=2] [ref=e433]
+                - paragraph [ref=e434]: Built for developers who demand speed, reliability, and professional-grade features.
               - generic [ref=e435]:
-                - heading "Why Choose Our Tools" [level=2] [ref=e436]
-                - paragraph [ref=e437]: Built for developers who demand speed, reliability, and professional-grade features.
-              - generic [ref=e438]:
-                - generic [ref=e441]:
-                  - img [ref=e443]
-                  - generic [ref=e445]:
-                    - generic [ref=e446]:
-                      - heading "Professional JSON Viewer" [level=3] [ref=e447]
-                      - generic [ref=e448]: Feature-complete
-                    - paragraph [ref=e449]: A comprehensive JSON toolkit designed for developers who need powerful formatting, validation, and visualization capabilities in their daily workflow.
-                - generic [ref=e452]:
-                  - img [ref=e454]
-                  - generic [ref=e457]:
-                    - generic [ref=e458]:
-                      - heading "Lightning-Fast Performance" [level=3] [ref=e459]
-                      - generic [ref=e460]: Optimized performance
-                    - paragraph [ref=e461]: Process large JSON files instantly with our optimized engine. Handle complex data structures with intelligent memory management and progressive loading.
-                - generic [ref=e464]:
-                  - img [ref=e466]
-                  - generic [ref=e471]:
-                    - generic [ref=e472]:
-                      - heading "Team-Friendly Features" [level=3] [ref=e473]
-                      - generic [ref=e474]: Built for teams
-                    - paragraph [ref=e475]: Built for collaboration with advanced sharing controls, real-time editing, and team-friendly features. Perfect for development teams and data analysts.
-                - generic [ref=e478]:
-                  - img [ref=e480]
-                  - generic [ref=e483]:
-                    - generic [ref=e484]:
-                      - heading "Works Everywhere" [level=3] [ref=e485]
-                      - generic [ref=e486]: Cross-platform ready
-                    - paragraph [ref=e487]: Access from any device, any browser, anywhere. Progressive Web App with offline capabilities, mobile-optimized interface, and cross-platform compatibility.
-          - region "What is JSON?" [ref=e488]:
-            - generic [ref=e490]:
+                - generic [ref=e438]:
+                  - img [ref=e440]
+                  - generic [ref=e442]:
+                    - generic [ref=e443]:
+                      - heading "Professional JSON Viewer" [level=3] [ref=e444]
+                      - generic [ref=e445]: Feature-complete
+                    - paragraph [ref=e446]: A comprehensive JSON toolkit designed for developers who need powerful formatting, validation, and visualization capabilities in their daily workflow.
+                - generic [ref=e449]:
+                  - img [ref=e451]
+                  - generic [ref=e454]:
+                    - generic [ref=e455]:
+                      - heading "Lightning-Fast Performance" [level=3] [ref=e456]
+                      - generic [ref=e457]: Optimized performance
+                    - paragraph [ref=e458]: Process large JSON files instantly with our optimized engine. Handle complex data structures with intelligent memory management and progressive loading.
+                - generic [ref=e461]:
+                  - img [ref=e463]
+                  - generic [ref=e468]:
+                    - generic [ref=e469]:
+                      - heading "Team-Friendly Features" [level=3] [ref=e470]
+                      - generic [ref=e471]: Built for teams
+                    - paragraph [ref=e472]: Built for collaboration with advanced sharing controls, real-time editing, and team-friendly features. Perfect for development teams and data analysts.
+                - generic [ref=e475]:
+                  - img [ref=e477]
+                  - generic [ref=e480]:
+                    - generic [ref=e481]:
+                      - heading "Works Everywhere" [level=3] [ref=e482]
+                      - generic [ref=e483]: Cross-platform ready
+                    - paragraph [ref=e484]: Access from any device, any browser, anywhere. Progressive Web App with offline capabilities, mobile-optimized interface, and cross-platform compatibility.
+          - region "What is JSON?" [ref=e485]:
+            - generic [ref=e487]:
+              - generic [ref=e488]:
+                - heading "What is JSON?" [level=2] [ref=e489]
+                - paragraph [ref=e490]: The universal data format powering modern web development
               - generic [ref=e491]:
-                - heading "What is JSON?" [level=2] [ref=e492]
-                - paragraph [ref=e493]: The universal data format powering modern web development
-              - generic [ref=e494]:
-                - generic [ref=e495]:
-                  - generic [ref=e496]:
-                    - heading "JSON Fundamentals" [level=3] [ref=e497]
-                    - paragraph [ref=e498]:
-                      - strong [ref=e499]: JSON (JavaScript Object Notation)
+                - generic [ref=e492]:
+                  - generic [ref=e493]:
+                    - heading "JSON Fundamentals" [level=3] [ref=e494]
+                    - paragraph [ref=e495]:
+                      - strong [ref=e496]: JSON (JavaScript Object Notation)
                       - text: is the universal data format that powers modern web development. Created in 2001, JSON has become the standard for data exchange between web applications, APIs, and databases worldwide.
-                  - generic [ref=e500]:
-                    - generic [ref=e502]:
-                      - heading "JSON Advantages" [level=4] [ref=e503]
-                      - list [ref=e504]:
-                        - listitem [ref=e505]: • Lightweight & fast parsing
-                        - listitem [ref=e506]: • Human-readable format
-                        - listitem [ref=e507]: • Universal language support
-                        - listitem [ref=e508]: • Native JavaScript integration
-                        - listitem [ref=e509]: • Smaller than XML (30% less)
-                    - generic [ref=e511]:
-                      - heading "Common Uses" [level=4] [ref=e512]
-                      - list [ref=e513]:
-                        - listitem [ref=e514]: • REST API responses
-                        - listitem [ref=e515]: • Configuration files
-                        - listitem [ref=e516]: • Data storage & transfer
-                        - listitem [ref=e517]: • NoSQL databases
-                        - listitem [ref=e518]: • Web app state management
-                  - generic [ref=e519]:
-                    - heading "Did You Know?" [level=4] [ref=e520]
-                    - list [ref=e521]:
-                      - listitem [ref=e522]: • 95% of web APIs use JSON for data exchange
-                      - listitem [ref=e523]: • JSON processing is 3x faster than XML
-                      - listitem [ref=e524]: • Over 10 billion JSON requests processed daily
-                      - listitem [ref=e525]: • Supported by 200+ programming languages
-                - generic [ref=e526]:
-                  - generic [ref=e528]:
-                    - heading "JSON Structure Example" [level=4] [ref=e529]
-                    - generic [ref=e530]: "{ \"name\": \"John Doe\", \"age\": 30, \"isActive\": true, \"skills\": [\"JavaScript\", \"Python\", \"JSON\"], \"address\": { \"city\": \"New York\", \"country\": \"USA\" }, \"projects\": null }"
-                  - generic [ref=e532]:
-                    - heading "JSON vs Other Formats" [level=4] [ref=e533]
-                    - generic [ref=e534]:
-                      - generic [ref=e535]:
-                        - generic [ref=e536]: File Size (same data)
-                        - generic [ref=e537]:
-                          - generic [ref=e538]: "JSON: 1KB"
-                          - generic [ref=e539]: "XML: 1.3KB"
-                      - generic [ref=e540]:
-                        - generic [ref=e541]: Parse Speed
-                        - generic [ref=e542]:
-                          - generic [ref=e543]: "JSON: 0.1ms"
-                          - generic [ref=e544]: "XML: 0.3ms"
-                      - generic [ref=e545]:
-                        - generic [ref=e546]: Readability
-                        - generic [ref=e547]:
-                          - generic [ref=e548]: "JSON: Excellent"
-                          - generic [ref=e549]: "XML: Good"
-          - region "Perfect for Every Development Workflow" [ref=e550]:
-            - generic [ref=e551]:
+                  - generic [ref=e497]:
+                    - generic [ref=e499]:
+                      - heading "JSON Advantages" [level=4] [ref=e500]
+                      - list [ref=e501]:
+                        - listitem [ref=e502]: • Lightweight & fast parsing
+                        - listitem [ref=e503]: • Human-readable format
+                        - listitem [ref=e504]: • Universal language support
+                        - listitem [ref=e505]: • Native JavaScript integration
+                        - listitem [ref=e506]: • Smaller than XML (30% less)
+                    - generic [ref=e508]:
+                      - heading "Common Uses" [level=4] [ref=e509]
+                      - list [ref=e510]:
+                        - listitem [ref=e511]: • REST API responses
+                        - listitem [ref=e512]: • Configuration files
+                        - listitem [ref=e513]: • Data storage & transfer
+                        - listitem [ref=e514]: • NoSQL databases
+                        - listitem [ref=e515]: • Web app state management
+                  - generic [ref=e516]:
+                    - heading "Did You Know?" [level=4] [ref=e517]
+                    - list [ref=e518]:
+                      - listitem [ref=e519]: • 95% of web APIs use JSON for data exchange
+                      - listitem [ref=e520]: • JSON processing is 3x faster than XML
+                      - listitem [ref=e521]: • Over 10 billion JSON requests processed daily
+                      - listitem [ref=e522]: • Supported by 200+ programming languages
+                - generic [ref=e523]:
+                  - generic [ref=e525]:
+                    - heading "JSON Structure Example" [level=4] [ref=e526]
+                    - generic [ref=e527]: "{ \"name\": \"John Doe\", \"age\": 30, \"isActive\": true, \"skills\": [\"JavaScript\", \"Python\", \"JSON\"], \"address\": { \"city\": \"New York\", \"country\": \"USA\" }, \"projects\": null }"
+                  - generic [ref=e529]:
+                    - heading "JSON vs Other Formats" [level=4] [ref=e530]
+                    - generic [ref=e531]:
+                      - generic [ref=e532]:
+                        - generic [ref=e533]: File Size (same data)
+                        - generic [ref=e534]:
+                          - generic [ref=e535]: "JSON: 1KB"
+                          - generic [ref=e536]: "XML: 1.3KB"
+                      - generic [ref=e537]:
+                        - generic [ref=e538]: Parse Speed
+                        - generic [ref=e539]:
+                          - generic [ref=e540]: "JSON: 0.1ms"
+                          - generic [ref=e541]: "XML: 0.3ms"
+                      - generic [ref=e542]:
+                        - generic [ref=e543]: Readability
+                        - generic [ref=e544]:
+                          - generic [ref=e545]: "JSON: Excellent"
+                          - generic [ref=e546]: "XML: Good"
+          - region "Perfect for Every Development Workflow" [ref=e547]:
+            - generic [ref=e548]:
+              - generic [ref=e549]:
+                - heading "Perfect for Every Development Workflow" [level=2] [ref=e550]
+                - paragraph [ref=e551]: From startup MVPs to enterprise applications, our JSON tools adapt to your needs and scale with your growth.
               - generic [ref=e552]:
-                - heading "Perfect for Every Development Workflow" [level=2] [ref=e553]
-                - paragraph [ref=e554]: From startup MVPs to enterprise applications, our JSON tools adapt to your needs and scale with your growth.
-              - generic [ref=e555]:
-                - generic [ref=e557]:
-                  - generic [ref=e558]:
-                    - img [ref=e559]
-                    - heading "API Development & Testing" [level=3] [ref=e564]
-                  - paragraph [ref=e565]: Debug REST APIs, validate GraphQL responses, format request payloads, test webhooks, and analyze API documentation. Perfect for backend developers and QA engineers.
-                  - generic [ref=e566]:
-                    - generic [ref=e567]:
-                      - img [ref=e568]
-                      - generic [ref=e570]: Postman integration
-                    - generic [ref=e571]:
-                      - img [ref=e572]
-                      - generic [ref=e574]: cURL support
-                    - generic [ref=e575]:
-                      - img [ref=e576]
-                      - generic [ref=e578]: API mocking
-                    - generic [ref=e579]:
-                      - img [ref=e580]
-                      - generic [ref=e582]: Response validation
-                - generic [ref=e584]:
-                  - generic [ref=e585]:
-                    - img [ref=e586]
-                    - heading "Frontend Development" [level=3] [ref=e590]
-                  - paragraph [ref=e591]: Work with configuration files, validate package.json, format webpack configs, debug state management, and optimize build processes.
-                  - generic [ref=e592]:
-                    - generic [ref=e593]:
-                      - img [ref=e594]
-                      - generic [ref=e596]: React state debugging
-                    - generic [ref=e597]:
-                      - img [ref=e598]
-                      - generic [ref=e600]: Next.js config
-                    - generic [ref=e601]:
-                      - img [ref=e602]
-                      - generic [ref=e604]: Package.json validation
-                    - generic [ref=e605]:
-                      - img [ref=e606]
-                      - generic [ref=e608]: Build optimization
-                - generic [ref=e610]:
-                  - generic [ref=e611]:
-                    - img [ref=e612]
-                    - heading "Data Analysis & ETL" [level=3] [ref=e616]
-                  - paragraph [ref=e617]: Transform data pipelines, analyze large datasets, extract insights, prepare data for visualization, and integrate with analytics tools.
-                  - generic [ref=e618]:
-                    - generic [ref=e619]:
-                      - img [ref=e620]
-                      - generic [ref=e622]: Data transformation
-                    - generic [ref=e623]:
-                      - img [ref=e624]
-                      - generic [ref=e626]: Schema validation
-                    - generic [ref=e627]:
-                      - img [ref=e628]
-                      - generic [ref=e630]: ETL processes
-                    - generic [ref=e631]:
-                      - img [ref=e632]
-                      - generic [ref=e634]: Analytics integration
-                - generic [ref=e636]:
-                  - generic [ref=e637]:
-                    - img [ref=e638]
-                    - heading "Configuration Management" [level=3] [ref=e641]
-                  - paragraph [ref=e642]: Manage application settings, environment configurations, deployment configs, feature flags, and system parameters across environments.
-                  - generic [ref=e643]:
-                    - generic [ref=e644]:
-                      - img [ref=e645]
-                      - generic [ref=e647]: Environment configs
-                    - generic [ref=e648]:
-                      - img [ref=e649]
-                      - generic [ref=e651]: Feature flags
-                    - generic [ref=e652]:
-                      - img [ref=e653]
-                      - generic [ref=e655]: System settings
-                    - generic [ref=e656]:
-                      - img [ref=e657]
-                      - generic [ref=e659]: Deployment automation
-                - generic [ref=e661]:
-                  - generic [ref=e662]:
-                    - img [ref=e663]
-                    - heading "Business Intelligence" [level=3] [ref=e666]
-                  - paragraph [ref=e667]: Analyze business data, create reports, validate data quality, integrate with BI tools, and support decision-making processes.
-                  - generic [ref=e668]:
-                    - generic [ref=e669]:
-                      - img [ref=e670]
-                      - generic [ref=e672]: Report generation
-                    - generic [ref=e673]:
-                      - img [ref=e674]
-                      - generic [ref=e676]: Data quality checks
-                    - generic [ref=e677]:
-                      - img [ref=e678]
-                      - generic [ref=e680]: BI integration
-                    - generic [ref=e681]:
-                      - img [ref=e682]
-                      - generic [ref=e684]: KPI tracking
-                - generic [ref=e686]:
-                  - generic [ref=e687]:
-                    - img [ref=e688]
-                    - heading "Educational & Training" [level=3] [ref=e692]
-                  - paragraph [ref=e693]: Learn JSON syntax, practice data structures, explore real-world examples, and teach data formats to students and teams.
-                  - generic [ref=e694]:
-                    - generic [ref=e695]:
-                      - img [ref=e696]
-                      - generic [ref=e698]: Interactive tutorials
-                    - generic [ref=e699]:
-                      - img [ref=e700]
-                      - generic [ref=e702]: Code examples
-                    - generic [ref=e703]:
-                      - img [ref=e704]
-                      - generic [ref=e706]: Best practices
-                    - generic [ref=e707]:
-                      - img [ref=e708]
-                      - generic [ref=e710]: Team training
-          - region "Why We're Better Than The Rest" [ref=e711]:
-            - generic [ref=e712]:
+                - generic [ref=e554]:
+                  - generic [ref=e555]:
+                    - img [ref=e556]
+                    - heading "API Development & Testing" [level=3] [ref=e561]
+                  - paragraph [ref=e562]: Debug REST APIs, validate GraphQL responses, format request payloads, test webhooks, and analyze API documentation. Perfect for backend developers and QA engineers.
+                  - generic [ref=e563]:
+                    - generic [ref=e564]:
+                      - img [ref=e565]
+                      - generic [ref=e567]: Postman integration
+                    - generic [ref=e568]:
+                      - img [ref=e569]
+                      - generic [ref=e571]: cURL support
+                    - generic [ref=e572]:
+                      - img [ref=e573]
+                      - generic [ref=e575]: API mocking
+                    - generic [ref=e576]:
+                      - img [ref=e577]
+                      - generic [ref=e579]: Response validation
+                - generic [ref=e581]:
+                  - generic [ref=e582]:
+                    - img [ref=e583]
+                    - heading "Frontend Development" [level=3] [ref=e587]
+                  - paragraph [ref=e588]: Work with configuration files, validate package.json, format webpack configs, debug state management, and optimize build processes.
+                  - generic [ref=e589]:
+                    - generic [ref=e590]:
+                      - img [ref=e591]
+                      - generic [ref=e593]: React state debugging
+                    - generic [ref=e594]:
+                      - img [ref=e595]
+                      - generic [ref=e597]: Next.js config
+                    - generic [ref=e598]:
+                      - img [ref=e599]
+                      - generic [ref=e601]: Package.json validation
+                    - generic [ref=e602]:
+                      - img [ref=e603]
+                      - generic [ref=e605]: Build optimization
+                - generic [ref=e607]:
+                  - generic [ref=e608]:
+                    - img [ref=e609]
+                    - heading "Data Analysis & ETL" [level=3] [ref=e613]
+                  - paragraph [ref=e614]: Transform data pipelines, analyze large datasets, extract insights, prepare data for visualization, and integrate with analytics tools.
+                  - generic [ref=e615]:
+                    - generic [ref=e616]:
+                      - img [ref=e617]
+                      - generic [ref=e619]: Data transformation
+                    - generic [ref=e620]:
+                      - img [ref=e621]
+                      - generic [ref=e623]: Schema validation
+                    - generic [ref=e624]:
+                      - img [ref=e625]
+                      - generic [ref=e627]: ETL processes
+                    - generic [ref=e628]:
+                      - img [ref=e629]
+                      - generic [ref=e631]: Analytics integration
+                - generic [ref=e633]:
+                  - generic [ref=e634]:
+                    - img [ref=e635]
+                    - heading "Configuration Management" [level=3] [ref=e638]
+                  - paragraph [ref=e639]: Manage application settings, environment configurations, deployment configs, feature flags, and system parameters across environments.
+                  - generic [ref=e640]:
+                    - generic [ref=e641]:
+                      - img [ref=e642]
+                      - generic [ref=e644]: Environment configs
+                    - generic [ref=e645]:
+                      - img [ref=e646]
+                      - generic [ref=e648]: Feature flags
+                    - generic [ref=e649]:
+                      - img [ref=e650]
+                      - generic [ref=e652]: System settings
+                    - generic [ref=e653]:
+                      - img [ref=e654]
+                      - generic [ref=e656]: Deployment automation
+                - generic [ref=e658]:
+                  - generic [ref=e659]:
+                    - img [ref=e660]
+                    - heading "Business Intelligence" [level=3] [ref=e663]
+                  - paragraph [ref=e664]: Analyze business data, create reports, validate data quality, integrate with BI tools, and support decision-making processes.
+                  - generic [ref=e665]:
+                    - generic [ref=e666]:
+                      - img [ref=e667]
+                      - generic [ref=e669]: Report generation
+                    - generic [ref=e670]:
+                      - img [ref=e671]
+                      - generic [ref=e673]: Data quality checks
+                    - generic [ref=e674]:
+                      - img [ref=e675]
+                      - generic [ref=e677]: BI integration
+                    - generic [ref=e678]:
+                      - img [ref=e679]
+                      - generic [ref=e681]: KPI tracking
+                - generic [ref=e683]:
+                  - generic [ref=e684]:
+                    - img [ref=e685]
+                    - heading "Educational & Training" [level=3] [ref=e689]
+                  - paragraph [ref=e690]: Learn JSON syntax, practice data structures, explore real-world examples, and teach data formats to students and teams.
+                  - generic [ref=e691]:
+                    - generic [ref=e692]:
+                      - img [ref=e693]
+                      - generic [ref=e695]: Interactive tutorials
+                    - generic [ref=e696]:
+                      - img [ref=e697]
+                      - generic [ref=e699]: Code examples
+                    - generic [ref=e700]:
+                      - img [ref=e701]
+                      - generic [ref=e703]: Best practices
+                    - generic [ref=e704]:
+                      - img [ref=e705]
+                      - generic [ref=e707]: Team training
+          - region "Why We're Better Than The Rest" [ref=e708]:
+            - generic [ref=e709]:
+              - generic [ref=e710]:
+                - heading "Why We're Better Than The Rest" [level=2] [ref=e711]
+                - paragraph [ref=e712]: Don't settle for basic JSON tools. See how we compare to popular alternatives.
               - generic [ref=e713]:
-                - heading "Why We're Better Than The Rest" [level=2] [ref=e714]
-                - paragraph [ref=e715]: Don't settle for basic JSON tools. See how we compare to popular alternatives.
-              - generic [ref=e716]:
-                - generic [ref=e718]:
-                  - generic [ref=e719]:
-                    - generic [ref=e720]: Competitor
-                    - generic [ref=e721]: Their Offering
-                    - generic [ref=e722]: Our Advantage
-                  - generic [ref=e723]:
-                    - generic [ref=e724]: JSONLint
-                    - generic [ref=e725]: Basic validation only
-                    - generic [ref=e726]: Advanced validation + formatting + visualization
-                  - generic [ref=e727]:
-                    - generic [ref=e728]: JSON Pretty Print
-                    - generic [ref=e729]: Simple formatting
-                    - generic [ref=e730]: Professional editor + sharing + collaboration
-                  - generic [ref=e731]:
-                    - generic [ref=e732]: Online JSON Viewer
-                    - generic [ref=e733]: Limited tree view
-                    - generic [ref=e734]: Interactive tree + search + filtering + export
-                  - generic [ref=e735]:
-                    - generic [ref=e736]: Code Beautify
-                    - generic [ref=e737]: Basic tools
-                    - generic [ref=e738]: Complete JSON toolkit + API integration
-                - link "Try Our Superior JSON Tools" [ref=e740] [cursor=pointer]:
+                - generic [ref=e715]:
+                  - generic [ref=e716]:
+                    - generic [ref=e717]: Competitor
+                    - generic [ref=e718]: Their Offering
+                    - generic [ref=e719]: Our Advantage
+                  - generic [ref=e720]:
+                    - generic [ref=e721]: JSONLint
+                    - generic [ref=e722]: Basic validation only
+                    - generic [ref=e723]: Advanced validation + formatting + visualization
+                  - generic [ref=e724]:
+                    - generic [ref=e725]: JSON Pretty Print
+                    - generic [ref=e726]: Simple formatting
+                    - generic [ref=e727]: Professional editor + sharing + collaboration
+                  - generic [ref=e728]:
+                    - generic [ref=e729]: Online JSON Viewer
+                    - generic [ref=e730]: Limited tree view
+                    - generic [ref=e731]: Interactive tree + search + filtering + export
+                  - generic [ref=e732]:
+                    - generic [ref=e733]: Code Beautify
+                    - generic [ref=e734]: Basic tools
+                    - generic [ref=e735]: Complete JSON toolkit + API integration
+                - link "Try Our Superior JSON Tools" [ref=e737] [cursor=pointer]:
                   - /url: /edit
-                  - button "Try Our Superior JSON Tools" [ref=e741] [cursor=pointer]:
+                  - button "Try Our Superior JSON Tools" [ref=e738] [cursor=pointer]:
                     - text: Try Our Superior JSON Tools
                     - img
-          - region "Frequently Asked Questions" [ref=e742]:
-            - generic [ref=e744]:
+          - region "Frequently Asked Questions" [ref=e739]:
+            - generic [ref=e741]:
+              - generic [ref=e742]:
+                - heading "Frequently Asked Questions" [level=2] [ref=e743]
+                - paragraph [ref=e744]: Everything you need to know about JSON and our tools
               - generic [ref=e745]:
-                - heading "Frequently Asked Questions" [level=2] [ref=e746]
-                - paragraph [ref=e747]: Everything you need to know about JSON and our tools
-              - generic [ref=e748]:
-                - generic [ref=e750]:
-                  - heading "What is JSON and why is it so popular?" [level=3] [ref=e751]
-                  - paragraph [ref=e753]: JSON (JavaScript Object Notation) is the most popular data interchange format used in modern web development. It&apos;s lightweight, human-readable, and supported by every programming language. JSON is used in REST APIs, configuration files, databases, and data transmission because it&apos;s simpler than XML and more structured than plain text. Over 95% of web APIs use JSON for data exchange.
-                - generic [ref=e755]:
-                  - heading "How do I format and validate JSON online for free?" [level=3] [ref=e756]
-                  - paragraph [ref=e758]: Our JSON formatter is completely free and requires no registration. Simply paste your JSON data into the editor above, and it will automatically detect, validate, and format your JSON with proper indentation, syntax highlighting, and error detection. You can also upload files, share results, and export formatted JSON in various formats.
-                - generic [ref=e760]:
-                  - heading "Is this really the best JSON viewer available online?" [level=3] [ref=e761]
-                  - paragraph [ref=e763]: Our JSON viewer is a comprehensive and feature-rich tool for developers. Unlike basic validators, we offer advanced features like interactive tree visualization, real-time collaboration, file sharing, API integration, offline support, and professional-grade security. Built specifically for modern development workflows.
-                - generic [ref=e765]:
-                  - heading "Can I work with large JSON files and complex data structures?" [level=3] [ref=e766]
-                  - paragraph [ref=e768]: Absolutely! Our optimized engine can handle JSON files up to 100MB with seamless performance. We use progressive loading, virtual scrolling, and intelligent memory management to process large datasets. Features like tree navigation, search, filtering, and collapsible nodes make working with complex nested structures effortless.
-                - generic [ref=e770]:
-                  - heading "How secure is my JSON data when using this tool?" [level=3] [ref=e771]
-                  - paragraph [ref=e773]: Your data security is our top priority. All JSON processing happens client-side in your browser - your data never leaves your device unless you explicitly choose to share it. We offer optional encryption for shared links, automatic data cleanup, SOC 2 compliance, and enterprise-grade security features for business users.
-                - generic [ref=e775]:
-                  - heading "Does the JSON editor work offline and on mobile devices?" [level=3] [ref=e776]
-                  - paragraph [ref=e778]: Yes! Our progressive web app works offline for core features like editing, formatting, and validation. The mobile-optimized interface provides a seamless experience on tablets and smartphones. You can install it as a native app on your device for quick access to your JSON tools anywhere, anytime.
-                - generic [ref=e780]:
-                  - heading "Can I integrate this JSON viewer with my development workflow?" [level=3] [ref=e781]
-                  - paragraph [ref=e783]: Absolutely! We offer API access, browser extensions, CLI tools, and integrations with popular development tools like Postman, VS Code, and CI/CD pipelines. You can embed our viewer in your documentation, use it in automated testing, and integrate it with your existing toolchain.
-                - generic [ref=e785]:
-                  - heading "What makes your JSON tools better than alternatives?" [level=3] [ref=e786]
-                  - paragraph [ref=e788]: "We combine the best of all JSON tools in one platform: professional editing capabilities, advanced visualization, real-time collaboration, sharing features, API integration, and enterprise security. While competitors focus on single features, we provide a complete JSON ecosystem that grows with your needs."
-          - region "Professional JSON Tools for Developers" [ref=e789]:
-            - generic [ref=e791]:
-              - heading "Professional JSON Tools for Developers" [level=2] [ref=e792]
-              - paragraph [ref=e793]: Stop struggling with basic JSON validators. Get the complete toolkit for modern development workflows. Start formatting, validating, and visualizing your JSON data like a pro - completely free, no registration required.
-              - generic [ref=e794]:
-                - link "Open JSON Editor" [ref=e795] [cursor=pointer]:
+                - generic [ref=e747]:
+                  - heading "What is JSON and why is it so popular?" [level=3] [ref=e748]
+                  - paragraph [ref=e750]: JSON (JavaScript Object Notation) is the most popular data interchange format used in modern web development. It&apos;s lightweight, human-readable, and supported by every programming language. JSON is used in REST APIs, configuration files, databases, and data transmission because it&apos;s simpler than XML and more structured than plain text. Over 95% of web APIs use JSON for data exchange.
+                - generic [ref=e752]:
+                  - heading "How do I format and validate JSON online for free?" [level=3] [ref=e753]
+                  - paragraph [ref=e755]: Our JSON formatter is completely free and requires no registration. Simply paste your JSON data into the editor above, and it will automatically detect, validate, and format your JSON with proper indentation, syntax highlighting, and error detection. You can also upload files, share results, and export formatted JSON in various formats.
+                - generic [ref=e757]:
+                  - heading "Is this really the best JSON viewer available online?" [level=3] [ref=e758]
+                  - paragraph [ref=e760]: Our JSON viewer is a comprehensive and feature-rich tool for developers. Unlike basic validators, we offer advanced features like interactive tree visualization, real-time collaboration, file sharing, API integration, offline support, and professional-grade security. Built specifically for modern development workflows.
+                - generic [ref=e762]:
+                  - heading "Can I work with large JSON files and complex data structures?" [level=3] [ref=e763]
+                  - paragraph [ref=e765]: Absolutely! Our optimized engine can handle JSON files up to 100MB with seamless performance. We use progressive loading, virtual scrolling, and intelligent memory management to process large datasets. Features like tree navigation, search, filtering, and collapsible nodes make working with complex nested structures effortless.
+                - generic [ref=e767]:
+                  - heading "How secure is my JSON data when using this tool?" [level=3] [ref=e768]
+                  - paragraph [ref=e770]: Your data security is our top priority. All JSON processing happens client-side in your browser - your data never leaves your device unless you explicitly choose to share it. We offer optional encryption for shared links, automatic data cleanup, SOC 2 compliance, and enterprise-grade security features for business users.
+                - generic [ref=e772]:
+                  - heading "Does the JSON editor work offline and on mobile devices?" [level=3] [ref=e773]
+                  - paragraph [ref=e775]: Yes! Our progressive web app works offline for core features like editing, formatting, and validation. The mobile-optimized interface provides a seamless experience on tablets and smartphones. You can install it as a native app on your device for quick access to your JSON tools anywhere, anytime.
+                - generic [ref=e777]:
+                  - heading "Can I integrate this JSON viewer with my development workflow?" [level=3] [ref=e778]
+                  - paragraph [ref=e780]: Absolutely! We offer API access, browser extensions, CLI tools, and integrations with popular development tools like Postman, VS Code, and CI/CD pipelines. You can embed our viewer in your documentation, use it in automated testing, and integrate it with your existing toolchain.
+                - generic [ref=e782]:
+                  - heading "What makes your JSON tools better than alternatives?" [level=3] [ref=e783]
+                  - paragraph [ref=e785]: "We combine the best of all JSON tools in one platform: professional editing capabilities, advanced visualization, real-time collaboration, sharing features, API integration, and enterprise security. While competitors focus on single features, we provide a complete JSON ecosystem that grows with your needs."
+          - region "Professional JSON Tools for Developers" [ref=e786]:
+            - generic [ref=e788]:
+              - heading "Professional JSON Tools for Developers" [level=2] [ref=e789]
+              - paragraph [ref=e790]: Stop struggling with basic JSON validators. Get the complete toolkit for modern development workflows. Start formatting, validating, and visualizing your JSON data like a pro - completely free, no registration required.
+              - generic [ref=e791]:
+                - link "Open JSON Editor" [ref=e792] [cursor=pointer]:
                   - /url: /edit
-                  - button "Open JSON Editor" [ref=e796] [cursor=pointer]:
+                  - button "Open JSON Editor" [ref=e793] [cursor=pointer]:
                     - img
                     - text: Open JSON Editor
                     - img
-                - link "Format JSON Now" [ref=e797] [cursor=pointer]:
+                - link "Format JSON Now" [ref=e794] [cursor=pointer]:
                   - /url: /format
-                  - button "Format JSON Now" [ref=e798] [cursor=pointer]:
+                  - button "Format JSON Now" [ref=e795] [cursor=pointer]:
                     - img
                     - text: Format JSON Now
-              - generic [ref=e799]:
+              - generic [ref=e796]:
+                - generic [ref=e797]:
+                  - img [ref=e798]
+                  - text: Professional grade
                 - generic [ref=e800]:
                   - img [ref=e801]
-                  - text: Professional grade
-                - generic [ref=e803]:
-                  - img [ref=e804]
                   - text: For developers
-                - generic [ref=e809]:
-                  - img [ref=e810]
+                - generic [ref=e806]:
+                  - img [ref=e807]
                   - text: 100% secure
   - region "Notifications (F8)":
-    - list
-  - button "Open Next.js Dev Tools" [ref=e817] [cursor=pointer]:
-    - img [ref=e818] [cursor=pointer]
-  - alert [ref=e821]
-  - generic [ref=e822]:
+    - list [ref=e810]:
+      - listitem [ref=e811]:
+        - generic [ref=e812]:
+          - generic [ref=e813]: Error
+          - generic [ref=e814]: Failed to copy to clipboard
+        - button [ref=e815] [cursor=pointer]:
+          - img [ref=e816] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e825] [cursor=pointer]:
+    - img [ref=e826] [cursor=pointer]
+  - alert [ref=e829]
+  - generic [ref=e830]:
     - alert
     - alert
+  - status [ref=e831]: Notification ErrorFailed to copy to clipboard
 ```
