@@ -1,6 +1,6 @@
 'use client';
 
-import { Sidebar } from '@/components/sidebar';
+import { Sidebar } from './sidebar';
 import { ReactNode } from 'react';
 
 interface AppLayoutProps {

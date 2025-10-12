@@ -5,10 +5,13 @@ import { JsonViewerSkeleton, LibrarySkeleton } from '@/components/ui/skeleton-sc
 import { Skeleton } from '@/components/ui/skeleton-screen';
 
 // Lazy load heavy components
-export const LazyUltraJsonViewer = lazy(() => 
-  import('@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer')
-    .then(module => ({ default: module.UltraJsonViewer }))
+export const LazyViewer = lazy(() =>
+  import('@/components/features/viewer')
+    .then(module => ({ default: module.Viewer }))
 );
+
+// Backwards compatibility
+export const LazyUltraJsonViewer = LazyViewer;
 
 export const LazyMonacoEditor = lazy(() => 
   import('@monaco-editor/react').then(module => ({ default: module.default }))
@@ -49,13 +52,16 @@ function LazyWrapper({ fallback, children }: LazyComponentWrapperProps) {
 }
 
 // High-level lazy components with specific skeletons
-export function LazyJsonViewerWithSkeleton(props: any) {
+export function LazyViewerWithSkeleton(props: any) {
   return (
     <LazyWrapper fallback={<JsonViewerSkeleton />}>
-      <LazyUltraJsonViewer {...props} />
+      <LazyViewer {...props} />
     </LazyWrapper>
   );
 }
+
+// Backwards compatibility
+export const LazyJsonViewerWithSkeleton = LazyViewerWithSkeleton;
 
 export function LazyMonacoEditorWithSkeleton(props: any) {
   return (
