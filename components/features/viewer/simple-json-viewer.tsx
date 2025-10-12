@@ -13,7 +13,7 @@ import { JsonEmptyState, JsonErrorState } from '@/components/shared/EmptyStates'
 // Dynamically import the ultra optimized viewer
 const UltraJsonViewer = dynamic(
   () =>
-    import('@/components/features/json-viewer/ultra-optimized-viewer/UltraJsonViewer').then((mod) => ({
+    import('@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer').then((mod) => ({
       default: mod.UltraJsonViewer,
     })),
   {

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SmartJsonViewer } from '@/components/features/json-viewer/smart-json-viewer';
-import { UltraJsonViewer } from '@/components/features/json-viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { SmartJsonViewer } from '@/components/features/viewer/smart-json-viewer';
+import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
 import { JsonEditor } from '@/components/features/editor/json-editor';
 import { TabsNav } from '@/components/layout/tabs-nav';
 import { Button } from '@/components/ui/button';

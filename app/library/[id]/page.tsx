@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
 import { TabsNav } from '@/components/layout/tabs-nav';
-import { UltraJsonViewer } from '@/components/features/json-viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
 import { FileJson } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';

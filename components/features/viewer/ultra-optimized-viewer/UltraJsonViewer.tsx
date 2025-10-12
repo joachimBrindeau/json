@@ -6,7 +6,7 @@ import { UnifiedButton } from '@/components/ui/unified-button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { JsonActionButtons } from '@/components/features/json-viewer/json-action-buttons';
+import { JsonActionButtons } from '@/components/features/viewer/json-action-buttons';
 import {
   ChevronRight,
   ChevronDown,

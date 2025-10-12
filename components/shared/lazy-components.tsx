@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton-screen';
 
 // Lazy load heavy components
 export const LazyUltraJsonViewer = lazy(() => 
-  import('@/components/features/json-viewer/ultra-optimized-viewer/UltraJsonViewer')
+  import('@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer')
     .then(module => ({ default: module.UltraJsonViewer }))
 );
 

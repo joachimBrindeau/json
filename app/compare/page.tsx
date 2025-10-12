@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { JsonCompare } from '@/components/features/json-viewer/json-compare';
+import { JsonCompare } from '@/components/features/viewer/json-compare';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useBackendStore } from '@/lib/store/backend';
 import { UnifiedButton } from '@/components/ui/unified-button';
 import { Input } from '@/components/ui/input';
 import { Search, GitCompare, RotateCcw } from 'lucide-react';
-import { JsonActionButtons } from '@/components/features/json-viewer/json-action-buttons';
+import { JsonActionButtons } from '@/components/features/viewer/json-action-buttons';
 
 export default function ComparePage() {
   const { currentJson, lastActiveTab, setLastActiveTab } = useBackendStore();

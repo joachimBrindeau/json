@@ -20,7 +20,7 @@ import {
   ChevronRight,
   ChevronDown
 } from 'lucide-react';
-import { UltraJsonViewer } from '@/components/features/json-viewer/ultra-optimized-viewer/UltraJsonViewer';
+import { UltraJsonViewer } from '@/components/features/viewer/ultra-optimized-viewer/UltraJsonViewer';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useToast } from '@/hooks/use-toast';
 import { validateJson, formatJson } from '@/lib/json';

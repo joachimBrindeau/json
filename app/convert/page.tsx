@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { JsonActionButtons } from '@/components/features/json-viewer/json-action-buttons';
+import { JsonActionButtons } from '@/components/features/viewer/json-action-buttons';
 import dynamic from 'next/dynamic';
 import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
