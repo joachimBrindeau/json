@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NodeType } from '@/components/features/flow-diagram/utils/types';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
 
 type Props = {
   nodeId: string;
@@ -28,4 +28,5 @@ const _NodeShell = ({ nodeId, nodeType, isHighlight, children }: Props) => {
   );
 };
 
-export const NodeShell = _NodeShell;
+export const FlowNodeShell = _NodeShell;
+export const NodeShell = FlowNodeShell;

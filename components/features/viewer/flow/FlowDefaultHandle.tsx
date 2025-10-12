@@ -1,26 +1,28 @@
+import * as React from 'react';
 import { memo, useMemo } from 'react';
 import { Handle, HandleProps, HandleType, Position } from 'reactflow';
-import { sizes } from '@/components/features/flow-diagram/utils/constants';
 
 const hiddenHandleStyle = {
   backgroundColor: 'transparent',
   border: 'none',
 };
 
-type Props = Pick<HandleProps, 'id' | 'type'>;
+type Props = Pick<HandleProps, 'id' | 'type'> & {
+  style?: React.CSSProperties;
+};
 
-const ChainHandleComponent = ({ id, type }: Props) => {
+const DefaultHandleComponent = ({ id, type, style = {} }: Props) => {
   const handleTypeToPositionMap: Record<HandleType, Position> = useMemo(
     () => ({
-      source: Position.Bottom,
-      target: Position.Top,
+      source: Position.Right,
+      target: Position.Left,
     }),
     []
   );
 
   return (
     <Handle
-      style={{ ...hiddenHandleStyle, left: sizes.arrayNodeSize / 2 }}
+      style={{ ...hiddenHandleStyle, ...style }}
       id={id}
       type={type}
       position={handleTypeToPositionMap[type]}
@@ -28,4 +30,5 @@ const ChainHandleComponent = ({ id, type }: Props) => {
   );
 };
 
-export const ChainHandle = memo(ChainHandleComponent);
+export const FlowDefaultHandle = memo(DefaultHandleComponent);
+export const DefaultHandle = FlowDefaultHandle;

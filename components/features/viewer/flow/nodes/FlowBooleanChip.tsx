@@ -15,4 +15,5 @@ const _BooleanChip = ({ value, size = 'default', className }: Props) => {
   );
 };
 
-export const BooleanChip = memo(_BooleanChip);
+export const FlowBooleanChip = memo(_BooleanChip);
+export const BooleanChip = FlowBooleanChip;

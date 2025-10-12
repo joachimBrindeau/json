@@ -50,4 +50,5 @@ const DefaultEdgeComponent = ({
   );
 };
 
-export const DefaultEdge = memo(DefaultEdgeComponent);
+export const FlowDefaultEdge = memo(DefaultEdgeComponent);
+export const DefaultEdge = FlowDefaultEdge;

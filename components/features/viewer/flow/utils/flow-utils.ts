@@ -5,7 +5,7 @@ import {
   ObjectSeaNode,
   PrimitiveSeaNode,
   NodeType,
-} from '@/components/features/flow-diagram/utils/types';
+} from './flow-types';
 
 /**
  * Returns true if argument is an 'array' and false otherwise.

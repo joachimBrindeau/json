@@ -1,14 +1,14 @@
 import { memo } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { JsonDataType, NodeType } from '@/components/features/flow-diagram/utils/types';
-import { addPrefixChain } from '@/components/features/flow-diagram/utils/json-parser';
-import { PrimitiveNodeData } from '@/components/features/flow-diagram/utils/types';
-import { BooleanChip } from '@/components/features/flow-diagram/nodes/BooleanChip';
-import { NullChip } from '@/components/features/flow-diagram/nodes/NullChip';
-import { ChainHandle } from '@/components/features/flow-diagram/ChainHandle';
-import { DefaultHandle } from '@/components/features/flow-diagram/DefaultHandle';
-import { HoveringBlueDot } from '@/components/features/flow-diagram/HoveringBlueDot';
-import { NodeShell } from '@/components/features/flow-diagram/nodes/NodeShell';
+import { JsonDataType, NodeType } from '@/components/features/viewer/flow/utils/flow-types';
+import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-parser';
+import { PrimitiveNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
+import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
+import { FlowChainHandle } from '@/components/features/viewer/flow/FlowChainHandle';
+import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import { FlowHoveringDot } from '@/components/features/viewer/flow/FlowHoveringDot';
+import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 
 /**
  * PrimitiveNode `<Handle>` Details
@@ -26,9 +26,9 @@ const _PrimitiveNode = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
   const isHoveredFromNodeDetail: boolean = hoveredNodeDetails.some(({ nodeId }) => nodeId === id);
 
   return (
-    <NodeShell nodeId={id} nodeType={NodeType.Primitive} isHighlight={isHighlightNode(id)}>
-      <DefaultHandle id={id} type="target" />
-      <ChainHandle id={addPrefixChain(id)} type="target" />
+    <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive} isHighlight={isHighlightNode(id)}>
+      <FlowDefaultHandle id={id} type="target" />
+      <FlowChainHandle id={addPrefixChain(id)} type="target" />
       
       {/* Add top handle for array connections */}
       <Handle
@@ -56,14 +56,14 @@ const _PrimitiveNode = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
         )}
 
         {data.dataType === JsonDataType.Boolean && (
-          <BooleanChip value={data.value as boolean} size="sm" />
+          <FlowBooleanChip value={data.value as boolean} size="sm" />
         )}
 
-        {data.dataType === JsonDataType.Null && <NullChip size="sm" />}
+        {data.dataType === JsonDataType.Null && <FlowNullChip size="sm" />}
       </div>
 
-      {isHoveredFromNodeDetail && <HoveringBlueDot />}
-      <ChainHandle id={addPrefixChain(id)} type="source" />
+      {isHoveredFromNodeDetail && <FlowHoveringDot />}
+      <FlowChainHandle id={addPrefixChain(id)} type="source" />
       
       {/* Add bottom handle for array connections */}
       <Handle
@@ -78,8 +78,9 @@ const _PrimitiveNode = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
           bottom: -4,
         }}
       />
-    </NodeShell>
+    </FlowNodeShell>
   );
 };
 
-export const PrimitiveNode = memo(_PrimitiveNode);
+export const FlowPrimitiveNode = memo(_PrimitiveNode);
+export const PrimitiveNode = FlowPrimitiveNode;

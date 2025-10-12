@@ -13,25 +13,25 @@ import ReactFlow, {
   ConnectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { jsonParser } from '@/components/features/flow-diagram/utils/json-parser';
-import { getLayoutedSeaNodes } from '@/components/features/flow-diagram/utils/position-helper';
-import { ObjectNode } from '@/components/features/flow-diagram/nodes/ObjectNode';
-import { ArrayNode } from '@/components/features/flow-diagram/nodes/ArrayNode';
-import { PrimitiveNode } from '@/components/features/flow-diagram/nodes/PrimitiveNode';
-import { DefaultEdge } from '@/components/features/flow-diagram/edges/DefaultEdge';
-import { ChainEdge } from '@/components/features/flow-diagram/edges/ChainEdge';
+import { jsonParser } from '@/components/features/viewer/flow/utils/flow-parser';
+import { getLayoutedSeaNodes } from '@/components/features/viewer/flow/utils/flow-layout';
+import { FlowObjectNode } from '@/components/features/viewer/flow/nodes/FlowObjectNode';
+import { FlowArrayNode } from '@/components/features/viewer/flow/nodes/FlowArrayNode';
+import { FlowPrimitiveNode } from '@/components/features/viewer/flow/nodes/FlowPrimitiveNode';
+import { FlowDefaultEdge } from '@/components/features/viewer/flow/edges/FlowDefaultEdge';
+import { FlowChainEdge } from '@/components/features/viewer/flow/edges/FlowChainEdge';
 import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
 import { cn } from '@/lib/utils';
 
 const nodeTypes = {
-  object: ObjectNode,
-  array: ArrayNode,
-  primitive: PrimitiveNode,
+  object: FlowObjectNode,
+  array: FlowArrayNode,
+  primitive: FlowPrimitiveNode,
 };
 
 const edgeTypes = {
-  default: DefaultEdge,
-  chain: ChainEdge,
+  default: FlowDefaultEdge,
+  chain: FlowChainEdge,
 };
 
 interface JsonFlowViewProps {
@@ -277,10 +277,14 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
   );
 }
 
-export default function JsonFlowView(props: JsonFlowViewProps) {
+export function FlowView(props: JsonFlowViewProps) {
   return (
     <ReactFlowProvider>
       <JsonFlowViewInner {...props} />
     </ReactFlowProvider>
   );
 }
+
+// Backwards compatibility
+export default FlowView;
+export const JsonFlowView = FlowView;

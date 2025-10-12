@@ -1,10 +1,10 @@
 import { memo } from 'react';
-import { validateJsonDataType } from '@/components/features/flow-diagram/utils/utils';
-import { BooleanChip } from '@/components/features/flow-diagram/nodes/BooleanChip';
-import { NullChip } from '@/components/features/flow-diagram/nodes/NullChip';
-import { DefaultHandle } from '@/components/features/flow-diagram/DefaultHandle';
-import { HoveringBlueDot } from '@/components/features/flow-diagram/HoveringBlueDot';
-import { isEmptyArray } from '@/components/features/flow-diagram/utils/utils';
+import { validateJsonDataType } from '@/components/features/viewer/flow/utils/flow-utils';
+import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
+import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
+import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import { FlowHoveringDot } from '@/components/features/viewer/flow/FlowHoveringDot';
+import { isEmptyArray } from '@/components/features/viewer/flow/utils/flow-utils';
 
 // Simplified empty object check
 const isEmptyObject = (obj: object): boolean => {
@@ -51,17 +51,18 @@ const _ObjectNodeProperty = ({ nodeId, propertyK, propertyV, hasChildNode }: Pro
             {propertyV}
           </span>
         )}
-        {isBooleanData && <BooleanChip value={propertyV as boolean} size="sm" />}
-        {isNullData && <NullChip size="sm" />}
+        {isBooleanData && <FlowBooleanChip value={propertyV as boolean} size="sm" />}
+        {isNullData && <FlowNullChip size="sm" />}
       </div>
 
       {hasChildNode && (
-        <DefaultHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" />
+        <FlowDefaultHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" />
       )}
 
-      {isHoveredFromNodeDetail && <HoveringBlueDot />}
+      {isHoveredFromNodeDetail && <FlowHoveringDot />}
     </div>
   );
 };
 
-export const ObjectNodeProperty = memo(_ObjectNodeProperty);
+export const FlowObjectNodeProperty = memo(_ObjectNodeProperty);
+export const ObjectNodeProperty = FlowObjectNodeProperty;

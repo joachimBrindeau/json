@@ -14,4 +14,5 @@ const _NullChip = ({ size = 'default', className }: Props) => {
   );
 };
 
-export const NullChip = memo(_NullChip);
+export const FlowNullChip = memo(_NullChip);
+export const NullChip = FlowNullChip;

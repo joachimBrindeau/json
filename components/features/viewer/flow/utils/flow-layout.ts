@@ -1,8 +1,8 @@
 import * as dagre from 'dagre';
 import { Edge, XYPosition } from 'reactflow';
-import { sizes } from '@/components/features/flow-diagram/utils/constants';
-import { SeaNode } from '@/components/features/flow-diagram/utils/types';
-import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from '@/components/features/flow-diagram/utils/utils';
+import { sizes } from './flow-constants';
+import { SeaNode } from './flow-types';
+import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-utils';
 
 export const getXYPosition = (depth: number): XYPosition => {
   const x: number = depth * sizes.nodeMaxWidth + depth * sizes.nodeGap;

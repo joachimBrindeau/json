@@ -6,8 +6,8 @@
 
 import dynamic from 'next/dynamic';
 
-const JsonFlowView = dynamic(
-  () => import('@/components/features/flow-diagram/JsonFlowView'),
+const FlowView = dynamic(
+  () => import('./flow/FlowView').then(m => ({ default: m.FlowView })),
   {
     ssr: false,
     loading: () => (
@@ -26,7 +26,7 @@ interface ViewerFlowProps {
 export const ViewerFlow = ({ data, height = 600 }: ViewerFlowProps) => {
   return (
     <div style={{ height }} className="w-full">
-      <JsonFlowView data={data} />
+      <FlowView json={data} />
     </div>
   );
 };

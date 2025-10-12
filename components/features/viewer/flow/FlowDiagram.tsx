@@ -11,25 +11,25 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { ObjectNode } from '@/components/features/flow-diagram/nodes/ObjectNode';
-import { ArrayNode } from '@/components/features/flow-diagram/nodes/ArrayNode';
-import { PrimitiveNode } from '@/components/features/flow-diagram/nodes/PrimitiveNode';
-import { jsonParser } from '@/components/features/flow-diagram/utils/json-parser';
-import { getLayoutedSeaNodes } from '@/components/features/flow-diagram/utils/position-helper';
-import { NodeType } from '@/components/features/flow-diagram/utils/types';
+import { FlowObjectNode } from '@/components/features/viewer/flow/nodes/FlowObjectNode';
+import { FlowArrayNode } from '@/components/features/viewer/flow/nodes/FlowArrayNode';
+import { FlowPrimitiveNode } from '@/components/features/viewer/flow/nodes/FlowPrimitiveNode';
+import { jsonParser } from '@/components/features/viewer/flow/utils/flow-parser';
+import { getLayoutedSeaNodes } from '@/components/features/viewer/flow/utils/flow-layout';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
 
 const nodeTypes = {
-  [NodeType.Object]: ObjectNode,
-  [NodeType.Array]: ArrayNode,
-  [NodeType.Primitive]: PrimitiveNode,
+  [NodeType.Object]: FlowObjectNode,
+  [NodeType.Array]: FlowArrayNode,
+  [NodeType.Primitive]: FlowPrimitiveNode,
 };
 
-interface JsonSeaDiagramProps {
+interface FlowDiagramProps {
   data: object | any[];
   className?: string;
 }
 
-export const JsonSeaDiagram: React.FC<JsonSeaDiagramProps> = ({
+export const FlowDiagram: React.FC<FlowDiagramProps> = ({
   data,
   className = 'w-full h-[600px]',
 }) => {
@@ -70,3 +70,6 @@ export const JsonSeaDiagram: React.FC<JsonSeaDiagramProps> = ({
     </div>
   );
 };
+
+// Backwards compatibility
+export const JsonSeaDiagram = FlowDiagram;

@@ -1,13 +1,13 @@
 import { memo, useCallback } from 'react';
 import { NodeProps, useEdges, Handle, Position } from 'reactflow';
-import { NodeType } from '@/components/features/flow-diagram/utils/types';
-import { addPrefixChain } from '@/components/features/flow-diagram/utils/json-parser';
-import { ObjectNodeData } from '@/components/features/flow-diagram/utils/types';
-import { ChainHandle } from '@/components/features/flow-diagram/ChainHandle';
-import { DefaultHandle } from '@/components/features/flow-diagram/DefaultHandle';
-import { HoveringBlueDot } from '@/components/features/flow-diagram/HoveringBlueDot';
-import { NodeShell } from '@/components/features/flow-diagram/nodes/NodeShell';
-import { ObjectNodeProperty } from '@/components/features/flow-diagram/nodes/ObjectNodeProperty';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
+import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-parser';
+import { ObjectNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { FlowChainHandle } from '@/components/features/viewer/flow/FlowChainHandle';
+import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import { FlowHoveringDot } from '@/components/features/viewer/flow/FlowHoveringDot';
+import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
+import { FlowObjectNodeProperty } from '@/components/features/viewer/flow/nodes/FlowObjectNodeProperty';
 
 /**
  * ObjectNode `<Handle>` Details
@@ -53,9 +53,9 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
   );
 
   return (
-    <NodeShell nodeId={id} nodeType={NodeType.Object} isHighlight={isHighlightNode(id)}>
-      <DefaultHandle id={id} type="target" />
-      {!isRootNode && <ChainHandle id={addPrefixChain(id)} type="target" />}
+    <FlowNodeShell nodeId={id} nodeType={NodeType.Object} isHighlight={isHighlightNode(id)}>
+      <FlowDefaultHandle id={id} type="target" />
+      {!isRootNode && <FlowChainHandle id={addPrefixChain(id)} type="target" />}
       
       {/* Add top handle for array connections */}
       <Handle
@@ -88,8 +88,8 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
 
       <div className="space-y-0">{renderProperties()}</div>
 
-      {isHoveredFromNodeDetail && <HoveringBlueDot />}
-      <ChainHandle id={addPrefixChain(id)} type="source" />
+      {isHoveredFromNodeDetail && <FlowHoveringDot />}
+      <FlowChainHandle id={addPrefixChain(id)} type="source" />
       
       {/* Add bottom handle for array connections */}
       <Handle
@@ -104,8 +104,9 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
           bottom: -4,
         }}
       />
-    </NodeShell>
+    </FlowNodeShell>
   );
 };
 
-export const ObjectNode = memo(ObjectNodeComponent);
+export const FlowObjectNode = memo(ObjectNodeComponent);
+export const ObjectNode = FlowObjectNode;

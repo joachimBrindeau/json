@@ -1,14 +1,14 @@
 import { memo } from 'react';
 import { NodeProps, useEdges, Handle, Position } from 'reactflow';
-import { NodeType } from '@/components/features/flow-diagram/utils/types';
-import { addPrefixChain } from '@/components/features/flow-diagram/utils/json-parser';
-import { ArrayNodeData } from '@/components/features/flow-diagram/utils/types';
-import { isEmptyArray, encloseSquareBrackets } from '@/components/features/flow-diagram/utils/utils';
-import { ROOT_NODE_NAME } from '@/components/features/flow-diagram/utils/constants';
-import { ChainHandle } from '@/components/features/flow-diagram/ChainHandle';
-import { DefaultHandle } from '@/components/features/flow-diagram/DefaultHandle';
-import { HoveringBlueDot } from '@/components/features/flow-diagram/HoveringBlueDot';
-import { NodeShell } from '@/components/features/flow-diagram/nodes/NodeShell';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
+import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-parser';
+import { ArrayNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { isEmptyArray, encloseSquareBrackets } from '@/components/features/viewer/flow/utils/flow-utils';
+import { ROOT_NODE_NAME } from '@/components/features/viewer/flow/utils/flow-constants';
+import { FlowChainHandle } from '@/components/features/viewer/flow/FlowChainHandle';
+import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import { FlowHoveringDot } from '@/components/features/viewer/flow/FlowHoveringDot';
+import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 
 /**
  * ArrayNode `<Handle>` Details
@@ -30,9 +30,9 @@ const ArrayNodeComponent = ({ id, data }: NodeProps<ArrayNodeData>) => {
   const isHoveredFromNodeDetail: boolean = hoveredNodeDetails.some(({ nodeId }) => nodeId === id);
 
   return (
-    <NodeShell nodeId={id} nodeType={NodeType.Array} isHighlight={isHighlightNode(id)}>
-      {!isRootNode && <DefaultHandle id={id} type="target" />}
-      <ChainHandle id={addPrefixChain(id)} type="target" />
+    <FlowNodeShell nodeId={id} nodeType={NodeType.Array} isHighlight={isHighlightNode(id)}>
+      {!isRootNode && <FlowDefaultHandle id={id} type="target" />}
+      <FlowChainHandle id={addPrefixChain(id)} type="target" />
       
       {/* Add top handle for array connections */}
       <Handle
@@ -67,10 +67,10 @@ const ArrayNodeComponent = ({ id, data }: NodeProps<ArrayNodeData>) => {
         {isRootNode ? ROOT_NODE_NAME : encloseSquareBrackets(arrayIndex)}
       </span>
 
-      {!isEmptyArray(items) && <DefaultHandle id={id} type="source" />}
+      {!isEmptyArray(items) && <FlowDefaultHandle id={id} type="source" />}
 
-      {isHoveredFromNodeDetail && <HoveringBlueDot />}
-      <ChainHandle id={addPrefixChain(id)} type="source" />
+      {isHoveredFromNodeDetail && <FlowHoveringDot />}
+      <FlowChainHandle id={addPrefixChain(id)} type="source" />
       
       {/* Add bottom handle for array connections */}
       <Handle
@@ -85,8 +85,11 @@ const ArrayNodeComponent = ({ id, data }: NodeProps<ArrayNodeData>) => {
           bottom: -4,
         }}
       />
-    </NodeShell>
+    </FlowNodeShell>
   );
 };
 
-export const ArrayNode = memo(ArrayNodeComponent);
+export const FlowArrayNode = memo(ArrayNodeComponent);
+
+// Backwards compatibility
+export const ArrayNode = FlowArrayNode;

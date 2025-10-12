@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { Edge } from 'reactflow';
-import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from '@/components/features/flow-diagram/utils/constants';
+import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import {
   isLastItemOfArray,
   isArray,
@@ -8,10 +8,10 @@ import {
   isString,
   getJsonDataType,
   validateJsonDataType,
-} from '@/components/features/flow-diagram/utils/utils';
-import { EdgeType, JsonDataType, NodeType } from '@/components/features/flow-diagram/utils/types';
-import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from '@/components/features/flow-diagram/utils/types';
-import { getXYPosition } from '@/components/features/flow-diagram/utils/position-helper';
+} from './flow-utils';
+import { EdgeType, JsonDataType, NodeType } from './flow-types';
+import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
+import { getXYPosition } from './flow-layout';
 
 const formatNodeId = (nodeSequence: number): string => `n${nodeSequence}`;
 
