@@ -17,7 +17,7 @@ import { EmbedModal } from '@/components/features/modals/embed-modal';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
 
-export function JsonActionButtons() {
+export function ViewerActions() {
   const { toast } = useToast();
   const { data: session } = useSession();
   const { openModal } = useLoginModal();

@@ -1,21 +1,41 @@
 /**
  * Viewer Components
- * Centralized exports for all viewer variants
+ * Clean, flat structure with hierarchical naming
  *
- * - UltraJsonViewer: Primary viewer with tree/raw/flow modes (used on homepage)
- * - SmartJsonViewer: Adaptive viewer that switches between Simple/Virtual based on size
- * - SimpleJsonViewer: Basic viewer for small JSON
- * - VirtualJsonViewer: Virtualized viewer for large JSON
- * - JsonViewer: Standard viewer (public API)
- * - JsonActionButtons: Share, embed, export buttons
- * - JsonCompare: Side-by-side JSON comparison
+ * Main Components:
+ * - Viewer: Primary JSON viewer with tree/raw/flow modes (auto-optimizing)
+ * - ViewerCompare: Side-by-side JSON comparison
+ *
+ * Individual Modes (advanced usage):
+ * - ViewerTree: Tree view mode
+ * - ViewerRaw: Raw JSON mode
+ * - ViewerFlow: Flow diagram mode
+ *
+ * Utilities:
+ * - ViewerActions: Share/embed/export buttons
+ *
+ * Types:
+ * - ViewMode: 'tree' | 'raw' | 'flow'
+ * - JsonNode: Tree node structure
  */
 
-export { UltraJsonViewer } from './ultra-optimized-viewer/UltraJsonViewer';
-export { JsonViewer } from './json-viewer';
-export { SimpleJsonViewer } from './simple-json-viewer';
-export { SmartJsonViewer } from './smart-json-viewer';
-export { VirtualJsonViewer } from './virtual-json-viewer';
-export { JsonActionButtons } from './json-action-buttons';
-export { JsonCompare } from './json-compare';
+// Main components
+export { Viewer } from './Viewer';
+export { ViewerCompare } from './ViewerCompare';
+
+// Individual modes (for advanced usage)
+export { ViewerTree } from './ViewerTree';
+export { ViewerRaw } from './ViewerRaw';
+export { ViewerFlow } from './ViewerFlow';
+
+// Utilities
+export { ViewerActions } from './ViewerActions';
+
+// Types
+export type { ViewMode, JsonNode, JsonStats, ParseResult } from './types';
+
+// Backwards compatibility exports (deprecated - use new names)
+export { Viewer as UltraJsonViewer } from './Viewer';
+export { ViewerCompare as JsonCompare } from './ViewerCompare';
+export { ViewerActions as JsonActionButtons } from './ViewerActions';
 

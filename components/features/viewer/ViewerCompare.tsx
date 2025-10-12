@@ -55,7 +55,7 @@ interface JsonCompareProps {
   onViewChange?: (view: string) => void;
 }
 
-export function JsonCompare({ 
+export function ViewerCompare({
   initialJson1 = '', 
   initialJson2 = '', 
   className = '',
