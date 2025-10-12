@@ -1,16 +1,29 @@
 /**
  * Modal Components
  * Centralized exports for all modal dialogs
+ *
+ * Primary Modals:
+ * - LoginModal: Authentication modal with OAuth providers
+ * - UnifiedShareModal: Share JSON with social media, tags, visibility settings
+ * - EmbedModal: Generate embed code for JSON
+ * - ExportModal: Export JSON in various formats
+ * - PublishModal: Publish JSON to public library
+ * - NodeDetailsModal: Show details of selected JSON node
+ *
+ * Compatibility Exports:
+ * - GlobalLoginModal: Wrapper around LoginModal with useLoginModal hook
+ * - ShareModal: Alias for UnifiedShareModal (deprecated, use UnifiedShareModal)
  */
 
+// Primary modals
+export { LoginModal } from './login-modal';
+export { UnifiedShareModal } from './unified-share-modal';
 export { EmbedModal } from './embed-modal';
 export { ExportModal } from './export-modal';
-export { LoginModal } from './login-modal';
 export { PublishModal } from './publish-modal';
-// ShareModal deprecated - use UnifiedShareModal instead (more features)
-export { UnifiedShareModal } from './unified-share-modal';
-export { UnifiedShareModal as ShareModal } from './unified-share-modal'; // Alias for backwards compatibility
 export { NodeDetailsModal } from './node-details-modal';
-// GlobalLoginModal is now just LoginModal with useLoginModal hook
+
+// Compatibility exports
 export { GlobalLoginModal } from './global-login-modal';
+export { UnifiedShareModal as ShareModal } from './unified-share-modal';
 
