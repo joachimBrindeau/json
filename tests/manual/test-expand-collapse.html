@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Expand/Collapse</title>
+</head>
+<body>
+    <h1>Test JSON for Expand/Collapse</h1>
+    <p>Navigate to <a href="http://localhost:3456" target="_blank">localhost:3456</a> and paste this JSON:</p>
+    
+    <textarea rows="20" cols="80" readonly>
+{
+  "user": {
+    "id": 123,
+    "name": "John Doe",
+    "details": {
+      "age": 30,
+      "address": {
+        "street": "123 Main St",
+        "city": "New York",
+        "coordinates": {
+          "lat": 40.7128,
+          "lng": -74.0060
+        }
+      },
+      "hobbies": ["reading", "gaming", "cooking"]
+    }
+  },
+  "posts": [
+    {
+      "id": 1,
+      "title": "First Post",
+      "tags": ["tech", "programming"],
+      "comments": [
+        {
+          "id": 101,
+          "text": "Great post!",
+          "author": "Alice"
+        },
+        {
+          "id": 102,
+          "text": "Thanks for sharing",
+          "author": "Bob"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Second Post",
+      "tags": ["lifestyle", "travel"],
+      "comments": []
+    }
+  ],
+  "metadata": {
+    "created": "2025-08-31",
+    "version": "1.0",
+    "settings": {
+      "theme": "dark",
+      "language": "en",
+      "notifications": {
+        "email": true,
+        "push": false,
+        "sms": true
+      }
+    }
+  }
+}
+    </textarea>
+    
+    <h2>Expected Behavior:</h2>
+    <ul>
+        <li>Each object property (user, posts, metadata) should have its own expand/collapse button</li>
+        <li>Each array element (posts[0], posts[1]) should have its own expand/collapse button</li>
+        <li>Nested objects (details, address, coordinates, settings, notifications) should have expand/collapse buttons</li>
+        <li>Arrays (hobbies, tags, comments) should have expand/collapse buttons</li>
+        <li>Primitive values (strings, numbers, booleans) should not have expand/collapse buttons</li>
+    </ul>
+</body>
+</html>

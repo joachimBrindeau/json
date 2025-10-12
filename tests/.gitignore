@@ -1,0 +1,32 @@
+# Test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Screenshots and videos
+screenshots/
+videos/
+traces/
+
+# Test databases
+test-db/
+*.test.db
+*.test.sqlite
+
+# Temporary test files
+temp/
+tmp/
+*.temp
+*.tmp
+
+# Environment files for testing
+.env.test
+.env.local.test
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Test logs
+*.test.log
+test-*.log

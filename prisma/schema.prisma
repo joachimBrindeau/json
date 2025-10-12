@@ -1,0 +1,186 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["jsonProtocol", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [btree_gin, uuid_ossp(map: "uuid-ossp")]
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  emailVerified DateTime?      @map("email_verified")
+  image         String?
+  password      String?
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  accounts      Account[]
+  documents     JsonDocument[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model JsonDocument {
+  id          String          @id @default(uuid()) @db.Uuid
+  shareId     String          @unique @default(cuid()) @map("share_id")
+  title       String?
+  content     Json
+  metadata    Json?
+  size        BigInt
+  nodeCount   Int             @default(0) @map("node_count")
+  maxDepth    Int             @default(0) @map("max_depth")
+  complexity  String          @default("Low")
+  version     Int             @default(1)
+  checksum    String?
+  userId      String?         @map("user_id")
+  expiresAt   DateTime?       @map("expires_at") @db.Timestamptz(6)
+  isAnonymous Boolean         @default(true) @map("is_anonymous")
+  visibility  String          @default("private")
+  publishedAt DateTime?       @map("published_at")
+  description String?
+  richContent String?         @db.Text @map("rich_content")
+  tags        String[]        @default([])
+  category    String?
+  viewCount   Int             @default(0) @map("view_count")
+  slug        String?         @unique
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  accessedAt  DateTime        @default(now()) @map("accessed_at") @db.Timestamptz(6)
+  analytics   JsonAnalytics[]
+  chunks      JsonChunk[]
+  user        User?           @relation(fields: [userId], references: [id])
+
+  @@index([size])
+  @@index([complexity])
+  @@index([createdAt])
+  @@index([shareId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isAnonymous])
+  @@index([content], map: "json_content_gin", type: Gin)
+  @@index([visibility])
+  @@index([publishedAt])
+  @@index([viewCount])
+  @@index([visibility, publishedAt])
+  @@index([visibility, createdAt])
+  @@index([visibility, viewCount])
+  @@index([tags], type: Gin)
+  @@index([category])
+  @@map("json_documents")
+}
+
+model JsonChunk {
+  id         String       @id @default(uuid()) @db.Uuid
+  documentId String       @map("document_id") @db.Uuid
+  chunkIndex Int          @map("chunk_index")
+  content    Json
+  size       Int
+  path       String
+  checksum   String
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  document   JsonDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId, chunkIndex])
+  @@index([path])
+  @@map("json_chunks")
+}
+
+model JsonAnalytics {
+  id          String       @id @default(uuid()) @db.Uuid
+  documentId  String       @map("document_id") @db.Uuid
+  parseTime   Int          @map("parse_time")
+  renderTime  Int?         @map("render_time")
+  memoryUsage BigInt?      @map("memory_usage")
+  viewCount   Int          @default(1) @map("view_count")
+  shareCount  Int          @default(0) @map("share_count")
+  lastViewed  DateTime     @default(now()) @map("last_viewed") @db.Timestamptz(6)
+  userAgent   String?      @map("user_agent")
+  ipHash      String?      @map("ip_hash")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  document    JsonDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([lastViewed])
+  @@map("json_analytics")
+}
+
+model JsonSession {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @unique @map("session_id")
+  documentId   String?  @map("document_id") @db.Uuid
+  connectionId String?  @map("connection_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  cursor       Json?
+  selection    Json?
+  viewport     Json?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  expiresAt    DateTime @map("expires_at") @db.Timestamptz(6)
+
+  @@index([sessionId])
+  @@index([documentId])
+  @@index([expiresAt])
+  @@map("json_sessions")
+}
+
+model SeoSettings {
+  id          String   @id @default(cuid())
+  pageKey     String   @unique @map("page_key") // e.g., 'home', 'library', 'edit'
+  title       String
+  description String   @db.Text
+  keywords    String[] @default([])
+  ogImage     String?  @map("og_image")
+  isActive    Boolean  @default(true) @map("is_active")
+  priority    Int      @default(100) // For A/B testing later
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([pageKey])
+  @@index([isActive])
+  @@map("seo_settings")
+}
