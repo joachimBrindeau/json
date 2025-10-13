@@ -9,6 +9,9 @@ import {
   createPerformanceMonitor,
   JsonCache,
 } from '@/lib/json';
+import { logger } from '@/lib/logger';
+import { success, created, badRequest, error, internalServerError } from '@/lib/api/responses';
+import { config } from '@/lib/config';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -26,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { title, content } = body;
 
     if (!content) {
-      return NextResponse.json({ error: 'No content provided' }, { status: 400 });
+      return badRequest('No content provided');
     }
 
     // Validate JSON content
@@ -34,19 +37,15 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
+      return badRequest('Invalid JSON format');
     }
 
     // Convert back to string for storage
     const jsonString = JSON.stringify(parsedContent, null, 2);
 
-    // Check size limit (max 2GB for very large JSONs)
-    const maxSize = parseInt(process.env.MAX_JSON_SIZE_MB || '2048') * 1024 * 1024;
-    if (jsonString.length > maxSize) {
-      return NextResponse.json(
-        { error: `JSON size exceeds ${maxSize / (1024 * 1024)}MB limit` },
-        { status: 413 }
-      );
+    // Check size limit using centralized config
+    if (jsonString.length > config.performance.maxJsonSizeBytes) {
+      return error(`JSON size exceeds ${config.performance.maxJsonSizeMB}MB limit`, { status: 413 });
     }
 
     // Generate content hash for deduplication
@@ -61,11 +60,10 @@ export async function POST(request: NextRequest) {
     if (existingDoc) {
       // If document exists and is public, or belongs to the same user, return it
       if (existingDoc.visibility === 'public' || existingDoc.userId === userId) {
-        return NextResponse.json({
+        return success({
           shareId: existingDoc.shareId,
-          message: 'Document already exists',
           isExisting: true
-        });
+        }, { message: 'Document already exists' });
       }
     }
 
@@ -112,21 +110,17 @@ export async function POST(request: NextRequest) {
 
     monitor.end('json_create_success');
 
-    return NextResponse.json({
+    return created({
       shareId: document.shareId,
       title: document.title,
       size: Number(document.size),
-      analysis,
-      message: 'JSON document created successfully'
-    });
+      analysis
+    }, { message: 'JSON document created successfully' });
 
   } catch (error) {
     monitor.end('json_create_error');
-    console.error('JSON creation error:', error);
-    
-    return NextResponse.json(
-      { error: 'Failed to create JSON document' },
-      { status: 500 }
-    );
+    logger.error({ err: error }, 'JSON creation error');
+
+    return internalServerError('Failed to create JSON document');
   }
 }

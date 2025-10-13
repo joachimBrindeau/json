@@ -4,6 +4,8 @@ import { useSession, signOut, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLibraryStats } from '@/hooks/use-library-stats';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +15,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { User, Mail, Calendar, FileJson, Download, LogOut, Settings, Trash2, Link2, Plus, Github, Chrome, Key } from 'lucide-react';
 import { DebugAvatar } from '@/components/debug/debug-avatar';
+
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -41,14 +45,11 @@ export default function ProfilePage() {
 
   const fetchLinkedAccounts = async () => {
     try {
-      const response = await fetch('/api/user/accounts');
-      if (response.ok) {
-        const data = await response.json();
-        setLinkedAccounts(data.accounts || []);
-        setHasPassword(data.hasPassword || false);
-      }
+      const data = await apiClient.get<{ accounts: any[]; hasPassword: boolean }>('/api/user/accounts');
+      setLinkedAccounts(data.accounts || []);
+      setHasPassword(data.hasPassword || false);
     } catch (error) {
-      console.error('Failed to fetch linked accounts:', error);
+      logger.error({ err: error, userId: session?.user?.id }, 'Failed to fetch linked accounts');
     } finally {
       setLoadingAccounts(false);
     }
@@ -96,7 +97,7 @@ export default function ProfilePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error({ err: error, totalJsons, totalSize }, 'Export data failed');
       // Could add toast notification here
     }
   };
@@ -108,18 +109,12 @@ export default function ProfilePage() {
   const confirmDeleteAccount = async () => {
     try {
       // Call the delete account API
-      const response = await fetch('/api/auth/delete-account', {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
+      await apiClient.delete('/api/auth/delete-account');
 
       // Sign out and redirect to home
       await signOut({ callbackUrl: '/' });
     } catch (error) {
-      console.error('Failed to delete account:', error);
+      logger.error({ err: error, userId: session?.user?.id }, 'Failed to delete account');
       alert('Failed to delete account. Please try again.');
     } finally {
       setShowDeleteDialog(false);
@@ -341,7 +336,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Debug Avatar Component */}
-        {process.env.NODE_ENV === 'development' && (
+        {isDevelopment && (
           <div className="mt-6">
             <DebugAvatar />
           </div>

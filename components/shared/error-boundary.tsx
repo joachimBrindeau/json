@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, RefreshCw, Bug, ChevronDown, ChevronUp } from 'lucide-react';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 
 interface Props {
   children: ReactNode;
@@ -73,11 +75,12 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo: enhancedErrorInfo });
 
     // Log error with enhanced context
-    console.group(`🐛 ErrorBoundary caught an error [${this.state.errorId}]`);
-    console.error('Error:', error);
-    console.error('Error Info:', enhancedErrorInfo);
-    console.error('Component Stack:', errorInfo.componentStack);
-    console.groupEnd();
+    logger.error({
+      err: error,
+      errorId: this.state.errorId,
+      errorInfo: enhancedErrorInfo,
+      componentStack: errorInfo.componentStack,
+    }, 'ErrorBoundary caught an error');
 
     // Call custom error handler
     this.props.onError?.(error, errorInfo);
@@ -122,21 +125,20 @@ export class ErrorBoundary extends Component<Props, State> {
         level: errorInfo.level,
       };
 
-      // Example: Send to logging service
-      console.log('Error reported:', errorReport);
-      
+      logger.info({ errorReport }, 'Error reported');
+
       // In a real app, you might send this to Sentry, LogRocket, etc.
-      // await fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorReport) });
+      // await apiClient.post('/api/errors', errorReport);
     } catch (reportingError) {
-      console.error('Failed to report error:', reportingError);
+      logger.error({ err: reportingError }, 'Failed to report error');
     }
   };
 
   private handleRetry = () => {
     const { maxRetries = 3, retryDelay = 1000 } = this.props;
-    
+
     if (this.state.retryCount >= maxRetries) {
-      console.warn('Max retries reached for ErrorBoundary');
+      logger.warn({ maxRetries, retryCount: this.state.retryCount }, 'Max retries reached for ErrorBoundary');
       return;
     }
 

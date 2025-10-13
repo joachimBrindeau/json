@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getAllSEOSettings, upsertSEOSettings } from '@/lib/seo/database';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
+import { success, unauthorized, badRequest, internalServerError } from '@/lib/api/responses';
+import { config } from '@/lib/config';
 
 const seoUpdateSchema = z.object({
   pageKey: z.string().min(1),
@@ -16,37 +19,36 @@ const seoUpdateSchema = z.object({
 
 // GET - Fetch all SEO settings
 export async function GET() {
-  console.log('SEO API endpoint called');
-  
+  logger.info('SEO API endpoint called');
+
   try {
-    console.log('Attempting to get SEO settings...');
+    logger.info('Attempting to get SEO settings...');
     const settings = await getAllSEOSettings();
-    console.log(`Retrieved ${settings.length} SEO settings`);
-    
-    return NextResponse.json({ 
-      success: true,
+    logger.info({ settingsCount: settings.length }, `Retrieved ${settings.length} SEO settings`);
+
+    return success({
       settings,
       message: `Found ${settings.length} SEO settings`,
-      databaseAvailable: !!process.env.DATABASE_URL
+      databaseAvailable: !!config.database.url
     });
   } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json({ 
+    logger.error({ err: error, databaseAvailable: !!config.database.url }, 'API Error');
+    return success({
       success: false,
-      error: 'Failed to fetch SEO settings', 
+      error: 'Failed to fetch SEO settings',
       details: error instanceof Error ? error.message : 'Unknown error',
       settings: [],
-      databaseAvailable: !!process.env.DATABASE_URL
-    }, { status: 200 });
+      databaseAvailable: !!config.database.url
+    });
   }
 }
 
 // POST - Update or create SEO settings
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    return unauthorized('Authentication required');
   }
 
   // In production, add admin role check here
@@ -67,13 +69,13 @@ export async function POST(request: NextRequest) {
       priority: data.priority,
     });
 
-    return NextResponse.json({ settings });
+    return success({ settings });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      return badRequest(error.issues[0].message);
     }
 
-    console.error('Failed to update SEO settings:', error);
-    return NextResponse.json({ error: 'Failed to update SEO settings' }, { status: 500 });
+    logger.error({ err: error, userId: session?.user?.id }, 'Failed to update SEO settings');
+    return internalServerError('Failed to update SEO settings');
   }
 }

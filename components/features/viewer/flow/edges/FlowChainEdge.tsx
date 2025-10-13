@@ -40,4 +40,3 @@ const ChainEdgeComponent = ({
 };
 
 export const FlowChainEdge = memo(ChainEdgeComponent);
-export const ChainEdge = FlowChainEdge;

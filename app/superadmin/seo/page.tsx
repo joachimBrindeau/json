@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,19 +33,10 @@ export default function SEOAdminPage() {
   const loadSEOSettings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/seo');
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data.settings || []);
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to load SEO settings',
-          variant: 'destructive',
-        });
-      }
+      const data = await apiClient.get<{ settings: SEOSettings[] }>('/api/admin/seo');
+      setSettings(data.settings || []);
     } catch (error) {
-      console.error('Failed to load SEO settings:', error);
+      logger.error({ err: error }, 'Failed to load SEO settings');
       toast({
         title: 'Error',
         description: 'Failed to load SEO settings',
@@ -61,33 +54,18 @@ export default function SEOAdminPage() {
   const updateSEOSetting = async (pageKey: string, data: Partial<SEOSettings>) => {
     try {
       setSaving(pageKey);
-      const response = await fetch('/api/admin/seo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ pageKey, ...data }),
-      });
+      await apiClient.post('/api/admin/seo', { pageKey, ...data });
 
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: `SEO settings updated for ${pageKey}`,
-        });
-        loadSEOSettings(); // Reload to get updated data
-      } else {
-        const error = await response.json();
-        toast({
-          title: 'Error',
-          description: error.error || 'Failed to update SEO settings',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Success',
+        description: `SEO settings updated for ${pageKey}`,
+      });
+      loadSEOSettings(); // Reload to get updated data
     } catch (error) {
-      console.error('Failed to update SEO settings:', error);
+      logger.error({ err: error, pageKey }, 'Failed to update SEO settings');
       toast({
         title: 'Error',
-        description: 'Failed to update SEO settings',
+        description: error instanceof Error ? error.message : 'Failed to update SEO settings',
         variant: 'destructive',
       });
     } finally {

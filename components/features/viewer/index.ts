@@ -3,19 +3,20 @@
  * Clean, flat structure with hierarchical naming
  *
  * Main Components:
- * - Viewer: Primary JSON viewer with tree/raw/flow modes (auto-optimizing)
+ * - Viewer: Primary JSON viewer with tree/raw/flow/list modes (auto-optimizing)
  * - ViewerCompare: Side-by-side JSON comparison
  *
  * Individual Modes (advanced usage):
  * - ViewerTree: Tree view mode
  * - ViewerRaw: Raw JSON mode
  * - ViewerFlow: Flow diagram mode
+ * - ViewerList: Flat list view with search
  *
  * Utilities:
  * - ViewerActions: Share/embed/export buttons
  *
  * Types:
- * - ViewMode: 'tree' | 'raw' | 'flow'
+ * - ViewMode: 'tree' | 'raw' | 'flow' | 'list'
  * - JsonNode: Tree node structure
  */
 
@@ -27,6 +28,7 @@ export { ViewerCompare } from './ViewerCompare';
 export { ViewerTree } from './ViewerTree';
 export { ViewerRaw } from './ViewerRaw';
 export { ViewerFlow } from './ViewerFlow';
+export { ViewerList } from './ViewerList';
 
 // Utilities
 export { ViewerActions } from './ViewerActions';

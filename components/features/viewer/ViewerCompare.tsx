@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  GitCompare, 
-  Plus, 
-  Minus, 
-  Edit, 
+import {
+  GitCompare,
+  Plus,
+  Minus,
+  Edit,
   RotateCcw,
   Download,
   Zap,
@@ -19,9 +19,9 @@ import {
   Link,
   Unlink
 } from 'lucide-react';
-import { 
-  compareJson, 
-  DiffResult, 
+import {
+  compareJson,
+  DiffResult,
   DiffOperation,
   generateDiffSummary,
   formatDiffOperation
@@ -33,6 +33,8 @@ import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json';
 import { defineMonacoThemes } from '@/lib/editor/themes';
+import { logger } from '@/lib/logger';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 // Monaco editor with loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -98,11 +100,11 @@ export function ViewerCompare({
   // Generate diff
   const diffResult = useMemo((): DiffResult | null => {
     if (!parsedJson1 || !parsedJson2) return null;
-    
+
     try {
       return compareJson(parsedJson1, parsedJson2);
     } catch (error) {
-      console.error('Diff generation failed:', error);
+      logger.error({ err: error }, 'Diff generation failed in ViewerCompare');
       return null;
     }
   }, [parsedJson1, parsedJson2]);
@@ -588,6 +590,15 @@ export function ViewerCompare({
       </div>
 
       {/* Results content */}
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="p-4 text-center">
+            <p className="text-sm text-muted-foreground">Failed to render comparison results</p>
+          </div>
+        }
+        enableRetry
+      >
       <div className="flex-1 overflow-hidden p-4">
         {!diffResult ? (
           <Alert className="max-w-2xl mx-auto">
@@ -617,6 +628,7 @@ export function ViewerCompare({
           </ScrollArea>
         )}
       </div>
+      </ErrorBoundary>
     </div>
   );
 }

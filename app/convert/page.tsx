@@ -6,10 +6,10 @@ import { UnifiedButton } from '@/components/ui/unified-button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
-import { 
-  ArrowRightLeft, 
-  Copy, 
-  Download, 
+import {
+  ArrowRightLeft,
+  Copy,
+  Download,
   FileJson,
   FileCode,
   FileSpreadsheet,
@@ -25,6 +25,7 @@ import dynamic from 'next/dynamic';
 import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
+import { logger } from '@/lib/logger';
 
 // Monaco editor with loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -274,7 +275,7 @@ export default function ConvertPage() {
           return JSON.parse(content);
       }
     } catch (error) {
-      console.error('Parse error:', error);
+      logger.error({ err: error, format: actualFormat }, 'Parse error');
       return null;
     }
   };

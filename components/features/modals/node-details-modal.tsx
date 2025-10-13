@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 interface NodeDetailsModalProps {
   open: boolean;
@@ -228,6 +229,11 @@ const StringRenderer = memo(({ value }: { value: string }) => {
   }, [value]);
 
   return (
+    <ErrorBoundary
+      level="widget"
+      fallback={<div className="text-xs text-muted-foreground">Failed to render string value</div>}
+      compactMode
+    >
     <div className="space-y-3">
       {/* Main value display */}
       <Card>
@@ -405,12 +411,18 @@ const StringRenderer = memo(({ value }: { value: string }) => {
         )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 });
 
 StringRenderer.displayName = 'StringRenderer';
 
 const NumberRenderer = memo(({ value }: { value: number }) => (
+  <ErrorBoundary
+    level="widget"
+    fallback={<div className="text-xs text-muted-foreground">Failed to render number value</div>}
+    compactMode
+  >
   <Card>
     <CardContent className="p-3">
       <div className="flex items-center justify-between gap-2">
@@ -430,11 +442,17 @@ const NumberRenderer = memo(({ value }: { value: number }) => (
       </div>
     </CardContent>
   </Card>
+  </ErrorBoundary>
 ));
 
 NumberRenderer.displayName = 'NumberRenderer';
 
 const BooleanRenderer = memo(({ value }: { value: boolean }) => (
+  <ErrorBoundary
+    level="widget"
+    fallback={<div className="text-xs text-muted-foreground">Failed to render boolean value</div>}
+    compactMode
+  >
   <Card>
     <CardContent className="p-3">
       <div className="flex items-center justify-between gap-2">
@@ -448,6 +466,7 @@ const BooleanRenderer = memo(({ value }: { value: boolean }) => (
       </div>
     </CardContent>
   </Card>
+  </ErrorBoundary>
 ));
 
 BooleanRenderer.displayName = 'BooleanRenderer';
@@ -456,6 +475,11 @@ const ObjectRenderer = memo(({ value, childCount }: { value: object; childCount:
   const jsonString = JSON.stringify(value, null, 2);
 
   return (
+    <ErrorBoundary
+      level="widget"
+      fallback={<div className="text-xs text-muted-foreground">Failed to render object value</div>}
+      compactMode
+    >
     <div className="space-y-3">
       <Card>
         <CardHeader className="pb-2">
@@ -479,6 +503,7 @@ const ObjectRenderer = memo(({ value, childCount }: { value: object; childCount:
         </CardContent>
       </Card>
     </div>
+    </ErrorBoundary>
   );
 });
 
@@ -488,6 +513,11 @@ const ArrayRenderer = memo(({ value, childCount }: { value: any[]; childCount: n
   const jsonString = JSON.stringify(value, null, 2);
 
   return (
+    <ErrorBoundary
+      level="widget"
+      fallback={<div className="text-xs text-muted-foreground">Failed to render array value</div>}
+      compactMode
+    >
     <div className="space-y-3">
       <Card>
         <CardHeader className="pb-2">
@@ -511,6 +541,7 @@ const ArrayRenderer = memo(({ value, childCount }: { value: any[]; childCount: n
         </CardContent>
       </Card>
     </div>
+    </ErrorBoundary>
   );
 });
 

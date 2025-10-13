@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireSuperAdmin } from '@/lib/auth/admin'
 import { prisma } from '@/lib/db'
+import { logger } from '@/lib/logger'
+import { success, forbidden, internalServerError } from '@/lib/api/responses'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -38,24 +40,18 @@ export async function GET(_request: NextRequest) {
       isActive: user._count.documents > 0 // Consider users with documents as active
     }))
 
-    return NextResponse.json({
+    return success({
       users: enrichedUsers,
       total: users.length
     })
 
   } catch (error: unknown) {
-    console.error('Admin users API error:', error)
-    
+    logger.error({ err: error }, 'Admin users API error')
+
     if (error instanceof Error && error.message === 'Unauthorized: Superadmin access required') {
-      return NextResponse.json(
-        { error: 'Unauthorized access' },
-        { status: 403 }
-      )
+      return forbidden('Unauthorized access')
     }
 
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+    return internalServerError('Failed to fetch users')
   }
 }

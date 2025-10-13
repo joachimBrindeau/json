@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Copy, Check, Globe, Lock, Users, Eye, X, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTagManager } from '@/hooks/use-tag-manager';
 import {
   TwitterShareButton,
   FacebookShareButton,
@@ -39,10 +40,11 @@ import {
 } from 'react-share';
 import {
   normalizeTag,
-  validateTag,
   getCommonTagsForCategory,
-  suggestTags,
 } from '@/lib/tags/tag-utils';
+import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 
 interface ShareModalProps {
   open: boolean;
@@ -52,15 +54,6 @@ interface ShareModalProps {
   currentVisibility?: 'public' | 'private';
   onUpdated?: (title?: string) => void;
 }
-
-const CATEGORIES = [
-  'API Response',
-  'Configuration',
-  'Database Schema',
-  'Test Data',
-  'Template',
-  'Example',
-] as const;
 
 export function ShareModal({
   open, 
@@ -83,16 +76,14 @@ export function ShareModal({
     category: '',
     tags: [] as string[],
   });
-  
-  // Tag handling
-  const [tagInput, setTagInput] = useState('');
-  const [tagValidation, setTagValidation] = useState<{
-    normalized?: string;
-    errors: string[];
-    warnings: string[];
-  }>({ errors: [], warnings: [] });
-  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Tag management hook
+  const tagManager = useTagManager({
+    selectedTags: formData.tags,
+    onTagsChange: (tags) => setFormData((prev) => ({ ...prev, tags })),
+    category: formData.category,
+    maxTags: 10,
+  });
 
   // Update form when modal opens with current data
   useEffect(() => {
@@ -136,7 +127,7 @@ export function ShareModal({
         description: 'Share link copied to clipboard',
       });
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error({ err, shareUrl }, 'Failed to copy share link to clipboard');
       toast({
         title: 'Error',
         description: 'Failed to copy link',
@@ -145,121 +136,6 @@ export function ShareModal({
     }
   }, [shareUrl, toast]);
 
-  // Fetch existing tags for suggestions
-  const fetchExistingTags = useCallback(
-    async (query: string) => {
-      try {
-        const params = new URLSearchParams();
-        if (query) params.set('q', query);
-        if (formData.category) params.set('category', formData.category);
-        params.set('limit', '10');
-
-        const response = await fetch(`/api/tags?${params}`);
-        if (response.ok) {
-          const data = await response.json();
-          return data.tags.map((t: { tag: string }) => t.tag);
-        }
-      } catch (error) {
-        console.error('Failed to fetch tags:', error);
-      }
-      return [];
-    },
-    [formData.category]
-  );
-
-  // Validate tag input in real-time
-  useEffect(() => {
-    if (!tagInput) {
-      setTagValidation({ errors: [], warnings: [] });
-      setShowSuggestions(false);
-      return;
-    }
-
-    const validation = validateTag(tagInput, formData.tags);
-    setTagValidation(validation);
-
-    // Fetch suggestions from existing tags
-    if (tagInput.length >= 2) {
-      fetchExistingTags(tagInput).then((tags) => {
-        if (tags.length > 0) {
-          setSuggestedTags(tags);
-          setShowSuggestions(true);
-        } else {
-          // Fall back to category-based suggestions
-          const categoryTags = getCommonTagsForCategory(formData.category);
-          const suggestions = suggestTags(tagInput, categoryTags, 5);
-          setSuggestedTags(suggestions);
-          setShowSuggestions(suggestions.length > 0);
-        }
-      });
-    }
-  }, [tagInput, formData.tags, formData.category, fetchExistingTags]);
-
-  const addTag = useCallback(() => {
-    if (!tagInput.trim() || formData.tags.length >= 10) return;
-
-    const validation = validateTag(tagInput, formData.tags);
-
-    if (validation.isValid && validation.normalized) {
-      // Check if the normalized version already exists
-      const normalizedTags = formData.tags.map((t) => normalizeTag(t));
-      if (normalizedTags.includes(validation.normalized)) {
-        toast({
-          title: 'Duplicate tag',
-          description: `Tag "${validation.normalized}" already exists`,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, validation.normalized!],
-      }));
-      setTagInput('');
-      setTagValidation({ errors: [], warnings: [] });
-      setShowSuggestions(false);
-    } else {
-      // Show validation errors
-      toast({
-        title: 'Invalid tag',
-        description: validation.errors[0],
-        variant: 'destructive',
-      });
-    }
-  }, [tagInput, formData.tags, toast]);
-
-  const addSuggestedTag = useCallback(
-    (tag: string) => {
-      const normalizedTags = formData.tags.map((t) => normalizeTag(t));
-      if (!normalizedTags.includes(tag) && formData.tags.length < 10) {
-        setFormData((prev) => ({
-          ...prev,
-          tags: [...prev.tags, tag],
-        }));
-      }
-      setTagInput('');
-      setShowSuggestions(false);
-    },
-    [formData.tags]
-  );
-
-  const removeTag = useCallback((tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  }, []);
-
-  const handleKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addTag();
-      }
-    },
-    [addTag]
-  );
 
   const handleSave = useCallback(async () => {
     if (isPublic && !formData.title.trim()) {
@@ -300,15 +176,7 @@ export function ShareModal({
       
       if (isPublic) {
         // Publish to public library
-        const response = await fetch(`/api/json/${shareId}/publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to publish');
-        }
+        await apiClient.post(`/api/json/${shareId}/publish`, formData);
 
         toast({
           title: 'Published successfully!',
@@ -316,13 +184,7 @@ export function ShareModal({
         });
       } else {
         // Make private
-        const response = await fetch(`/api/json/${shareId}/publish`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to make private');
-        }
+        await apiClient.delete(`/api/json/${shareId}/publish`);
 
         toast({
           title: 'Made private',
@@ -482,7 +344,7 @@ export function ShareModal({
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((category) => (
+                    {DOCUMENT_CATEGORIES.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -502,27 +364,27 @@ export function ShareModal({
                       <div className="flex-1 relative">
                         <Input
                           id="tags"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          onFocus={() => setShowSuggestions(suggestedTags.length > 0)}
+                          value={tagManager.tagInput}
+                          onChange={(e) => tagManager.setTagInput(e.target.value)}
+                          onKeyDown={tagManager.handleKeyDown}
+                          onFocus={() => tagManager.setShowSuggestions(tagManager.suggestedTags.length > 0)}
                           placeholder="Add tags... (press Enter)"
                           maxLength={30}
                           className={`pr-8 ${
-                            tagValidation.errors.length > 0
+                            tagManager.tagValidation.errors.length > 0
                               ? 'border-red-500 focus:ring-red-500'
-                              : tagValidation.warnings.length > 0
+                              : tagManager.tagValidation.warnings.length > 0
                                 ? 'border-yellow-500 focus:ring-yellow-500'
                                 : ''
                           }`}
                         />
-                        {tagInput && (
+                        {tagManager.tagInput && (
                           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            {tagValidation.errors.length > 0 ? (
+                            {tagManager.tagValidation.errors.length > 0 ? (
                               <AlertCircle className="h-4 w-4 text-red-500" />
-                            ) : tagValidation.warnings.length > 0 ? (
+                            ) : tagManager.tagValidation.warnings.length > 0 ? (
                               <Info className="h-4 w-4 text-yellow-500" />
-                            ) : tagValidation.normalized ? (
+                            ) : tagManager.tagValidation.normalized ? (
                               <CheckCircle2 className="h-4 w-4 text-green-500" />
                             ) : null}
                           </div>
@@ -531,11 +393,11 @@ export function ShareModal({
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={addTag}
+                        onClick={tagManager.addTag}
                         disabled={
-                          !tagInput.trim() ||
+                          !tagManager.tagInput.trim() ||
                           formData.tags.length >= 10 ||
-                          tagValidation.errors.length > 0
+                          tagManager.tagValidation.errors.length > 0
                         }
                       >
                         Add
@@ -543,30 +405,30 @@ export function ShareModal({
                     </div>
 
                     {/* Tag validation feedback */}
-                    {tagInput &&
-                      tagValidation.normalized &&
-                      tagInput !== tagValidation.normalized && (
+                    {tagManager.tagInput &&
+                      tagManager.tagValidation.normalized &&
+                      tagManager.tagInput !== tagManager.tagValidation.normalized && (
                         <div className="text-xs text-blue-600 mt-1">
                           Will be saved as:{' '}
-                          <span className="font-mono">{tagValidation.normalized}</span>
+                          <span className="font-mono">{tagManager.tagValidation.normalized}</span>
                         </div>
                       )}
-                    {tagValidation.errors.length > 0 && (
-                      <div className="text-xs text-red-500 mt-1">{tagValidation.errors[0]}</div>
+                    {tagManager.tagValidation.errors.length > 0 && (
+                      <div className="text-xs text-red-500 mt-1">{tagManager.tagValidation.errors[0]}</div>
                     )}
-                    {tagValidation.warnings.length > 0 && tagValidation.errors.length === 0 && (
-                      <div className="text-xs text-yellow-600 mt-1">{tagValidation.warnings[0]}</div>
+                    {tagManager.tagValidation.warnings.length > 0 && tagManager.tagValidation.errors.length === 0 && (
+                      <div className="text-xs text-yellow-600 mt-1">{tagManager.tagValidation.warnings[0]}</div>
                     )}
 
                     {/* Tag suggestions dropdown */}
-                    {showSuggestions && suggestedTags.length > 0 && (
+                    {tagManager.showSuggestions && tagManager.suggestedTags.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
                         <div className="py-1">
                           <div className="px-3 py-1 text-xs text-gray-500">Suggested tags:</div>
-                          {suggestedTags.map((tag) => (
+                          {tagManager.suggestedTags.map((tag) => (
                             <button
                               key={tag}
-                              onClick={() => addSuggestedTag(tag)}
+                              onClick={() => tagManager.addSuggestedTag(tag)}
                               className="w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 focus:bg-gray-100"
                             >
                               {tag}
@@ -592,7 +454,7 @@ export function ShareModal({
                               key={tag}
                               variant="outline"
                               className="cursor-pointer hover:bg-gray-100 text-xs"
-                              onClick={() => addSuggestedTag(tag)}
+                              onClick={() => tagManager.addSuggestedTag(tag)}
                             >
                               + {tag}
                             </Badge>
@@ -608,14 +470,14 @@ export function ShareModal({
                         <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                           {tag}
                           <div
-                            onClick={() => removeTag(tag)}
+                            onClick={() => tagManager.removeTag(tag)}
                             className="ml-1 hover:bg-gray-300 rounded-full p-0.5 cursor-pointer"
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                removeTag(tag);
+                                tagManager.removeTag(tag);
                               }
                             }}
                           >

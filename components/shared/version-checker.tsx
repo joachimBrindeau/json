@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export function VersionChecker() {
   useEffect(() => {
@@ -16,13 +17,13 @@ export function VersionChecker() {
         const storedVersion = localStorage.getItem('app-version');
         
         if (storedVersion && storedVersion !== APP_VERSION) {
-          console.log(`Version update detected: ${storedVersion} -> ${APP_VERSION}`);
-          
+          logger.info({ oldVersion: storedVersion, newVersion: APP_VERSION }, 'Version update detected');
+
           // Clear caches if available
           if ('caches' in window) {
             caches.keys().then(names => {
               Promise.all(names.map(name => caches.delete(name)));
-            }).catch(err => console.error('Cache clear error:', err));
+            }).catch(err => logger.error({ err }, 'Cache clear error'));
           }
           
           // Update stored version
@@ -37,7 +38,7 @@ export function VersionChecker() {
           localStorage.setItem('app-version', APP_VERSION);
         }
       } catch (error) {
-        console.error('Version check error:', error);
+        logger.error({ err: error }, 'Version check error');
       }
     };
 

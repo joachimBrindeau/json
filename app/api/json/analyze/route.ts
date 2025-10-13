@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeJsonStream } from '@/lib/json';
+import { logger } from '@/lib/logger';
+import { success, badRequest, internalServerError } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -10,7 +12,7 @@ export async function POST(request: NextRequest) {
     const { content, options = {} } = body;
 
     if (!content) {
-      return NextResponse.json({ error: 'No JSON content provided' }, { status: 400 });
+      return badRequest('No JSON content provided');
     }
 
     // Validate JSON
@@ -18,7 +20,7 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
+      return badRequest('Invalid JSON format');
     }
 
     // Perform analysis
@@ -63,8 +65,7 @@ export async function POST(request: NextRequest) {
       caching: analysis.size > 100 * 1024,
     };
 
-    return NextResponse.json({
-      success: true,
+    return success({
       analysis,
       recommendations,
       suggestions,
@@ -75,15 +76,11 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('JSON analysis error:', error);
+    logger.error({ err: error }, 'JSON analysis error');
 
-    return NextResponse.json(
-      {
-        error: 'Failed to analyze JSON',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    return internalServerError('Failed to analyze JSON', {
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
 

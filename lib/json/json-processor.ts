@@ -3,6 +3,8 @@ import { Transform, Readable } from 'stream';
 import { JSONPath } from 'jsonpath-plus';
 import fastJsonStringify from 'fast-json-stringify';
 import { prisma } from './db';
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 // Fast JSON stringify schema for common structures
 const stringify = fastJsonStringify({
@@ -44,7 +46,7 @@ export async function analyzeJsonStream(
     findLargeArrays?: boolean;
   } = {}
 ): Promise<JsonAnalysisResult> {
-  const { maxChunkSize = 1024 * 1024, trackPaths = true, findLargeArrays = true } = options;
+  const { maxChunkSize = config.performance.jsonStreamingChunkSize, trackPaths = true, findLargeArrays = true } = options;
 
   let parsed: any;
   if (typeof jsonContent === 'string') {
@@ -114,7 +116,7 @@ export async function analyzeJsonStream(
 }
 
 // Chunk large JSON for streaming
-export function chunkJsonData(jsonData: any, maxChunkSize: number = 1024 * 1024): JsonChunkInfo[] {
+export function chunkJsonData(jsonData: any, maxChunkSize: number = config.performance.jsonStreamingChunkSize): JsonChunkInfo[] {
   const chunks: JsonChunkInfo[] = [];
 
   function processNode(obj: any, path: string): boolean {
@@ -262,7 +264,7 @@ export class JsonCache {
       const cached = await redis.get(this.CACHE_PREFIX + key);
       return cached ? JSON.parse(cached) : null;
     } catch (error) {
-      console.warn('Redis cache get failed:', error);
+      logger.warn({ err: error, key }, 'Redis cache get failed');
       return null;
     }
   }
@@ -273,7 +275,7 @@ export class JsonCache {
       if (!redis) return;
       await redis.setex(this.CACHE_PREFIX + key, ttl, JSON.stringify(data));
     } catch (error) {
-      console.warn('Redis cache set failed:', error);
+      logger.warn({ err: error, key, ttl }, 'Redis cache set failed');
     }
   }
 
@@ -284,7 +286,7 @@ export class JsonCache {
       const cached = await redis.get(this.ANALYSIS_PREFIX + key);
       return cached ? JSON.parse(cached) : null;
     } catch (error) {
-      console.warn('Redis analysis cache get failed:', error);
+      logger.warn({ err: error, key }, 'Redis analysis cache get failed');
       return null;
     }
   }
@@ -299,7 +301,7 @@ export class JsonCache {
       if (!redis) return;
       await redis.setex(this.ANALYSIS_PREFIX + key, ttl, JSON.stringify(analysis));
     } catch (error) {
-      console.warn('Redis analysis cache set failed:', error);
+      logger.warn({ err: error, key, ttl }, 'Redis analysis cache set failed');
     }
   }
 
@@ -309,7 +311,7 @@ export class JsonCache {
       if (!redis) return;
       await redis.del(this.CACHE_PREFIX + key, this.ANALYSIS_PREFIX + key);
     } catch (error) {
-      console.warn('Redis cache invalidation failed:', error);
+      logger.warn({ err: error, key }, 'Redis cache invalidation failed');
     }
   }
 }

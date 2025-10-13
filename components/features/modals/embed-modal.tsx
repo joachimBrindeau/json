@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, Eye, Smartphone, Share, Sparkles, Code2, X, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface EmbedModalProps {
   isOpen: boolean;
@@ -135,14 +136,14 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+      logger.error({ err: error, embedType, viewMode }, 'Failed to copy embed code to clipboard');
       toast({
         title: 'Copy failed',
         description: 'Please copy the code manually',
         variant: 'destructive',
       });
     }
-  }, [embedCode, toast]);
+  }, [embedCode, toast, embedType, viewMode]);
 
   const openPreview = useCallback(() => {
     try {

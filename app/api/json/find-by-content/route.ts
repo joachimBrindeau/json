@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import { success, badRequest, internalServerError } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  let contentHash: string | undefined;
+  let content: string | undefined;
+
   try {
-    const session = await getServerSession(authOptions);
-    const { contentHash, content } = await request.json();
+    ({ contentHash, content } = await request.json());
 
     if (!contentHash || !content) {
-      return NextResponse.json({ error: 'Content hash and content are required' }, { status: 400 });
+      return badRequest('Content hash and content are required');
     }
 
     // Parse the content to compare actual JSON structure
@@ -19,7 +24,7 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = JSON.parse(content);
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON content' }, { status: 400 });
+      return badRequest('Invalid JSON content');
     }
 
     // Find documents that belong to the current user (if authenticated) or are anonymous
@@ -53,8 +58,7 @@ export async function POST(request: NextRequest) {
       try {
         // Deep comparison of JSON content
         if (JSON.stringify(doc.content) === JSON.stringify(parsedContent)) {
-          return NextResponse.json({
-            success: true,
+          return success({
             document: {
               id: doc.id,
               shareId: doc.shareId,
@@ -77,18 +81,13 @@ export async function POST(request: NextRequest) {
     }
 
     // No matching document found
-    return NextResponse.json({
-      success: false,
+    return success({
       document: null,
     });
   } catch (error) {
-    console.error('Find by content error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to search for existing content',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    logger.error({ err: error, userId: session?.user?.email, contentHash }, 'Find by content error');
+    return internalServerError('Failed to search for existing content', {
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }

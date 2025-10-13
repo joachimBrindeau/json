@@ -6,6 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDistanceToNow } from 'date-fns'
+import { logger } from '@/lib/logger'
+import { apiClient } from '@/lib/api/client'
+import { useToast } from '@/hooks/use-toast'
+import { ErrorBoundary } from '@/components/shared/error-boundary'
 
 interface User {
   id: string
@@ -19,6 +23,7 @@ interface User {
 }
 
 export function UserList() {
+  const { toast } = useToast()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -30,13 +35,15 @@ export function UserList() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users)
-      }
+      const data = await apiClient.get<{ users: User[] }>('/api/admin/users')
+      setUsers(data.users)
     } catch (error) {
-      console.error('Failed to fetch users:', error)
+      logger.error({ err: error }, 'Failed to fetch users')
+      toast({
+        title: 'Failed to load users',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -94,6 +101,15 @@ export function UserList() {
       </div>
 
       {/* Desktop Table View */}
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Failed to load user table
+          </div>
+        }
+        enableRetry
+      >
       <div className="hidden lg:block rounded-md border">
         <Table>
           <TableHeader>
@@ -146,12 +162,12 @@ export function UserList() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       // TODO: Implement user details modal
-                      console.log('View user details:', user.id)
+                      logger.debug({ userId: user.id }, 'View user details')
                     }}
                   >
                     View
@@ -162,8 +178,18 @@ export function UserList() {
           </TableBody>
         </Table>
       </div>
+      </ErrorBoundary>
 
       {/* Mobile Card View */}
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Failed to load user cards
+          </div>
+        }
+        enableRetry
+      >
       <div className="lg:hidden space-y-4">
         {filteredUsers.map((user) => (
           <div key={user.id} className="border rounded-lg p-4 space-y-3">
@@ -213,12 +239,12 @@ export function UserList() {
                   }
                 </span>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   // TODO: Implement user details modal
-                  console.log('View user details:', user.id)
+                  logger.debug({ userId: user.id }, 'View user details')
                 }}
               >
                 View
@@ -227,6 +253,7 @@ export function UserList() {
           </div>
         ))}
       </div>
+      </ErrorBoundary>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
         <span>Total: {filteredUsers.length} users</span>

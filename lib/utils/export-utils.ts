@@ -2,6 +2,8 @@
  * Export utilities for converting JSON to different formats
  */
 
+import { logger } from '@/lib/logger';
+
 export interface ExportOptions {
   format: 'json' | 'csv' | 'xml' | 'yaml' | 'txt';
   indent?: number;
@@ -221,7 +223,7 @@ export function downloadExportedData(result: ExportResult): void {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Failed to download exported data:', error);
+    logger.error({ err: error, filename: result.filename, mimeType: result.mimeType }, 'Failed to download exported data');
     throw error;
   }
 }

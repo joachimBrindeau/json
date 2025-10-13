@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { analyzeJsonStream, createPerformanceMonitor } from '@/lib/json';
+import { logger } from '@/lib/logger';
+import { success, badRequest, internalServerError } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { jsonData, sourceUrl, extensionId } = await request.json();
 
     if (!jsonData) {
-      return NextResponse.json({ error: 'No JSON data provided' }, { status: 400 });
+      return badRequest('No JSON data provided');
     }
 
     // Parse JSON if it's a string
@@ -19,7 +21,7 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
+      return badRequest('Invalid JSON format');
     }
 
     // Analyze JSON structure
@@ -50,8 +52,19 @@ export async function POST(request: NextRequest) {
 
     const performance = monitor.end();
 
-    return NextResponse.json({
-      success: true,
+    logger.info(
+      {
+        shareId: document.shareId,
+        size: Number(document.size),
+        nodeCount: document.nodeCount,
+        processingTime: performance.duration,
+        extensionId,
+        sourceUrl
+      },
+      'Extension JSON submission successful'
+    );
+
+    return success({
       shareId: document.shareId,
       viewerUrl: `/library/${document.shareId}`,
       stats: {
@@ -62,15 +75,18 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Extension JSON submission error:', error);
-
-    return NextResponse.json(
+    logger.error(
       {
-        error: 'Failed to process JSON data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        err: error,
+        extensionId: request.headers.get('x-extension-id'),
+        sourceUrl: request.headers.get('x-source-url')
       },
-      { status: 500 }
+      'Extension JSON submission error'
     );
+
+    return internalServerError('Failed to process JSON data', {
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
 

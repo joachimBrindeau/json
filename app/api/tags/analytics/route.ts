@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+import { success, unauthorized, internalServerError } from '@/lib/api/responses';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     // Only allow authenticated users to view analytics
     if (!session?.user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return unauthorized('Authentication required');
     }
 
     const { searchParams } = new URL(request.url);
@@ -123,7 +125,7 @@ export async function GET(request: NextRequest) {
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
 
-    return NextResponse.json({
+    return success({
       period: `${days} days`,
       totalTags: tagStats.size,
       topTags: sortedTags.slice(0, 20),
@@ -142,8 +144,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Tag analytics error:', error);
-    return NextResponse.json({ error: 'Failed to fetch tag analytics' }, { status: 500 });
+    logger.error({ err: error, userId: (await getServerSession(authOptions))?.user?.id }, 'Tag analytics error');
+    return internalServerError('Failed to fetch tag analytics');
   }
 }
 

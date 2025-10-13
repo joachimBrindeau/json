@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { success, internalServerError } from '@/lib/api/responses';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -16,8 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     });
 
-    return NextResponse.json({ success: true });
+    return success({});
   } catch {
-    return NextResponse.json({ success: false }, { status: 500 });
+    return internalServerError('Failed to update view count');
   }
 }

@@ -15,17 +15,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Download, 
-  FileJson, 
-  FileSpreadsheet, 
-  FileCode, 
+import {
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  FileCode,
   FileText,
   Settings,
   Info
 } from 'lucide-react';
 import { exportData, downloadExportedData, ExportOptions } from '@/lib/utils/export-utils';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 interface ExportModalProps {
   open: boolean;
@@ -107,7 +109,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
 
       onOpenChange(false);
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error({ err: error, format, minify, includeMetadata }, 'Export operation failed');
       toast({
         title: 'Export failed',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -165,6 +167,16 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
           </DialogTitle>
         </DialogHeader>
 
+        <ErrorBoundary
+          level="component"
+          fallback={
+            <div className="p-6 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load export options</p>
+            </div>
+          }
+          enableRetry
+          maxRetries={2}
+        >
         <div className="space-y-6">
           {/* Data Preview */}
           <div className="bg-gray-50 p-3 rounded-lg">
@@ -290,6 +302,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
             </div>
           </div>
         </div>
+        </ErrorBoundary>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

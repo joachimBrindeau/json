@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
+import { created } from '@/lib/api/responses';
+import { withValidationHandler } from '@/lib/api/middleware';
+import { ConflictError } from '@/lib/utils/app-errors';
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100),
@@ -9,90 +13,63 @@ const signupSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    // Parse and validate request body
-    const body = await request.json();
-    const { name, email, password } = signupSchema.parse(body);
+/**
+ * POST create new user account
+ * Now using withValidationHandler for automatic Zod validation and Prisma error handling
+ */
+export const POST = withValidationHandler(async (request: NextRequest) => {
+  // Parse and validate request body - Zod errors automatically handled by middleware
+  const body = await request.json();
+  const { name, email, password } = signupSchema.parse(body);
 
-    // Normalize email
-    const normalizedEmail = email.toLowerCase().trim();
+  // Normalize email
+  const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingUser) {
+    throw new ConflictError('User with this email already exists', {
+      field: 'email',
     });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 409 } // Conflict status code
-      );
-    }
-
-    // Hash password with a secure salt rounds
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        email: normalizedEmail,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-    });
-
-    console.log(`New user created: ${user.email} (ID: ${user.id})`);
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Account created successfully',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Signup error:', error);
-
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          details: error.issues.map(issue => ({
-            field: issue.path[0],
-            message: issue.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
-    // Handle Prisma database errors
-    if (error && typeof error === 'object' && 'code' in error) {
-      if (error.code === 'P2002') {
-        return NextResponse.json(
-          { error: 'User with this email already exists' },
-          { status: 409 }
-        );
-      }
-    }
-
-    // Generic server error
-    return NextResponse.json(
-      { error: 'Internal server error. Please try again.' },
-      { status: 500 }
-    );
   }
-}
+
+  // Hash password with a secure salt rounds
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  // Create user - Prisma P2002 (unique constraint) errors automatically handled by middleware
+  const user = await prisma.user.create({
+    data: {
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+    },
+  });
+
+  logger.info(
+    {
+      userId: user.id,
+      email: user.email
+    },
+    'New user created'
+  );
+
+  return created(
+    {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    },
+    { message: 'Account created successfully' }
+  );
+});

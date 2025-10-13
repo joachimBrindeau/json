@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
+import { cn } from '@/lib/utils';
 
 type Props = {
   nodeId: string;
   nodeType: NodeType;
-  isHighlight: boolean;
+  isHighlight?: boolean;
   children: React.ReactNode;
 };
 
@@ -17,16 +18,15 @@ const hostClassNames: Record<NodeType, string> = {
     'group relative flex flex-col min-w-nodeMinWidth rounded-lg border-2 border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-nodePadding px-nodePadding hover:border-gray-400 dark:hover:border-gray-600',
 };
 
-const _NodeShell = ({ nodeId, nodeType, isHighlight, children }: Props) => {
-  const baseClassName = hostClassNames[nodeType];
-  const highlightClassName = isHighlight ? '!border-blue-500 dark:!border-blue-400' : '';
-
+const NodeShellComponent = ({ nodeId, nodeType, isHighlight = false, children }: Props) => {
   return (
-    <div className={`${baseClassName} ${highlightClassName}`} data-node-id={nodeId}>
+    <div
+      className={cn(hostClassNames[nodeType], isHighlight && '!border-blue-500 dark:!border-blue-400')}
+      data-node-id={nodeId}
+    >
       {children}
     </div>
   );
 };
 
-export const FlowNodeShell = _NodeShell;
-export const NodeShell = FlowNodeShell;
+export const FlowNodeShell = NodeShellComponent;

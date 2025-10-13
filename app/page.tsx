@@ -410,13 +410,14 @@ export default function HomePage() {
                     {activeTab === 'editor' ? (
                       <JsonEditor />
                     ) : (
-                      <Viewer 
-                        content={currentJson} 
-                        maxNodes={1000} 
+                      <Viewer
+                        content={currentJson}
+                        maxNodes={1000}
                         virtualizeThreshold={100}
                         initialViewMode={activeTab as 'tree' | 'list' | 'flow'}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
+                        enableViewModeSwitch={false}
                       />
                     )}
                   </div>

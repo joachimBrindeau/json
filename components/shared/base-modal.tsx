@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export interface BaseModalProps {
   open: boolean;
@@ -126,10 +127,10 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(({
       try {
         await primaryAction.onClick();
       } catch (error) {
-        console.error('Primary action failed:', error);
+        logger.error({ err: error, title }, 'Modal primary action failed');
       }
     }
-  }, [primaryAction]);
+  }, [primaryAction, title]);
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     if (!newOpen) {

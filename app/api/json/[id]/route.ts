@@ -1,107 +1,90 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { success } from '@/lib/api/responses';
+import { withDatabaseHandler } from '@/lib/api/middleware';
+import { AuthenticationError, NotFoundError, AuthorizationError } from '@/lib/utils/app-errors';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    const session = await getServerSession(authOptions);
+/**
+ * GET document metadata for authenticated user
+ * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
+ */
+export const GET = withDatabaseHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
+  const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const document = await prisma.jsonDocument.findFirst({
-      where: {
-        shareId: id,
-        userId: session.user.id,
-      },
-      select: {
-        shareId: true,
-        title: true,
-        description: true,
-        richContent: true,
-        category: true,
-        tags: true,
-        visibility: true,
-        publishedAt: true,
-      },
-    });
-
-    if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ document });
-  } catch (error) {
-    console.error('Document fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch document' }, { status: 500 });
+  if (!session?.user?.id) {
+    throw new AuthenticationError();
   }
-}
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    const session = await getServerSession(authOptions);
+  const document = await prisma.jsonDocument.findFirst({
+    where: {
+      shareId: id,
+      userId: session.user.id,
+    },
+    select: {
+      shareId: true,
+      title: true,
+      description: true,
+      richContent: true,
+      category: true,
+      tags: true,
+      visibility: true,
+      publishedAt: true,
+    },
+  });
 
-    // SECURITY: Verify user is authenticated
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    // SECURITY: Verify document exists and user owns it before deleting
-    const existingDocument = await prisma.jsonDocument.findFirst({
-      where: {
-        OR: [{ id }, { shareId: id }],
-      },
-      select: {
-        id: true,
-        shareId: true,
-        title: true,
-        userId: true,
-      },
-    });
-
-    if (!existingDocument) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    // SECURITY: Only allow document owner to delete
-    if (existingDocument.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Access denied - not document owner' }, { status: 403 });
-    }
-
-    // Delete the document
-    await prisma.jsonDocument.delete({
-      where: {
-        id: existingDocument.id,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Document deleted successfully',
-    });
-  } catch (error) {
-    console.error('Document deletion error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    console.error('User session:', session?.user?.id);
-    console.error('Document ID:', id);
-
-    if ((error as { code?: string })?.code === 'P2025') {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      {
-        error: 'Failed to delete document',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : null) : undefined,
-      },
-      { status: 500 }
-    );
+  if (!document) {
+    throw new NotFoundError('Document', id);
   }
-}
+
+  return success({ document });
+});
+
+/**
+ * DELETE document with ownership verification
+ * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
+ */
+export const DELETE = withDatabaseHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
+  const session = await getServerSession(authOptions);
+
+  // SECURITY: Verify user is authenticated
+  if (!session?.user?.id) {
+    throw new AuthenticationError();
+  }
+
+  // SECURITY: Verify document exists and user owns it before deleting
+  const existingDocument = await prisma.jsonDocument.findFirst({
+    where: {
+      OR: [{ id }, { shareId: id }],
+    },
+    select: {
+      id: true,
+      shareId: true,
+      title: true,
+      userId: true,
+    },
+  });
+
+  if (!existingDocument) {
+    throw new NotFoundError('Document', id);
+  }
+
+  // SECURITY: Only allow document owner to delete
+  if (existingDocument.userId !== session.user.id) {
+    throw new AuthorizationError('Access denied - not document owner');
+  }
+
+  // Delete the document - Prisma P2025 errors automatically handled by middleware
+  await prisma.jsonDocument.delete({
+    where: {
+      id: existingDocument.id,
+    },
+  });
+
+  return success({}, { message: 'Document deleted successfully' });
+});

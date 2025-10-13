@@ -2,6 +2,14 @@
 
 import { useEffect } from 'react';
 import Script from 'next/script';
+import { logger } from '@/lib/logger';
+import type { Logger } from 'pino';
+
+declare global {
+  interface Window {
+    __logger?: Logger;
+  }
+}
 
 /**
  * Performance optimizations for Core Web Vitals
@@ -127,10 +135,14 @@ export function PerformanceOptimizations() {
             window.addEventListener('load', () => {
               navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
-                  console.log('SW registered: ', registration);
+                  if (window.__logger) {
+                    window.__logger.info({ scope: registration.scope }, 'Service worker registered');
+                  }
                 })
                 .catch((registrationError) => {
-                  console.log('SW registration failed: ', registrationError);
+                  if (window.__logger) {
+                    window.__logger.error({ err: registrationError }, 'Service worker registration failed');
+                  }
                 });
             });
           }

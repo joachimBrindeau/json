@@ -1,76 +1,58 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useBackendStore } from '@/lib/store/backend';
+import { useApiData } from './use-api-data';
 
-interface LibraryStats {
+interface LibraryStatsData {
   totalJsons: number;
   totalSize: number;
+}
+
+interface LibraryStats extends LibraryStatsData {
   loading: boolean;
+}
+
+interface UserStatsResponse {
+  total: number;
+  totalSize: number;
 }
 
 export function useLibraryStats(): LibraryStats {
   const { data: session } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
-  const [stats, setStats] = useState<LibraryStats>({
-    totalJsons: 0,
-    totalSize: 0,
-    loading: true,
+
+  const { data, loading, refetch } = useApiData<LibraryStatsData, UserStatsResponse>({
+    endpoint: '/api/user/stats',
+    errorMessage: 'Failed to load library stats',
+    enabled: !!session,
+    showToast: false,
+    transform: (rawData) => ({
+      totalJsons: rawData.total || 0,
+      totalSize: rawData.totalSize || 0,
+    }),
+    dependencies: [session],
   });
 
-  const loadStats = useCallback(async () => {
-    if (!session) {
-      setStats({ totalJsons: 0, totalSize: 0, loading: false });
-      return;
-    }
+  // Memoize the refetch callback for the backend store
+  const handleLibraryUpdate = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
-    try {
-      setStats((prev) => ({ ...prev, loading: true }));
-
-      // Fetch stats from API
-      const response = await fetch('/api/saved?limit=1');
-      if (!response.ok) {
-        throw new Error('Failed to fetch library stats');
-      }
-
-      const data = await response.json();
-      const totalJsons = data.pagination?.total || 0;
-      
-      // For total size, we need all documents (or create a separate stats endpoint)
-      let totalSize = 0;
-      if (totalJsons > 0) {
-        const allResponse = await fetch(`/api/saved?limit=${totalJsons}`);
-        if (allResponse.ok) {
-          const allData = await allResponse.json();
-          totalSize = allData.documents?.reduce((sum: number, doc: { size: number }) => sum + (doc.size || 0), 0) || 0;
-        }
-      }
-
-      setStats({
-        totalJsons,
-        totalSize,
-        loading: false,
-      });
-    } catch (error) {
-      console.error('Failed to load library stats:', error);
-      setStats({ totalJsons: 0, totalSize: 0, loading: false });
-    }
-  }, [session]);
-
-  useEffect(() => {
-    loadStats();
-  }, [session, loadStats]);
-  
-  // Register for updates
+  // Register for updates from backend store
   useEffect(() => {
     if (session) {
-      setLibraryUpdateCallback(loadStats);
+      setLibraryUpdateCallback(handleLibraryUpdate);
       return () => {
         setLibraryUpdateCallback(() => {});
       };
     }
-  }, [setLibraryUpdateCallback, loadStats, session]);
+  }, [setLibraryUpdateCallback, handleLibraryUpdate, session]);
 
-  return stats;
+  return {
+    totalJsons: data?.totalJsons || 0,
+    totalSize: data?.totalSize || 0,
+    loading,
+  };
 }

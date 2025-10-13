@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { generateSEOMetadata, PAGE_SEO, DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import { Metadata } from 'next';
 import { cache } from 'react';
+import { logger } from '@/lib/logger';
 
 /**
  * Cached database SEO fetcher (15 minutes cache)
@@ -20,7 +21,7 @@ export const getSEOSettingsFromDatabase = cache(async (pageKey: string) => {
 
     return settings;
   } catch (error) {
-    console.warn(`SEO database error for ${pageKey}, using fallbacks:`, error);
+    logger.warn({ err: error, pageKey }, 'SEO database error, using fallbacks');
     return null;
   }
 });
@@ -102,7 +103,7 @@ export async function upsertSEOSettings(
       )
     ]);
   } catch (error) {
-    console.error(`Failed to upsert SEO settings for ${pageKey}:`, error);
+    logger.error({ err: error, pageKey, data }, 'Failed to upsert SEO settings');
     throw new Error(`SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -119,7 +120,7 @@ export async function getAllSEOSettings() {
       ],
     });
   } catch (error) {
-    console.error('Failed to fetch all SEO settings:', error);
+    logger.error({ err: error }, 'Failed to fetch all SEO settings');
     return [];
   }
 }
@@ -177,9 +178,9 @@ export async function seedSEOSettings() {
     for (const settings of defaultSettings) {
       await upsertSEOSettings(settings.pageKey, settings);
     }
-    console.log('SEO settings seeded successfully');
+    logger.info({ count: defaultSettings.length }, 'SEO settings seeded successfully');
   } catch (error) {
-    console.error('Failed to seed SEO settings:', error);
+    logger.error({ err: error }, 'Failed to seed SEO settings');
     throw error;
   }
 }

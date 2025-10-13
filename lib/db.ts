@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 // Global Prisma instance with connection pooling optimizations
 const globalForPrisma = globalThis as unknown as {
@@ -8,11 +10,11 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    datasourceUrl: process.env.DATABASE_URL,
+    log: config.isDevelopment ? ['query', 'error', 'warn'] : ['error'],
+    datasourceUrl: config.database.url,
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+if (!config.isProduction) globalForPrisma.prisma = prisma;
 
 // Database health check
 export async function checkDBHealth() {
@@ -28,7 +30,7 @@ export async function checkDBHealth() {
           redisHealth = await redis.ping() === 'PONG';
         }
       } catch (error) {
-        console.warn('Redis not available:', error);
+        logger.warn({ err: error }, 'Redis not available');
       }
     }
     
@@ -38,7 +40,7 @@ export async function checkDBHealth() {
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Database health check failed:', error);
+    logger.error({ err: error }, 'Database health check failed');
     return {
       postgres: false,
       redis: false,
@@ -57,7 +59,7 @@ export async function closeConnections() {
       const { closeRedisConnection } = await import('@/lib/redis');
       await closeRedisConnection();
     } catch (error) {
-      console.warn('Redis cleanup failed:', error);
+      logger.warn({ err: error }, 'Redis cleanup failed');
     }
   }
 }

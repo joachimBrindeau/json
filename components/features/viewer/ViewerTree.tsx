@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,19 @@ export const ViewerTree = ({
 }: ViewerTreeProps) => {
   const { nodes, expandedNodes, toggleNode, expandAll, collapseAll } = useViewerTreeState(data);
   const { searchTerm, setSearchTerm, filteredNodes, matchCount } = useViewerTreeSearch(nodes);
-  
+
   const [selectedNode, setSelectedNode] = useState<JsonNode | null>(null);
   const [showNodeDetails, setShowNodeDetails] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
+  // Debounce search input to reduce filtering operations during typing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSearchTerm(inputValue);
+    }, 200); // 200ms debounce for search
+
+    return () => clearTimeout(timeoutId);
+  }, [inputValue, setSearchTerm]);
 
   const handleNodeDoubleClick = useCallback((node: JsonNode) => {
     setSelectedNode(node);
@@ -58,12 +68,12 @@ export const ViewerTree = ({
                 <Input
                   type="text"
                   placeholder="Search keys and values..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              {searchTerm && (
+              {inputValue && (
                 <Badge variant="secondary">
                   {matchCount} matches
                 </Badge>
@@ -131,12 +141,12 @@ export const ViewerTree = ({
               <Input
                 type="text"
                 placeholder="Search keys and values..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 className="pl-10"
               />
             </div>
-            {searchTerm && (
+            {inputValue && (
               <Badge variant="secondary">
                 {matchCount} matches
               </Badge>

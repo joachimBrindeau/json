@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { logger } from '@/lib/logger'
+import { apiClient } from '@/lib/api/client'
+import { useToast } from '@/hooks/use-toast'
+import { ErrorBoundary } from '@/components/shared/error-boundary'
 
 interface TagStats {
   name: string
@@ -27,6 +31,7 @@ interface TagAnalytics {
 }
 
 export function TagAnalytics() {
+  const { toast } = useToast()
   const [analytics, setAnalytics] = useState<TagAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -36,13 +41,15 @@ export function TagAnalytics() {
 
   const fetchTagAnalytics = async () => {
     try {
-      const response = await fetch('/api/admin/tags/analytics')
-      if (response.ok) {
-        const data = await response.json()
-        setAnalytics(data)
-      }
+      const data = await apiClient.get<TagAnalytics>('/api/admin/tags/analytics')
+      setAnalytics(data)
     } catch (error) {
-      console.error('Failed to fetch tag analytics:', error)
+      logger.error({ err: error }, 'Failed to fetch tag analytics')
+      toast({
+        title: 'Failed to load tag analytics',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -103,6 +110,11 @@ export function TagAnalytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Popular Tags */}
+        <ErrorBoundary
+          level="widget"
+          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load popular tags</div>}
+          compactMode
+        >
         <Card>
           <CardHeader>
             <CardTitle>Most Popular Tags</CardTitle>
@@ -134,8 +146,14 @@ export function TagAnalytics() {
             </div>
           </CardContent>
         </Card>
+        </ErrorBoundary>
 
         {/* Tag Usage by User */}
+        <ErrorBoundary
+          level="widget"
+          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load tag contributors</div>}
+          compactMode
+        >
         <Card>
           <CardHeader>
             <CardTitle>Top Tag Contributors</CardTitle>
@@ -157,8 +175,14 @@ export function TagAnalytics() {
             </div>
           </CardContent>
         </Card>
+        </ErrorBoundary>
 
         {/* Recent Tags */}
+        <ErrorBoundary
+          level="widget"
+          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load recent tags</div>}
+          compactMode
+        >
         <Card>
           <CardHeader>
             <CardTitle>Recently Created Tags</CardTitle>
@@ -174,8 +198,14 @@ export function TagAnalytics() {
             )}
           </CardContent>
         </Card>
+        </ErrorBoundary>
 
         {/* Tag Distribution */}
+        <ErrorBoundary
+          level="widget"
+          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load tag distribution</div>}
+          compactMode
+        >
         <Card>
           <CardHeader>
             <CardTitle>Tag Distribution</CardTitle>
@@ -194,6 +224,7 @@ export function TagAnalytics() {
             </div>
           </CardContent>
         </Card>
+        </ErrorBoundary>
       </div>
     </div>
   )

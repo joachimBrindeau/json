@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireSuperAdmin } from '@/lib/auth/admin'
 import { prisma } from '@/lib/db'
+import { logger } from '@/lib/logger'
+import { success, forbidden, internalServerError } from '@/lib/api/responses'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -89,21 +91,15 @@ export async function GET(_request: NextRequest) {
       tagsByUser: tagsByUserArray
     }
 
-    return NextResponse.json(analytics)
+    return success(analytics)
 
   } catch (error: unknown) {
-    console.error('Admin tag analytics API error:', error)
-    
+    logger.error({ err: error }, 'Admin tag analytics API error')
+
     if (error instanceof Error && error.message === 'Unauthorized: Superadmin access required') {
-      return NextResponse.json(
-        { error: 'Unauthorized access' },
-        { status: 403 }
-      )
+      return forbidden('Unauthorized access')
     }
 
-    return NextResponse.json(
-      { error: 'Failed to fetch tag analytics' },
-      { status: 500 }
-    )
+    return internalServerError('Failed to fetch tag analytics')
   }
 }

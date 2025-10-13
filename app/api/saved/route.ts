@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withAuth, handleApiError, validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse } from '@/lib/api/utils';
 import { getUserDocuments } from '@/lib/db/queries/documents';
+import { success, badRequest, error as errorResponse } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
@@ -29,16 +30,16 @@ export const GET = withAuth(async (request) => {
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: result.status || 400 });
+      return errorResponse(result.error || 'Failed to fetch documents', { status: result.status || 400 });
     }
 
-    return NextResponse.json({
+    return success({
       documents: formatDocumentListResponse(result.data?.documents || [], false),
       pagination: result.data?.pagination,
     });
   } catch (error) {
     if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return badRequest(error.message);
     }
     return handleApiError(error, 'Private library API');
   }

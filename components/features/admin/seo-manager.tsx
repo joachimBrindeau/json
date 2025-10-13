@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink } from 'lucide-react'
+import { logger } from '@/lib/logger'
+import { apiClient } from '@/lib/api/client'
+import { useToast } from '@/hooks/use-toast'
+import { ErrorBoundary } from '@/components/shared/error-boundary'
 
 interface SEOData {
   pageKey: string
@@ -17,6 +21,7 @@ interface SEOData {
 }
 
 export function SEOManager() {
+  const { toast } = useToast()
   const [seoData, setSeoData] = useState<SEOData[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -26,13 +31,15 @@ export function SEOManager() {
 
   const fetchSEOData = async () => {
     try {
-      const response = await fetch('/api/admin/seo')
-      if (response.ok) {
-        const data = await response.json()
-        setSeoData(data.settings)
-      }
+      const data = await apiClient.get<{ settings: SEOData[] }>('/api/admin/seo')
+      setSeoData(data.settings)
     } catch (error) {
-      console.error('Failed to fetch SEO data:', error)
+      logger.error({ err: error }, 'Failed to fetch SEO data')
+      toast({
+        title: 'Failed to load SEO data',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -64,6 +71,15 @@ export function SEOManager() {
         </Button>
       </div>
 
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Failed to load SEO pages
+          </div>
+        }
+        enableRetry
+      >
       <div className="grid gap-4">
         {seoData.map((page) => (
           <Card key={page.pageKey}>
@@ -109,6 +125,7 @@ export function SEOManager() {
           </Card>
         ))}
       </div>
+      </ErrorBoundary>
 
       {seoData.length === 0 && (
         <Card>

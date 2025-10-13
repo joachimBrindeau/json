@@ -1,48 +1,15 @@
 import { memo } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
-import { JsonDataType, NodeType } from '@/components/features/viewer/flow/utils/flow-types';
-import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-parser';
-import { PrimitiveNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { NodeProps } from 'reactflow';
+import { JsonDataType, NodeType, PrimitiveNodeData } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
-import { FlowChainHandle } from '@/components/features/viewer/flow/FlowChainHandle';
-import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
-import { FlowHoveringDot } from '@/components/features/viewer/flow/FlowHoveringDot';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
+import { FlowNodeHandles } from '@/components/features/viewer/flow/FlowNodeHandles';
 
-/**
- * PrimitiveNode `<Handle>` Details
- *
- * source: impossible to have.
- * target: always have.
- */
-const _PrimitiveNode = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
-  // Simplified highlighter - in a real implementation you'd connect to a store
-  const isHighlightNode = (nodeId: string) => false;
-
-  // Simplified hover state - in a real implementation you'd connect to a store
-  const hoveredNodeDetails: Array<{ nodeId: string }> = [];
-
-  const isHoveredFromNodeDetail: boolean = hoveredNodeDetails.some(({ nodeId }) => nodeId === id);
-
+const PrimitiveNodeComponent = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
   return (
-    <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive} isHighlight={isHighlightNode(id)}>
-      <FlowDefaultHandle id={id} type="target" />
-      <FlowChainHandle id={addPrefixChain(id)} type="target" />
-      
-      {/* Add top handle for array connections */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        style={{
-          background: '#60a5fa',
-          width: 8,
-          height: 8,
-          border: '2px solid #fff',
-          top: -4,
-        }}
-      />
+    <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive}>
+      <FlowNodeHandles nodeId={id} hasDefaultTarget hasDefaultSource={false} />
 
       <div className="text-center">
         {data.dataType === JsonDataType.String && (
@@ -61,26 +28,8 @@ const _PrimitiveNode = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
 
         {data.dataType === JsonDataType.Null && <FlowNullChip size="sm" />}
       </div>
-
-      {isHoveredFromNodeDetail && <FlowHoveringDot />}
-      <FlowChainHandle id={addPrefixChain(id)} type="source" />
-      
-      {/* Add bottom handle for array connections */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        style={{
-          background: '#60a5fa',
-          width: 8,
-          height: 8,
-          border: '2px solid #fff',
-          bottom: -4,
-        }}
-      />
     </FlowNodeShell>
   );
 };
 
-export const FlowPrimitiveNode = memo(_PrimitiveNode);
-export const PrimitiveNode = FlowPrimitiveNode;
+export const FlowPrimitiveNode = memo(PrimitiveNodeComponent);

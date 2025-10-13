@@ -2,6 +2,7 @@
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import LZString from 'lz-string';
+import { logger } from '@/lib/logger';
 
 interface JsonShareDB extends DBSchema {
   shares: {
@@ -62,7 +63,7 @@ class IndexedDBStorage {
       await db.get('shares', 'test-connection');
       return db;
     } catch (error) {
-      console.error('IndexedDB initialization failed:', error);
+      logger.error({ err: error }, 'IndexedDB initialization failed');
       // Reset the promise so we can try again
       this.dbPromise = null;
       // Return a mock database interface for graceful degradation
@@ -81,7 +82,7 @@ class IndexedDBStorage {
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error('Failed to store large JSON:', error);
+      logger.error({ err: error, id }, 'Failed to store large JSON');
       throw error;
     }
   }
@@ -96,7 +97,7 @@ class IndexedDBStorage {
       }
       return null;
     } catch (error) {
-      console.error('Failed to get large JSON:', error);
+      logger.error({ err: error, id }, 'Failed to get large JSON');
       return null;
     }
   }
@@ -113,7 +114,7 @@ class IndexedDBStorage {
         title,
       });
     } catch (error) {
-      console.error('Failed to store share:', error);
+      logger.error({ err: error, id, title }, 'Failed to store share');
       throw error;
     }
   }
@@ -134,7 +135,7 @@ class IndexedDBStorage {
       }
       return null;
     } catch (error) {
-      console.error('Failed to get share:', error);
+      logger.error({ err: error, id }, 'Failed to get share');
       return null;
     }
   }
@@ -154,7 +155,7 @@ class IndexedDBStorage {
         content: share.content,
       }));
     } catch (error) {
-      console.error('Failed to get all shares:', error);
+      logger.error({ err: error }, 'Failed to get all shares');
       return [];
     }
   }
@@ -165,7 +166,7 @@ class IndexedDBStorage {
       const db = await this.getDB();
       await db.delete('shares', id);
     } catch (error) {
-      console.error('Failed to delete share:', error);
+      logger.error({ err: error, id }, 'Failed to delete share');
       throw error;
     }
   }
@@ -183,7 +184,7 @@ class IndexedDBStorage {
         }
       }
     } catch (error) {
-      console.error('Failed to clear old data:', error);
+      logger.error({ err: error, maxAge }, 'Failed to clear old data');
     }
   }
 }

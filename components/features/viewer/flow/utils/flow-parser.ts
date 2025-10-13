@@ -2,10 +2,8 @@ import { nanoid } from 'nanoid';
 import { Edge } from 'reactflow';
 import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import {
-  isLastItemOfArray,
   isArray,
   isObject,
-  isString,
   getJsonDataType,
   validateJsonDataType,
 } from './flow-utils';

@@ -9,6 +9,7 @@ import { VersionChecker } from '@/components/shared/version-checker';
 import { ServiceWorkerManager } from '@/components/shared/service-worker-manager';
 import { generateWebApplicationStructuredData, renderJsonLd } from '@/lib/seo';
 import { generateDatabaseSEOMetadata } from '@/lib/seo/database';
+import { logger } from '@/lib/logger';
 import './globals.css';
 
 const geistSans = Geist({
@@ -38,8 +39,7 @@ export default function RootLayout({
 
   // Debug: Log the JSON-LD only in development
   if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
-    console.log('JSON-LD Debug:', JSON.stringify(jsonLd, null, 2));
-    console.log('Environment URL:', process.env.NEXT_PUBLIC_APP_URL);
+    logger.debug({ jsonLd, appUrl: process.env.NEXT_PUBLIC_APP_URL }, 'Root layout JSON-LD structured data');
   }
 
   return (

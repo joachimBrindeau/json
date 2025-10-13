@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { suggestTags } from '@/lib/tags/tag-utils';
 import { tagSuggestLimiter } from '@/lib/middleware/rate-limit';
+import { logger } from '@/lib/logger';
+import { success, internalServerError, error as errorResponse } from '@/lib/api/responses';
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting for tag suggestions
@@ -9,10 +11,7 @@ export async function GET(request: NextRequest) {
     request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous';
 
   if (!tagSuggestLimiter.isAllowed(identifier)) {
-    return NextResponse.json(
-      { error: 'Too many tag requests. Please slow down.' },
-      { status: 429 }
-    );
+    return errorResponse('Too many tag requests. Please slow down.', { status: 429 });
   }
 
   try {
@@ -61,12 +60,12 @@ export async function GET(request: NextRequest) {
       count: tagCounts.get(tag) || 0,
     }));
 
-    return NextResponse.json({
+    return success({
       tags: tagStats,
       total: tagCounts.size,
     });
   } catch (error) {
-    console.error('Tags API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch tags' }, { status: 500 });
+    logger.error({ err: error, query: request.url }, 'Tags API error');
+    return internalServerError('Failed to fetch tags');
   }
 }

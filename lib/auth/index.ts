@@ -5,18 +5,20 @@ import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 // Function to get prisma and adapter conditionally
 function getPrismaAdapter() {
-  if (!process.env.DATABASE_URL) {
+  if (!config.database.url) {
     return { prisma: null, adapter: undefined };
   }
-  
+
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { prisma } = require('@/lib/db');
-  return { 
-    prisma, 
-    adapter: PrismaAdapter(prisma) as any 
+  return {
+    prisma,
+    adapter: PrismaAdapter(prisma) as any
   };
 }
 
@@ -63,13 +65,13 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: config.auth.providers.github.clientId,
+      clientSecret: config.auth.providers.github.clientSecret,
       allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: config.auth.providers.google.clientId,
+      clientSecret: config.auth.providers.google.clientSecret,
       allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
       authorization: {
         params: {
@@ -135,9 +137,8 @@ export const authOptions: NextAuthOptions = {
               updateData.image = user.image;
 
               // Debug logging for profile pictures
-              if (process.env.NODE_ENV === 'development') {
-                console.log('SignIn callback - Updating user image:', user.image);
-                console.log('Provider:', account.provider);
+              if (config.isDevelopment) {
+                logger.debug({ userImage: user.image, provider: account.provider }, 'SignIn callback - Updating user image');
               }
             }
 
@@ -153,8 +154,8 @@ export const authOptions: NextAuthOptions = {
                 data: updateData,
               });
 
-              if (process.env.NODE_ENV === 'development') {
-                console.log('User updated with new data:', updatedUser);
+              if (config.isDevelopment) {
+                logger.debug({ userId: updatedUser.id, updatedFields: Object.keys(updateData) }, 'User updated with new data');
               }
             }
 
@@ -204,8 +205,8 @@ export const authOptions: NextAuthOptions = {
             session.user.image = dbUser.image;
 
             // Debug logging for profile pictures
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Session callback - User image:', dbUser.image);
+            if (config.isDevelopment) {
+              logger.debug({ userId: dbUser.id, userImage: dbUser.image }, 'Session callback - User image');
             }
           }
         }
@@ -221,6 +222,6 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: config.auth.secret,
   debug: false,
 };

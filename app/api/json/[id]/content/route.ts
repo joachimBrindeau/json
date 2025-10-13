@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleApiError, withAuth, validateAndAnalyzeJson, formatDocumentResponse } from '@/lib/api/utils';
 import { getDocumentById, updateDocument } from '@/lib/db/queries/documents';
+import { success, badRequest, notFound, error as errorResponse } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
@@ -16,10 +17,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const result = await getDocumentById(id, session?.user?.id, { includeContent: true });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: result.status || 404 });
+      return errorResponse(result.error || 'Document not found', { status: result.status || 404 });
     }
 
-    return NextResponse.json(formatDocumentResponse(result.data));
+    return success(formatDocumentResponse(result.data));
   } catch (error) {
     return handleApiError(error, 'Content retrieval');
   }
@@ -31,7 +32,7 @@ export const PUT = withAuth(async (request, { params }: { params: Promise<{ id: 
     const { content } = await request.json();
 
     if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+      return badRequest('Content is required');
     }
 
     // Validate and analyze JSON
@@ -49,11 +50,10 @@ export const PUT = withAuth(async (request, { params }: { params: Promise<{ id: 
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: result.status || 400 });
+      return errorResponse(result.error || 'Update failed', { status: result.status || 400 });
     }
 
-    return NextResponse.json({
-      success: true,
+    return success({
       document: result.data,
     });
   } catch (error) {

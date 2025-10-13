@@ -1,8 +1,10 @@
 import { getAllSEOSettings } from '@/lib/seo/database';
 import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || DEFAULT_SEO_CONFIG.siteUrl;
+  const baseUrl = config.app.url;
   const currentDate = new Date().toISOString().split('T')[0];
 
   let llmsContent = `# ${DEFAULT_SEO_CONFIG.siteName} - LLMs.txt
@@ -128,8 +130,8 @@ Service status: Active and continuously improved
 `;
 
   } catch (error) {
-    console.error('Error generating llms.txt:', error);
-    
+    logger.error({ err: error }, 'Error generating llms.txt, using fallback content');
+
     // Return basic llms.txt if database fails
     llmsContent += `
 ### Main Application Pages (Fallback)

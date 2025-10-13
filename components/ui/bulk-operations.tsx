@@ -31,6 +31,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 export interface BulkableItem {
   id: string;
@@ -100,7 +101,7 @@ export function BulkOperations({
       }
       onSelectionChange([]); // Clear selection after action
     } catch (error) {
-      console.error(`Bulk ${action} failed:`, error);
+      logger.error({ err: error, action, selectedCount: selectedIds.length }, `Bulk ${action} operation failed`);
     } finally {
       setIsLoading(null);
     }

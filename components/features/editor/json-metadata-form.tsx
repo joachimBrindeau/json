@@ -15,14 +15,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useFormSubmit } from '@/hooks/use-form-submit';
 import { RichTextEditor } from '@/components/rich-text-editor';
-import { 
-  Globe, 
-  Lock, 
-  X, 
-  AlertCircle, 
-  CheckCircle2, 
-  Info, 
+import {
+  Globe,
+  Lock,
+  X,
+  AlertCircle,
+  CheckCircle2,
+  Info,
   Loader2,
   Save,
   Plus
@@ -33,6 +34,8 @@ import {
   getCommonTagsForCategory,
   suggestTags,
 } from '@/lib/tags/tag-utils';
+import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 interface JsonMetadataFormProps {
   /** Initial form data */
@@ -61,15 +64,6 @@ interface JsonMetadataFormProps {
   onCancel?: () => void;
 }
 
-const CATEGORIES = [
-  'API Response',
-  'Configuration',
-  'Database Schema',
-  'Test Data',
-  'Template',
-  'Example',
-] as const;
-
 export function JsonMetadataForm({
   initialData,
   mode,
@@ -78,7 +72,6 @@ export function JsonMetadataForm({
   onCancel,
 }: JsonMetadataFormProps) {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -177,37 +170,34 @@ export function JsonMetadataForm({
     [addTag]
   );
 
-  const handleSubmit = useCallback(async () => {
-    if (!formData.title.trim()) {
-      toast({
-        title: 'Title required',
-        description: 'Please provide a title for your JSON',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const { submit: handleSubmit, isSubmitting } = useFormSubmit(
+    async () => {
+      if (!formData.title.trim()) {
+        throw new Error('Please provide a title for your JSON');
+      }
 
-    if (onSubmit) {
-      setIsSubmitting(true);
-      try {
+      if (onSubmit) {
         await onSubmit(formData);
+      }
+    },
+    {
+      onSuccess: () => {
         toast({
           title: mode === 'create' ? 'JSON created' : 'JSON updated',
-          description: mode === 'create' 
-            ? 'Your JSON has been saved successfully' 
+          description: mode === 'create'
+            ? 'Your JSON has been saved successfully'
             : 'Your changes have been saved',
         });
-      } catch (error) {
+      },
+      onError: (error) => {
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to save JSON',
+          description: error.message || 'Failed to save JSON',
           variant: 'destructive',
         });
-      } finally {
-        setIsSubmitting(false);
-      }
+      },
     }
-  }, [formData, onSubmit, toast, mode]);
+  );
 
   const formContent = (
     <div className="space-y-6">
@@ -286,6 +276,11 @@ export function JsonMetadataForm({
         <Label htmlFor="rich-content" className="text-sm font-medium">
           Detailed Explanation <span className="text-muted-foreground text-xs">(Optional)</span>
         </Label>
+        <ErrorBoundary
+          level="widget"
+          fallback={<div className="text-xs text-muted-foreground p-2">Rich text editor unavailable</div>}
+          compactMode
+        >
         <div className="mt-1">
           <RichTextEditor
             content={formData.richContent}
@@ -293,6 +288,7 @@ export function JsonMetadataForm({
             placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
           />
         </div>
+        </ErrorBoundary>
         <div className="text-xs text-muted-foreground mt-1">
           Rich text with formatting, links, and lists for better SEO and user experience
         </div>
@@ -311,7 +307,7 @@ export function JsonMetadataForm({
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
-            {CATEGORIES.map((category) => (
+            {DOCUMENT_CATEGORIES.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>
@@ -321,6 +317,11 @@ export function JsonMetadataForm({
       </div>
 
       {/* Tags */}
+      <ErrorBoundary
+        level="widget"
+        fallback={<div className="text-xs text-muted-foreground p-2">Tag input unavailable</div>}
+        compactMode
+      >
       <div>
         <Label htmlFor="tags" className="text-sm font-medium">
           Tags ({formData.tags.length}/10)
@@ -444,11 +445,12 @@ export function JsonMetadataForm({
           )}
         </div>
       </div>
+      </ErrorBoundary>
 
       {/* Action buttons */}
       <div className="flex gap-2 pt-4">
         <Button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(undefined)}
           disabled={isSubmitting || !formData.title.trim()}
           className="flex items-center gap-2"
         >

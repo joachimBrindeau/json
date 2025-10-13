@@ -29,4 +29,3 @@ const ChainHandleComponent = ({ id, type }: Props) => {
 };
 
 export const FlowChainHandle = memo(ChainHandleComponent);
-export const ChainHandle = FlowChainHandle;

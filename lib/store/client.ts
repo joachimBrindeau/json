@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { indexedDBStorage } from '@/lib/indexed-db';
 import type { JsonSeaConfig } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 interface AppState {
   // Current JSON ID (reference to IndexedDB)
@@ -61,7 +62,7 @@ export const useAppStore = create<AppState>()(
           // Cleanup old data in background
           setTimeout(() => indexedDBStorage.clearOldLargeData(), 100);
         } catch (error) {
-          console.warn('IndexedDB storage failed, continuing with memory only:', error);
+          logger.warn({ err: error, jsonId }, 'IndexedDB storage failed, continuing with memory only');
           // App continues to work without IndexedDB
         }
       },
@@ -119,7 +120,7 @@ export const useAppStore = create<AppState>()(
             // Also update the backend store so editor shows the loaded content
             try {
               // Import backend store dynamically to avoid circular dependency
-              const { useBackendStore } = await import('./store-backend');
+              const { useBackendStore } = await import('./backend');
               const backendStore = useBackendStore.getState();
               backendStore.setCurrentJson(entry.content);
 
@@ -143,14 +144,14 @@ export const useAppStore = create<AppState>()(
                 isDirty: false,
               });
             } catch (error) {
-              console.warn('Could not sync with backend store:', error);
+              logger.warn({ err: error, shareId: id }, 'Could not sync with backend store');
             }
 
             return true;
           }
           return false;
         } catch (error) {
-          console.error('Failed to load share:', error);
+          logger.error({ err: error, shareId: id }, 'Failed to load share');
           return false;
         }
       },

@@ -15,6 +15,9 @@ import {
 } from '@/components/ui/dialog';
 import { Github, Chrome, LogIn, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFormSubmit } from '@/hooks/use-form-submit';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 
 interface LoginModalProps {
   open: boolean;
@@ -54,9 +57,9 @@ const contextMessages = {
 };
 
 export function LoginModal({ open, onOpenChange, context = 'general' }: LoginModalProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -67,50 +70,33 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
   const message = contextMessages[context];
 
   const handleOAuthSignIn = async (provider: string) => {
-    setIsLoading(true);
+    setIsOAuthLoading(true);
     try {
       await signIn(provider);
     } catch (error) {
+      logger.error({ err: error, provider }, `Failed to sign in with OAuth provider`);
       toast({
         title: 'Sign in failed',
         description: `Failed to sign in with ${provider}`,
         variant: 'destructive',
       });
-      setIsLoading(false);
+      setIsOAuthLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.email || !formData.password) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please enter both email and password',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    setIsLoading(true);
+  const { submit: submitForm, isSubmitting: isLoading } = useFormSubmit(
+    async () => {
+      if (!formData.email || !formData.password) {
+        throw new Error('Please enter both email and password');
+      }
 
-    try {
       if (isSignup) {
         // Create account
-        const response = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: formData.name.trim() || 'User',
-            email: formData.email.toLowerCase().trim(),
-            password: formData.password,
-          }),
+        await apiClient.post('/api/auth/signup', {
+          name: formData.name.trim() || 'User',
+          email: formData.email.toLowerCase().trim(),
+          password: formData.password,
         });
-
-        if (!response.ok) {
-          const result = await response.json();
-          throw new Error(result.error || 'Failed to create account');
-        }
 
         // Sign in after successful signup
         const signInResult = await signIn('credentials', {
@@ -122,13 +108,6 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
         if (signInResult?.error) {
           throw new Error('Account created but sign in failed. Please try signing in.');
         }
-
-        toast({
-          title: 'Welcome!',
-          description: 'Account created successfully',
-        });
-        onOpenChange(false);
-        window.location.reload();
       } else {
         // Sign in
         const result = await signIn('credentials', {
@@ -140,23 +119,34 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
         if (result?.error) {
           throw new Error('Invalid email or password');
         }
-
+      }
+    },
+    {
+      onSuccess: () => {
         toast({
-          title: 'Welcome back!',
-          description: 'Signed in successfully',
+          title: isSignup ? 'Welcome!' : 'Welcome back!',
+          description: isSignup ? 'Account created successfully' : 'Signed in successfully',
         });
         onOpenChange(false);
         window.location.reload();
-      }
-    } catch (error) {
-      toast({
-        title: isSignup ? 'Signup failed' : 'Sign in failed',
-        description: error instanceof Error ? error.message : 'Something went wrong',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+      },
+      onError: (error) => {
+        logger.error(
+          { err: error, email: formData.email, isSignup },
+          isSignup ? 'Failed to create account' : 'Failed to sign in'
+        );
+        toast({
+          title: isSignup ? 'Signup failed' : 'Sign in failed',
+          description: error.message || 'Something went wrong',
+          variant: 'destructive',
+        });
+      },
     }
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitForm(undefined);
   };
 
   return (
@@ -255,7 +245,7 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
             variant="outline"
             className="w-full"
             onClick={() => handleOAuthSignIn('github')}
-            disabled={isLoading}
+            disabled={isLoading || isOAuthLoading}
           >
             <Github className="w-4 h-4 mr-2" />
             Continue with GitHub
@@ -265,7 +255,7 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
             variant="outline"
             className="w-full"
             onClick={() => handleOAuthSignIn('google')}
-            disabled={isLoading}
+            disabled={isLoading || isOAuthLoading}
           >
             <Chrome className="w-4 h-4 mr-2" />
             Continue with Google

@@ -2,21 +2,10 @@
 
 import { useEffect } from 'react';
 import type { Metric } from 'web-vitals';
+import { logger } from '@/lib/logger';
 
 // Extend global window interface for gtag
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'event',
-      action: string,
-      parameters: {
-        value: number;
-        metric_id: string;
-        metric_delta: number;
-      }
-    ) => void;
-  }
-}
+// Note: This extends the gtag type already declared in analytics.tsx
 
 export function WebVitals() {
   useEffect(() => {
@@ -30,10 +19,16 @@ export function WebVitals() {
 
       const { onCLS, onFCP, onINP, onLCP, onTTFB } = await import('web-vitals');
 
-      // Log to console in development, send to analytics in production
+      // Log metrics and send to analytics in production
       const logMetric = (metric: Metric) => {
-        // You can send these metrics to your analytics service
-        console.log(metric);
+        // Log web vitals metrics with structured logging
+        logger.info({
+          name: metric.name,
+          value: Math.round(metric.value),
+          id: metric.id,
+          delta: metric.delta,
+          rating: metric.rating
+        }, 'Web vitals metric');
 
         // Example: Send to Google Analytics
         if (typeof window !== 'undefined' && window.gtag) {

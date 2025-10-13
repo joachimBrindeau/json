@@ -20,6 +20,29 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // Enforce absolute imports using @ alias
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["../*", "../../*", "../../../*"],
+              message: "Use absolute imports with @/ prefix instead of relative imports.",
+            },
+          ],
+        },
+      ],
+      // Warn about console statements (should use logger)
+      "no-console": [
+        "warn",
+        {
+          allow: ["warn", "error"], // Allow console.warn and console.error temporarily
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

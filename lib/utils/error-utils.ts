@@ -1,5 +1,7 @@
 'use client';
 
+import { logger } from '@/lib/logger';
+
 // Common error handling patterns
 export interface ErrorResult {
   success: false;
@@ -24,7 +26,7 @@ export const withErrorHandling = <T extends any[], R>(
       return { success: true, data: result };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : errorMessage;
-      console.error(errorMessage, error);
+      logger.error({ err: error }, errorMessage);
       return { success: false, error: errorMsg };
     }
   };

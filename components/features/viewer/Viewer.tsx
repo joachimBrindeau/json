@@ -4,27 +4,32 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TreePine as TreeIcon, Code, Waves, Eye } from 'lucide-react';
+import { TreePine as TreeIcon, Code, Waves, Eye, Database } from 'lucide-react';
 import { ViewerTree } from './ViewerTree';
 import { ViewerRaw } from './ViewerRaw';
 import { ViewerFlow } from './ViewerFlow';
+import { ViewerList } from './ViewerList';
 import { ViewerActions } from './ViewerActions';
 import { useJsonParser } from './useJsonParser';
 import { useAutoOptimize } from './useAutoOptimize';
 import type { ViewMode } from './types';
+import type { JsonValue } from '@/lib/types/json';
+import { logger } from '@/lib/logger';
 
 interface ViewerProps {
   jsonString?: string;
-  content?: string | object;
+  content?: string | JsonValue;
   initialMode?: ViewMode;
   enableActions?: boolean;
   height?: number;
   className?: string;
   initialViewMode?: ViewMode;
+  viewMode?: ViewMode; // Controlled mode
+  onViewModeChange?: (mode: ViewMode) => void; // Controlled mode callback
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
   enableSearch?: boolean;
@@ -52,6 +57,12 @@ const VIEW_MODES = [
     icon: Waves,
     description: 'Visual flow diagram',
   },
+  {
+    type: 'list' as ViewMode,
+    label: 'List View',
+    icon: Database,
+    description: 'Flat list with search',
+  },
 ];
 
 export const Viewer = ({
@@ -59,13 +70,27 @@ export const Viewer = ({
   content,
   initialMode = 'tree',
   initialViewMode = 'tree',
+  viewMode: controlledViewMode,
+  onViewModeChange,
   enableActions = true,
   height = 600,
   className = '',
   enableSearch = true,
   enableViewModeSwitch = true,
 }: ViewerProps) => {
-  const [viewMode, setViewMode] = useState<ViewMode>(initialMode || initialViewMode);
+  // Use controlled mode if provided, otherwise use internal state
+  const effectiveInitialMode = initialViewMode || initialMode;
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>(effectiveInitialMode);
+
+  const viewMode = controlledViewMode ?? internalViewMode;
+
+  const setViewMode = (mode: ViewMode) => {
+    if (controlledViewMode !== undefined) {
+      onViewModeChange?.(mode);
+    } else {
+      setInternalViewMode(mode);
+    }
+  };
 
   // Handle both jsonString and content props for backwards compatibility
   const jsonStr = useMemo(() => {
@@ -109,19 +134,22 @@ export const Viewer = ({
         <div className="flex items-center gap-4">
           {/* View mode selector */}
           {enableViewModeSwitch && (
-            <div className="flex rounded-lg border bg-white">
-              {VIEW_MODES.map((mode) => {
+            <div className="flex rounded-lg border bg-white" data-testid="view-mode">
+              {VIEW_MODES.map((mode, index) => {
                 const Icon = mode.icon;
+                const isFirst = index === 0;
+                const isLast = index === VIEW_MODES.length - 1;
                 return (
                   <Button
                     key={mode.type}
                     variant={viewMode === mode.type ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode(mode.type)}
+                    data-testid={`${mode.type}-view`}
                     className={`
-                      ${mode.type === 'tree' ? 'rounded-r-none' : ''}
-                      ${mode.type === 'raw' ? 'rounded-none border-x' : ''}
-                      ${mode.type === 'flow' ? 'rounded-l-none' : ''}
+                      ${isFirst ? 'rounded-r-none' : ''}
+                      ${!isFirst && !isLast ? 'rounded-none border-x' : ''}
+                      ${isLast ? 'rounded-l-none' : ''}
                       h-9
                     `}
                     title={mode.description}
@@ -196,6 +224,10 @@ export const Viewer = ({
 
         {viewMode === 'flow' && (
           <ViewerFlow data={data} height={height} />
+        )}
+
+        {viewMode === 'list' && (
+          <ViewerList data={data} height={height} />
         )}
       </div>
     </div>

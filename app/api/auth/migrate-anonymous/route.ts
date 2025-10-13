@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import { success, unauthorized, badRequest, internalServerError } from '@/lib/api/responses';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return unauthorized('Authentication required');
     }
 
     const { anonymousJsonIds } = await request.json();
 
     if (!Array.isArray(anonymousJsonIds) || anonymousJsonIds.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid or empty anonymousJsonIds array' },
-        { status: 400 }
-      );
+      return badRequest('Invalid or empty anonymousJsonIds array');
     }
 
     // Validate that anonymousJsonIds are strings and reasonably formatted
@@ -25,7 +24,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (validIds.length === 0) {
-      return NextResponse.json({ error: 'No valid JSON IDs provided' }, { status: 400 });
+      return badRequest('No valid JSON IDs provided');
     }
 
     // For anonymous IDs that start with "anon-", we can't migrate them directly
@@ -36,20 +35,21 @@ export async function POST(request: NextRequest) {
     // For now, we'll just acknowledge the request and clear the client state
     const migratedCount = validIds.length;
 
-    return NextResponse.json({
-      success: true,
+    return success({
       message: `Acknowledged ${migratedCount} anonymous JSON documents`,
       migratedCount,
     });
   } catch (error) {
-    console.error('Anonymous migration error:', error);
-
-    return NextResponse.json(
+    logger.error(
       {
-        error: 'Failed to migrate anonymous data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        err: error,
+        userId: session?.user?.id
       },
-      { status: 500 }
+      'Anonymous migration error'
     );
+
+    return internalServerError('Failed to migrate anonymous data', {
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }

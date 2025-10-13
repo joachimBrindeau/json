@@ -31,4 +31,3 @@ const DefaultHandleComponent = ({ id, type, style = {} }: Props) => {
 };
 
 export const FlowDefaultHandle = memo(DefaultHandleComponent);
-export const DefaultHandle = FlowDefaultHandle;

@@ -2,13 +2,16 @@
 
 import { useEffect } from 'react';
 import Script from 'next/script';
+import { logger } from '@/lib/logger';
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
-    fbq: (...args: any[]) => void;
-    _fbq: any;
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
+    fbq?: (...args: any[]) => void;
+    _fbq?: any;
+    trackJSONAction?: (action: string, category?: string, label?: string) => void;
+    trackFBEvent?: (event: string, params?: any) => void;
   }
 }
 
@@ -179,10 +182,10 @@ export function useAnalytics() {
   useEffect(() => {
     // Check for consent before initializing analytics
     const hasConsent = localStorage.getItem('analytics-consent') === 'true';
-    
+
     if (!hasConsent) {
       // Show consent banner or use default non-tracking mode
-      console.log('Analytics consent not given');
+      logger.info({ hasConsent }, 'Analytics consent not given');
     }
   }, []);
 

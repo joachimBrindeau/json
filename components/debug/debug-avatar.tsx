@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 
 export function DebugAvatar() {
   const { data: session, status } = useSession();
@@ -35,18 +37,16 @@ export function DebugAvatar() {
     setRefreshResult(null);
 
     try {
-      const response = await fetch('/api/user/refresh-profile', {
-        method: 'POST',
-      });
-
-      const result = await response.json();
+      const result = await apiClient.post<{ updated: boolean }>('/api/user/refresh-profile');
       setRefreshResult(result);
 
       if (result.updated) {
+        logger.info('Profile refreshed successfully');
         // Force session refresh
         window.location.reload();
       }
     } catch (error) {
+      logger.error({ err: error }, 'Failed to refresh profile');
       setRefreshResult({ error: 'Failed to refresh profile' });
     } finally {
       setRefreshing(false);
@@ -129,10 +129,9 @@ export function DebugAvatar() {
                 src={user.image}
                 alt="Direct load test"
                 className="h-16 w-16 rounded-full object-cover"
-                onLoad={() => console.log('Direct image load success')}
+                onLoad={() => logger.debug('Direct image load success')}
                 onError={(e) => {
-                  console.error('Direct image load failed:', e);
-                  console.log('Failed URL:', user.image);
+                  logger.error({ url: user.image, error: e }, 'Direct image load failed');
                 }}
               />
             </div>
@@ -147,11 +146,11 @@ export function DebugAvatar() {
               {[32, 64, 128, 256].map(size => (
                 <div key={size} className="text-center">
                   <img
-                    src={user.image.replace(/=s\d+/, `=s${size}`)}
+                    src={user.image?.replace(/=s\d+/, `=s${size}`) || ''}
                     alt={`${size}px test`}
                     className="rounded-full object-cover border"
                     style={{ width: `${Math.min(size, 64)}px`, height: `${Math.min(size, 64)}px` }}
-                    onError={(e) => console.error(`Size ${size} failed:`, e)}
+                    onError={(e) => logger.error({ size, error: e }, `Image load failed for size ${size}`)}
                   />
                   <div className="text-xs text-muted-foreground">{size}px</div>
                 </div>

@@ -16,6 +16,7 @@ import { ShareModal } from '@/components/features/modals';
 import { EmbedModal } from '@/components/features/modals/embed-modal';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
+import { logger } from '@/lib/logger';
 
 export function ViewerActions() {
   const { toast } = useToast();
@@ -108,7 +109,7 @@ export function ViewerActions() {
       // Only open modal after shareJson completes successfully
       setShareModalOpen(true);
     } catch (error) {
-      console.error('Share error:', error);
+      logger.error({ err: error }, 'Share error in ViewerActions');
       // Even if sharing fails, still open the modal - it can handle creating/saving the JSON
       setShareModalOpen(true);
       showToast('Info', 'Opening share dialog...', 'default');
@@ -154,7 +155,7 @@ export function ViewerActions() {
       await deleteDocument(currentDocument.shareId);
       showToast('Document deleted', 'The document has been successfully deleted');
     } catch (error) {
-      console.error('Delete error:', error);
+      logger.error({ err: error, shareId: currentDocument.shareId }, 'Delete error in ViewerActions');
       showToast('Delete failed', 'Failed to delete the document', 'destructive');
     } finally {
       setIsDeleting(false);

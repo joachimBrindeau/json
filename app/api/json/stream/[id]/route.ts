@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { createJsonStream, JsonCache, createPerformanceMonitor } from '@/lib/json';
 import { createHash } from 'crypto';
+import { logger } from '@/lib/logger';
+import { notFound, internalServerError } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -84,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!document) {
-      return NextResponse.json({ error: 'JSON document not found' }, { status: 404 });
+      return notFound('JSON document not found');
     }
 
     // Update access timestamp
@@ -178,22 +180,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return new Response(stream as unknown as ReadableStream, { headers });
   } catch (error) {
-    console.error('JSON streaming error:', error);
+    logger.error({ err: error, documentId: id, userId: session?.user?.id }, 'JSON streaming error');
 
-    return NextResponse.json(
-      {
-        error: 'Failed to stream JSON data',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    return internalServerError('Failed to stream JSON data', {
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
 
 // Get document metadata without content
 export async function HEAD(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   try {
-    const { id } = await params;
 
     // Helper function to determine if the ID is a UUID format
     const isUUID = (str: string) => {
@@ -244,7 +243,7 @@ export async function HEAD(request: NextRequest, { params }: { params: Promise<{
       },
     });
   } catch (error) {
-    console.error('JSON metadata error:', error);
+    logger.error({ err: error, documentId: id }, 'JSON metadata error');
     return new NextResponse(null, { status: 500 });
   }
 }

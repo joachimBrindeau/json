@@ -7,6 +7,7 @@ import {
   PaginationParams,
   PaginationResult
 } from './common';
+import { logger } from '@/lib/logger';
 
 // Analytics input types
 export interface ViewTrackingInput {
@@ -86,7 +87,7 @@ export async function trackView(input: ViewTrackingInput): Promise<{
 
     return { success: true };
   } catch (error) {
-    console.error('Track view error:', error);
+    logger.error({ err: error, documentId: input.documentId, ipHash: input.ipHash }, 'Track view error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -215,7 +216,7 @@ export async function getDocumentAnalytics(
       }
     };
   } catch (error) {
-    console.error('Get document analytics error:', error);
+    logger.error({ err: error, documentId, userId }, 'Get document analytics error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -381,7 +382,7 @@ export async function getTagAnalytics(
       }
     };
   } catch (error) {
-    console.error('Get tag analytics error:', error);
+    logger.error({ err: error, options }, 'Get tag analytics error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -528,7 +529,7 @@ export async function getUserAnalytics(
       }
     };
   } catch (error) {
-    console.error('Get user analytics error:', error);
+    logger.error({ err: error, userId, since: options.since, until: options.until }, 'Get user analytics error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -663,7 +664,7 @@ export async function getPlatformAnalytics(
       }
     };
   } catch (error) {
-    console.error('Get platform analytics error:', error);
+    logger.error({ err: error, since: options.since }, 'Get platform analytics error');
     return {
       success: false,
       ...handleDatabaseError(error)

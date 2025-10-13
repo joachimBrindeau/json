@@ -2,16 +2,15 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+import { success, unauthorized, internalServerError } from '@/lib/api/responses';
 
 export async function DELETE() {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return unauthorized('Unauthorized');
     }
 
     // Start a transaction to delete all user data
@@ -44,17 +43,25 @@ export async function DELETE() {
       await tx.user.delete({
         where: { id: user.id },
       });
+
+      logger.info(
+        {
+          userId: user.id,
+          email: session.user.email
+        },
+        'Account deleted successfully'
+      );
     });
 
-    return NextResponse.json(
-      { message: 'Account deleted successfully' },
-      { status: 200 }
-    );
+    return success({ message: 'Account deleted successfully' });
   } catch (error) {
-    console.error('Failed to delete account:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete account' },
-      { status: 500 }
+    logger.error(
+      {
+        err: error,
+        email: session?.user?.email
+      },
+      'Failed to delete account'
     );
+    return internalServerError('Failed to delete account');
   }
 }

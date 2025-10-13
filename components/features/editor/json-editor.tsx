@@ -13,12 +13,14 @@ import dynamic from 'next/dynamic';
 import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
-import { 
-  getOptimizedMonacoOptions, 
-  formatJsonWithWorker, 
+import {
+  getOptimizedMonacoOptions,
+  formatJsonWithWorker,
   loadJsonProgressive,
-  debounce 
+  debounce
 } from '@/lib/editor/optimizations';
+import { logger } from '@/lib/logger';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 // Monaco editor with enhanced loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -182,7 +184,7 @@ function JsonEditorComponent() {
       setEditorError(null);
     } catch (error) {
       setEditorError(error instanceof Error ? error.message : 'Failed to initialize editor');
-      console.error('Monaco editor initialization error:', error);
+      logger.error({ err: error }, 'Monaco editor initialization error');
     }
   }, [formatJson, isDarkMode]);
 
@@ -341,6 +343,16 @@ function JsonEditorComponent() {
       )}
       
       {/* Full-height Monaco editor */}
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="flex items-center justify-center h-full border">
+            <p className="text-sm text-muted-foreground">Failed to load code editor</p>
+          </div>
+        }
+        enableRetry
+        maxRetries={2}
+      >
       <div className="flex-1 overflow-hidden" data-testid="json-textarea">
         <MonacoEditor
           height="100%"
@@ -389,6 +401,7 @@ function JsonEditorComponent() {
           }}
         />
       </div>
+      </ErrorBoundary>
 
       {/* Status bar - moved to bottom */}
       <div className="flex-none flex items-center justify-between px-3 py-1 bg-muted border-t text-xs">

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireSuperAdmin } from '@/lib/auth/admin'
 import { prisma } from '@/lib/db'
+import { logger } from '@/lib/logger'
+import { success, forbidden, internalServerError } from '@/lib/api/responses'
+import { config } from '@/lib/config'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -43,7 +46,7 @@ export async function GET(_request: NextRequest) {
         uptime: process.uptime(),
         version: process.env.npm_package_version || '1.0.0',
         nodeVersion: process.version,
-        environment: process.env.NODE_ENV || 'development',
+        environment: config.nodeEnv,
         memoryUsage: process.memoryUsage().heapUsed
       },
       storage: {
@@ -53,21 +56,15 @@ export async function GET(_request: NextRequest) {
       }
     }
 
-    return NextResponse.json(stats)
+    return success(stats)
 
   } catch (error: unknown) {
-    console.error('Admin system stats API error:', error)
-    
+    logger.error({ err: error }, 'Admin system stats API error')
+
     if (error instanceof Error && error.message === 'Unauthorized: Superadmin access required') {
-      return NextResponse.json(
-        { error: 'Unauthorized access' },
-        { status: 403 }
-      )
+      return forbidden('Unauthorized access')
     }
 
-    return NextResponse.json(
-      { error: 'Failed to fetch system stats' },
-      { status: 500 }
-    )
+    return internalServerError('Failed to fetch system stats')
   }
 }

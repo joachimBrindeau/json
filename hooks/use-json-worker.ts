@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import type { JsonWorkerMessage, WorkerResponse } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 interface ExtendedJsonWorkerMessage {
   type: string;
@@ -75,7 +76,7 @@ export function useJsonWorker() {
       };
 
       workerRef.current.onerror = (error) => {
-        console.error('Worker error:', error);
+        logger.error({ err: error }, 'JSON Worker error occurred');
       };
     }
 

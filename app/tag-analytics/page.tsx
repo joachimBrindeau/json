@@ -5,6 +5,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 import {
   Select,
   SelectContent,
@@ -53,17 +55,11 @@ export default function TagAnalyticsPage() {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`/api/tags/analytics?days=${period}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
-      }
-
-      const data = await response.json();
+      const data = await apiClient.get<Analytics>(`/api/tags/analytics?days=${period}`);
       setAnalytics(data);
     } catch (err) {
       setError('Failed to load tag analytics');
-      console.error(err);
+      logger.error({ err, period }, 'Failed to load tag analytics');
     } finally {
       setLoading(false);
     }

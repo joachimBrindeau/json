@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
 import {
   Select,
   SelectContent,
@@ -56,6 +58,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { useSession } from 'next-auth/react';
 import { useBackendStore } from '@/lib/store/backend';
 import { PublishModal } from '@/components/features/modals/publish-modal';
+import { formatDate, formatSize } from '@/lib/utils/formatters';
 
 interface LibraryDocument {
   id: string;
@@ -120,7 +123,7 @@ const DocumentRow = memo(function DocumentRow({
     try {
       await navigator.clipboard.writeText(shareUrl);
     } catch (error) {
-      console.error('Failed to copy URL:', error);
+      logger.error({ err: error, shareUrl }, 'Failed to copy URL');
     }
   }, [shareUrl]);
 
@@ -149,11 +152,11 @@ const DocumentRow = memo(function DocumentRow({
       <TableCell>
         <div className="flex items-center gap-1 text-sm text-muted-foreground" data-testid="json-date">
           <Calendar className="h-3 w-3" />
-          {new Date(document.createdAt).toLocaleDateString()}
+          {formatDate(document.createdAt)}
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" data-testid="json-size">{(document.size / 1024).toFixed(1)} KB</Badge>
+        <Badge variant="outline" data-testid="json-size">{formatSize(document.size)}</Badge>
       </TableCell>
       <TableCell>
         <code className="text-xs bg-muted px-2 py-1 rounded">{document.shareId.substring(0, 12)}...</code>
@@ -184,17 +187,13 @@ const DocumentRow = memo(function DocumentRow({
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Public Details
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={async () => {
                     try {
-                      const response = await fetch(`/api/json/${document.shareId}/publish`, {
-                        method: 'DELETE',
-                      });
-                      if (response.ok) {
-                        onPublished?.();
-                      }
+                      await apiClient.delete(`/api/json/${document.shareId}/publish`);
+                      onPublished?.();
                     } catch (error) {
-                      console.error('Failed to unpublish:', error);
+                      logger.error({ err: error, shareId: document.shareId }, 'Failed to unpublish document');
                     }
                   }}
                   className="text-orange-600"
@@ -301,32 +300,34 @@ function LibraryPageComponent() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: ITEMS_PER_PAGE.toString(),
-        sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' : 
+        sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' :
               sortField === 'createdAt' && sortOrder === 'asc' ? 'recent' :
               sortField === 'title' ? 'title' :
               sortField === 'size' ? 'size' : 'recent',
       });
-      
+
       if (searchQuery.trim()) {
         params.set('search', searchQuery.trim());
       }
-      
-      const response = await fetch(`/api/saved?${params}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch library data');
+
+      interface SavedResponse {
+        documents?: LibraryDocument[];
+        pagination?: {
+          totalPages: number;
+          total: number;
+        };
       }
-      
-      const data = await response.json();
+
+      const data = await apiClient.get<SavedResponse>(`/api/saved?${params}`);
       setDocuments(data.documents || []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalCount(data.pagination?.total || 0);
     } catch (err) {
-      console.error('Failed to load documents:', err);
+      logger.error({ err, currentPage, sortField, sortOrder }, 'Failed to load documents');
       setError('Failed to load your library');
     } finally {
       setLoading(false);
@@ -348,18 +349,11 @@ function LibraryPageComponent() {
   // Delete document handler
   const handleDelete = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`/api/json/${id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete document');
-      }
-      
+      await apiClient.delete(`/api/json/${id}`);
       // Refresh the library
       loadDocuments();
     } catch (err) {
-      console.error('Failed to delete document:', err);
+      logger.error({ err, documentId: id }, 'Failed to delete document');
       setError('Failed to delete document');
     }
   }, [loadDocuments]);
@@ -373,7 +367,7 @@ function LibraryPageComponent() {
           window.location.href = '/';
         }
       } catch (err) {
-        console.error('Failed to load document:', err);
+        logger.error({ err, shareId }, 'Failed to load document');
         setError('Failed to load document');
       }
     },

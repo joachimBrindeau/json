@@ -2,12 +2,14 @@
  * Shared types for viewer components
  */
 
-export type ViewMode = 'tree' | 'raw' | 'flow';
+import type { JsonValue } from '@/lib/types/json';
+
+export type ViewMode = 'tree' | 'raw' | 'flow' | 'list';
 
 export interface JsonNode {
   id: string;
   key: string;
-  value: any;
+  value: JsonValue;
   type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
   level: number;
   path: string;
@@ -25,7 +27,7 @@ export interface JsonStats {
 }
 
 export interface ParseResult {
-  data: any | null;
+  data: JsonValue | null;
   error: string | null;
   stats: JsonStats | null;
 }

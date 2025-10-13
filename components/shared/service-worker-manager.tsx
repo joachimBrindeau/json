@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export function ServiceWorkerManager() {
   useEffect(() => {
@@ -14,19 +15,19 @@ export function ServiceWorkerManager() {
     const registerServiceWorker = async () => {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
-        
+
         // Check for updates
-        registration.update().catch(console.error);
-        
+        registration.update().catch(err => logger.error({ err }, 'Service worker update check failed'));
+
         // Check for updates periodically
         const intervalId = setInterval(() => {
-          registration.update().catch(console.error);
+          registration.update().catch(err => logger.error({ err }, 'Service worker periodic update failed'));
         }, 60 * 60 * 1000); // Every hour
         
         // Cleanup
         return () => clearInterval(intervalId);
       } catch (error) {
-        console.error('Service Worker registration failed:', error);
+        logger.error({ err: error }, 'Service Worker registration failed');
       }
     };
     

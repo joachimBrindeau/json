@@ -17,6 +17,7 @@ import { FlowPrimitiveNode } from '@/components/features/viewer/flow/nodes/FlowP
 import { jsonParser } from '@/components/features/viewer/flow/utils/flow-parser';
 import { getLayoutedSeaNodes } from '@/components/features/viewer/flow/utils/flow-layout';
 import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
+import { logger } from '@/lib/logger';
 
 const nodeTypes = {
   [NodeType.Object]: FlowObjectNode,
@@ -43,7 +44,7 @@ export const FlowDiagram: React.FC<FlowDiagramProps> = ({
         edges,
       };
     } catch (error) {
-      console.error('Error parsing JSON:', error);
+      logger.error({ err: error }, 'Error parsing JSON for flow diagram');
       return { nodes: [], edges: [] };
     }
   }, [data]);
@@ -70,6 +71,3 @@ export const FlowDiagram: React.FC<FlowDiagramProps> = ({
     </div>
   );
 };
-
-// Backwards compatibility
-export const JsonSeaDiagram = FlowDiagram;

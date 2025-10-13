@@ -1,6 +1,7 @@
 'use client';
 
 import type { WorkerResponse } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 // Common worker callback handler patterns
 
@@ -64,7 +65,7 @@ export class WorkerTaskQueue {
         try {
           item.task();
         } catch (error) {
-          console.error('Worker task failed:', error);
+          logger.error({ err: error, taskId: item.id }, 'Worker task failed');
         }
       }
     }

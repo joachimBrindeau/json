@@ -1,8 +1,11 @@
 // Version management for cache busting
 // This file tracks the application version and build timestamp
 
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
+
 export const APP_VERSION = '1.0.1'; // Increment this when making breaking changes
-export const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID || Date.now().toString();
+export const BUILD_ID = config.app.buildId;
 export const BUILD_TIME = new Date().toISOString();
 
 // Generate a unique version hash for cache busting
@@ -34,10 +37,10 @@ export function getStoredVersion(): string | null {
 // Force refresh if version mismatch detected
 export function handleVersionUpdate(): void {
   const storedVersion = getStoredVersion();
-  
+
   if (checkVersionMismatch(storedVersion)) {
-    console.log(`Version update detected: ${storedVersion} -> ${getVersionHash()}`);
-    
+    logger.info({ storedVersion, currentVersion: getVersionHash() }, 'Version update detected');
+
     // Clear all caches
     if ('caches' in window) {
       caches.keys().then(names => {

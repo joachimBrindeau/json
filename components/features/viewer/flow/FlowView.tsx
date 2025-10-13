@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import ReactFlow, {
   ReactFlowProvider,
   Controls,
@@ -15,6 +15,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { jsonParser } from '@/components/features/viewer/flow/utils/flow-parser';
 import { getLayoutedSeaNodes } from '@/components/features/viewer/flow/utils/flow-layout';
+import { extractNodeDetails, NodeDetails } from '@/components/features/viewer/flow/utils/flow-node-details';
+import { useFlowCollapse } from '@/components/features/viewer/flow/hooks/useFlowCollapse';
 import { FlowObjectNode } from '@/components/features/viewer/flow/nodes/FlowObjectNode';
 import { FlowArrayNode } from '@/components/features/viewer/flow/nodes/FlowArrayNode';
 import { FlowPrimitiveNode } from '@/components/features/viewer/flow/nodes/FlowPrimitiveNode';
@@ -22,6 +24,7 @@ import { FlowDefaultEdge } from '@/components/features/viewer/flow/edges/FlowDef
 import { FlowChainEdge } from '@/components/features/viewer/flow/edges/FlowChainEdge';
 import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 const nodeTypes = {
   object: FlowObjectNode,
@@ -34,6 +37,13 @@ const edgeTypes = {
   chain: FlowChainEdge,
 };
 
+const MINIMAP_NODE_COLORS = {
+  object: '#10b981',
+  array: '#3b82f6',
+  primitive: '#f59e0b',
+  default: '#94a3b8',
+} as const;
+
 interface JsonFlowViewProps {
   json: unknown;
   className?: string;
@@ -43,195 +53,81 @@ interface JsonFlowViewProps {
 function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNode, setSelectedNode] = useState<{
-    id: string;
-    key: string;
-    value: unknown;
-    type: string;
-    level: number;
-    path: string;
-    size: number;
-    childCount: number;
-  } | null>(null);
+  const [selectedNode, setSelectedNode] = useState<NodeDetails | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [allEdges, setAllEdges] = useState<Edge[]>([]);
 
-  // Define toggle handler first
-  const handleToggleCollapse = useCallback((nodeId: string) => {
-    setCollapsedNodes((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(nodeId)) {
-        newSet.delete(nodeId);
-      } else {
-        newSet.add(nodeId);
-      }
-      return newSet;
-    });
-  }, []);
+  const { handleToggleCollapse, getVisibleNodes, getVisibleEdges } = useFlowCollapse(allNodes, allEdges);
 
-  useEffect(() => {
-    if (!json) return;
+  // Memoize expensive parsing and layout operations to prevent re-computation on every render
+  const { parsedNodes, parsedEdges } = useMemo(() => {
+    if (!json) return { parsedNodes: [], parsedEdges: [] };
 
     try {
-      // Parse JSON into nodes and edges
       const { flowNodes, edges: parsedEdges } = jsonParser(json);
-
-      // Apply dagre layout
       const layoutedNodes = getLayoutedSeaNodes(flowNodes, parsedEdges);
 
-      // Convert to ReactFlow format with toggle callback
-      const reactFlowNodes = layoutedNodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        data: {
-          ...node.data,
-          onToggleCollapse: handleToggleCollapse,
-        },
-      }));
-
-      const flowEdges = parsedEdges.map((edge) => ({
-        ...edge,
-        type: edge.type || 'default', // Use our custom edge types
-        animated: false, // No animation needed, handled by custom edges
-        style: undefined, // Let custom edges handle styling
-      }));
-
-      // Store all nodes and edges
-      setAllNodes(reactFlowNodes);
-      setAllEdges(flowEdges);
-
-      // Initially show all nodes
-      setNodes(reactFlowNodes);
-      setEdges(flowEdges);
+      return {
+        parsedNodes: layoutedNodes,
+        parsedEdges: parsedEdges
+      };
     } catch (error) {
-      console.error('Error parsing JSON:', error);
+      logger.error({ err: error }, 'Error parsing JSON in FlowView');
+      return { parsedNodes: [], parsedEdges: [] };
     }
-  }, [json, setNodes, setEdges, handleToggleCollapse]);
+  }, [json]);
 
-  // Helper function to get all descendant node IDs
-  const getDescendantIds = useCallback((nodeId: string, edges: Edge[]): Set<string> => {
-    const descendants = new Set<string>();
-    const toProcess = [nodeId];
-
-    while (toProcess.length > 0) {
-      const currentId = toProcess.pop()!;
-
-      edges.forEach((edge) => {
-        if (edge.source === currentId && !descendants.has(edge.target)) {
-          descendants.add(edge.target);
-          toProcess.push(edge.target);
-        }
-      });
-    }
-
-    return descendants;
-  }, []);
-
-  // Update visible nodes when collapsed state changes
+  // Update nodes and edges when parsed data or collapse handler changes
   useEffect(() => {
-    if (allNodes.length === 0) return;
+    if (parsedNodes.length === 0) return;
 
-    // Calculate which nodes should be hidden
-    const hiddenNodes = new Set<string>();
-
-    collapsedNodes.forEach((collapsedId) => {
-      const descendants = getDescendantIds(collapsedId, allEdges);
-      descendants.forEach((id) => hiddenNodes.add(id));
-    });
-
-    // Filter nodes and edges
-    const visibleNodes = allNodes.map((node) => ({
-      ...node,
+    const reactFlowNodes = parsedNodes.map((node) => ({
+      id: node.id,
+      type: node.type,
+      position: node.position,
       data: {
         ...node.data,
-        isCollapsed: collapsedNodes.has(node.id),
         onToggleCollapse: handleToggleCollapse,
       },
-      hidden: hiddenNodes.has(node.id),
     }));
 
-    const visibleEdges = allEdges.map((edge) => ({
+    const flowEdges = parsedEdges.map((edge) => ({
       ...edge,
-      hidden: hiddenNodes.has(edge.target) || hiddenNodes.has(edge.source),
+      type: edge.type || 'default',
+      animated: false,
+      style: undefined,
     }));
 
-    setNodes(visibleNodes);
-    setEdges(visibleEdges);
-  }, [
-    collapsedNodes,
-    allNodes,
-    allEdges,
-    getDescendantIds,
-    setNodes,
-    setEdges,
-    handleToggleCollapse,
-  ]);
+    setAllNodes(reactFlowNodes);
+    setAllEdges(flowEdges);
+    setNodes(reactFlowNodes);
+    setEdges(flowEdges);
+  }, [parsedNodes, parsedEdges, handleToggleCollapse, setNodes, setEdges]);
+
+  useEffect(() => {
+    if (allNodes.length === 0) return;
+    setNodes(getVisibleNodes());
+    setEdges(getVisibleEdges());
+  }, [allNodes, allEdges, getVisibleNodes, getVisibleEdges, setNodes, setEdges]);
 
   const handleNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      // Single click - just call the callback if provided
       onNodeClick?.(node);
     },
     [onNodeClick]
   );
 
   const handleNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
-    // Double click - show details modal
-    // Convert node data to the format expected by NodeDetailsModal
-    let value;
-    let childCount = 0;
-    let key = node.id;
-
-    if (node.type === 'object') {
-      value = node.data.obj || {};
-      childCount = Object.keys(value).length;
-      key = node.data.isRootNode ? 'JSON Root' : node.id;
-    } else if (node.type === 'array') {
-      value = node.data.items || [];
-      childCount = value.length;
-      key = node.data.isRootNode ? 'JSON Root' : `[${node.data.arrayIndex}]`;
-    } else {
-      // Primitive node
-      value = node.data.value;
-      key = node.data.propertyK || node.id;
-    }
-
-    const nodeDetails = {
-      id: node.id,
-      key: key,
-      value: value,
-      type:
-        node.type === 'primitive'
-          ? value === null
-            ? 'null'
-            : Array.isArray(value)
-              ? 'array'
-              : typeof value
-          : node.type,
-      level: node.data.level || 0,
-      path: node.data.parentNodePathIds?.join('.') || 'root',
-      size: JSON.stringify(value).length,
-      childCount: childCount,
-    };
+    const nodeDetails = extractNodeDetails(node);
     setSelectedNode(nodeDetails);
     setShowDetails(true);
   }, []);
 
-  const miniMapNodeColor = useCallback((node: Node) => {
-    switch (node.type) {
-      case 'object':
-        return '#10b981';
-      case 'array':
-        return '#3b82f6';
-      case 'primitive':
-        return '#f59e0b';
-      default:
-        return '#94a3b8';
-    }
-  }, []);
+  const miniMapNodeColor = useCallback(
+    (node: Node) => MINIMAP_NODE_COLORS[node.type as keyof typeof MINIMAP_NODE_COLORS] || MINIMAP_NODE_COLORS.default,
+    []
+  );
 
   return (
     <>
@@ -284,7 +180,3 @@ export function FlowView(props: JsonFlowViewProps) {
     </ReactFlowProvider>
   );
 }
-
-// Backwards compatibility
-export default FlowView;
-export const JsonFlowView = FlowView;

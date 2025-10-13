@@ -1,5 +1,6 @@
 import { test, expect } from '../../utils/base-test';
 import { JSON_SAMPLES } from '../../fixtures/json-samples';
+import { config } from '@/lib/config';
 
 test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
   test.describe('Iframe Embedding Implementation', () => {
@@ -38,7 +39,7 @@ test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
       // Validate embed code structure
       expect(embedCode).toContain('<iframe');
       expect(embedCode).toContain(
-        `src="${process.env.BASE_URL || 'http://localhost:3000'}/embed/${jsonId}`
+        `src="${config.testing.baseUrl}/embed/${jsonId}`
       );
       expect(embedCode).toContain('width="800"');
       expect(embedCode).toContain('height="600"');

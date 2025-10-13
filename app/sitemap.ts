@@ -1,12 +1,14 @@
 import { MetadataRoute } from 'next';
 import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
+import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 // Function to get prisma conditionally
 function getPrisma() {
-  if (!process.env.DATABASE_URL) {
+  if (!config.database.url) {
     return null;
   }
-  
+
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { prisma } = require('@/lib/db');
   return prisma;
@@ -76,8 +78,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Only try to get dynamic content if database is available
-  if (!process.env.DATABASE_URL || !prisma) {
-    console.warn('Database not available for sitemap, returning static pages only');
+  if (!config.database.url || !prisma) {
+    logger.warn({ staticPagesCount: staticPages.length }, 'Database not available for sitemap, returning static pages only');
     return staticPages;
   }
 
@@ -166,11 +168,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    console.log(`Generated sitemap with ${staticPages.length} static pages and ${dynamicPages.length} dynamic pages`);
+    logger.info({
+      staticPagesCount: staticPages.length,
+      dynamicPagesCount: dynamicPages.length
+    }, 'Sitemap generation completed successfully');
     return [...staticPages, ...dynamicPages];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
-    console.log(`Falling back to ${staticPages.length} static pages only`);
+    logger.error({
+      err: error,
+      staticPagesCount: staticPages.length
+    }, 'Error generating sitemap, falling back to static pages');
     return staticPages; // Return static pages as fallback
   }
 }

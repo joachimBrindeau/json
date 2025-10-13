@@ -3,12 +3,16 @@ import { persist } from 'zustand/middleware';
 import type { JsonSeaConfig } from '@/lib/types';
 import { getSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
+import { logger } from '@/lib/logger';
+import { apiClient, api } from '@/lib/api/client';
+import type { JsonValue } from '@/lib/types/json';
+import { config } from '@/lib/config';
 
 interface JsonDocument {
   id: string;
   shareId: string;
   title?: string;
-  content: unknown;
+  content: JsonValue;
   size: number;
   nodeCount: number;
   maxDepth: number;
@@ -50,7 +54,7 @@ interface BackendAppState {
   updateSession: () => Promise<void>;
   uploadJson: (file: File, title?: string) => Promise<JsonDocument>;
   loadJson: (id: string) => Promise<boolean>;
-  analyzeJson: (content: string) => Promise<unknown>;
+  analyzeJson: (content: string) => Promise<JsonValue>;
   shareJson: () => Promise<string>;
   saveJson: (title?: string) => Promise<void>;
   deleteDocument: (shareId: string) => Promise<void>;
@@ -321,7 +325,7 @@ export const useBackendStore = create<BackendAppState>()(
             isAuthenticated: !!session,
           });
         } catch (error) {
-          console.error('Failed to update session:', error);
+          logger.error({ err: error }, 'Failed to update session');
           set({ session: null, isAuthenticated: false });
         }
       },
@@ -330,7 +334,7 @@ export const useBackendStore = create<BackendAppState>()(
         const { anonymousJsonIds, isAuthenticated, anonymousSessionId } = get();
         if (!isAuthenticated && !anonymousJsonIds.includes(jsonId)) {
           const updatedIds = [...anonymousJsonIds, jsonId];
-          const updates: any = {
+          const updates: Partial<BackendAppState> = {
             anonymousJsonIds: updatedIds,
             showLibraryHint: updatedIds.length >= 2, // Show hint after 2nd JSON
           };
@@ -347,17 +351,10 @@ export const useBackendStore = create<BackendAppState>()(
         if (!isAuthenticated || anonymousJsonIds.length === 0) return;
 
         try {
-          const response = await fetch('/api/auth/migrate-anonymous', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ anonymousJsonIds }),
-          });
-
-          if (response.ok) {
-            set({ anonymousJsonIds: [], showLibraryHint: false });
-          }
+          await apiClient.post('/api/auth/migrate-anonymous', { anonymousJsonIds });
+          set({ anonymousJsonIds: [], showLibraryHint: false });
         } catch (error) {
-          console.error('Failed to migrate anonymous data:', error);
+          logger.error({ err: error }, 'Failed to migrate anonymous data');
         }
       },
 
@@ -385,25 +382,28 @@ export const useBackendStore = create<BackendAppState>()(
             }));
           }, 100);
 
-          const response = await fetch('/api/json/upload', {
-            method: 'POST',
-            body: formData,
-          });
+          interface UploadResponse {
+            document: {
+              id: string;
+              shareId: string;
+              title: string;
+              size: number;
+              nodeCount: number;
+              maxDepth: number;
+              complexity: string;
+              createdAt: string;
+            };
+          }
+
+          const result = await apiClient.post<UploadResponse>('/api/json/upload', formData);
 
           clearInterval(progressInterval);
           set({ uploadProgress: 100 });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Upload failed');
-          }
-
-          const result = await response.json();
           const document: JsonDocument = {
             id: result.document.id,
             shareId: result.document.shareId,
             title: result.document.title,
-            content: JSON.parse(await file.text()),
+            content: JSON.parse(await file.text()) as JsonValue,
             size: result.document.size,
             nodeCount: result.document.nodeCount,
             maxDepth: result.document.maxDepth,
@@ -428,7 +428,7 @@ export const useBackendStore = create<BackendAppState>()(
 
           return document;
         } catch (error) {
-          console.error('Upload failed:', error);
+          logger.error({ err: error, fileName: file.name }, 'Upload failed');
           set({ isUploading: false, uploadProgress: 0 });
           throw error;
         }
@@ -437,16 +437,14 @@ export const useBackendStore = create<BackendAppState>()(
       loadJson: async (id: string) => {
         try {
           // First, try to get metadata
-          const metaResponse = await fetch(`/api/json/stream/${id}`, {
-            method: 'HEAD',
-          });
+          const metaResponse = await api.head(`api/json/stream/${id}`);
 
           if (!metaResponse.ok) {
             return false;
           }
 
           // Get the streaming data
-          const response = await fetch(`/api/json/stream/${id}`);
+          const response = await api.get(`api/json/stream/${id}`);
 
           if (!response.ok) {
             return false;
@@ -493,29 +491,16 @@ export const useBackendStore = create<BackendAppState>()(
 
           return true;
         } catch (error) {
-          console.error('Failed to load JSON:', error);
+          logger.error({ err: error, id }, 'Failed to load JSON');
           return false;
         }
       },
 
       analyzeJson: async (content: string) => {
         try {
-          const response = await fetch('/api/json/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ content }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Analysis failed');
-          }
-
-          return await response.json();
+          return await apiClient.post('/api/json/analyze', { content });
         } catch (error) {
-          console.error('Analysis failed:', error);
+          logger.error({ err: error }, 'Analysis failed');
           throw error;
         }
       },
@@ -539,24 +524,24 @@ export const useBackendStore = create<BackendAppState>()(
             const hashArray = Array.from(new Uint8Array(contentHash));
             const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
+            interface FindByContentResponse {
+              document?: JsonDocument;
+            }
+
             // Check if we already have a document with this content hash
-            const response = await fetch('/api/json/find-by-content', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contentHash: hashHex, content: currentJson }),
+            const existingDocument = await apiClient.post<FindByContentResponse>('/api/json/find-by-content', {
+              contentHash: hashHex,
+              content: currentJson,
             });
 
-            if (response.ok) {
-              const existingDocument = await response.json();
-              if (existingDocument.document) {
-                // Update our state to reference the existing document
-                set({
-                  currentDocument: existingDocument.document,
-                  shareId: existingDocument.document.shareId,
-                  isDirty: false,
-                });
-                return existingDocument.document.shareId;
-              }
+            if (existingDocument.document) {
+              // Update our state to reference the existing document
+              set({
+                currentDocument: existingDocument.document,
+                shareId: existingDocument.document.shareId,
+                isDirty: false,
+              });
+              return existingDocument.document.shareId;
             }
 
             // If no existing document found, save it as new
@@ -566,7 +551,7 @@ export const useBackendStore = create<BackendAppState>()(
               return newDocument.shareId;
             }
           } catch (error) {
-            console.error('Failed to save JSON before sharing:', error);
+            logger.error({ err: error }, 'Failed to save JSON before sharing');
             throw new Error('Failed to save JSON before sharing');
           }
         }
@@ -580,31 +565,17 @@ export const useBackendStore = create<BackendAppState>()(
           throw new Error('No document to update');
         }
 
+        interface UpdateTitleResponse {
+          document: {
+            title: string;
+          };
+        }
+
         try {
-          const response = await fetch(`/api/json/${currentDocument.id}/title`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ title }),
-          });
-
-          if (!response.ok) {
-            // For now, if the API fails, just update locally
-            // This is a temporary workaround until the database is properly set up
-            set((state) => ({
-              currentDocument: state.currentDocument
-                ? {
-                    ...state.currentDocument,
-                    title: title,
-                  }
-                : null,
-            }));
-
-            return; // Don't throw error, just update locally
-          }
-
-          const result = await response.json();
+          const result = await apiClient.put<UpdateTitleResponse>(
+            `/api/json/${currentDocument.id}/title`,
+            { title }
+          );
 
           // Update the local document
           set((state) => ({
@@ -616,7 +587,7 @@ export const useBackendStore = create<BackendAppState>()(
               : null,
           }));
         } catch (error) {
-          console.error('Failed to update title:', error);
+          logger.error({ err: error, documentId: currentDocument.id }, 'Failed to update title');
 
           // Fallback: update locally if API fails
           set((state) => ({
@@ -637,21 +608,15 @@ export const useBackendStore = create<BackendAppState>()(
 
         if (currentDocument) {
           // Update existing document
+          interface UpdateContentResponse {
+            document: Partial<JsonDocument>;
+          }
+
           try {
-            const response = await fetch(`/api/json/${currentDocument.id}/content`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ content: currentJson }),
-            });
-
-            if (!response.ok) {
-              const error = await response.json();
-              throw new Error(error.error || 'Failed to save JSON');
-            }
-
-            const result = await response.json();
+            const result = await apiClient.put<UpdateContentResponse>(
+              `/api/json/${currentDocument.id}/content`,
+              { content: currentJson }
+            );
 
             // Update the local document with new stats and mark as not dirty
             set((state) => ({
@@ -663,13 +628,13 @@ export const useBackendStore = create<BackendAppState>()(
                 : null,
               isDirty: false,
             }));
-            
+
             // Notify library to refresh
             if (onLibraryUpdate) {
               onLibraryUpdate();
             }
           } catch (error) {
-            console.error('Failed to save JSON:', error);
+            logger.error({ err: error, documentId: currentDocument.id }, 'Failed to save JSON');
             throw error;
           }
         } else {
@@ -692,17 +657,7 @@ export const useBackendStore = create<BackendAppState>()(
         const { currentDocument, onLibraryUpdate } = get();
 
         try {
-          const response = await fetch(`/api/json/${shareId}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to delete document');
-          }
+          await apiClient.delete(`/api/json/${shareId}`);
 
           // If we deleted the current document, clear it
           if (currentDocument?.shareId === shareId) {
@@ -718,7 +673,7 @@ export const useBackendStore = create<BackendAppState>()(
             onLibraryUpdate();
           }
         } catch (error) {
-          console.error('Failed to delete document:', error);
+          logger.error({ err: error, shareId }, 'Failed to delete document');
           throw error;
         }
       },
@@ -796,6 +751,6 @@ export const useBackendStore = create<BackendAppState>()(
 );
 
 // Expose store for testing in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && config.isDevelopment) {
   (window as any).__backendStore = useBackendStore;
 }

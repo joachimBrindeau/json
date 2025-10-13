@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, Download, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { logger } from '@/lib/logger';
 
 interface EmbedPageProps {
   params: Promise<{ id: string }>;
@@ -96,7 +97,9 @@ export default function EmbedPage({ params }: EmbedPageProps) {
         setJsonData(JSON.stringify(reconstructed, null, 2));
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load JSON');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load JSON';
+        setError(errorMessage);
+        logger.error({ err, shareId }, 'Failed to load JSON data for embed');
         setLoading(false);
       }
     };

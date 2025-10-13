@@ -16,6 +16,9 @@ import {
   SearchParams,
   FilterOptions
 } from './common';
+import { logger } from '@/lib/logger';
+import { analyzeJsonStream } from '@/lib/json';
+import { createHash } from 'crypto';
 
 // Document creation input type
 export interface CreateDocumentInput {
@@ -110,7 +113,7 @@ export async function getDocumentById(
       data: formatDocumentForResponse(document, options.includeContent)
     };
   } catch (error) {
-    console.error('Get document error:', error);
+    logger.error({ err: error, documentId: id, userId }, 'Get document error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -160,7 +163,7 @@ export async function getDocumentByShareId(
       data: formatDocumentForResponse(document, options.includeContent)
     };
   } catch (error) {
-    console.error('Get document by share ID error:', error);
+    logger.error({ err: error, shareId }, 'Get document by share ID error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -232,7 +235,7 @@ export async function getUserDocuments(
       }
     };
   } catch (error) {
-    console.error('Get user documents error:', error);
+    logger.error({ err: error, userId, options }, 'Get user documents error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -317,7 +320,7 @@ export async function getPublicDocuments(
       }
     };
   } catch (error) {
-    console.error('Get public documents error:', error);
+    logger.error({ err: error, options }, 'Get public documents error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -363,7 +366,93 @@ export async function createDocument(
       data: formatDocumentForResponse(document, true)
     };
   } catch (error) {
-    console.error('Create document error:', error);
+    logger.error({ err: error, input }, 'Create document error');
+    return {
+      success: false,
+      ...handleDatabaseError(error)
+    };
+  }
+}
+
+/**
+ * Simplified interface for creating JSON documents from API routes
+ */
+export interface CreateJsonDocumentInput {
+  userId: string;
+  title: string;
+  description?: string;
+  content: string | any;
+  category?: string;
+  tags?: string[];
+  richContent?: string;
+  visibility?: 'private' | 'public';
+}
+
+/**
+ * Create a JSON document with automatic analysis (simplified API for routes)
+ */
+export async function createJsonDocument(
+  input: CreateJsonDocumentInput
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  status?: number;
+}> {
+  try {
+    // Parse and normalize content
+    const jsonString = typeof input.content === 'string'
+      ? input.content
+      : JSON.stringify(input.content, null, 2);
+
+    const parsedContent = typeof input.content === 'string'
+      ? JSON.parse(input.content)
+      : input.content;
+
+    // Analyze JSON structure
+    const analysis = await analyzeJsonStream(jsonString);
+
+    // Generate checksum for deduplication
+    const checksum = createHash('sha256').update(jsonString).digest('hex');
+
+    // Generate unique share ID
+    const shareId = createHash('sha256')
+      .update(`${Date.now()}-${Math.random()}-${checksum}`)
+      .digest('hex')
+      .substring(0, 24);
+
+    // Create document with analyzed data
+    const document = await prisma.jsonDocument.create({
+      data: {
+        shareId,
+        title: input.title,
+        description: input.description || '',
+        content: parsedContent,
+        checksum,
+        size: BigInt(jsonString.length),
+        nodeCount: analysis.stats?.nodes || 0,
+        maxDepth: analysis.stats?.maxDepth || 0,
+        complexity: analysis.complexity || 'Low',
+        visibility: input.visibility || 'private',
+        userId: input.userId,
+        category: input.category,
+        tags: input.tags || [],
+        metadata: {
+          analysis,
+          richContent: input.richContent || '',
+          createdAt: new Date().toISOString(),
+          source: 'api'
+        }
+      },
+      select: getDocumentDetailSelect(false, false)
+    });
+
+    return {
+      success: true,
+      data: formatDocumentForResponse(document, true)
+    };
+  } catch (error) {
+    logger.error({ err: error, input }, 'Create JSON document error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -421,7 +510,7 @@ export async function updateDocument(
       data: formatDocumentForResponse(document, true)
     };
   } catch (error) {
-    console.error('Update document error:', error);
+    logger.error({ err: error, documentId: id, userId }, 'Update document error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -480,7 +569,7 @@ export async function deleteDocument(
 
     return { success: true };
   } catch (error) {
-    console.error('Delete document error:', error);
+    logger.error({ err: error, documentId: id, userId, hardDelete: options.hardDelete }, 'Delete document error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -528,7 +617,7 @@ export async function findDocumentsByContent(
       data: documents.map(doc => formatDocumentForResponse(doc, false))
     };
   } catch (error) {
-    console.error('Find documents by content error:', error);
+    logger.error({ err: error, userId }, 'Find documents by content error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -596,13 +685,13 @@ export async function publishDocument(
       data: formatDocumentForResponse(document, true)
     };
   } catch (error) {
-    console.error('Publish document error:', error);
-    
+    logger.error({ err: error, documentId: id, userId, slug: publishData.slug }, 'Publish document error');
+
     // Handle unique constraint violation for slug
     if ((error as any)?.code === 'P2002' && (error as any)?.meta?.target?.includes('slug')) {
       return { success: false, error: 'Slug already exists. Please choose a different slug.', status: 409 };
     }
-    
+
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -668,7 +757,7 @@ export async function getDocumentStats(userId: string): Promise<{
       }
     };
   } catch (error) {
-    console.error('Get document stats error:', error);
+    logger.error({ err: error, userId }, 'Get document stats error');
     return {
       success: false,
       ...handleDatabaseError(error)
@@ -696,7 +785,7 @@ export async function cleanupExpiredDocuments(): Promise<{
       data: { deletedCount: result.count }
     };
   } catch (error) {
-    console.error('Cleanup expired documents error:', error);
+    logger.error({ err: error }, 'Cleanup expired documents error');
     return {
       success: false,
       ...handleDatabaseError(error)

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ZodSchema, ZodError } from 'zod';
 import { createHash } from 'crypto';
+import { logger } from '@/lib/logger';
 // Simple rate limiter interface (compatible with the one in middleware/rate-limit.ts)
 interface RateLimiter {
   isAllowed(identifier: string): boolean;
@@ -100,7 +101,7 @@ export function withAuth<T extends any[]>(
  * Provides consistent error responses and logging
  */
 export function handleApiError(error: unknown, context?: string): NextResponse {
-  console.error(`API Error${context ? ` in ${context}` : ''}:`, error);
+  logger.error({ err: error, context }, `API Error${context ? ` in ${context}` : ''}`);
 
   // Handle Zod validation errors
   if (error instanceof ZodError) {

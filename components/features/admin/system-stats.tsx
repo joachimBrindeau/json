@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { logger } from '@/lib/logger'
+import { apiClient } from '@/lib/api/client'
+import { useToast } from '@/hooks/use-toast'
 
 interface SystemStats {
   database: {
@@ -34,6 +37,7 @@ interface SystemStats {
 }
 
 export function SystemStats() {
+  const { toast } = useToast()
   const [stats, setStats] = useState<SystemStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -45,13 +49,15 @@ export function SystemStats() {
 
   const fetchSystemStats = async () => {
     try {
-      const response = await fetch('/api/admin/system/stats')
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data)
-      }
+      const data = await apiClient.get<SystemStats>('/api/admin/system/stats')
+      setStats(data)
     } catch (error) {
-      console.error('Failed to fetch system stats:', error)
+      logger.error({ err: error }, 'Failed to fetch system stats')
+      toast({
+        title: 'Failed to load system stats',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -186,30 +192,38 @@ export function SystemStats() {
             </Button>
             <Button variant="outline" onClick={async () => {
               try {
-                const response = await fetch('/api/admin/system/cache', { method: 'DELETE' });
-                if (response.ok) {
-                  alert('Cache cleared successfully');
-                  fetchSystemStats();
-                } else {
-                  alert('Failed to clear cache');
-                }
+                await apiClient.delete('/api/admin/system/cache')
+                toast({
+                  title: 'Cache cleared',
+                  description: 'System cache cleared successfully'
+                })
+                fetchSystemStats()
               } catch (error) {
-                alert('Error clearing cache');
+                logger.error({ err: error }, 'Error clearing cache')
+                toast({
+                  title: 'Failed to clear cache',
+                  description: error instanceof Error ? error.message : 'Please try again',
+                  variant: 'destructive'
+                })
               }
             }} className="w-full sm:w-auto">
               Clear Cache
             </Button>
             <Button variant="outline" onClick={async () => {
               try {
-                const response = await fetch('/api/admin/system/optimize', { method: 'POST' });
-                if (response.ok) {
-                  alert('Database optimization started');
-                  fetchSystemStats();
-                } else {
-                  alert('Failed to optimize database');
-                }
+                await apiClient.post('/api/admin/system/optimize')
+                toast({
+                  title: 'Optimization started',
+                  description: 'Database optimization is now running'
+                })
+                fetchSystemStats()
               } catch (error) {
-                alert('Error optimizing database');
+                logger.error({ err: error }, 'Error optimizing database')
+                toast({
+                  title: 'Failed to optimize database',
+                  description: error instanceof Error ? error.message : 'Please try again',
+                  variant: 'destructive'
+                })
               }
             }} className="w-full sm:w-auto">
               Optimize Database
