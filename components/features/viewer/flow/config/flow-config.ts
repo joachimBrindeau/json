@@ -65,7 +65,7 @@ export const FLOW_DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions | undefined = undefin
  * MiniMap node color function
  * Returns color based on node type for the minimap
  */
-export const getMinimapNodeColor = (node: any): string => {
+export const getMinimapNodeColor = (node: Node): string => {
   switch (node.type) {
     case NodeType.Object:
       return '#3b82f6'; // blue-500

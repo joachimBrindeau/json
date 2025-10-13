@@ -51,5 +51,6 @@ export { extractNodeDetails } from './utils/flow-node-details';
 export { createDefaultEdge, createChainEdge, addPrefixChain } from './utils/flow-edge-factory';
 export * from './utils/flow-utils';
 export * from './utils/flow-types';
+export * from './utils/flow-type-guards';
 export * from './utils/flow-constants';
 

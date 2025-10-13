@@ -5,14 +5,14 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Node, Edge, useNodesState, useEdgesState } from 'reactflow';
+import { Node, Edge, useNodesState, useEdgesState, NodeChange, EdgeChange } from 'reactflow';
 import { useFlowCollapse } from './useFlowCollapse';
 
 export type FlowNodesState = {
   nodes: Node[];
   edges: Edge[];
-  onNodesChange: (changes: any) => void;
-  onEdgesChange: (changes: any) => void;
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
   handleToggleCollapse: (nodeId: string) => void;
 };
 

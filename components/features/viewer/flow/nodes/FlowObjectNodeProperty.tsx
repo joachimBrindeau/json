@@ -3,6 +3,7 @@ import { validateJsonDataType, isEmptyArray } from '@/components/features/viewer
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
 import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import type { JsonValue } from '@/lib/types/json';
 
 const isEmptyObject = (obj: object): boolean => {
   return Object.keys(obj).length === 0;
@@ -11,7 +12,7 @@ const isEmptyObject = (obj: object): boolean => {
 type Props = {
   nodeId: string;
   propertyK: string;
-  propertyV: any;
+  propertyV: JsonValue;
   hasChildNode: boolean;
 };
 

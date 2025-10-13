@@ -11,7 +11,7 @@ import {
  * Returns true if argument is an 'array' and false otherwise.
  * @param {unknown} v - the value to check
  */
-export const isArray = <T extends any[]>(v: unknown): v is T => {
+export const isArray = <T = unknown>(v: unknown): v is T[] => {
   return Array.isArray(v);
 };
 
@@ -70,7 +70,7 @@ export const isValidJson = (code: string): boolean => {
   }
 };
 
-export const formatJsonLikeData = (data: object | any[] | string): string => {
+export const formatJsonLikeData = (data: object | unknown[] | string): string => {
   const stringifyTarget = isString(data) ? JSON.parse(data) : data;
   const replacer: (number | string)[] | null = null;
   const space: string | number = 2;
@@ -78,10 +78,10 @@ export const formatJsonLikeData = (data: object | any[] | string): string => {
   return JSON.stringify(stringifyTarget, replacer, space);
 };
 
-export const isLastItemOfArray = <T extends any[]>(index: number, array: T): boolean =>
+export const isLastItemOfArray = <T>(index: number, array: readonly T[]): boolean =>
   index === array.length - 1;
 
-export const isEmptyArray = <T extends any[]>(array: T): boolean => array.length < 1;
+export const isEmptyArray = <T>(array: readonly T[]): boolean => array.length < 1;
 
 export const validateJsonDataType = (
   v: unknown
