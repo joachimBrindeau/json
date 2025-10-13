@@ -3,6 +3,7 @@
  */
 
 import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node } from 'reactflow';
+import { FlowRootNode } from '../nodes/FlowRootNode';
 import { FlowObjectNode } from '../nodes/FlowObjectNode';
 import { FlowArrayNode } from '../nodes/FlowArrayNode';
 import { FlowPrimitiveNode } from '../nodes/FlowPrimitiveNode';
@@ -15,6 +16,7 @@ import { NodeType } from '../utils/flow-types';
  * Single source of truth for all node components
  */
 export const FLOW_NODE_TYPES: NodeTypes = {
+  [NodeType.Root]: FlowRootNode,
   [NodeType.Object]: FlowObjectNode,
   [NodeType.Array]: FlowArrayNode,
   [NodeType.Primitive]: FlowPrimitiveNode,
@@ -67,6 +69,8 @@ export const FLOW_DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions | undefined = undefin
  */
 export const getMinimapNodeColor = (node: Node): string => {
   switch (node.type) {
+    case NodeType.Root:
+      return '#2563eb'; // blue-600 (darker for root)
     case NodeType.Object:
       return '#3b82f6'; // blue-500
     case NodeType.Array:

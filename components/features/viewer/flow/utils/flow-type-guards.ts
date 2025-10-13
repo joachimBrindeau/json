@@ -7,13 +7,22 @@
 import { Node } from 'reactflow';
 import {
   NodeType,
+  RootSeaNode,
   ObjectSeaNode,
   ArraySeaNode,
   PrimitiveSeaNode,
+  RootNodeData,
   ObjectNodeData,
   ArrayNodeData,
   PrimitiveNodeData,
 } from './flow-types';
+
+/**
+ * Type guard to check if a node is a RootSeaNode
+ */
+export function isRootNode(node: Node): node is RootSeaNode {
+  return node.type === NodeType.Root;
+}
 
 /**
  * Type guard to check if a node is an ObjectSeaNode
@@ -34,6 +43,24 @@ export function isArrayNode(node: Node): node is ArraySeaNode {
  */
 export function isPrimitiveNode(node: Node): node is PrimitiveSeaNode {
   return node.type === NodeType.Primitive;
+}
+
+/**
+ * Type guard to check if node data is RootNodeData
+ */
+export function isRootNodeData(data: unknown): data is RootNodeData {
+  if (!data || typeof data !== 'object') return false;
+  const d = data as Record<string, unknown>;
+  return (
+    'dataType' in d &&
+    (d.dataType === 'object' || d.dataType === 'array') &&
+    'label' in d &&
+    typeof d.label === 'string' &&
+    'childType' in d &&
+    (d.childType === 'object' || d.childType === 'array') &&
+    'childCount' in d &&
+    typeof d.childCount === 'number'
+  );
 }
 
 /**
@@ -84,6 +111,16 @@ export function isPrimitiveNodeData(data: unknown): data is PrimitiveNodeData {
     'arrayIndex' in d &&
     typeof d.arrayIndex === 'number'
   );
+}
+
+/**
+ * Assert that a node is a RootSeaNode
+ * Throws an error if the assertion fails
+ */
+export function assertRootNode(node: Node): asserts node is RootSeaNode {
+  if (!isRootNode(node)) {
+    throw new Error(`Expected RootSeaNode but got ${node.type}`);
+  }
 }
 
 /**

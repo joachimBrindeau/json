@@ -9,7 +9,7 @@ import { Edge } from 'reactflow';
 import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import { isArray, isObject, getJsonDataType, validateJsonDataType } from './flow-utils';
 import { JsonDataType, NodeType } from './flow-types';
-import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
+import type { RootSeaNode, ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
 import { getXYPosition } from './flow-layout';
 import { createDefaultEdge, createChainEdge, type DefaultEdgeParams } from './flow-edge-factory';
 import { logger } from '@/lib/logger';
@@ -54,6 +54,31 @@ const addDefaultEdge = (context: ParserContext, params: DefaultEdgeParams): void
  */
 const addChainEdge = (context: ParserContext, source: string, target: string): void => {
   context.chainEdges.push(createChainEdge({ source, target }));
+};
+
+/**
+ * Create a root node
+ */
+const createRootNode = (
+  nodeId: string,
+  childType: 'object' | 'array',
+  childCount: number,
+  label: string = 'JSON Root'
+): RootSeaNode => {
+  return {
+    id: nodeId,
+    type: NodeType.Root,
+    position: getXYPosition(ROOT_NODE_DEPTH),
+    data: {
+      depth: ROOT_NODE_DEPTH,
+      dataType: childType === 'object' ? JsonDataType.Object : JsonDataType.Array,
+      stringifiedJson: label,
+      parentNodePathIds: ROOT_PARENT_NODE_PATH_IDS,
+      label,
+      childType,
+      childCount,
+    },
+  };
 };
 
 /**
@@ -260,6 +285,7 @@ const parseArray = (
 
 /**
  * Main parser function - converts JSON to flow nodes and edges
+ * Creates a root node for better UX, then parses the actual data
  */
 export const jsonParser = (
   json: object | unknown[]
@@ -273,23 +299,49 @@ export const jsonParser = (
     chainEdges: [],
     visitedObjects: new WeakSet(),
   };
-  
+
   let flowNodes: SeaNode[] = [];
-  
+
+  // Create root node
+  const rootNodeId = formatNodeId(context.nodeSequence);
+  context.nodeSequence++;
+
   if (isObject(json)) {
-    // Root is an object
-    flowNodes = parseObject(context, json, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, null, true);
+    // Root is an object - create root node + parse object
+    const childCount = Object.keys(json).length;
+    const rootNode = createRootNode(rootNodeId, 'object', childCount);
+    flowNodes.push(rootNode);
+
+    // Parse the actual object at depth 1
+    const nextDepth = ROOT_NODE_DEPTH + 1;
+    const nextParentNodePathIds = [rootNodeId];
+    const objectNodes = parseObject(context, json, nextDepth, nextParentNodePathIds, null, false);
+    flowNodes.push(...objectNodes);
+
+    // Create edge from root to first object node
+    if (objectNodes.length > 0) {
+      context.defaultEdges.push(createDefaultEdge({
+        sourceNodeId: rootNodeId,
+        targetNodeId: objectNodes[0].id,
+        sourceHandleId: 'root-output',
+        targetHandleId: undefined,
+      }));
+    }
   } else if (isArray(json)) {
-    // Root is an array - create root array node first
-    const rootNodeId = formatNodeId(context.nodeSequence);
-    flowNodes.push(createArrayNode(rootNodeId, ROOT_NODE_DEPTH, ARRAY_ROOT_NODE_INDEX, json, ROOT_PARENT_NODE_PATH_IDS, true));
-    
+    // Root is an array - create root node + parse array
+    const childCount = json.length;
+    const rootNode = createRootNode(rootNodeId, 'array', childCount);
+    flowNodes.push(rootNode);
+
+    // Parse the array at depth 1
     const nextDepth = ROOT_NODE_DEPTH + 1;
     const nextParentNodePathIds = [rootNodeId];
     const arrayNodes = parseArray(context, json, nextDepth, nextParentNodePathIds, rootNodeId, undefined);
     flowNodes.push(...arrayNodes);
+
+    // Edge from root to array items is created by parseArray via chain edges
   }
-  
+
   return {
     flowNodes,
     edges: [...context.defaultEdges, ...context.chainEdges],

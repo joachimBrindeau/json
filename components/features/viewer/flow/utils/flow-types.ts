@@ -5,6 +5,7 @@ import { Node } from 'reactflow';
  * @see https://www.w3schools.com/js/js_json_datatypes.asp
  */
 export enum NodeType {
+  Root = 'root',
   Object = 'object',
   Array = 'array',
   /**
@@ -41,6 +42,13 @@ type SharedNodeData = {
   onToggleCollapse?: (nodeId: string) => void; // Callback to toggle collapse state
 };
 
+export type RootNodeData = SharedNodeData & {
+  dataType: JsonDataType.Object | JsonDataType.Array;
+  label: string; // e.g., "JSON Root", "root", or filename
+  childType: 'object' | 'array'; // Type of the actual root data
+  childCount: number; // Number of top-level properties or items
+};
+
 export type ObjectNodeData = SharedNodeData & {
   dataType: JsonDataType.Object;
   /**
@@ -68,8 +76,9 @@ export type PrimitiveNodeData = SharedNodeData & {
   value: string | number | boolean | null;
 };
 
+export type RootSeaNode = Node<RootNodeData, NodeType.Root>;
 export type ObjectSeaNode = Node<ObjectNodeData, NodeType.Object>;
 export type ArraySeaNode = Node<ArrayNodeData, NodeType.Array>;
 export type PrimitiveSeaNode = Node<PrimitiveNodeData, NodeType.Primitive>;
 
-export type SeaNode = ObjectSeaNode | ArraySeaNode | PrimitiveSeaNode;
+export type SeaNode = RootSeaNode | ObjectSeaNode | ArraySeaNode | PrimitiveSeaNode;

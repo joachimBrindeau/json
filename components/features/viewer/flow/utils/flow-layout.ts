@@ -1,7 +1,7 @@
 import * as dagre from 'dagre';
 import { Edge, XYPosition } from 'reactflow';
 import { sizes } from './flow-constants';
-import { SeaNode } from './flow-types';
+import { SeaNode, NodeType } from './flow-types';
 import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-utils';
 
 /**
@@ -9,6 +9,11 @@ import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-util
  * Single Responsibility: Height calculation only
  */
 const calculateNodeHeight = (flowNode: SeaNode): number => {
+  // Root node has fixed height
+  if (flowNode.type === NodeType.Root) {
+    return 80; // Fixed height for root node
+  }
+
   if (isArraySeaNode(flowNode)) {
     return sizes.arrayNodeSize;
   }
