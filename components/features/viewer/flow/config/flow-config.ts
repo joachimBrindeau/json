@@ -2,7 +2,7 @@
  * Flow view configuration - centralized constants and settings
  */
 
-import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions } from 'reactflow';
+import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node } from 'reactflow';
 import { FlowObjectNode } from '../nodes/FlowObjectNode';
 import { FlowArrayNode } from '../nodes/FlowArrayNode';
 import { FlowPrimitiveNode } from '../nodes/FlowPrimitiveNode';

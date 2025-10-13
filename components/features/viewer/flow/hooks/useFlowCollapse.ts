@@ -84,7 +84,7 @@ export const useFlowCollapse = (allNodes: Node[], allEdges: Edge[]) => {
       },
       hidden: hiddenNodes.has(node.id),
     }));
-  }, [allNodes, collapsedNodes, handleToggleCollapse, hiddenNodes]);
+  }, [allNodes, collapsedNodes, hiddenNodes, handleToggleCollapse]);
 
   const getVisibleEdges = useCallback(() => {
     if (allEdges.length === 0) return allEdges;

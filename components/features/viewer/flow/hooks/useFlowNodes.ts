@@ -54,9 +54,8 @@ export const useFlowNodes = (
 
     setAllNodes(reactFlowNodes);
     setAllEdges(flowEdges);
-    setNodes(reactFlowNodes);
-    setEdges(flowEdges);
-  }, [parsedNodes, parsedEdges, handleToggleCollapse, onToggleCollapse, setNodes, setEdges]);
+    // Don't set nodes/edges here - let the second effect handle visibility
+  }, [parsedNodes, parsedEdges, handleToggleCollapse, onToggleCollapse]);
 
   // Update visible nodes when collapse state changes
   useEffect(() => {

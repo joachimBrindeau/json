@@ -12,6 +12,12 @@ import { JsonDataType, NodeType } from './flow-types';
 import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
 import { getXYPosition } from './flow-layout';
 import { createDefaultEdge, createChainEdge, type DefaultEdgeParams } from './flow-edge-factory';
+import { logger } from '@/lib/logger';
+
+/**
+ * Maximum depth to prevent stack overflow with deeply nested structures
+ */
+const MAX_DEPTH = 100;
 
 /**
  * Parser context - shared state during parsing
@@ -20,6 +26,7 @@ type ParserContext = {
   nodeSequence: number;
   defaultEdges: Edge[];
   chainEdges: Edge[];
+  visitedObjects: WeakSet<object>;
 };
 
 /**
@@ -145,20 +152,35 @@ const parseObject = (
   sourceNodeId?: string,
   sourceHandle?: string
 ): SeaNode[] => {
+  // Depth check to prevent stack overflow
+  if (depth > MAX_DEPTH) {
+    logger.warn({ depth, maxDepth: MAX_DEPTH }, 'Max depth exceeded, stopping parse');
+    return [];
+  }
+
+  // Circular reference check
+  if (context.visitedObjects.has(obj)) {
+    logger.warn('Circular reference detected in object');
+    return [];
+  }
+
   const nodes: SeaNode[] = [];
   const currentNodeId = formatNodeId(context.nodeSequence);
-  
+
+  // Mark object as visited
+  context.visitedObjects.add(obj);
+
   // Create object node
   nodes.push(createObjectNode(currentNodeId, depth, obj, parentNodePathIds, arrayIndexForObject, isRootNode));
-  
+
   // Add edge from parent if not root
   if (sourceNodeId) {
     addDefaultEdge(context, { source: sourceNodeId, target: currentNodeId, sourceHandle });
   }
-  
+
   const nextDepth = depth + 1;
   const nextParentNodePathIds = [...parentNodePathIds, currentNodeId];
-  
+
   // Parse each property
   Object.entries(obj).forEach(([key, value]) => {
     if (isObject(value)) {
@@ -169,7 +191,7 @@ const parseObject = (
       nodes.push(...childNodes);
     }
   });
-  
+
   return nodes;
 };
 
@@ -184,6 +206,12 @@ const parseArray = (
   sourceNodeId?: string,
   sourceHandle?: string
 ): SeaNode[] => {
+  // Depth check to prevent stack overflow
+  if (depth > MAX_DEPTH) {
+    logger.warn({ depth, maxDepth: MAX_DEPTH }, 'Max depth exceeded, stopping parse');
+    return [];
+  }
+
   const nodes: SeaNode[] = [];
   let previousNodeId: string | undefined;
   
@@ -243,6 +271,7 @@ export const jsonParser = (
     nodeSequence: 0,
     defaultEdges: [],
     chainEdges: [],
+    visitedObjects: new WeakSet(),
   };
   
   let flowNodes: SeaNode[] = [];
