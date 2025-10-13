@@ -10,6 +10,7 @@ import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { showApiErrorToast } from '@/lib/utils/toast-helpers'
+import { UserDetailsModal } from '@/components/features/modals/user-details-modal'
 
 interface User {
   id: string
@@ -27,6 +28,8 @@ export function UserList() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'createdAt' | 'lastLogin'>('lastLogin')
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const fetchUsers = async () => {
     try {
@@ -34,10 +37,15 @@ export function UserList() {
       setUsers(data.users)
     } catch (error) {
       logger.error({ err: error }, 'Failed to fetch users')
-      showApiErrorToast('Failed to load users', error, fetchUsers)
+      showApiErrorToast('Failed to load users', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewUser = (userId: string) => {
+    setSelectedUserId(userId)
+    setModalOpen(true)
   }
 
   useEffect(() => {
@@ -160,10 +168,7 @@ export function UserList() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      // TODO: Implement user details modal
-                      logger.debug({ userId: user.id }, 'View user details')
-                    }}
+                    onClick={() => handleViewUser(user.id)}
                   >
                     View
                   </Button>
@@ -237,10 +242,7 @@ export function UserList() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  // TODO: Implement user details modal
-                  logger.debug({ userId: user.id }, 'View user details')
-                }}
+                onClick={() => handleViewUser(user.id)}
               >
                 View
               </Button>
@@ -254,6 +256,14 @@ export function UserList() {
         <span>Total: {filteredUsers.length} users</span>
         <span>Active: {filteredUsers.filter(u => u.isActive).length} users</span>
       </div>
+
+      {selectedUserId && (
+        <UserDetailsModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          userId={selectedUserId}
+        />
+      )}
     </div>
   )
 }

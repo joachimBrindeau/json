@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { FlowDefaultHandle } from './FlowDefaultHandle';
 import { FlowChainHandle } from './FlowChainHandle';
-import { addPrefixChain } from './utils/flow-parser';
+import { addPrefixChain } from './utils/flow-edge-factory';
 
 const ARRAY_HANDLE_STYLE = {
   background: '#60a5fa',

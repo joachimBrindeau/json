@@ -28,6 +28,43 @@ export async function GET(_request: NextRequest) {
       })
     ])
 
+    // Redis health check
+    let redisStatus: 'connected' | 'disconnected' | 'error' = 'disconnected'
+    let redisResponseTime: number | undefined
+    let redisInfo: { memoryUsed?: number; memoryMax?: number } = {}
+
+    try {
+      const { redis } = await import('@/lib/redis')
+      if (redis) {
+        const redisStart = Date.now()
+        const pingResponse = await redis.ping()
+        redisResponseTime = Date.now() - redisStart
+
+        if (pingResponse === 'PONG') {
+          redisStatus = 'connected'
+
+          // Get Redis memory info
+          try {
+            const info = await redis.info('memory')
+            const memoryUsedMatch = info.match(/used_memory:(\d+)/)
+            const memoryMaxMatch = info.match(/maxmemory:(\d+)/)
+
+            if (memoryUsedMatch) {
+              redisInfo.memoryUsed = parseInt(memoryUsedMatch[1], 10)
+            }
+            if (memoryMaxMatch) {
+              redisInfo.memoryMax = parseInt(memoryMaxMatch[1], 10)
+            }
+          } catch (infoError) {
+            logger.warn({ err: infoError }, 'Failed to get Redis memory info')
+          }
+        }
+      }
+    } catch (error) {
+      logger.error({ err: error }, 'Redis health check failed')
+      redisStatus = 'error'
+    }
+
     // System information
     const stats = {
       database: {
@@ -37,10 +74,11 @@ export async function GET(_request: NextRequest) {
         totalRecords: userCount + documentCount
       },
       redis: {
-        status: 'connected' as const, // TODO: Implement Redis health check
-        memoryUsed: 1024 * 1024 * 50, // 50MB - mock data
-        memoryMax: 1024 * 1024 * 512, // 512MB - mock data
-        hitRate: 85.3 // Mock hit rate
+        status: redisStatus,
+        responseTime: redisResponseTime,
+        memoryUsed: redisInfo.memoryUsed || null,
+        memoryMax: redisInfo.memoryMax || null,
+        available: redisStatus === 'connected'
       },
       application: {
         uptime: process.uptime(),

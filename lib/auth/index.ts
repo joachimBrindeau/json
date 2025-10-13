@@ -93,6 +93,16 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
+      // Track last login timestamp
+      if (prisma && user.email) {
+        await prisma.user.update({
+          where: { email: user.email },
+          data: { lastLoginAt: new Date() }
+        }).catch(err => {
+          logger.error({ err, email: user.email }, 'Failed to update lastLoginAt');
+        });
+      }
+
       // Allow OAuth account linking to existing users with same email
       if (account?.provider && account.provider !== 'credentials') {
         const email = user.email;
@@ -106,7 +116,7 @@ export const authOptions: NextAuthOptions = {
           if (existingUser) {
             // Check if this provider is already linked
             const isLinked = existingUser.accounts.some(
-              acc => acc.provider === account.provider && 
+              acc => acc.provider === account.provider &&
                      acc.providerAccountId === account.providerAccountId
             );
 

@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest) {
         email: true,
         image: true,
         createdAt: true,
-        // Add last login when we implement session tracking
+        lastLoginAt: true,
         _count: {
           select: {
             documents: true
@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest) {
       email: user.email,
       image: user.image,
       createdAt: user.createdAt.toISOString(),
-      lastLogin: null, // TODO: Implement session tracking for last login
+      lastLogin: user.lastLoginAt?.toISOString() ?? null,
       documentsCount: user._count.documents,
       isActive: user._count.documents > 0 // Consider users with documents as active
     }))

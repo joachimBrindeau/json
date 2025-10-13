@@ -211,8 +211,6 @@ const nextConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@/components/ui', '@radix-ui', 'react-share'],
-    // CPU profiling disabled to prevent .cpuprofile files from being generated
-    cpuProfiling: false,
   },
 
   // Turbopack configuration

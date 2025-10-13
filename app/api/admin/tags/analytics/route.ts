@@ -30,6 +30,8 @@ export async function GET(_request: NextRequest) {
 
     // Process tag statistics
     const tagCounts = new Map<string, number>()
+    const recentTagCounts = new Map<string, number>()
+    const historicalTagCounts = new Map<string, number>()
     const tagsByUser = new Map<string, { userId: string, userEmail: string, userName?: string, tags: Set<string> }>()
     const recentTags = new Set<string>()
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -45,6 +47,10 @@ export async function GET(_request: NextRequest) {
         // Track recent tags (last week)
         if (doc.createdAt > oneWeekAgo) {
           recentTags.add(tag)
+          recentTagCounts.set(tag, (recentTagCounts.get(tag) || 0) + 1)
+        } else {
+          // Track historical usage (before last week)
+          historicalTagCounts.set(tag, (historicalTagCounts.get(tag) || 0) + 1)
         }
 
         // Track tags by user
@@ -63,14 +69,34 @@ export async function GET(_request: NextRequest) {
       })
     })
 
+    // Helper function to calculate trend
+    const calculateTrend = (tagName: string): 'up' | 'down' | 'stable' => {
+      const recentCount = recentTagCounts.get(tagName) || 0
+      const historicalCount = historicalTagCounts.get(tagName) || 0
+
+      // Handle edge cases
+      if (historicalCount === 0) {
+        // New tag (only recent usage)
+        return recentCount > 0 ? 'up' : 'stable'
+      }
+
+      // Calculate percentage change
+      const percentChange = ((recentCount - historicalCount) / historicalCount) * 100
+
+      // Apply thresholds
+      if (percentChange > 10) return 'up'
+      if (percentChange < -10) return 'down'
+      return 'stable'
+    }
+
     // Convert to sorted arrays
     const popularTags = Array.from(tagCounts.entries())
       .map(([name, count]) => ({
         name,
         count,
         percentage: totalUsage > 0 ? (count / totalUsage) * 100 : 0,
-        trend: 'stable' as const, // TODO: Implement trend calculation
-        recentUsage: 0 // TODO: Calculate recent usage
+        trend: calculateTrend(name),
+        recentUsage: recentTagCounts.get(name) || 0
       }))
       .sort((a, b) => b.count - a.count)
 

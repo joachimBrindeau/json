@@ -72,7 +72,8 @@ export function ShareModal({
   const [copied, setCopied] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+
   // Form state
   const [isPublic, setIsPublic] = useState(currentVisibility === 'public');
   const [formData, setFormData] = useState({
@@ -90,22 +91,59 @@ export function ShareModal({
     maxTags: 10,
   });
 
-  // Update form when modal opens with current data
+  // Load existing metadata when modal opens for published documents
   useEffect(() => {
-    if (open) {
-      setIsPublic(currentVisibility === 'public');
-      setFormData({
-        title: currentTitle || '',
-        description: '',
-        category: '',
-        tags: [],
-      });
+    const loadPublishedMetadata = async () => {
+      if (!open || !shareId) {
+        return;
+      }
+
       // Reset states when opening
       setIsSaving(false);
       setIsUpdating(false);
-      // TODO: Load existing metadata if document is already published
-    }
-  }, [open, currentTitle, currentVisibility]);
+      setIsPublic(currentVisibility === 'public');
+
+      try {
+        setIsLoadingMetadata(true);
+
+        // Fetch published document metadata
+        const response = await apiClient.get<{ document: {
+          shareId: string;
+          title: string;
+          description?: string | null;
+          category?: string | null;
+          tags?: string[] | null;
+          visibility: string;
+          publishedAt?: string | null;
+        } }>(`/api/json/${shareId}`);
+
+        // Pre-populate form with existing metadata
+        setFormData({
+          title: response.document.title || currentTitle || '',
+          description: response.document.description || '',
+          category: response.document.category || '',
+          tags: response.document.tags || [],
+        });
+
+        // Update visibility state
+        setIsPublic(response.document.visibility === 'public');
+
+      } catch (error) {
+        // If error, fall back to current title (document might not exist yet)
+        logger.debug({ err: error, shareId }, 'Could not load metadata - document may not exist yet');
+        setFormData({
+          title: currentTitle || '',
+          description: '',
+          category: '',
+          tags: [],
+        });
+      } finally {
+        setIsLoadingMetadata(false);
+      }
+    };
+
+    loadPublishedMetadata();
+  }, [open, shareId, currentTitle, currentVisibility]);
 
   // Stop saving state when shareId becomes available
   useEffect(() => {
@@ -210,6 +248,22 @@ export function ShareModal({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Loading indicator */}
+          {isLoadingMetadata && (
+            <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading existing metadata...</span>
+            </div>
+          )}
+
+          {/* Already published indicator */}
+          {shareId && !isLoadingMetadata && currentVisibility === 'public' && (
+            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>This document is already published - you can update its metadata below</span>
+            </div>
+          )}
+
           {/* Title - Always visible */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-medium">
@@ -222,6 +276,7 @@ export function ShareModal({
               placeholder="e.g., E-commerce Product API Response"
               maxLength={200}
               className="font-medium"
+              disabled={isLoadingMetadata}
             />
           </div>
 
@@ -247,6 +302,7 @@ export function ShareModal({
             <Switch
               checked={isPublic}
               onCheckedChange={setIsPublic}
+              disabled={isLoadingMetadata}
             />
           </div>
 
@@ -311,6 +367,7 @@ export function ShareModal({
                   maxLength={1000}
                   rows={3}
                   className="mt-1"
+                  disabled={isLoadingMetadata}
                 />
               </div>
 
@@ -322,8 +379,9 @@ export function ShareModal({
                 <Select
                   value={formData.category}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+                  disabled={isLoadingMetadata}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1" disabled={isLoadingMetadata}>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -353,6 +411,7 @@ export function ShareModal({
                           onFocus={() => tagManager.setShowSuggestions(tagManager.suggestedTags.length > 0)}
                           placeholder="Add tags... (press Enter)"
                           maxLength={30}
+                          disabled={isLoadingMetadata}
                           className={`pr-8 ${
                             tagManager.tagValidation.errors.length > 0
                               ? 'border-red-500 focus:ring-red-500'
@@ -378,6 +437,7 @@ export function ShareModal({
                         variant="outline"
                         onClick={tagManager.addTag}
                         disabled={
+                          isLoadingMetadata ||
                           !tagManager.tagInput.trim() ||
                           formData.tags.length >= 10 ||
                           tagManager.tagValidation.errors.length > 0
@@ -562,9 +622,9 @@ export function ShareModal({
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={isUpdating || isSaving || !formData.title.trim()}
+            <Button
+              onClick={handleSave}
+              disabled={isUpdating || isSaving || isLoadingMetadata || !formData.title.trim()}
               className="order-1 sm:order-2"
             >
               {(isUpdating || isSaving) ? (
