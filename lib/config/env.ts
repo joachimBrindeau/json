@@ -7,8 +7,11 @@
 
 import { z } from 'zod';
 
-// Environment schema with validation rules
-const envSchema = z.object({
+// Check if we're on the server
+const isServer = typeof window === 'undefined';
+
+// Server-only environment schema
+const serverEnvSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
@@ -58,10 +61,70 @@ const envSchema = z.object({
   BASE_URL: z.string().url().optional(),
 });
 
+// Client-safe environment schema (only NEXT_PUBLIC_ variables)
+const clientEnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // Public URLs (accessible in browser)
+  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
+  NEXT_PUBLIC_WEBSOCKET_URL: z.string().url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL').optional(),
+  NEXT_PUBLIC_BUILD_ID: z.string().optional(),
+
+  // Performance Settings
+  MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
+  JSON_STREAMING_CHUNK_SIZE: z.string().regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number').default('1048576'),
+
+  // Analytics & Tracking (optional)
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+  NEXT_PUBLIC_FB_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_HOTJAR_ID: z.string().optional(),
+
+  // SEO Verification (optional)
+  GOOGLE_SITE_VERIFICATION: z.string().optional(),
+  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
+  YANDEX_VERIFICATION: z.string().optional(),
+  BING_VERIFICATION: z.string().optional(),
+  FACEBOOK_APP_ID: z.string().optional(),
+
+  // Build & CI
+  BUILD_ID: z.string().optional(),
+  CI: z.string().optional().transform(val => val === 'true' || val === '1'),
+
+  // Playwright Testing
+  PLAYWRIGHT_BASE_URL: z.string().url().optional(),
+  BASE_URL: z.string().url().optional(),
+});
+
 // Parse and validate environment variables at module load time
 function validateEnv() {
   try {
-    const parsed = envSchema.parse({
+    // On the client, only validate public environment variables
+    if (!isServer) {
+      const parsed = clientEnvSchema.parse({
+        NODE_ENV: process.env.NODE_ENV,
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+        NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
+        MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
+        JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+        NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
+        NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
+        GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
+        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
+        BING_VERIFICATION: process.env.BING_VERIFICATION,
+        FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
+        BUILD_ID: process.env.BUILD_ID,
+        CI: process.env.CI,
+        PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
+        BASE_URL: process.env.BASE_URL,
+      });
+      return parsed as any; // Type assertion for compatibility
+    }
+
+    // On the server, validate all environment variables
+    const parsed = serverEnvSchema.parse({
       // Node Environment
       NODE_ENV: process.env.NODE_ENV,
 
