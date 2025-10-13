@@ -22,7 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Copy, Check, Globe, Lock, Users, Eye, X, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
-import { useTagManager } from '@/hooks/use-tag-manager';
+import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import {
   TwitterShareButton,
   FacebookShareButton,
@@ -37,10 +37,6 @@ import {
   EmailIcon,
   TelegramIcon,
 } from 'react-share';
-import {
-  normalizeTag,
-  getCommonTagsForCategory,
-} from '@/lib/tags/tag-utils';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
@@ -83,13 +79,6 @@ export function ShareModal({
     tags: [] as string[],
   });
 
-  // Tag management hook
-  const tagManager = useTagManager({
-    selectedTags: formData.tags,
-    onTagsChange: (tags) => setFormData((prev) => ({ ...prev, tags })),
-    category: formData.category,
-    maxTags: 10,
-  });
 
   // Load existing metadata when modal opens for published documents
   useEffect(() => {

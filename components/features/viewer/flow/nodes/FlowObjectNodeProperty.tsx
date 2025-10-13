@@ -20,6 +20,9 @@ const ObjectNodePropertyComponent = ({ nodeId, propertyK, propertyV, hasChildNod
   const { isObjectData, isArrayData, isStringData, isNumberData, isBooleanData, isNullData } =
     validateJsonDataType(propertyV);
 
+  // Render handle for properties that have or could have child nodes (objects/arrays)
+  const shouldRenderHandle = isObjectData || isArrayData;
+
   return (
     <div className="relative flex h-10 items-center justify-between border-b border-gray-100 px-2 py-1 last:border-b-0">
       <span className="mr-4 font-medium text-blue-600 text-sm">{propertyK}</span>
@@ -50,7 +53,7 @@ const ObjectNodePropertyComponent = ({ nodeId, propertyK, propertyV, hasChildNod
         {isNullData && <FlowNullChip size="sm" />}
       </div>
 
-      {hasChildNode && (
+      {shouldRenderHandle && (
         <FlowDefaultHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" />
       )}
     </div>
