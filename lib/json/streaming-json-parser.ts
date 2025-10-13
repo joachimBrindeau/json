@@ -1,10 +1,12 @@
 'use client';
 
+import type { JsonValue } from '@/lib/api/types';
+
 interface StreamingParserOptions {
   chunkSize?: number;
   maxDepth?: number;
   onProgress?: (progress: number, stats: ParseStats) => void;
-  onNode?: (node: any, path: string[], depth: number) => void;
+  onNode?: (node: JsonValue, path: string[], depth: number) => void;
   signal?: AbortSignal;
 }
 
@@ -33,7 +35,7 @@ export class StreamingJsonParser {
   }
 
   async parseStream(jsonString: string): Promise<{
-    result: any;
+    result: JsonValue;
     stats: ParseStats;
     truncated: boolean;
     maxDepthReached: boolean;
@@ -71,7 +73,7 @@ export class StreamingJsonParser {
     }
   }
 
-  private async parseValueStreaming(): Promise<any> {
+  private async parseValueStreaming(): Promise<JsonValue> {
     this.skipWhitespace();
 
     if (this.options.signal?.aborted) {
@@ -110,7 +112,7 @@ export class StreamingJsonParser {
     }
   }
 
-  private async parseObjectStreaming(): Promise<any> {
+  private async parseObjectStreaming(): Promise<Record<string, JsonValue>> {
     if (this.currentDepth >= (this.options.maxDepth || 20)) {
       throw new MaxDepthError(`Max depth ${this.options.maxDepth} reached`);
     }
@@ -119,7 +121,7 @@ export class StreamingJsonParser {
     this.consume('{');
     this.skipWhitespace();
 
-    const obj: any = {};
+    const obj: Record<string, JsonValue> = {};
     let keyCount = 0;
     const maxKeys = 1000; // Limit object keys
 
@@ -174,7 +176,7 @@ export class StreamingJsonParser {
     return obj;
   }
 
-  private async parseArrayStreaming(): Promise<any[]> {
+  private async parseArrayStreaming(): Promise<JsonValue[]> {
     if (this.currentDepth >= (this.options.maxDepth || 20)) {
       throw new MaxDepthError(`Max depth ${this.options.maxDepth} reached`);
     }
@@ -183,7 +185,7 @@ export class StreamingJsonParser {
     this.consume('[');
     this.skipWhitespace();
 
-    const arr: any[] = [];
+    const arr: JsonValue[] = [];
     let itemCount = 0;
     const maxItems = 10000; // Limit array items
 

@@ -22,10 +22,10 @@ const createLogger = () => {
         asObject: true,
         serialize: true,
         write: {
-          debug: (obj: any) => console.debug(obj),
-          info: (obj: any) => console.info(obj),
-          warn: (obj: any) => console.warn(obj),
-          error: (obj: any) => console.error(obj),
+          debug: (obj: unknown) => console.debug(obj),
+          info: (obj: unknown) => console.info(obj),
+          warn: (obj: unknown) => console.warn(obj),
+          error: (obj: unknown) => console.error(obj),
         },
       },
     });
@@ -48,7 +48,7 @@ export const logger = createLogger();
 
 // Expose logger to window for inline scripts
 if (typeof window !== 'undefined') {
-  (window as any).__logger = logger;
+  (window as Window & { __logger?: pino.Logger }).__logger = logger;
 }
 
 /**

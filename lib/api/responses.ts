@@ -4,12 +4,12 @@ import { NextResponse } from 'next/server';
  * Standard API response interfaces
  */
 
-export interface ApiSuccessResponse<T = any> {
+export interface ApiSuccessResponse<T = unknown> {
   success: true;
   data: T;
   message?: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ApiErrorResponse {
@@ -18,10 +18,10 @@ export interface ApiErrorResponse {
   details?: string;
   timestamp: string;
   code?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 /**
  * Pagination response interface
@@ -70,7 +70,7 @@ export function success<T>(
     message?: string;
     status?: number;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { message, status = 200, headers = {}, metadata } = options;
@@ -101,7 +101,7 @@ export function created<T>(
     location?: string;
     message?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { location, message = 'Resource created successfully', headers = {}, metadata } = options;
@@ -141,7 +141,7 @@ export function accepted<T>(
   options: {
     message?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { message = 'Request accepted for processing', headers = {}, metadata } = options;
@@ -168,7 +168,7 @@ export function error(
     status?: number;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { details, status = 500, code, headers = {}, metadata } = options;
@@ -200,7 +200,7 @@ export function badRequest(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -218,7 +218,7 @@ export function unauthorized(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -240,7 +240,7 @@ export function forbidden(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -258,7 +258,7 @@ export function notFound(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -276,7 +276,7 @@ export function conflict(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -294,7 +294,7 @@ export function unprocessableEntity(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -313,7 +313,7 @@ export function tooManyRequests(
     code?: string;
     headers?: Record<string, string>;
     retryAfter?: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { retryAfter, ...errorOptions } = options;
@@ -337,7 +337,7 @@ export function internalServerError(
     details?: string;
     code?: string;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   return error(message, {
@@ -356,7 +356,7 @@ export function serviceUnavailable(
     code?: string;
     headers?: Record<string, string>;
     retryAfter?: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { retryAfter, ...errorOptions } = options;
@@ -389,7 +389,7 @@ export function paginated<T>(
     message?: string;
     status?: number;
     headers?: Record<string, string>;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { page, limit, total } = paginationInfo;
@@ -450,7 +450,7 @@ export function stream(
  * Creates a JSON streaming response
  */
 export function jsonStream(
-  data: any,
+  data: unknown,
   options: {
     filename?: string;
     headers?: Record<string, string>;
@@ -565,7 +565,7 @@ export function serverSentEvents(
 /**
  * Formats SSE data
  */
-export function formatSSEData(data: any, event?: string): string {
+export function formatSSEData(data: unknown, event?: string): string {
   const encoder = new TextEncoder();
   let formatted = '';
   
@@ -623,7 +623,7 @@ export function healthCheck(
   services: Record<string, 'up' | 'down'>,
   options: {
     version?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   } = {}
 ): NextResponse {
   const { version = '1.0.0', metadata } = options;

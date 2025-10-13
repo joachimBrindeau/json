@@ -5,6 +5,7 @@ import fastJsonStringify from 'fast-json-stringify';
 import { prisma } from './db';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
+import type { JsonValue } from '@/lib/api/types';
 
 // Fast JSON stringify schema for common structures
 const stringify = fastJsonStringify({
@@ -32,7 +33,7 @@ export interface JsonAnalysisResult {
 export interface JsonChunkInfo {
   index: number;
   path: string;
-  content: any;
+  content: JsonValue;
   size: number;
   checksum: string;
 }
@@ -48,11 +49,11 @@ export async function analyzeJsonStream(
 ): Promise<JsonAnalysisResult> {
   const { maxChunkSize = config.performance.jsonStreamingChunkSize, trackPaths = true, findLargeArrays = true } = options;
 
-  let parsed: any;
+  let parsed: JsonValue;
   if (typeof jsonContent === 'string') {
-    parsed = JSON.parse(jsonContent);
+    parsed = JSON.parse(jsonContent) as JsonValue;
   } else {
-    parsed = jsonContent;
+    parsed = jsonContent as JsonValue;
   }
 
   const analysis: JsonAnalysisResult = {
@@ -68,7 +69,7 @@ export async function analyzeJsonStream(
     deepObjects: [],
   };
 
-  function traverse(obj: any, currentPath = '', currentDepth = 0) {
+  function traverse(obj: JsonValue, currentPath = '', currentDepth = 0): void {
     analysis.nodeCount++;
     analysis.maxDepth = Math.max(analysis.maxDepth, currentDepth);
 
@@ -116,10 +117,10 @@ export async function analyzeJsonStream(
 }
 
 // Chunk large JSON for streaming
-export function chunkJsonData(jsonData: any, maxChunkSize: number = config.performance.jsonStreamingChunkSize): JsonChunkInfo[] {
+export function chunkJsonData(jsonData: JsonValue, maxChunkSize: number = config.performance.jsonStreamingChunkSize): JsonChunkInfo[] {
   const chunks: JsonChunkInfo[] = [];
 
-  function processNode(obj: any, path: string): boolean {
+  function processNode(obj: JsonValue, path: string): boolean {
     const serialized = JSON.stringify(obj);
     const size = Buffer.byteLength(serialized, 'utf8');
 
@@ -137,7 +138,7 @@ export function chunkJsonData(jsonData: any, maxChunkSize: number = config.perfo
 
     // Need to split further
     if (Array.isArray(obj)) {
-      let currentChunk: any[] = [];
+      let currentChunk: JsonValue[] = [];
       let currentSize = 2; // For []
 
       for (let i = 0; i < obj.length; i++) {
@@ -176,7 +177,7 @@ export function chunkJsonData(jsonData: any, maxChunkSize: number = config.perfo
       }
     } else if (obj && typeof obj === 'object') {
       const entries = Object.entries(obj);
-      let currentChunk: Record<string, any> = {};
+      let currentChunk: Record<string, JsonValue> = {};
       let currentSize = 2; // For {}
 
       for (const [key, value] of entries) {
@@ -225,7 +226,7 @@ export function chunkJsonData(jsonData: any, maxChunkSize: number = config.perfo
 }
 
 // Create streaming JSON response
-export function createJsonStream(data: any): Readable {
+export function createJsonStream(data: JsonValue): Readable {
   let index = 0;
   const chunks = chunkJsonData(data);
 
@@ -257,7 +258,7 @@ export class JsonCache {
   private static readonly ANALYSIS_PREFIX = 'analysis:';
   private static readonly TTL = 3600; // 1 hour
 
-  static async get(key: string): Promise<any | null> {
+  static async get(key: string): Promise<JsonValue | null> {
     try {
       const { redis } = await import('@/lib/redis');
       if (!redis) return null;
@@ -269,7 +270,7 @@ export class JsonCache {
     }
   }
 
-  static async set(key: string, data: any, ttl: number = this.TTL): Promise<void> {
+  static async set(key: string, data: JsonValue, ttl: number = this.TTL): Promise<void> {
     try {
       const { redis } = await import('@/lib/redis');
       if (!redis) return;

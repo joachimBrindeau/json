@@ -110,7 +110,7 @@ export function getOptimizedMonacoOptions(contentSize: number): editor.IStandalo
 }
 
 // Debounce function for change handlers
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

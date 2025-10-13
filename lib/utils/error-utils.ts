@@ -8,15 +8,15 @@ export interface ErrorResult {
   error: string;
 }
 
-export interface SuccessResult<T = any> {
+export interface SuccessResult<T = unknown> {
   success: true;
   data: T;
 }
 
-export type Result<T = any> = SuccessResult<T> | ErrorResult;
+export type Result<T = unknown> = SuccessResult<T> | ErrorResult;
 
 // Create consistent error handling wrapper
-export const withErrorHandling = <T extends any[], R>(
+export const withErrorHandling = <T extends unknown[], R>(
   fn: (...args: T) => R | Promise<R>,
   errorMessage = 'Operation failed'
 ) => {
@@ -56,7 +56,7 @@ export const createAsyncHandler = <T>(
 };
 
 // Common validation patterns
-export const validateRequired = (value: any, fieldName: string): string | null => {
+export const validateRequired = (value: unknown, fieldName: string): string | null => {
   if (!value || (typeof value === 'string' && !value.trim())) {
     return `${fieldName} is required`;
   }
@@ -73,8 +73,11 @@ export const validateJson = (value: string): string | null => {
   }
 };
 
+// Toast function type for better type safety
+type ToastFunction = (options: { title: string; description?: string; variant?: 'default' | 'destructive' }) => void;
+
 // Common toast message patterns
-export const createToastHandlers = (toast: any) => ({
+export const createToastHandlers = (toast: ToastFunction) => ({
   success: (title: string, description?: string) =>
     toast({ title, description, variant: 'default' }),
 

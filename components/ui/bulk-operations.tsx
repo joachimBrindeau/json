@@ -36,7 +36,7 @@ import { logger } from '@/lib/logger';
 export interface BulkableItem {
   id: string;
   title: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface BulkOperationsProps {

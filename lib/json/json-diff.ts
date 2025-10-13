@@ -2,11 +2,13 @@
  * JSON comparison and diff utilities
  */
 
+import type { JsonValue } from '@/lib/api/types';
+
 export interface DiffOperation {
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
   path: string;
-  value?: any;
-  oldValue?: any;
+  value?: JsonValue;
+  oldValue?: JsonValue;
   from?: string;
 }
 
@@ -24,7 +26,7 @@ export interface DiffResult {
 /**
  * Deep comparison of two values
  */
-export function deepEqual(a: any, b: any): boolean {
+export function deepEqual(a: JsonValue, b: JsonValue): boolean {
   if (a === b) return true;
   
   if (a == null || b == null) return a === b;
@@ -59,7 +61,7 @@ export function deepEqual(a: any, b: any): boolean {
 /**
  * Get the type of a value for comparison
  */
-function getValueType(value: any): string {
+function getValueType(value: JsonValue): string {
   if (value === null) return 'null';
   if (Array.isArray(value)) return 'array';
   return typeof value;
@@ -83,7 +85,7 @@ function createPath(segments: (string | number)[]): string {
 /**
  * Compare two JSON objects and generate diff operations
  */
-export function compareJson(oldJson: any, newJson: any): DiffResult {
+export function compareJson(oldJson: JsonValue, newJson: JsonValue): DiffResult {
   const operations: DiffOperation[] = [];
   const summary = {
     added: 0,
@@ -92,7 +94,7 @@ export function compareJson(oldJson: any, newJson: any): DiffResult {
     unchanged: 0,
   };
 
-  function compare(oldVal: any, newVal: any, path: (string | number)[] = []): void {
+  function compare(oldVal: JsonValue, newVal: JsonValue, path: (string | number)[] = []): void {
     const currentPath = createPath(path);
 
     // Direct equality check
@@ -198,7 +200,7 @@ export function compareJson(oldJson: any, newJson: any): DiffResult {
 /**
  * Apply diff operations to a JSON object
  */
-export function applyDiff(json: any, operations: DiffOperation[]): any {
+export function applyDiff(json: JsonValue, operations: DiffOperation[]): JsonValue {
   const result = JSON.parse(JSON.stringify(json)); // Deep clone
 
   for (const op of operations) {
@@ -224,7 +226,7 @@ export function applyDiff(json: any, operations: DiffOperation[]): any {
 /**
  * Set a value at a specific path in an object
  */
-function setValueAtPath(obj: any, path: string[], value: any): void {
+function setValueAtPath(obj: JsonValue, path: string[], value: JsonValue): void {
   if (path.length === 0) {
     return; // Can't replace root
   }
@@ -251,7 +253,7 @@ function setValueAtPath(obj: any, path: string[], value: any): void {
 /**
  * Remove a value at a specific path in an object
  */
-function removeValueAtPath(obj: any, path: string[]): void {
+function removeValueAtPath(obj: JsonValue, path: string[]): void {
   if (path.length === 0) {
     return; // Can't remove root
   }

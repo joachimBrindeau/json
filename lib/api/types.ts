@@ -210,3 +210,132 @@ export interface ValidationResult<T> {
     message: string;
   }>;
 }
+
+/**
+ * JSON value types
+ */
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonArray = JsonValue[];
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+
+/**
+ * User account information
+ */
+export interface UserAccount {
+  id: string;
+  provider: string;
+  providerAccountId: string;
+  type: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  token_type?: string;
+  scope?: string;
+  id_token?: string;
+  session_state?: string;
+}
+
+/**
+ * User accounts response
+ */
+export interface UserAccountsResponse extends ApiResponse {
+  accounts: UserAccount[];
+  hasPassword: boolean;
+}
+
+/**
+ * Analytics event parameters
+ */
+export interface AnalyticsEventParams {
+  event_category?: string;
+  event_label?: string;
+  value?: number;
+  [key: string]: string | number | boolean | undefined;
+}
+
+/**
+ * Form data types for modals
+ */
+export interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface SignupFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  name?: string;
+}
+
+export interface ShareFormData {
+  visibility: 'private' | 'public';
+  expiresAt?: string;
+  allowComments?: boolean;
+}
+
+export interface PublishFormData {
+  title: string;
+  description?: string;
+  tags?: string[];
+  category?: string;
+  visibility: 'private' | 'public';
+}
+
+/**
+ * Export format options
+ */
+export type ExportFormat = 'json' | 'csv' | 'yaml' | 'xml';
+
+export interface ExportOptions {
+  format: ExportFormat;
+  filename?: string;
+  pretty?: boolean;
+  includeMetadata?: boolean;
+}
+
+/**
+ * Convert page input/output formats
+ */
+export type InputFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'js';
+export type OutputFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'typescript' | 'javascript';
+
+/**
+ * Monaco editor change event
+ */
+export interface MonacoChangeEvent {
+  changes: Array<{
+    range: {
+      startLineNumber: number;
+      startColumn: number;
+      endLineNumber: number;
+      endColumn: number;
+    };
+    rangeLength: number;
+    text: string;
+  }>;
+}
+
+/**
+ * JSON processing result
+ */
+export interface JsonProcessingResult {
+  success: boolean;
+  data?: JsonValue;
+  error?: string;
+  stats?: {
+    size: number;
+    nodeCount: number;
+    maxDepth: number;
+  };
+}
+
+/**
+ * Debounced function type
+ */
+export type DebouncedFunction<T extends (...args: unknown[]) => unknown> = {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+};

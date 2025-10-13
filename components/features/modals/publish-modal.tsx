@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Controller } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useFormSubmit } from '@/hooks/use-form-submit';
+import { useValidatedForm } from '@/hooks/use-validated-form';
+import { publishFormSchema, PublishFormData } from '@/lib/validation/schemas';
 import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import { Globe, Users, Eye, Loader2 } from 'lucide-react';
@@ -41,15 +44,26 @@ export function PublishModal({
 }: PublishModalProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: currentTitle || '',
-    description: '',
-    richContent: '',
-    category: '',
-    tags: [] as string[],
+
+  // Initialize form with react-hook-form and Zod validation
+  const { register, handleSubmit, watch, setValue, control, reset, formState: { errors, isSubmitting } } = useValidatedForm(publishFormSchema, {
+    defaultValues: {
+      title: currentTitle || '',
+      description: '',
+      richContent: '',
+      category: '',
+      tags: [],
+    },
   });
 
-  // Load existing data when modal opens for editing
+  // Watch form values for preview and character count
+  const watchedTitle = watch('title');
+  const watchedDescription = watch('description');
+  const watchedRichContent = watch('richContent');
+  const watchedCategory = watch('category');
+  const watchedTags = watch('tags');
+
+  // Load existing data when modal opens
   useEffect(() => {
     if (isOpen && shareId) {
       setIsLoading(true);
@@ -57,7 +71,7 @@ export function PublishModal({
         .then(data => {
           if (data.document) {
             const doc = data.document;
-            setFormData({
+            reset({
               title: doc.title || currentTitle || '',
               description: doc.description || '',
               richContent: doc.richContent || '',
@@ -78,35 +92,27 @@ export function PublishModal({
           setIsLoading(false);
         });
     }
-  }, [isOpen, shareId, currentTitle]);
+  }, [isOpen, shareId, currentTitle, reset, toast]);
 
-  const { submit: handlePublish, isSubmitting: isPublishing } = useFormSubmit(
-    async () => {
-      if (!formData.title.trim()) {
-        throw new Error('Please provide a title for your JSON');
-      }
-
-      await apiClient.post(`/api/json/${shareId}/publish`, formData);
-    },
-    {
-      onSuccess: () => {
-        toast({
-          title: 'Published successfully!',
-          description: `Your JSON is now discoverable in the public library`,
-        });
-        onPublished?.();
-        onClose();
-      },
-      onError: (error) => {
-        logger.error({ err: error, shareId, formData }, 'Failed to publish JSON to library');
-        toast({
-          title: 'Failed to publish',
-          description: 'Please try again later',
-          variant: 'destructive',
-        });
-      },
+  // Submit handler with type-safe form data
+  const onSubmit = async (data: PublishFormData) => {
+    try {
+      await apiClient.post(`/api/json/${shareId}/publish`, data);
+      toast({
+        title: 'Published successfully!',
+        description: `Your JSON is now discoverable in the public library`,
+      });
+      onPublished?.();
+      onClose();
+    } catch (error) {
+      logger.error({ err: error, shareId, formData: data }, 'Failed to publish JSON to library');
+      toast({
+        title: 'Failed to publish',
+        description: error instanceof Error ? error.message : 'Please try again later',
+        variant: 'destructive',
+      });
     }
-  );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -149,7 +155,7 @@ export function PublishModal({
           </div>
 
           {/* Form */}
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Title */}
             <div>
               <Label htmlFor="title" className="text-sm font-medium">
@@ -157,12 +163,14 @@ export function PublishModal({
               </Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                {...register('title')}
                 placeholder="e.g., E-commerce Product API Response"
                 maxLength={200}
                 className="mt-1"
               />
+              {errors.title && (
+                <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -172,15 +180,17 @@ export function PublishModal({
               </Label>
               <Textarea
                 id="description"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                {...register('description')}
                 placeholder="Brief description for search results and previews..."
                 maxLength={300}
                 rows={2}
                 className="mt-1"
               />
+              {errors.description && (
+                <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>
+              )}
               <div className="text-xs text-muted-foreground mt-1">
-                {formData.description.length}/300 characters
+                {watchedDescription?.length || 0}/300 characters
               </div>
             </div>
 
@@ -190,12 +200,21 @@ export function PublishModal({
                 Detailed Explanation <span className="text-muted-foreground text-xs">(Optional)</span>
               </Label>
               <div className="mt-1">
-                <RichTextEditor
-                  content={formData.richContent}
-                  onChange={(content) => setFormData((prev) => ({ ...prev, richContent: content }))}
-                  placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
+                <Controller
+                  name="richContent"
+                  control={control}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      content={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
+                    />
+                  )}
                 />
               </div>
+              {errors.richContent && (
+                <p className="text-xs text-red-500 mt-1">{errors.richContent.message}</p>
+              )}
               <div className="text-xs text-muted-foreground mt-1">
                 Rich text with formatting, links, and lists for better SEO and user experience
               </div>
@@ -206,92 +225,108 @@ export function PublishModal({
               <Label htmlFor="category" className="text-sm font-medium">
                 Category
               </Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOCUMENT_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOCUMENT_CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-xs text-red-500 mt-1">{errors.category.message}</p>
+              )}
             </div>
 
             {/* Tags */}
-            <TagManagementSection
-              selectedTags={formData.tags}
-              onTagsChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
-              category={formData.category}
-              maxTags={10}
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field }) => (
+                <TagManagementSection
+                  selectedTags={field.value || []}
+                  onTagsChange={field.onChange}
+                  category={watchedCategory}
+                  maxTags={10}
+                />
+              )}
             />
-          </div>
+            {errors.tags && (
+              <p className="text-xs text-red-500 mt-1">{errors.tags.message}</p>
+            )}
 
-          {/* Preview */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-700 mb-2">
-              <Eye className="h-4 w-4" />
-              <span className="font-medium">Preview</span>
-            </div>
-            <div className="text-sm">
-              <div className="font-medium text-gray-900">{formData.title || 'Untitled JSON'}</div>
-              {formData.description && (
-                <div className="text-gray-600 mt-1">{formData.description}</div>
-              )}
-              {formData.richContent && (
-                <div className="mt-2 p-2 bg-white border rounded text-xs">
-                  <div className="font-medium text-gray-700 mb-1">Rich Content Preview:</div>
-                  <div 
-                    className="prose prose-xs max-w-none"
-                    dangerouslySetInnerHTML={{ __html: formData.richContent }}
-                  />
+            {/* Preview */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-gray-700 mb-2">
+                <Eye className="h-4 w-4" />
+                <span className="font-medium">Preview</span>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">{watchedTitle || 'Untitled JSON'}</div>
+                {watchedDescription && (
+                  <div className="text-gray-600 mt-1">{watchedDescription}</div>
+                )}
+                {watchedRichContent && (
+                  <div className="mt-2 p-2 bg-white border rounded text-xs">
+                    <div className="font-medium text-gray-700 mb-1">Rich Content Preview:</div>
+                    <div
+                      className="prose prose-xs max-w-none"
+                      dangerouslySetInnerHTML={{ __html: watchedRichContent }}
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mt-2">
+                  {watchedCategory && <Badge variant="outline">{watchedCategory}</Badge>}
+                  {watchedTags?.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      #{tag}
+                    </Badge>
+                  ))}
                 </div>
-              )}
-              <div className="flex items-center gap-2 mt-2">
-                {formData.category && <Badge variant="outline">{formData.category}</Badge>}
-                {formData.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    #{tag}
-                  </Badge>
-                ))}
               </div>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={isPublishing}
-              className="order-2 sm:order-1 transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => handlePublish(undefined)}
-              disabled={isPublishing || !formData.title.trim()}
-              className="order-1 sm:order-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-            >
-              {isPublishing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Publishing...
-                </>
-              ) : (
-                <>
-                  <Globe className="h-4 w-4 mr-2" />
-                  Publish to Community
-                </>
-              )}
-            </Button>
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="order-2 sm:order-1 transition-all duration-200"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !watchedTitle?.trim()}
+                className="order-1 sm:order-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-4 w-4 mr-2" />
+                    Publish to Community
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
           </div>
-        </div>
         </ErrorBoundary>
         )}
       </DialogContent>

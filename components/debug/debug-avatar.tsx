@@ -15,7 +15,7 @@ export function DebugAvatar() {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [imageLoadSuccess, setImageLoadSuccess] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshResult, setRefreshResult] = useState<any>(null);
+  const [refreshResult, setRefreshResult] = useState<{ updated?: boolean; error?: string } | null>(null);
 
   useEffect(() => {
     setImageLoadError(false);

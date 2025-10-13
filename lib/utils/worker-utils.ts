@@ -5,18 +5,34 @@ import { logger } from '@/lib/logger';
 
 // Common worker callback handler patterns
 
-export type WorkerCallback<T = any> = (response: WorkerResponse<T>) => void;
+export type WorkerCallback<T = unknown> = (response: WorkerResponse<T>) => void;
+
+// Worker stats interface for type safety
+interface WorkerStats {
+  duration?: number;
+  memoryUsage?: number;
+  [key: string]: unknown;
+}
 
 // Create standardized success/error response handlers
-export const createWorkerResponseHandler = <T = any>(callback: WorkerCallback<T>) => ({
-  success: (data: T, stats?: any) => callback({ success: true, data, stats }),
+export const createWorkerResponseHandler = <T = unknown>(callback: WorkerCallback<T>) => ({
+  success: (data: T, stats?: WorkerStats) => callback({ success: true, data, stats }),
   error: (error: string) => callback({ success: false, error }),
 });
+
+// Worker message event interface
+interface WorkerMessageData {
+  type: string;
+  data?: unknown;
+  error?: string;
+  stats?: WorkerStats;
+  valid?: boolean;
+}
 
 // Generic worker message handler factory
 export const createWorkerMessageHandler =
   (callbacks: Map<string, WorkerCallback>) =>
-  (e: MessageEvent<{ type: string; data?: any; error?: string; stats?: any; valid?: boolean }>) => {
+  (e: MessageEvent<WorkerMessageData>) => {
     const { type, data, error, stats, valid } = e.data;
 
     // Extract operation name from message type (e.g., 'parse-success' -> 'parse')

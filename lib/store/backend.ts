@@ -752,5 +752,8 @@ export const useBackendStore = create<BackendAppState>()(
 
 // Expose store for testing in development
 if (typeof window !== 'undefined' && config.isDevelopment) {
-  (window as any).__backendStore = useBackendStore;
+  interface WindowWithBackendStore extends Window {
+    __backendStore?: typeof useBackendStore;
+  }
+  (window as WindowWithBackendStore).__backendStore = useBackendStore;
 }

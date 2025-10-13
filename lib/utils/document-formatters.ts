@@ -4,6 +4,7 @@
  */
 
 import { formatSize } from './formatters';
+import type { JsonValue } from '@/lib/api/types';
 
 /**
  * Format document size in bytes to human-readable format
@@ -98,7 +99,7 @@ export function formatComplexity(complexity: 'Low' | 'Medium' | 'High'): {
 /**
  * Generate document preview from content
  */
-export function generateDocumentPreview(content: any, maxLength: number = 200): string {
+export function generateDocumentPreview(content: JsonValue, maxLength: number = 200): string {
   try {
     const jsonString = typeof content === 'string'
       ? content

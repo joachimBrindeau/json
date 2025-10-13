@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
 import { showApiErrorToast, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
+import { formatSize, formatUptime } from '@/lib/utils/formatters'
 
 interface SystemStats {
   database: {
@@ -58,23 +59,6 @@ export function SystemStats() {
     return () => clearInterval(interval)
   }, [])
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const formatUptime = (seconds: number) => {
-    const days = Math.floor(seconds / (24 * 60 * 60))
-    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60))
-    const minutes = Math.floor((seconds % (60 * 60)) / 60)
-    
-    if (days > 0) return `${days}d ${hours}h ${minutes}m`
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
-  }
 
   if (loading) {
     return (
@@ -128,7 +112,7 @@ export function SystemStats() {
             <div className="mt-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Memory</span>
-                <span>{formatBytes(stats.redis.memoryUsed)} / {formatBytes(stats.redis.memoryMax)}</span>
+                <span>{formatSize(stats.redis.memoryUsed)} / {formatSize(stats.redis.memoryMax)}</span>
               </div>
               <Progress value={(stats.redis.memoryUsed / stats.redis.memoryMax) * 100} className="h-2" />
             </div>
@@ -164,11 +148,11 @@ export function SystemStats() {
               <div className="text-sm text-gray-500">Total Documents</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{formatBytes(stats.storage.totalSize)}</div>
+              <div className="text-2xl font-bold">{formatSize(stats.storage.totalSize)}</div>
               <div className="text-sm text-gray-500">Total Size</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{formatBytes(stats.storage.avgDocumentSize)}</div>
+              <div className="text-2xl font-bold">{formatSize(stats.storage.avgDocumentSize)}</div>
               <div className="text-sm text-gray-500">Average Document Size</div>
             </div>
           </div>

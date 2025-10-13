@@ -1,5 +1,7 @@
 'use client';
 
+import type { JsonValue } from '@/lib/api/types';
+
 export interface JsonStats {
   size: number;
   sizeKB: number;
@@ -20,7 +22,7 @@ export const analyzeJson = (content: string): JsonStats => {
   try {
     const parsed = JSON.parse(content);
 
-    function traverse(obj: any, currentDepth = 0) {
+    function traverse(obj: JsonValue, currentDepth = 0): void {
       maxDepth = Math.max(maxDepth, currentDepth);
       nodeCount++;
 

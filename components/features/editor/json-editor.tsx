@@ -10,17 +10,16 @@ import { validateJson } from '@/lib/json';
 import { Search, Zap, AlertTriangle } from 'lucide-react';
 import { ViewerActions } from '@/components/features/viewer';
 import dynamic from 'next/dynamic';
-import type { OnMount, Monaco } from '@monaco-editor/react';
+import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import {
-  getOptimizedMonacoOptions,
   formatJsonWithWorker,
   loadJsonProgressive,
   debounce
 } from '@/lib/editor/optimizations';
-import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 
 // Monaco editor with enhanced loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -41,33 +40,23 @@ function JsonEditorComponent() {
   const [localContent, setLocalContent] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [editorError, setEditorError] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<Monaco | null>(null);
   const decorationsRef = useRef<string[]>([]);
   const isLargeFile = currentJson.length > 100000; // 100KB threshold
 
-  // Initialize local content on mount and check dark mode
+  // Use Monaco editor hook
+  const {
+    editorRef,
+    monacoRef,
+    handleEditorDidMount,
+    editorOptions,
+    theme,
+    editorError
+  } = useMonacoEditor(localContent.length);
+
+  // Initialize local content on mount
   useEffect(() => {
     setLocalContent(currentJson);
-    // Check if dark mode is active
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setIsDarkMode(isDark);
-    };
-    
-    checkDarkMode();
-    
-    // Listen for dark mode changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
   }, []);
 
   // Sync with global state when it changes
@@ -88,14 +77,6 @@ function JsonEditorComponent() {
       }
     }
   }, [currentJson]);
-
-  // Update Monaco theme when dark mode changes
-  useEffect(() => {
-    if (monacoRef.current && editorRef.current) {
-      const theme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monacoRef.current.editor.setTheme(theme);
-    }
-  }, [isDarkMode]);
 
   const formatJson = useCallback(async () => {
     if (editorRef.current) {
@@ -134,59 +115,43 @@ function JsonEditorComponent() {
     }
   }, [setCurrentJson, toast]);
 
-  const handleEditorMount: OnMount = useCallback((editor, monaco) => {
+  // Custom editor mount handler to add commands and validation
+  const handleCustomEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setIsLoading(false);
-    editorRef.current = editor;
-    monacoRef.current = monaco;
 
-    try {
-      // Define custom themes immediately
-      defineMonacoThemes(monaco);
-      
-      // Set the correct theme based on current dark mode state
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-      
-      // Use optimized options based on content size
-      const optimizedOptions = getOptimizedMonacoOptions(localContent.length);
-      editor.updateOptions(optimizedOptions);
+    // Call the base mount handler from the hook
+    handleEditorDidMount(editor, monaco);
 
-      // Add format command
-      editor.addAction({
-        id: 'format-json',
-        label: 'Format JSON',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
-        run: formatJson,
+    // Add format command
+    editor.addAction({
+      id: 'format-json',
+      label: 'Format JSON',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
+      run: formatJson,
+    });
+
+    // Add search command
+    editor.addAction({
+      id: 'search-json',
+      label: 'Search JSON',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF],
+      run: () => {
+        editor.getAction('actions.find')?.run();
+      },
+    });
+
+    // Add validation on model change
+    const model = editor.getModel();
+    if (model) {
+      model.onDidChangeContent(() => {
+        const content = model.getValue();
+        updateValidationDecorations(editor, monaco, content);
       });
 
-      // Add search command
-      editor.addAction({
-        id: 'search-json',
-        label: 'Search JSON',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF],
-        run: () => {
-          editor.getAction('actions.find')?.run();
-        },
-      });
-
-      // Add validation on model change
-      const model = editor.getModel();
-      if (model) {
-        model.onDidChangeContent(() => {
-          const content = model.getValue();
-          updateValidationDecorations(editor, monaco, content);
-        });
-        
-        // Initial validation
-        updateValidationDecorations(editor, monaco, model.getValue());
-      }
-
-      setEditorError(null);
-    } catch (error) {
-      setEditorError(error instanceof Error ? error.message : 'Failed to initialize editor');
-      logger.error({ err: error }, 'Monaco editor initialization error');
+      // Initial validation
+      updateValidationDecorations(editor, monaco, model.getValue());
     }
-  }, [formatJson, isDarkMode]);
+  }, [formatJson, handleEditorDidMount]);
 
 
   // Debounced change handler for better performance
@@ -357,48 +322,15 @@ function JsonEditorComponent() {
         <MonacoEditor
           height="100%"
           language="json"
-          theme={isDarkMode ? "shadcn-dark" : "shadcn-light"}
+          theme={theme}
           value={localContent}
           onChange={handleMonacoChange}
-          onMount={handleEditorMount}
+          onMount={handleCustomEditorMount}
           beforeMount={(monaco) => {
             // Define themes before mount to ensure they're available
             defineMonacoThemes(monaco);
           }}
-          options={{
-            automaticLayout: true,
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            minimap: { enabled: false },
-            fontSize: 14,
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", monospace',
-            tabSize: 2,
-            insertSpaces: true,
-            formatOnPaste: true,
-            formatOnType: false,
-            lineNumbers: 'on',
-            renderLineHighlight: 'line',
-            scrollbar: {
-              vertical: 'visible',
-              horizontal: 'visible',
-            },
-            contextmenu: true,
-            selectOnLineNumbers: true,
-            roundedSelection: false,
-            readOnly: false,
-            cursorStyle: 'line',
-            suggestOnTriggerCharacters: true,
-            acceptSuggestionOnEnter: 'on',
-            autoClosingBrackets: 'always',
-            autoClosingQuotes: 'always',
-            folding: true,
-            foldingStrategy: 'indentation',
-            showFoldingControls: 'always',
-            renderWhitespace: 'none',
-            dragAndDrop: true,
-            links: true,
-            colorDecorators: true,
-          }}
+          options={editorOptions}
         />
       </div>
       </ErrorBoundary>

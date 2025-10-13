@@ -3,6 +3,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import type { JsonValue } from '@/lib/api/types';
 
 export interface ExportOptions {
   format: 'json' | 'csv' | 'xml' | 'yaml' | 'txt';
@@ -21,7 +22,7 @@ export interface ExportResult {
 /**
  * Convert JSON to CSV format (works best with arrays of objects)
  */
-export function jsonToCsv(data: any): string {
+export function jsonToCsv(data: JsonValue): string {
   if (Array.isArray(data)) {
     if (data.length === 0) return '';
     
@@ -62,8 +63,8 @@ export function jsonToCsv(data: any): string {
 /**
  * Convert JSON to XML format
  */
-export function jsonToXml(data: any, rootElement = 'root'): string {
-  function objectToXml(obj: any, parentKey?: string): string {
+export function jsonToXml(data: JsonValue, rootElement = 'root'): string {
+  function objectToXml(obj: JsonValue, parentKey?: string): string {
     if (obj === null || obj === undefined) {
       return parentKey ? `<${parentKey}></${parentKey}>` : '<null></null>';
     }
@@ -103,8 +104,8 @@ export function jsonToXml(data: any, rootElement = 'root'): string {
 /**
  * Convert JSON to YAML format
  */
-export function jsonToYaml(data: any, indent = 2): string {
-  function toYaml(obj: any, depth = 0): string {
+export function jsonToYaml(data: JsonValue, indent = 2): string {
+  function toYaml(obj: JsonValue, depth = 0): string {
     const indentStr = ' '.repeat(depth * indent);
     
     if (obj === null || obj === undefined) {
@@ -151,7 +152,7 @@ export function jsonToYaml(data: any, indent = 2): string {
 /**
  * Export JSON data in the specified format
  */
-export function exportData(data: any, options: ExportOptions): ExportResult {
+export function exportData(data: JsonValue, options: ExportOptions): ExportResult {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   let content: string;
   let filename: string;

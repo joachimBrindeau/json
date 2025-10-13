@@ -5,12 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { formatDistanceToNow } from 'date-fns'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { showApiErrorToast } from '@/lib/utils/toast-helpers'
 import { UserDetailsModal } from '@/components/features/modals/user-details-modal'
+import { formatRelativeTime, getInitials } from '@/lib/utils/formatters'
+import { filterBySearch, sortBy as sortByField, sortByDate } from '@/lib/utils/filters'
 
 interface User {
   id: string
@@ -52,27 +53,22 @@ export function UserList() {
     fetchUsers()
   }, [])
 
-  const filteredUsers = users
-    .filter(user => 
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return (a.name || '').localeCompare(b.name || '')
-        case 'email':
-          return a.email.localeCompare(b.email)
-        case 'createdAt':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case 'lastLogin':
-          if (!a.lastLogin) return 1
-          if (!b.lastLogin) return -1
-          return new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime()
-        default:
-          return 0
-      }
-    })
+  const filteredUsers = (() => {
+    // Filter by search term
+    const searched = filterBySearch(users, searchTerm, ['name', 'email']);
+
+    // Sort by selected field
+    switch (sortBy) {
+      case 'name':
+      case 'email':
+        return sortByField(searched, sortBy, 'asc');
+      case 'createdAt':
+      case 'lastLogin':
+        return sortByDate(searched, sortBy, 'desc');
+      default:
+        return searched;
+    }
+  })()
 
   if (loading) {
     return (
@@ -91,9 +87,9 @@ export function UserList() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1 sm:max-w-sm"
         />
-        <select 
-          value={sortBy} 
-          onChange={(e) => setSortBy(e.target.value as any)}
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
           className="px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
         >
           <option value="lastLogin">Last Login</option>
@@ -138,7 +134,7 @@ export function UserList() {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-sm font-medium">
-                      {(user.name || user.email).charAt(0).toUpperCase()}
+                      {getInitials(user.name || user.email)}
                     </div>
                   )}
                   <div>
@@ -153,12 +149,12 @@ export function UserList() {
                 </TableCell>
                 <TableCell>{user.documentsCount}</TableCell>
                 <TableCell>
-                  {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                  {formatRelativeTime(user.createdAt)}
                 </TableCell>
                 <TableCell>
                   {user.lastLogin ? (
                     <span className="text-sm">
-                      {formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true })}
+                      {formatRelativeTime(user.lastLogin)}
                     </span>
                   ) : (
                     <span className="text-sm text-gray-500">Never</span>
@@ -203,7 +199,7 @@ export function UserList() {
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-sm font-medium">
-                    {(user.name || user.email).charAt(0).toUpperCase()}
+                    {getInitials(user.name || user.email)}
                   </div>
                 )}
                 <div>
@@ -224,7 +220,7 @@ export function UserList() {
               <div>
                 <span className="text-gray-500">Registered:</span>
                 <span className="ml-1 font-medium text-xs">
-                  {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                  {formatRelativeTime(user.createdAt)}
                 </span>
               </div>
             </div>
@@ -233,10 +229,7 @@ export function UserList() {
               <div className="text-sm">
                 <span className="text-gray-500">Last Login:</span>
                 <span className="ml-1 font-medium">
-                  {user.lastLogin ? 
-                    formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : 
-                    'Never'
-                  }
+                  {user.lastLogin ? formatRelativeTime(user.lastLogin) : 'Never'}
                 </span>
               </div>
               <Button

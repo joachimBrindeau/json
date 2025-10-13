@@ -4,14 +4,42 @@ import { useEffect } from 'react';
 import Script from 'next/script';
 import { logger } from '@/lib/logger';
 
+/**
+ * Google Analytics gtag parameters
+ */
+interface GtagParams {
+  event_category?: string;
+  event_label?: string;
+  value?: number;
+  page_title?: string;
+  page_location?: string;
+  send_page_view?: boolean;
+  custom_map?: Record<string, string>;
+  [key: string]: string | number | boolean | Record<string, string> | undefined;
+}
+
+/**
+ * Facebook Pixel parameters
+ */
+interface FbqParams {
+  content_category?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
-    fbq?: (...args: any[]) => void;
-    _fbq?: any;
+    gtag?: (command: string, targetId: string | Date, params?: GtagParams) => void;
+    dataLayer?: Array<unknown>;
+    fbq?: (command: string, eventName: string, params?: FbqParams) => void;
+    _fbq?: {
+      callMethod?: (...args: unknown[]) => void;
+      queue: Array<unknown>;
+      push: (args: unknown) => void;
+      loaded: boolean;
+      version: string;
+    };
     trackJSONAction?: (action: string, category?: string, label?: string) => void;
-    trackFBEvent?: (event: string, params?: any) => void;
+    trackFBEvent?: (event: string, params?: FbqParams) => void;
   }
 }
 

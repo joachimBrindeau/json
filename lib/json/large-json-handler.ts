@@ -1,5 +1,7 @@
 'use client';
 
+import type { JsonValue } from '@/lib/api/types';
+
 // KISS approach for handling very large JSONs
 // YAGNI: Only what's needed for performance
 
@@ -19,7 +21,7 @@ const DEFAULT_CONFIG: LargeJsonConfig = {
 
 export class LargeJsonHandler {
   private config: LargeJsonConfig;
-  private chunks: Map<string, any> = new Map();
+  private chunks: Map<string, JsonValue> = new Map();
   private metadata: Map<string, { size: number; type: string; count: number }> = new Map();
 
   constructor(config: Partial<LargeJsonConfig> = {}) {
@@ -45,7 +47,7 @@ export class LargeJsonHandler {
 
   // Stream parse large JSON with memory limits
   async parseStream(jsonString: string): Promise<{
-    data: any;
+    data: JsonValue;
     isChunked: boolean;
     stats: { size: number; chunks: number; parseTime: number };
   }> {
@@ -138,7 +140,7 @@ export class LargeJsonHandler {
     maxDepth: number,
     maxArrayItems: number,
     maxObjectProps: number
-  ): Promise<any> {
+  ): Promise<JsonValue> {
     return new Promise((resolve, reject) => {
       try {
         let currentDepth = 0;
@@ -170,7 +172,7 @@ export class LargeJsonHandler {
           if (value && typeof value === 'object' && !Array.isArray(value) && value !== null) {
             const keys = Object.keys(value);
             if (keys.length > maxObjectProps) {
-              const limited: any = {};
+              const limited: Record<string, JsonValue> = {};
               keys.slice(0, maxObjectProps).forEach((k) => {
                 limited[k] = value[k];
               });
@@ -192,7 +194,7 @@ export class LargeJsonHandler {
     });
   }
 
-  private createPreview(data: any): any {
+  private createPreview(data: JsonValue): JsonValue {
     if (Array.isArray(data)) {
       return {
         type: 'array',
@@ -203,7 +205,7 @@ export class LargeJsonHandler {
     } else if (data && typeof data === 'object') {
       const keys = Object.keys(data);
       const sampleKeys = keys.slice(0, 5);
-      const sample: any = {};
+      const sample: Record<string, JsonValue> = {};
       sampleKeys.forEach((key) => {
         sample[key] = this.summarizeValue(data[key]);
       });
@@ -220,7 +222,7 @@ export class LargeJsonHandler {
     }
   }
 
-  private summarizeValue(value: any): any {
+  private summarizeValue(value: JsonValue): JsonValue {
     if (Array.isArray(value)) {
       return `Array[${value.length}]`;
     } else if (value && typeof value === 'object') {
@@ -232,7 +234,7 @@ export class LargeJsonHandler {
     }
   }
 
-  private async loadChunk(chunks: string[], index: number): Promise<any> {
+  private async loadChunk(chunks: string[], index: number): Promise<JsonValue | null> {
     if (index >= chunks.length) return null;
 
     try {
@@ -260,19 +262,19 @@ export class LargeJsonHandler {
   }
 
   // Check if should use virtual scrolling
-  shouldVirtualize(data: any): boolean {
+  shouldVirtualize(data: JsonValue): boolean {
     const nodeCount = this.countNodes(data);
     return nodeCount > this.config.virtualScrollThreshold;
   }
 
   // Check if should lazy load
-  shouldLazyLoad(data: any): boolean {
+  shouldLazyLoad(data: JsonValue): boolean {
     const nodeCount = this.countNodes(data);
     return nodeCount > this.config.lazyLoadThreshold;
   }
 
   // Count total nodes for better performance decisions
-  private countNodes(data: any, maxCount = 10000, currentCount = 0): number {
+  private countNodes(data: JsonValue, maxCount = 10000, currentCount = 0): number {
     if (currentCount >= maxCount) return currentCount;
     
     if (Array.isArray(data)) {
@@ -304,7 +306,7 @@ export class LargeJsonHandler {
   }
 
   // Performance optimization: detect JSON patterns for better handling
-  analyzeJsonStructure(data: any): {
+  analyzeJsonStructure(data: JsonValue): {
     isHomogeneous: boolean;
     primaryType: string;
     estimatedSize: number;
@@ -325,7 +327,7 @@ export class LargeJsonHandler {
     return analysis;
   }
 
-  private analyzeStructureRecursive(data: any, analysis: any, depth: number, visited: Set<any>) {
+  private analyzeStructureRecursive(data: JsonValue, analysis: Record<string, unknown>, depth: number, visited: Set<JsonValue>): void {
     if (depth > 10 || visited.has(data)) return;
     
     if (data && typeof data === 'object') {
@@ -361,7 +363,7 @@ export class LargeJsonHandler {
     }
   }
 
-  private calculateDepth(data: any, maxDepth = 20, currentDepth = 0): number {
+  private calculateDepth(data: JsonValue, maxDepth = 20, currentDepth = 0): number {
     if (currentDepth >= maxDepth || !data || typeof data !== 'object') {
       return currentDepth;
     }
@@ -384,7 +386,7 @@ export class LargeJsonHandler {
     return maxChildDepth;
   }
 
-  private estimateObjectSize(data: any): number {
+  private estimateObjectSize(data: JsonValue): number {
     try {
       return JSON.stringify(data).length;
     } catch {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { Controller } from 'react-hook-form';
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,8 @@ import {
   showSuccessToast,
   showInfoToast,
 } from '@/lib/utils/toast-helpers';
+import { useValidatedForm } from '@/hooks/use-validated-form';
+import { shareFormSchema, type ShareFormData } from '@/lib/validation/schemas';
 
 interface ShareModalProps {
   open: boolean;
@@ -69,15 +72,23 @@ export function ShareModal({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
-
-  // Form state
   const [isPublic, setIsPublic] = useState(currentVisibility === 'public');
-  const [formData, setFormData] = useState({
-    title: currentTitle || '',
-    description: '',
-    category: '',
-    tags: [] as string[],
+
+  // Initialize form with react-hook-form + Zod validation
+  const form = useValidatedForm(shareFormSchema, {
+    defaultValues: {
+      title: currentTitle || '',
+      description: '',
+      category: '',
+      tags: [],
+      visibility: currentVisibility,
+    },
+    mode: 'onChange',
   });
+
+  // Watch category for tag filtering
+  const category = form.watch('category');
+  const title = form.watch('title');
 
 
   // Load existing metadata when modal opens for published documents
@@ -107,11 +118,12 @@ export function ShareModal({
         } }>(`/api/json/${shareId}`);
 
         // Pre-populate form with existing metadata
-        setFormData({
+        form.reset({
           title: response.document.title || currentTitle || '',
           description: response.document.description || '',
           category: response.document.category || '',
           tags: response.document.tags || [],
+          visibility: response.document.visibility as 'public' | 'private',
         });
 
         // Update visibility state
@@ -120,11 +132,12 @@ export function ShareModal({
       } catch (error) {
         // If error, fall back to current title (document might not exist yet)
         logger.debug({ err: error, shareId }, 'Could not load metadata - document may not exist yet');
-        setFormData({
+        form.reset({
           title: currentTitle || '',
           description: '',
           category: '',
           tags: [],
+          visibility: currentVisibility,
         });
       } finally {
         setIsLoadingMetadata(false);
@@ -132,7 +145,7 @@ export function ShareModal({
     };
 
     loadPublishedMetadata();
-  }, [open, shareId, currentTitle, currentVisibility]);
+  }, [open, shareId, currentTitle, currentVisibility, form]);
 
   // Stop saving state when shareId becomes available
   useEffect(() => {
@@ -163,6 +176,15 @@ export function ShareModal({
 
 
   const handleSave = useCallback(async () => {
+    // Validate form before submission
+    const isValid = await form.trigger();
+    if (!isValid) {
+      showValidationErrorToast('Validation failed', 'Please fix the errors before saving');
+      return;
+    }
+
+    const formData = form.getValues();
+
     if (isPublic && !formData.title.trim()) {
       showValidationErrorToast('Title required', 'Public JSONs require a title');
       return;
@@ -191,8 +213,9 @@ export function ShareModal({
       }
 
       if (isPublic) {
-        // Publish to public library
-        await apiClient.post(`/api/json/${shareId}/publish`, formData);
+        // Publish to public library - exclude visibility from API payload
+        const { visibility, ...publishData } = formData;
+        await apiClient.post(`/api/json/${shareId}/publish`, publishData);
 
         showSuccessToast('Published successfully!', {
           description: 'Your JSON is now discoverable in the public library',
@@ -213,7 +236,7 @@ export function ShareModal({
     } finally {
       setIsUpdating(false);
     }
-  }, [isPublic, formData, shareId, onUpdated, onOpenChange]);
+  }, [isPublic, shareId, onUpdated, onOpenChange, form]);
 
   // Allow modal to open even without shareId - it can handle creating one
 
@@ -260,13 +283,15 @@ export function ShareModal({
             </Label>
             <Input
               id="title"
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+              {...form.register('title')}
               placeholder="e.g., E-commerce Product API Response"
               maxLength={200}
               className="font-medium"
               disabled={isLoadingMetadata}
             />
+            {form.formState.errors.title && (
+              <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
+            )}
           </div>
 
           {/* Public/Private Toggle */}
@@ -350,14 +375,16 @@ export function ShareModal({
                 </Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  {...form.register('description')}
                   placeholder="Optional: Describe what this JSON represents..."
                   maxLength={1000}
                   rows={3}
                   className="mt-1"
                   disabled={isLoadingMetadata}
                 />
+                {form.formState.errors.description && (
+                  <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
+                )}
               </div>
 
               {/* Category */}
@@ -365,32 +392,50 @@ export function ShareModal({
                 <Label htmlFor="category" className="text-sm font-medium">
                   Category
                 </Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-                  disabled={isLoadingMetadata}
-                >
-                  <SelectTrigger className="mt-1" disabled={isLoadingMetadata}>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOCUMENT_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="category"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isLoadingMetadata}
+                    >
+                      <SelectTrigger className="mt-1" disabled={isLoadingMetadata}>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DOCUMENT_CATEGORIES.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {form.formState.errors.category && (
+                  <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+                )}
               </div>
 
               {/* Tags */}
-              <TagManagementSection
-                selectedTags={formData.tags}
-                onTagsChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
-                category={formData.category}
-                maxTags={10}
-                disabled={isLoadingMetadata}
+              <Controller
+                name="tags"
+                control={form.control}
+                render={({ field }) => (
+                  <TagManagementSection
+                    selectedTags={field.value}
+                    onTagsChange={field.onChange}
+                    category={category}
+                    maxTags={10}
+                    disabled={isLoadingMetadata}
+                  />
+                )}
               />
+              {form.formState.errors.tags && (
+                <p className="text-sm text-red-500">{form.formState.errors.tags.message}</p>
+              )}
 
               {/* Preview */}
               <div className="bg-white border rounded-lg p-3">
@@ -399,19 +444,19 @@ export function ShareModal({
                   <span className="font-medium text-sm">Library Preview</span>
                 </div>
                 <div className="text-sm">
-                  <div className="font-medium text-gray-900">{formData.title || 'Untitled JSON'}</div>
-                  {formData.description && (
-                    <div className="text-gray-600 mt-1 text-xs">{formData.description}</div>
+                  <div className="font-medium text-gray-900">{title || 'Untitled JSON'}</div>
+                  {form.watch('description') && (
+                    <div className="text-gray-600 mt-1 text-xs">{form.watch('description')}</div>
                   )}
                   <div className="flex items-center gap-1 mt-2">
-                    {formData.category && <Badge variant="outline" className="text-xs">{formData.category}</Badge>}
-                    {formData.tags.slice(0, 3).map((tag) => (
+                    {category && <Badge variant="outline" className="text-xs">{category}</Badge>}
+                    {form.watch('tags').slice(0, 3).map((tag) => (
                       <Badge key={tag} variant="secondary" className="text-xs">
                         #{tag}
                       </Badge>
                     ))}
-                    {formData.tags.length > 3 && (
-                      <span className="text-xs text-muted-foreground">+{formData.tags.length - 3} more</span>
+                    {form.watch('tags').length > 3 && (
+                      <span className="text-xs text-muted-foreground">+{form.watch('tags').length - 3} more</span>
                     )}
                   </div>
                 </div>
@@ -483,7 +528,7 @@ export function ShareModal({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isUpdating || isSaving || isLoadingMetadata || !formData.title.trim()}
+              disabled={isUpdating || isSaving || isLoadingMetadata || !title?.trim()}
               className="order-1 sm:order-2"
             >
               {(isUpdating || isSaving) ? (

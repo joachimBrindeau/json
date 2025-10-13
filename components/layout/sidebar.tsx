@@ -75,8 +75,12 @@ function SidebarComponent({
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
     // Debounce scroll updates to avoid excessive store updates
-    clearTimeout((window as any).__sidebarScrollTimeout);
-    (window as any).__sidebarScrollTimeout = setTimeout(() => {
+    interface WindowWithSidebarTimeout extends Window {
+      __sidebarScrollTimeout?: NodeJS.Timeout;
+    }
+    const win = window as WindowWithSidebarTimeout;
+    clearTimeout(win.__sidebarScrollTimeout);
+    win.__sidebarScrollTimeout = setTimeout(() => {
       setSidebarScrollPosition(scrollTop);
     }, 150);
   }, [setSidebarScrollPosition]);
