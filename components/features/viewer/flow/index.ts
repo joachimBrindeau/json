@@ -7,7 +7,17 @@
 
 // Main components
 export { FlowView } from './FlowView';
-export { FlowDiagram } from './FlowDiagram';
+
+// Configuration
+export {
+  FLOW_NODE_TYPES,
+  FLOW_EDGE_TYPES,
+  FLOW_FIT_VIEW_OPTIONS,
+  FLOW_ZOOM_CONFIG,
+  FLOW_DEFAULT_VIEWPORT,
+  FLOW_DEFAULT_EDGE_OPTIONS,
+  getMinimapNodeColor,
+} from './config/flow-config';
 
 // Node components
 export { FlowObjectNode } from './nodes/FlowObjectNode';
@@ -32,9 +42,10 @@ export { FlowCollapseButton } from './FlowCollapseButton';
 export { useFlowCollapse } from './hooks/useFlowCollapse';
 
 // Utilities
-export { jsonParser, addPrefixChain } from './utils/flow-parser';
+export { jsonParser } from './utils/flow-parser';
 export { getXYPosition, getLayoutedSeaNodes } from './utils/flow-layout';
 export { extractNodeDetails } from './utils/flow-node-details';
+export { createDefaultEdge, createChainEdge, addPrefixChain } from './utils/flow-edge-factory';
 export * from './utils/flow-utils';
 export * from './utils/flow-types';
 export * from './utils/flow-constants';

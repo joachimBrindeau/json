@@ -22,7 +22,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Copy, Check, Globe, Lock, Users, Eye, X, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useTagManager } from '@/hooks/use-tag-manager';
 import {
   TwitterShareButton,
@@ -45,6 +44,13 @@ import {
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
+import {
+  showCopySuccessToast,
+  showErrorToast,
+  showValidationErrorToast,
+  showSuccessToast,
+  showInfoToast,
+} from '@/lib/utils/toast-helpers';
 
 interface ShareModalProps {
   open: boolean;
@@ -56,14 +62,13 @@ interface ShareModalProps {
 }
 
 export function ShareModal({
-  open, 
-  onOpenChange, 
-  shareId, 
+  open,
+  onOpenChange,
+  shareId,
   currentTitle,
   currentVisibility = 'private',
-  onUpdated 
+  onUpdated
 }: ShareModalProps) {
-  const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -122,72 +127,54 @@ export function ShareModal({
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast({
-        title: 'Copied!',
-        description: 'Share link copied to clipboard',
-      });
+      showCopySuccessToast('Share link');
     } catch (err) {
       logger.error({ err, shareUrl }, 'Failed to copy share link to clipboard');
-      toast({
-        title: 'Error',
-        description: 'Failed to copy link',
-        variant: 'destructive',
-      });
+      showErrorToast(err, 'Failed to copy link');
     }
-  }, [shareUrl, toast]);
+  }, [shareUrl]);
 
 
   const handleSave = useCallback(async () => {
     if (isPublic && !formData.title.trim()) {
-      toast({
-        title: 'Title required',
-        description: 'Public JSONs require a title',
-        variant: 'destructive',
-      });
+      showValidationErrorToast('Title required', 'Public JSONs require a title');
       return;
     }
 
     try {
       setIsUpdating(true);
-      
+
       // If we don't have a shareId yet, we need to save/create the JSON first
       if (!shareId) {
         // For new documents without a shareId, we need to save with title first
         if (!formData.title.trim()) {
-          toast({
-            title: 'Title required',
-            description: 'Please enter a title to save your JSON',
-            variant: 'destructive',
-          });
+          showValidationErrorToast('Title required', 'Please enter a title to save your JSON');
           return;
         }
 
         setIsSaving(true);
-        toast({
-          title: 'Saving JSON with title',
+        showInfoToast('Saving JSON with title', {
           description: 'Creating your document and share link...',
         });
-        
+
         // Signal the parent to save the JSON with the provided title
         // Don't close the modal - let the parent update the shareId and refresh this modal
         onUpdated?.(formData.title.trim());
         return;
       }
-      
+
       if (isPublic) {
         // Publish to public library
         await apiClient.post(`/api/json/${shareId}/publish`, formData);
 
-        toast({
-          title: 'Published successfully!',
+        showSuccessToast('Published successfully!', {
           description: 'Your JSON is now discoverable in the public library',
         });
       } else {
         // Make private
         await apiClient.delete(`/api/json/${shareId}/publish`);
 
-        toast({
-          title: 'Made private',
+        showSuccessToast('Made private', {
           description: 'Your JSON is now private but still shareable via link',
         });
       }
@@ -195,15 +182,11 @@ export function ShareModal({
       onUpdated?.();
       onOpenChange(false);
     } catch (error) {
-      toast({
-        title: 'Failed to update',
-        description: 'Please try again later',
-        variant: 'destructive',
-      });
+      showErrorToast(error, 'Failed to update');
     } finally {
       setIsUpdating(false);
     }
-  }, [isPublic, formData, shareId, toast, onUpdated, onOpenChange]);
+  }, [isPublic, formData, shareId, onUpdated, onOpenChange]);
 
   // Allow modal to open even without shareId - it can handle creating one
 

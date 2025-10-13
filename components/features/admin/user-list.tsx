@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input'
 import { formatDistanceToNow } from 'date-fns'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
-import { useToast } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
+import { showApiErrorToast } from '@/lib/utils/toast-helpers'
 
 interface User {
   id: string
@@ -23,15 +23,10 @@ interface User {
 }
 
 export function UserList() {
-  const { toast } = useToast()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'createdAt' | 'lastLogin'>('lastLogin')
-
-  useEffect(() => {
-    fetchUsers()
-  }, [])
 
   const fetchUsers = async () => {
     try {
@@ -39,15 +34,15 @@ export function UserList() {
       setUsers(data.users)
     } catch (error) {
       logger.error({ err: error }, 'Failed to fetch users')
-      toast({
-        title: 'Failed to load users',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      })
+      showApiErrorToast('Failed to load users', error, fetchUsers)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
   const filteredUsers = users
     .filter(user => 

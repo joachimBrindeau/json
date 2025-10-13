@@ -17,25 +17,18 @@ import { jsonParser } from '@/components/features/viewer/flow/utils/flow-parser'
 import { getLayoutedSeaNodes } from '@/components/features/viewer/flow/utils/flow-layout';
 import { extractNodeDetails, NodeDetails } from '@/components/features/viewer/flow/utils/flow-node-details';
 import { useFlowCollapse } from '@/components/features/viewer/flow/hooks/useFlowCollapse';
-import { FlowObjectNode } from '@/components/features/viewer/flow/nodes/FlowObjectNode';
-import { FlowArrayNode } from '@/components/features/viewer/flow/nodes/FlowArrayNode';
-import { FlowPrimitiveNode } from '@/components/features/viewer/flow/nodes/FlowPrimitiveNode';
-import { FlowDefaultEdge } from '@/components/features/viewer/flow/edges/FlowDefaultEdge';
-import { FlowChainEdge } from '@/components/features/viewer/flow/edges/FlowChainEdge';
 import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-
-const nodeTypes = {
-  object: FlowObjectNode,
-  array: FlowArrayNode,
-  primitive: FlowPrimitiveNode,
-};
-
-const edgeTypes = {
-  default: FlowDefaultEdge,
-  chain: FlowChainEdge,
-};
+import {
+  FLOW_NODE_TYPES,
+  FLOW_EDGE_TYPES,
+  FLOW_FIT_VIEW_OPTIONS,
+  FLOW_ZOOM_CONFIG,
+  FLOW_DEFAULT_VIEWPORT,
+  FLOW_DEFAULT_EDGE_OPTIONS,
+  getMinimapNodeColor,
+} from './config/flow-config';
 
 const MINIMAP_NODE_COLORS = {
   object: '#10b981',
@@ -124,34 +117,25 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
     setShowDetails(true);
   }, []);
 
-  const miniMapNodeColor = useCallback(
-    (node: Node) => MINIMAP_NODE_COLORS[node.type as keyof typeof MINIMAP_NODE_COLORS] || MINIMAP_NODE_COLORS.default,
-    []
-  );
-
   return (
     <>
       <div className={cn('w-full h-full', className)}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
+          nodeTypes={FLOW_NODE_TYPES}
+          edgeTypes={FLOW_EDGE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
           connectionMode={ConnectionMode.Loose}
           fitView
-          fitViewOptions={{
-            padding: 0.2,
-            maxZoom: 1.5,
-            minZoom: 0.1,
-          }}
-          minZoom={0.1}
-          maxZoom={2}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-          defaultEdgeOptions={undefined}
+          fitViewOptions={FLOW_FIT_VIEW_OPTIONS}
+          minZoom={FLOW_ZOOM_CONFIG.minZoom}
+          maxZoom={FLOW_ZOOM_CONFIG.maxZoom}
+          defaultViewport={FLOW_DEFAULT_VIEWPORT}
+          defaultEdgeOptions={FLOW_DEFAULT_EDGE_OPTIONS}
         >
           <Background variant="dots" gap={12} size={1} />
           <Controls
@@ -161,7 +145,7 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
             className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
           />
           <MiniMap
-            nodeColor={miniMapNodeColor}
+            nodeColor={getMinimapNodeColor}
             className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
             maskColor="rgb(0, 0, 0, 0.1)"
           />

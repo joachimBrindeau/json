@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
-import { useToast } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
+import { showApiErrorToast } from '@/lib/utils/toast-helpers'
 
 interface TagStats {
   name: string
@@ -31,13 +31,8 @@ interface TagAnalytics {
 }
 
 export function TagAnalytics() {
-  const { toast } = useToast()
   const [analytics, setAnalytics] = useState<TagAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchTagAnalytics()
-  }, [])
 
   const fetchTagAnalytics = async () => {
     try {
@@ -45,15 +40,15 @@ export function TagAnalytics() {
       setAnalytics(data)
     } catch (error) {
       logger.error({ err: error }, 'Failed to fetch tag analytics')
-      toast({
-        title: 'Failed to load tag analytics',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      })
+      showApiErrorToast('Failed to load tag analytics', error, fetchTagAnalytics)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchTagAnalytics()
+  }, [])
 
   if (loading) {
     return (

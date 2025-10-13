@@ -184,15 +184,24 @@ export function showCopySuccessToast(itemName: string = 'Content') {
 }
 
 /**
- * Show a toast notification for API errors with retry action
+ * Show a toast notification for API errors with optional retry action
  *
  * @example
- * showApiErrorToast('Failed to fetch users', error, () => fetchUsers());
+ * showApiErrorToast('Failed to fetch users', error);
+ *
+ * @example
+ * // With retry action
+ * showApiErrorToast('Failed to fetch users', error, {
+ *   action: <Button onClick={retry}>Retry</Button>
+ * });
  */
 export function showApiErrorToast(
   operation: string,
   error: unknown,
-  onRetry?: () => void
+  options?: {
+    action?: ToastActionElement;
+    duration?: number;
+  }
 ) {
   const errorMessage = parseErrorMessage(error);
 
@@ -200,14 +209,8 @@ export function showApiErrorToast(
     title: operation,
     description: errorMessage,
     variant: 'destructive',
-    action: onRetry ? (
-      <button
-        onClick={onRetry}
-        className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary"
-      >
-        Retry
-      </button>
-    ) : undefined,
+    action: options?.action,
+    duration: options?.duration || 5000,
   });
 }
 

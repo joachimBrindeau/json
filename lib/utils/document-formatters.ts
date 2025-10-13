@@ -3,22 +3,15 @@
  * Centralized formatting functions for document display and API responses
  */
 
+import { formatSize } from './formatters';
+
 /**
  * Format document size in bytes to human-readable format
+ * Delegates to the general formatSize utility for consistency
  */
 export function formatDocumentSize(bytes: number | bigint): string {
   const numBytes = typeof bytes === 'bigint' ? Number(bytes) : bytes;
-
-  if (numBytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(numBytes) / Math.log(k));
-
-  const size = numBytes / Math.pow(k, i);
-  const formatted = i === 0 ? size.toString() : size.toFixed(2);
-
-  return `${formatted} ${sizes[i]}`;
+  return formatSize(numBytes);
 }
 
 /**
@@ -51,21 +44,9 @@ export function formatDocumentDateShort(date: Date | string): string {
 
 /**
  * Format relative time (e.g., "2 hours ago")
+ * Re-exported from formatters for consistency
  */
-export function formatRelativeTime(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-  if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
-  if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
-
-  return `${Math.floor(seconds / 31536000)} years ago`;
-}
+export { formatRelativeTime } from './formatters';
 
 /**
  * Validate share ID format
@@ -80,13 +61,10 @@ export function isValidShareId(id: string): boolean {
 }
 
 /**
- * Format view count with abbreviations (e.g., 1.2K, 1.5M)
+ * Format view count with abbreviations (e.g., 1.2k, 1.5M)
+ * Uses the general formatCount utility for consistency
  */
-export function formatViewCount(count: number): string {
-  if (count < 1000) return count.toString();
-  if (count < 1000000) return `${(count / 1000).toFixed(1)}K`;
-  return `${(count / 1000000).toFixed(1)}M`;
-}
+export { formatCount as formatViewCount } from './formatters';
 
 /**
  * Format document complexity for display

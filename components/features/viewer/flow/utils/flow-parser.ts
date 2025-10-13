@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import { Edge } from 'reactflow';
 import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import {
@@ -7,13 +6,12 @@ import {
   getJsonDataType,
   validateJsonDataType,
 } from './flow-utils';
-import { EdgeType, JsonDataType, NodeType } from './flow-types';
+import { JsonDataType, NodeType } from './flow-types';
 import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
 import { getXYPosition } from './flow-layout';
+import { createDefaultEdge, createChainEdge, type DefaultEdgeParams, type ChainEdgeParams } from './flow-edge-factory';
 
 const formatNodeId = (nodeSequence: number): string => `n${nodeSequence}`;
-
-export const addPrefixChain = (v: string): string => `chain-${v}`;
 
 type BeforeObjectSeaNode = {
   nodeId: string;
@@ -112,39 +110,6 @@ const convertPrimitiveToNode = ({
       arrayIndex,
       value,
     },
-  };
-};
-
-type SourceTarget = Pick<Edge, 'source' | 'target'>;
-type DefaultEdgeParams = SourceTarget & Pick<Edge, 'sourceHandle'>;
-
-const createDefaultEdge = ({ source, target, sourceHandle }: DefaultEdgeParams): Edge => {
-  return {
-    /**
-     * @bugfix If the same edge id remains in `JsonDiagram` after update, the following bug occurs.
-     *         https://stackoverflow.com/questions/70114700/react-flow-renderer-edges-remain-in-ui-without-any-parents
-     * @solution Use `nanoid()` for id.
-     */
-    id: nanoid(),
-    type: 'default',
-    source,
-    target,
-    sourceHandle,
-    animated: true,
-    style: {
-      strokeWidth: 2,
-    },
-  };
-};
-
-const createChainEdge = ({ source, target }: SourceTarget): Edge => {
-  return {
-    id: nanoid(),
-    type: EdgeType.Chain,
-    source,
-    target,
-    sourceHandle: 'bottom', // Use bottom anchor for source
-    targetHandle: 'top',    // Use top anchor for target
   };
 };
 

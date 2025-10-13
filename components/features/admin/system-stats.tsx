@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
-import { useToast } from '@/hooks/use-toast'
+import { showApiErrorToast, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
 
 interface SystemStats {
   database: {
@@ -37,15 +37,8 @@ interface SystemStats {
 }
 
 export function SystemStats() {
-  const { toast } = useToast()
   const [stats, setStats] = useState<SystemStats | null>(null)
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchSystemStats()
-    const interval = setInterval(fetchSystemStats, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
-  }, [])
 
   const fetchSystemStats = async () => {
     try {
@@ -53,15 +46,17 @@ export function SystemStats() {
       setStats(data)
     } catch (error) {
       logger.error({ err: error }, 'Failed to fetch system stats')
-      toast({
-        title: 'Failed to load system stats',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      })
+      showApiErrorToast('Failed to load system stats', error, fetchSystemStats)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchSystemStats()
+    const interval = setInterval(fetchSystemStats, 30000) // Refresh every 30 seconds
+    return () => clearInterval(interval)
+  }, [])
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -193,18 +188,13 @@ export function SystemStats() {
             <Button variant="outline" onClick={async () => {
               try {
                 await apiClient.delete('/api/admin/system/cache')
-                toast({
-                  title: 'Cache cleared',
+                showSuccessToast('Cache cleared', {
                   description: 'System cache cleared successfully'
                 })
                 fetchSystemStats()
               } catch (error) {
                 logger.error({ err: error }, 'Error clearing cache')
-                toast({
-                  title: 'Failed to clear cache',
-                  description: error instanceof Error ? error.message : 'Please try again',
-                  variant: 'destructive'
-                })
+                showErrorToast(error, 'Failed to clear cache')
               }
             }} className="w-full sm:w-auto">
               Clear Cache
@@ -212,18 +202,13 @@ export function SystemStats() {
             <Button variant="outline" onClick={async () => {
               try {
                 await apiClient.post('/api/admin/system/optimize')
-                toast({
-                  title: 'Optimization started',
+                showSuccessToast('Optimization started', {
                   description: 'Database optimization is now running'
                 })
                 fetchSystemStats()
               } catch (error) {
                 logger.error({ err: error }, 'Error optimizing database')
-                toast({
-                  title: 'Failed to optimize database',
-                  description: error instanceof Error ? error.message : 'Please try again',
-                  variant: 'destructive'
-                })
+                showErrorToast(error, 'Failed to optimize database')
               }
             }} className="w-full sm:w-auto">
               Optimize Database

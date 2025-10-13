@@ -6,32 +6,44 @@
 /**
  * Format bytes to human-readable size
  * @param bytes - Number of bytes
- * @returns Formatted string (e.g., "1.5 KB", "2.3 MB")
+ * @param decimals - Number of decimal places (default: 2)
+ * @returns Formatted string (e.g., "1.50 KB", "2.30 MB")
  */
-export function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+export function formatSize(bytes: number, decimals: number = 2): string {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  const size = bytes / Math.pow(k, i);
+  const formatted = i === 0 ? size.toString() : size.toFixed(decimals);
+
+  return `${formatted} ${sizes[i]}`;
 }
 
 /**
  * Format date to relative time string
  * @param date - Date string or Date object
- * @returns Relative time string (e.g., "Today", "2 days ago", "3 months ago")
+ * @returns Relative time string (e.g., "just now", "2 hours ago", "3 months ago")
  */
 export function formatRelativeTime(date: string | Date): string {
-  const d = new Date(date);
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffTime = Math.abs(now.getTime() - d.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
 
-  if (diffDays < 1) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+  // Handle future dates
+  if (seconds < 0) return 'in the future';
 
-  return d.toLocaleDateString();
+  // Handle recent times with more granularity
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+  if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
+  if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
+
+  return `${Math.floor(seconds / 31536000)} years ago`;
 }
 
 /**

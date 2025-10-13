@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { ExternalLink } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
-import { useToast } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
+import { showApiErrorToast } from '@/lib/utils/toast-helpers'
 
 interface SEOData {
   pageKey: string
@@ -21,13 +21,8 @@ interface SEOData {
 }
 
 export function SEOManager() {
-  const { toast } = useToast()
   const [seoData, setSeoData] = useState<SEOData[]>([])
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchSEOData()
-  }, [])
 
   const fetchSEOData = async () => {
     try {
@@ -35,15 +30,15 @@ export function SEOManager() {
       setSeoData(data.settings)
     } catch (error) {
       logger.error({ err: error }, 'Failed to fetch SEO data')
-      toast({
-        title: 'Failed to load SEO data',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      })
+      showApiErrorToast('Failed to load SEO data', error, fetchSEOData)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchSEOData()
+  }, [])
 
   const handleEditSEO = () => {
     window.open('/superadmin', '_blank')
