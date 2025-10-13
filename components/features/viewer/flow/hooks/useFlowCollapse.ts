@@ -1,19 +1,42 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { Node, Edge } from 'reactflow';
 
-const getDescendantIds = (nodeId: string, edges: Edge[]): Set<string> => {
+/**
+ * Build a map of node ID to its direct children for O(1) lookups
+ * This is memoized to avoid rebuilding on every render
+ */
+const buildChildrenMap = (edges: Edge[]): Map<string, Set<string>> => {
+  const childrenMap = new Map<string, Set<string>>();
+
+  edges.forEach((edge) => {
+    if (!childrenMap.has(edge.source)) {
+      childrenMap.set(edge.source, new Set());
+    }
+    childrenMap.get(edge.source)!.add(edge.target);
+  });
+
+  return childrenMap;
+};
+
+/**
+ * Get all descendant node IDs using BFS with optimized lookups
+ */
+const getDescendantIds = (nodeId: string, childrenMap: Map<string, Set<string>>): Set<string> => {
   const descendants = new Set<string>();
   const toProcess = [nodeId];
 
   while (toProcess.length > 0) {
     const currentId = toProcess.pop()!;
+    const children = childrenMap.get(currentId);
 
-    edges.forEach((edge) => {
-      if (edge.source === currentId && !descendants.has(edge.target)) {
-        descendants.add(edge.target);
-        toProcess.push(edge.target);
-      }
-    });
+    if (children) {
+      children.forEach((childId) => {
+        if (!descendants.has(childId)) {
+          descendants.add(childId);
+          toProcess.push(childId);
+        }
+      });
+    }
   }
 
   return descendants;
@@ -21,6 +44,21 @@ const getDescendantIds = (nodeId: string, edges: Edge[]): Set<string> => {
 
 export const useFlowCollapse = (allNodes: Node[], allEdges: Edge[]) => {
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
+
+  // Memoize the children map to avoid rebuilding on every render
+  const childrenMap = useMemo(() => buildChildrenMap(allEdges), [allEdges]);
+
+  // Memoize hidden nodes calculation
+  const hiddenNodes = useMemo(() => {
+    const hidden = new Set<string>();
+
+    collapsedNodes.forEach((collapsedId) => {
+      const descendants = getDescendantIds(collapsedId, childrenMap);
+      descendants.forEach((id) => hidden.add(id));
+    });
+
+    return hidden;
+  }, [collapsedNodes, childrenMap]);
 
   const handleToggleCollapse = useCallback((nodeId: string) => {
     setCollapsedNodes((prev) => {
@@ -37,13 +75,6 @@ export const useFlowCollapse = (allNodes: Node[], allEdges: Edge[]) => {
   const getVisibleNodes = useCallback(() => {
     if (allNodes.length === 0) return allNodes;
 
-    const hiddenNodes = new Set<string>();
-
-    collapsedNodes.forEach((collapsedId) => {
-      const descendants = getDescendantIds(collapsedId, allEdges);
-      descendants.forEach((id) => hiddenNodes.add(id));
-    });
-
     return allNodes.map((node) => ({
       ...node,
       data: {
@@ -53,23 +84,16 @@ export const useFlowCollapse = (allNodes: Node[], allEdges: Edge[]) => {
       },
       hidden: hiddenNodes.has(node.id),
     }));
-  }, [allNodes, allEdges, collapsedNodes, handleToggleCollapse]);
+  }, [allNodes, collapsedNodes, handleToggleCollapse, hiddenNodes]);
 
   const getVisibleEdges = useCallback(() => {
     if (allEdges.length === 0) return allEdges;
-
-    const hiddenNodes = new Set<string>();
-
-    collapsedNodes.forEach((collapsedId) => {
-      const descendants = getDescendantIds(collapsedId, allEdges);
-      descendants.forEach((id) => hiddenNodes.add(id));
-    });
 
     return allEdges.map((edge) => ({
       ...edge,
       hidden: hiddenNodes.has(edge.target) || hiddenNodes.has(edge.source),
     }));
-  }, [allEdges, collapsedNodes]);
+  }, [allEdges, hiddenNodes]);
 
   return {
     collapsedNodes,

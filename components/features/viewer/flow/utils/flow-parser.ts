@@ -1,35 +1,65 @@
+/**
+ * Flow Parser - Refactored for simplicity (KISS principle)
+ * 
+ * Converts JSON data into ReactFlow nodes and edges.
+ * Simplified from the original 400+ line implementation.
+ */
+
 import { Edge } from 'reactflow';
 import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
-import {
-  isArray,
-  isObject,
-  getJsonDataType,
-  validateJsonDataType,
-} from './flow-utils';
+import { isArray, isObject, getJsonDataType, validateJsonDataType } from './flow-utils';
 import { JsonDataType, NodeType } from './flow-types';
 import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
 import { getXYPosition } from './flow-layout';
-import { createDefaultEdge, createChainEdge, type DefaultEdgeParams, type ChainEdgeParams } from './flow-edge-factory';
+import { createDefaultEdge, createChainEdge, type DefaultEdgeParams } from './flow-edge-factory';
 
-const formatNodeId = (nodeSequence: number): string => `n${nodeSequence}`;
-
-type BeforeObjectSeaNode = {
-  nodeId: string;
-  depth: number;
-  obj: object;
-  parentNodePathIds: string[];
-  arrayIndexForObject: number | null;
-  isRootNode: boolean;
+/**
+ * Parser context - shared state during parsing
+ */
+type ParserContext = {
+  nodeSequence: number;
+  defaultEdges: Edge[];
+  chainEdges: Edge[];
 };
 
-const convertObjectToNode = ({
-  nodeId,
-  depth,
-  obj,
-  parentNodePathIds,
-  arrayIndexForObject,
-  isRootNode,
-}: BeforeObjectSeaNode): ObjectSeaNode => {
+/**
+ * Format node ID from sequence number
+ */
+const formatNodeId = (nodeSequence: number): string => `n${nodeSequence}`;
+
+/**
+ * Get next node ID and increment sequence
+ */
+const getNextNodeId = (context: ParserContext): string => {
+  context.nodeSequence++;
+  return formatNodeId(context.nodeSequence);
+};
+
+/**
+ * Add a default edge to the context
+ */
+const addDefaultEdge = (context: ParserContext, params: DefaultEdgeParams): void => {
+  context.defaultEdges.push(createDefaultEdge(params));
+};
+
+/**
+ * Add a chain edge to the context
+ */
+const addChainEdge = (context: ParserContext, source: string, target: string): void => {
+  context.chainEdges.push(createChainEdge({ source, target }));
+};
+
+/**
+ * Create an object node
+ */
+const createObjectNode = (
+  nodeId: string,
+  depth: number,
+  obj: object,
+  parentNodePathIds: string[],
+  arrayIndexForObject: number | null,
+  isRootNode: boolean
+): ObjectSeaNode => {
   return {
     id: nodeId,
     type: NodeType.Object,
@@ -46,23 +76,17 @@ const convertObjectToNode = ({
   };
 };
 
-type BeforeArraySeaNode = {
-  nodeId: string;
-  depth: number;
-  arrayIndex: number;
-  items: unknown[];
-  parentNodePathIds: string[];
-  isRootNode: boolean;
-};
-
-const convertArrayToNode = ({
-  nodeId,
-  depth,
-  arrayIndex,
-  items,
-  parentNodePathIds,
-  isRootNode,
-}: BeforeArraySeaNode): ArraySeaNode => {
+/**
+ * Create an array node
+ */
+const createArrayNode = (
+  nodeId: string,
+  depth: number,
+  arrayIndex: number,
+  items: unknown[],
+  parentNodePathIds: string[],
+  isRootNode: boolean
+): ArraySeaNode => {
   return {
     id: nodeId,
     type: NodeType.Array,
@@ -79,21 +103,16 @@ const convertArrayToNode = ({
   };
 };
 
-type BeforePrimitiveSeaNode = {
-  nodeId: string;
-  depth: number;
-  arrayIndex: number;
-  value: string | number | boolean | null;
-  parentNodePathIds: string[];
-};
-
-const convertPrimitiveToNode = ({
-  nodeId,
-  depth,
-  arrayIndex,
-  value,
-  parentNodePathIds,
-}: BeforePrimitiveSeaNode): PrimitiveSeaNode => {
+/**
+ * Create a primitive node
+ */
+const createPrimitiveNode = (
+  nodeId: string,
+  depth: number,
+  arrayIndex: number,
+  value: string | number | boolean | null,
+  parentNodePathIds: string[]
+): PrimitiveSeaNode => {
   return {
     id: nodeId,
     type: NodeType.Primitive,
@@ -113,301 +132,138 @@ const convertPrimitiveToNode = ({
   };
 };
 
-type TraverseParams = {
-  traverseTarget: object | unknown[];
-  depth: number;
-  arrayIndexForObject: number | null;
-  sourceSet: { source?: string; sourceHandle?: string };
-  parentNodePathIds: string[];
-};
-type TraverseObjectParams = {
-  _obj: object;
-  _nextDepth: number;
-  _parentNodePathIds: string[];
-  _source: string;
-  _sourceHandle: string;
-};
-type TraverseArrayParams = {
-  _array: unknown[];
-  _nextDepth: number;
-  _parentNodePathIds: string[];
-  _source: string;
-  _sourceHandle?: string;
+/**
+ * Parse an object and its properties
+ */
+const parseObject = (
+  context: ParserContext,
+  obj: object,
+  depth: number,
+  parentNodePathIds: string[],
+  arrayIndexForObject: number | null,
+  isRootNode: boolean,
+  sourceNodeId?: string,
+  sourceHandle?: string
+): SeaNode[] => {
+  const nodes: SeaNode[] = [];
+  const currentNodeId = formatNodeId(context.nodeSequence);
+  
+  // Create object node
+  nodes.push(createObjectNode(currentNodeId, depth, obj, parentNodePathIds, arrayIndexForObject, isRootNode));
+  
+  // Add edge from parent if not root
+  if (sourceNodeId) {
+    addDefaultEdge(context, { source: sourceNodeId, target: currentNodeId, sourceHandle });
+  }
+  
+  const nextDepth = depth + 1;
+  const nextParentNodePathIds = [...parentNodePathIds, currentNodeId];
+  
+  // Parse each property
+  Object.entries(obj).forEach(([key, value]) => {
+    if (isObject(value)) {
+      const childNodes = parseObject(context, value, nextDepth, nextParentNodePathIds, null, false, currentNodeId, key);
+      nodes.push(...childNodes);
+    } else if (isArray(value)) {
+      const childNodes = parseArray(context, value, nextDepth, nextParentNodePathIds, currentNodeId, key);
+      nodes.push(...childNodes);
+    }
+  });
+  
+  return nodes;
 };
 
+/**
+ * Parse an array and its items
+ */
+const parseArray = (
+  context: ParserContext,
+  array: unknown[],
+  depth: number,
+  parentNodePathIds: string[],
+  sourceNodeId?: string,
+  sourceHandle?: string
+): SeaNode[] => {
+  const nodes: SeaNode[] = [];
+  let previousNodeId: string | undefined;
+  
+  array.forEach((item, index) => {
+    const itemType = validateJsonDataType(item);
+    const nextNodeId = getNextNodeId(context);
+    
+    // Add chain edge if not first item
+    if (index > 0 && previousNodeId && array.length > 1) {
+      addChainEdge(context, previousNodeId, nextNodeId);
+    }
+    
+    previousNodeId = nextNodeId;
+    
+    if (itemType.isObjectData) {
+      // Array item is an object
+      const childNodes = parseObject(context, item as object, depth, parentNodePathIds, index, false, sourceNodeId, sourceHandle);
+      nodes.push(...childNodes);
+      if (sourceNodeId) {
+        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
+      }
+    } else if (itemType.isArrayData) {
+      // Array item is another array
+      const items = item as unknown[];
+      nodes.push(createArrayNode(nextNodeId, depth, index, items, parentNodePathIds, false));
+      if (sourceNodeId) {
+        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
+      }
+      
+      // Recursively parse nested array if not empty
+      if (items.length > 0) {
+        const childNodes = parseArray(context, items, depth, parentNodePathIds, sourceNodeId, sourceHandle);
+        nodes.push(...childNodes);
+      }
+    } else if (itemType.isPrimitiveData) {
+      // Array item is a primitive value
+      nodes.push(createPrimitiveNode(nextNodeId, depth, index, item as string | number | boolean | null, parentNodePathIds));
+      if (sourceNodeId) {
+        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
+      }
+    }
+  });
+  
+  return nodes;
+};
+
+/**
+ * Main parser function - converts JSON to flow nodes and edges
+ */
 export const jsonParser = (
   json: object | unknown[]
 ): {
   flowNodes: SeaNode[];
   edges: Edge[];
 } => {
-  /**
-   * `nodeSequence` will be transformed to `nodeId`.
-   */
-  let nodeSequence: number = 0;
-  let defaultEdges: Edge[] = [];
-  let chainEdges: Edge[] = [];
-
-  const addDefaultEdge = ({ source, target, sourceHandle }: DefaultEdgeParams): void => {
-    defaultEdges = defaultEdges.concat(
-      createDefaultEdge({
-        source,
-        target,
-        sourceHandle,
-      })
-    );
+  const context: ParserContext = {
+    nodeSequence: 0,
+    defaultEdges: [],
+    chainEdges: [],
   };
-
-  /**
-   *  2023-01-30 Surprisingly, ChatGPT helps to refactor complex `traverse` code into smaller.
-   * 
-   * `traverse` function follows `preorder traversal`
-   
-   *  @implements
-   * - if object
-   *   - add node(object)
-   *   - loop object
-   *     - if object field -> traverse
-   *     - if array field
-   *       - loop array field
-   *         - if object item -> traverse
-   *         - if array item -> add node(array) & traverse(if not empty)
-   *         - if primitive item -> add node(primitive)
-   * - if array
-   *   - loop array
-   *     - if object item -> traverse
-   *     - if array item -> add node(array) & traverse(if not empty)
-   *     - if primitive item -> add node(primitive)
-   *
-   * @param sourceSet
-   * - [source, sourceHandle]
-   * - [undefined, undefined] -> No parent, {traverseTarget} is root node.
-   * - [string, undefined] -> Parent is array node
-   * - [string, string] -> Parent is object node (arrow is from object field)
-   */
-  const traverse = ({
-    traverseTarget,
-    depth,
-    arrayIndexForObject,
-    sourceSet,
-    parentNodePathIds,
-  }: TraverseParams): SeaNode[] => {
-    let flowNodes: SeaNode[] = [];
-
-    const traverseObject = ({
-      _obj,
-      _nextDepth,
-      _parentNodePathIds,
-      _source,
-      _sourceHandle,
-    }: TraverseObjectParams) => {
-      nodeSequence++;
-      const nextNodeId: string = formatNodeId(nodeSequence);
-      const target: string = nextNodeId;
-
-      flowNodes = flowNodes.concat(
-        traverse({
-          traverseTarget: _obj,
-          depth: _nextDepth,
-          arrayIndexForObject: null,
-          sourceSet: {
-            source: _source,
-            sourceHandle: _sourceHandle,
-          },
-          parentNodePathIds: _parentNodePathIds,
-        })
-      );
-      addDefaultEdge({
-        source: _source,
-        target,
-        sourceHandle: _sourceHandle,
-      });
-    };
-
-    const traverseArray = ({
-      _array,
-      _nextDepth,
-      _parentNodePathIds,
-      _source,
-      _sourceHandle,
-    }: TraverseArrayParams) => {
-      let previousNodeId: string | undefined;
-
-      _array.forEach((arrayItem: unknown, arrayIndex: number, selfArray: unknown[]) => {
-        const arrayItemValidator = validateJsonDataType(arrayItem);
-
-        nodeSequence++;
-        const nextNodeId = formatNodeId(nodeSequence);
-        const target: string = nextNodeId;
-
-        /**
-         * Connect array items sequentially with chain edges.
-         * Each item connects to the next one using vertical anchors (top/bottom).
-         */
-        if (selfArray.length > 1 && arrayIndex > 0 && previousNodeId) {
-          // Connect previous item to current item
-          chainEdges = chainEdges.concat(
-            createChainEdge({
-              source: previousNodeId,
-              target,
-            })
-          );
-        }
-
-        // Store current node ID for next iteration
-        previousNodeId = target;
-
-        if (arrayItemValidator.isObjectData) {
-          // Array > Object
-          flowNodes = flowNodes.concat(
-            traverse({
-              traverseTarget: arrayItem as object,
-              depth: _nextDepth,
-              arrayIndexForObject: arrayIndex,
-              sourceSet: {
-                source: _source,
-                sourceHandle: _sourceHandle,
-              },
-              parentNodePathIds: _parentNodePathIds,
-            })
-          );
-          addDefaultEdge({
-            source: _source,
-            target,
-            sourceHandle: _sourceHandle,
-          });
-        } else if (arrayItemValidator.isArrayData) {
-          // Array > Array
-          const items: unknown[] = arrayItem as unknown[];
-
-          flowNodes = flowNodes.concat(
-            convertArrayToNode({
-              nodeId: nextNodeId,
-              depth: _nextDepth,
-              arrayIndex,
-              items,
-              parentNodePathIds: _parentNodePathIds,
-              isRootNode: false,
-            })
-          );
-          addDefaultEdge({
-            source: _source,
-            target,
-            sourceHandle: _sourceHandle,
-          });
-
-          const isEmptyArray: boolean = items.length === 0;
-
-          if (!isEmptyArray) {
-            flowNodes = flowNodes.concat(
-              traverse({
-                traverseTarget: items,
-                depth: _nextDepth,
-                arrayIndexForObject: null,
-                sourceSet: {
-                  source: _source,
-                  sourceHandle: _sourceHandle,
-                },
-                parentNodePathIds: _parentNodePathIds,
-              })
-            );
-          }
-        } else if (arrayItemValidator.isPrimitiveData) {
-          // Array > Primitive
-          flowNodes = flowNodes.concat(
-            convertPrimitiveToNode({
-              nodeId: nextNodeId,
-              depth: _nextDepth,
-              arrayIndex,
-              value: arrayItem as string | number | boolean | null,
-              parentNodePathIds: _parentNodePathIds,
-            })
-          );
-          addDefaultEdge({
-            source: _source,
-            target,
-            sourceHandle: _sourceHandle,
-          });
-        }
-      });
-    };
-
-    const currentNodeId: string = formatNodeId(nodeSequence);
-    const source: string = currentNodeId;
-    const nextDepth: number = depth + 1;
-    const nextParentNodePathIds: string[] = parentNodePathIds.concat([currentNodeId]);
-    const isRootNode: boolean = sourceSet.source === undefined;
-
-    if (isObject(traverseTarget)) {
-      flowNodes = flowNodes.concat(
-        convertObjectToNode({
-          nodeId: currentNodeId,
-          depth,
-          obj: traverseTarget,
-          parentNodePathIds,
-          arrayIndexForObject,
-          isRootNode,
-        })
-      );
-
-      Object.entries(traverseTarget).forEach(([propertyK, propertyV]) => {
-        const sourceHandle: string = propertyK;
-
-        if (isObject(propertyV)) {
-          traverseObject({
-            _obj: propertyV,
-            _nextDepth: nextDepth,
-            _parentNodePathIds: nextParentNodePathIds,
-            _source: source,
-            _sourceHandle: sourceHandle,
-          });
-        } else if (isArray(propertyV)) {
-          traverseArray({
-            _array: propertyV,
-            _nextDepth: nextDepth,
-            _parentNodePathIds: nextParentNodePathIds,
-            _source: source,
-            _sourceHandle: sourceHandle,
-          });
-        }
-      });
-    } else if (isArray(traverseTarget)) {
-      /**
-       * Unlike 'object' JSON code, 'array' JSON code needs to add an extra node if root node.
-       */
-      if (isRootNode) {
-        flowNodes = flowNodes.concat(
-          convertArrayToNode({
-            nodeId: currentNodeId,
-            depth,
-            arrayIndex: ARRAY_ROOT_NODE_INDEX,
-            items: traverseTarget,
-            parentNodePathIds: ROOT_PARENT_NODE_PATH_IDS,
-            isRootNode,
-          })
-        );
-      }
-
-      traverseArray({
-        _array: traverseTarget,
-        _nextDepth: nextDepth,
-        _parentNodePathIds: nextParentNodePathIds,
-        _source: source,
-        _sourceHandle: undefined,
-      });
-    }
-
-    return flowNodes;
-  };
-
+  
+  let flowNodes: SeaNode[] = [];
+  
+  if (isObject(json)) {
+    // Root is an object
+    flowNodes = parseObject(context, json, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, null, true);
+  } else if (isArray(json)) {
+    // Root is an array - create root array node first
+    const rootNodeId = formatNodeId(context.nodeSequence);
+    flowNodes.push(createArrayNode(rootNodeId, ROOT_NODE_DEPTH, ARRAY_ROOT_NODE_INDEX, json, ROOT_PARENT_NODE_PATH_IDS, true));
+    
+    const nextDepth = ROOT_NODE_DEPTH + 1;
+    const nextParentNodePathIds = [rootNodeId];
+    const arrayNodes = parseArray(context, json, nextDepth, nextParentNodePathIds, rootNodeId, undefined);
+    flowNodes.push(...arrayNodes);
+  }
+  
   return {
-    flowNodes: traverse({
-      traverseTarget: json,
-      depth: ROOT_NODE_DEPTH,
-      parentNodePathIds: ROOT_PARENT_NODE_PATH_IDS,
-      arrayIndexForObject: null,
-      sourceSet: {},
-    }),
-    edges: [...defaultEdges, ...chainEdges],
+    flowNodes,
+    edges: [...context.defaultEdges, ...context.chainEdges],
   };
 };
+
