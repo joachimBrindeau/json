@@ -1,7 +1,11 @@
 /**
  * Type guards for Flow node types
- * 
- * Provides runtime type checking for node data types to ensure type safety
+ *
+ * Provides runtime type checking for node data types to ensure type safety.
+ *
+ * NOTE: Simple node type guards (isRootNode, isObjectNode, etc.) are kept for potential future use,
+ * but currently the codebase checks node.data.isRootNode property directly.
+ * The data type guards are useful for validating unknown data at runtime.
  */
 
 import { Node } from '@xyflow/react';
@@ -19,6 +23,7 @@ import {
 
 /**
  * Type guard to check if a node is a RootSeaNode
+ * Currently unused - kept for potential future use
  */
 export function isRootNode(node: Node): node is RootSeaNode {
   return node.type === NodeType.Root;
@@ -26,6 +31,7 @@ export function isRootNode(node: Node): node is RootSeaNode {
 
 /**
  * Type guard to check if a node is an ObjectSeaNode
+ * Currently unused - kept for potential future use
  */
 export function isObjectNode(node: Node): node is ObjectSeaNode {
   return node.type === NodeType.Object;
@@ -33,6 +39,7 @@ export function isObjectNode(node: Node): node is ObjectSeaNode {
 
 /**
  * Type guard to check if a node is an ArraySeaNode
+ * Currently unused - kept for potential future use
  */
 export function isArrayNode(node: Node): node is ArraySeaNode {
   return node.type === NodeType.Array;
@@ -40,6 +47,7 @@ export function isArrayNode(node: Node): node is ArraySeaNode {
 
 /**
  * Type guard to check if a node is a PrimitiveSeaNode
+ * Currently unused - kept for potential future use
  */
 export function isPrimitiveNode(node: Node): node is PrimitiveSeaNode {
   return node.type === NodeType.Primitive;
@@ -113,43 +121,5 @@ export function isPrimitiveNodeData(data: unknown): data is PrimitiveNodeData {
   );
 }
 
-/**
- * Assert that a node is a RootSeaNode
- * Throws an error if the assertion fails
- */
-export function assertRootNode(node: Node): asserts node is RootSeaNode {
-  if (!isRootNode(node)) {
-    throw new Error(`Expected RootSeaNode but got ${node.type}`);
-  }
-}
 
-/**
- * Assert that a node is an ObjectSeaNode
- * Throws an error if the assertion fails
- */
-export function assertObjectNode(node: Node): asserts node is ObjectSeaNode {
-  if (!isObjectNode(node)) {
-    throw new Error(`Expected ObjectSeaNode but got ${node.type}`);
-  }
-}
-
-/**
- * Assert that a node is an ArraySeaNode
- * Throws an error if the assertion fails
- */
-export function assertArrayNode(node: Node): asserts node is ArraySeaNode {
-  if (!isArrayNode(node)) {
-    throw new Error(`Expected ArraySeaNode but got ${node.type}`);
-  }
-}
-
-/**
- * Assert that a node is a PrimitiveSeaNode
- * Throws an error if the assertion fails
- */
-export function assertPrimitiveNode(node: Node): asserts node is PrimitiveSeaNode {
-  if (!isPrimitiveNode(node)) {
-    throw new Error(`Expected PrimitiveSeaNode but got ${node.type}`);
-  }
-}
 

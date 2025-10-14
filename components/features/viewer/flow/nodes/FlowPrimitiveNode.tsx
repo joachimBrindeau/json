@@ -4,7 +4,8 @@ import { JsonDataType, NodeType, PrimitiveNodeData } from '@/components/features
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
-import { FlowNodeHandles } from '@/components/features/viewer/flow/FlowNodeHandles';
+import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
+import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-edge-factory';
 
 /**
  * Lookup pattern for rendering different primitive types
@@ -33,7 +34,11 @@ const PrimitiveNodeComponent = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
 
   return (
     <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive}>
-      <FlowNodeHandles nodeId={id} hasDefaultTarget hasDefaultSource={false} />
+      {/* Handles - primitive nodes only have target handles */}
+      <FlowHandle id={id} type="target" direction="horizontal" />
+      <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />
+      <FlowHandle id={addPrefixChain(id)} type="source" direction="vertical" isChain />
+
       <div className="text-center">{renderer(data)}</div>
     </FlowNodeShell>
   );

@@ -1,16 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LoadingState } from '@/components/shared/loading-state'
 import { EmptyState } from '@/components/shared/empty-state'
 import { AlertTriangle } from 'lucide-react'
-import { logger } from '@/lib/logger'
-import { apiClient } from '@/lib/api/client'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
-import { showApiErrorToast } from '@/lib/utils/toast-helpers'
+import { useApiData } from '@/hooks/use-api-data'
 
 interface TagStats {
   name: string
@@ -34,24 +31,10 @@ interface TagAnalytics {
 }
 
 export function TagAnalytics() {
-  const [analytics, setAnalytics] = useState<TagAnalytics | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchTagAnalytics = async () => {
-    try {
-      const data = await apiClient.get<TagAnalytics>('/api/admin/tags/analytics')
-      setAnalytics(data)
-    } catch (error) {
-      logger.error({ err: error }, 'Failed to fetch tag analytics')
-      showApiErrorToast('Failed to load tag analytics', error, fetchTagAnalytics)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTagAnalytics()
-  }, [])
+  const { data: analytics, loading, refetch } = useApiData<TagAnalytics>({
+    endpoint: '/api/admin/tags/analytics',
+    errorMessage: 'Failed to load tag analytics',
+  })
 
   if (loading) {
     return <LoadingState message="Loading tag analytics..." size="md" />
@@ -65,7 +48,7 @@ export function TagAnalytics() {
         description="Unable to load tag analytics. Please try again."
         action={{
           label: 'Retry',
-          onClick: fetchTagAnalytics,
+          onClick: refetch,
           variant: 'outline'
         }}
       />

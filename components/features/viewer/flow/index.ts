@@ -33,9 +33,7 @@ export { FlowDefaultEdge } from './edges/FlowDefaultEdge';
 export { FlowChainEdge } from './edges/FlowChainEdge';
 
 // Handle components
-export { FlowDefaultHandle } from './FlowDefaultHandle';
-export { FlowChainHandle } from './FlowChainHandle';
-export { FlowNodeHandles } from './FlowNodeHandles';
+export { FlowHandle } from './FlowHandle';
 export { FlowCollapseButton } from './FlowCollapseButton';
 
 // Hooks

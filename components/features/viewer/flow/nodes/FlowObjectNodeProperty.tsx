@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { validateJsonDataType, isEmptyArray } from '@/components/features/viewer/flow/utils/flow-utils';
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
-import { FlowDefaultHandle } from '@/components/features/viewer/flow/FlowDefaultHandle';
+import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
 import type { JsonValue } from '@/lib/types/json';
 
 const isEmptyObject = (obj: object): boolean => {
@@ -54,7 +54,7 @@ const ObjectNodePropertyComponent = ({ nodeId, propertyK, propertyV, hasChildNod
       </div>
 
       {shouldRenderHandle && (
-        <FlowDefaultHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" />
+        <FlowHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" direction="horizontal" />
       )}
     </div>
   );

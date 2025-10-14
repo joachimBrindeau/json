@@ -3,10 +3,11 @@ import { NodeProps, useEdges } from '@xyflow/react';
 import { NodeType, ObjectNodeData } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowObjectNodeProperty } from '@/components/features/viewer/flow/nodes/FlowObjectNodeProperty';
-import { FlowNodeHandles } from '@/components/features/viewer/flow/FlowNodeHandles';
+import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
 import { FlowCollapseButton } from '@/components/features/viewer/flow/FlowCollapseButton';
 import { FlowNodeToolbar } from '@/components/features/viewer/flow/components/FlowNodeToolbar';
 import { useFlowNodeToolbar } from '@/components/features/viewer/flow/hooks/useFlowNodeToolbar';
+import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-edge-factory';
 
 const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
   const { obj, isRootNode, isCollapsed, onToggleCollapse, stringifiedJson } = data;
@@ -50,7 +51,10 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
       />
 
       <FlowNodeShell nodeId={id} nodeType={NodeType.Object}>
-        <FlowNodeHandles nodeId={id} isRootNode={isRootNode} />
+        {/* Handles */}
+        {!isRootNode && <FlowHandle id={id} type="target" direction="horizontal" />}
+        <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />
+        <FlowHandle id={addPrefixChain(id)} type="source" direction="vertical" isChain />
 
         {toolbarData.hasChildren && onToggleCollapse && (
           <FlowCollapseButton

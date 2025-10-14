@@ -1,15 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink } from 'lucide-react'
-import { logger } from '@/lib/logger'
-import { apiClient } from '@/lib/api/client'
+import { ExternalLink, AlertTriangle } from 'lucide-react'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
-import { showApiErrorToast } from '@/lib/utils/toast-helpers'
-import { LoadingSpinner } from '@/components/shared/loading-spinner'
+import { LoadingState } from '@/components/shared/loading-state'
+import { EmptyState } from '@/components/shared/empty-state'
+import { useApiData } from '@/hooks/use-api-data'
 
 interface SEOData {
   pageKey: string
@@ -22,34 +20,33 @@ interface SEOData {
 }
 
 export function SEOManager() {
-  const [seoData, setSeoData] = useState<SEOData[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, loading, refetch } = useApiData<{ settings: SEOData[] }>({
+    endpoint: '/api/admin/seo',
+    errorMessage: 'Failed to load SEO data',
+  })
 
-  const fetchSEOData = async () => {
-    try {
-      const data = await apiClient.get<{ settings: SEOData[] }>('/api/admin/seo')
-      setSeoData(data.settings)
-    } catch (error) {
-      logger.error({ err: error }, 'Failed to fetch SEO data')
-      showApiErrorToast('Failed to load SEO data', error, fetchSEOData)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchSEOData()
-  }, [])
+  const seoData = data?.settings || []
 
   const handleEditSEO = () => {
     window.open('/superadmin', '_blank')
   }
 
   if (loading) {
+    return <LoadingState message="Loading SEO configuration..." size="md" />
+  }
+
+  if (!data) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <LoadingSpinner />
-      </div>
+      <EmptyState
+        icon={<AlertTriangle className="h-12 w-12" />}
+        title="Failed to Load SEO Data"
+        description="Unable to load SEO configuration. Please try again."
+        action={{
+          label: 'Retry',
+          onClick: refetch,
+          variant: 'outline'
+        }}
+      />
     )
   }
 

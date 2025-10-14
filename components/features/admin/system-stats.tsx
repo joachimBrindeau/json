@@ -7,11 +7,9 @@ import { Progress } from '@/components/ui/progress'
 import { LoadingState } from '@/components/shared/loading-state'
 import { EmptyState } from '@/components/shared/empty-state'
 import { AlertTriangle } from 'lucide-react'
-import { logger } from '@/lib/logger'
-import { apiClient } from '@/lib/api/client'
-import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
 import { formatSize, formatUptime } from '@/lib/utils/formatters'
 import { useApiData } from '@/hooks/use-api-data'
+import { useApiDelete, useApiPost } from '@/hooks/use-api-mutation'
 
 interface SystemStats {
   database: {
@@ -45,6 +43,16 @@ export function SystemStats() {
     endpoint: '/api/admin/system/stats',
     errorMessage: 'Failed to load system stats',
     refreshInterval: 30000, // Refresh every 30 seconds
+  })
+
+  const clearCache = useApiDelete('/api/admin/system/cache', {
+    successMessage: 'Cache cleared successfully',
+    onSuccess: () => refetch(),
+  })
+
+  const optimizeDb = useApiPost('/api/admin/system/optimize', {
+    successMessage: 'Database optimization started',
+    onSuccess: () => refetch(),
   })
 
 
@@ -160,33 +168,21 @@ export function SystemStats() {
             <Button variant="outline" onClick={() => refetch()} className="w-full sm:w-auto">
               Refresh Stats
             </Button>
-            <Button variant="outline" onClick={async () => {
-              try {
-                await apiClient.delete('/api/admin/system/cache')
-                showSuccessToast('Cache cleared', {
-                  description: 'System cache cleared successfully'
-                })
-                refetch()
-              } catch (error) {
-                logger.error({ err: error }, 'Error clearing cache')
-                showErrorToast(error, 'Failed to clear cache')
-              }
-            }} className="w-full sm:w-auto">
-              Clear Cache
+            <Button
+              variant="outline"
+              onClick={() => clearCache.mutate()}
+              disabled={clearCache.isLoading}
+              className="w-full sm:w-auto"
+            >
+              {clearCache.isLoading ? 'Clearing...' : 'Clear Cache'}
             </Button>
-            <Button variant="outline" onClick={async () => {
-              try {
-                await apiClient.post('/api/admin/system/optimize')
-                showSuccessToast('Optimization started', {
-                  description: 'Database optimization is now running'
-                })
-                refetch()
-              } catch (error) {
-                logger.error({ err: error }, 'Error optimizing database')
-                showErrorToast(error, 'Failed to optimize database')
-              }
-            }} className="w-full sm:w-auto">
-              Optimize Database
+            <Button
+              variant="outline"
+              onClick={() => optimizeDb.mutate({})}
+              disabled={optimizeDb.isLoading}
+              className="w-full sm:w-auto"
+            >
+              {optimizeDb.isLoading ? 'Optimizing...' : 'Optimize Database'}
             </Button>
           </div>
         </CardContent>

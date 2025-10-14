@@ -35,14 +35,14 @@ import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 // Monaco editor with loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   loading: () => (
     <div className="h-full flex items-center justify-center bg-background border">
       <div className="text-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">Loading Code Editor...</p>
+        <LoadingSpinner size="md" label="Loading Code Editor..." />
       </div>
     </div>
   ),
