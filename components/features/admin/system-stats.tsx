@@ -1,14 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { LoadingState } from '@/components/shared/loading-state'
+import { EmptyState } from '@/components/shared/empty-state'
+import { AlertTriangle } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
-import { showApiErrorToast, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
 import { formatSize, formatUptime } from '@/lib/utils/formatters'
+import { useApiData } from '@/hooks/use-api-data'
 
 interface SystemStats {
   database: {
@@ -38,41 +41,29 @@ interface SystemStats {
 }
 
 export function SystemStats() {
-  const [stats, setStats] = useState<SystemStats | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchSystemStats = async () => {
-    try {
-      const data = await apiClient.get<SystemStats>('/api/admin/system/stats')
-      setStats(data)
-    } catch (error) {
-      logger.error({ err: error }, 'Failed to fetch system stats')
-      showApiErrorToast('Failed to load system stats', error, fetchSystemStats)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchSystemStats()
-    const interval = setInterval(fetchSystemStats, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
-  }, [])
+  const { data: stats, loading, refetch } = useApiData<SystemStats>({
+    endpoint: '/api/admin/system/stats',
+    errorMessage: 'Failed to load system stats',
+    refreshInterval: 30000, // Refresh every 30 seconds
+  })
 
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    )
+    return <LoadingState message="Loading system statistics..." size="md" />
   }
 
   if (!stats) {
     return (
-      <div className="text-center p-8 text-gray-500">
-        Failed to load system statistics
-      </div>
+      <EmptyState
+        icon={<AlertTriangle className="h-12 w-12" />}
+        title="Failed to Load Statistics"
+        description="Unable to load system statistics. Please try again."
+        action={{
+          label: 'Retry',
+          onClick: refetch,
+          variant: 'outline'
+        }}
+      />
     )
   }
 
@@ -166,7 +157,7 @@ export function SystemStats() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <Button variant="outline" onClick={() => fetchSystemStats()} className="w-full sm:w-auto">
+            <Button variant="outline" onClick={() => refetch()} className="w-full sm:w-auto">
               Refresh Stats
             </Button>
             <Button variant="outline" onClick={async () => {
@@ -175,7 +166,7 @@ export function SystemStats() {
                 showSuccessToast('Cache cleared', {
                   description: 'System cache cleared successfully'
                 })
-                fetchSystemStats()
+                refetch()
               } catch (error) {
                 logger.error({ err: error }, 'Error clearing cache')
                 showErrorToast(error, 'Failed to clear cache')
@@ -189,7 +180,7 @@ export function SystemStats() {
                 showSuccessToast('Optimization started', {
                   description: 'Database optimization is now running'
                 })
-                fetchSystemStats()
+                refetch()
               } catch (error) {
                 logger.error({ err: error }, 'Error optimizing database')
                 showErrorToast(error, 'Failed to optimize database')

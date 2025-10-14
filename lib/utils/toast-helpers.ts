@@ -234,3 +234,62 @@ export function showValidationErrorToast(
     duration: 4000,
   });
 }
+
+/**
+ * Standard Toast Patterns
+ *
+ * Pre-configured toast notifications for common operations across the application.
+ * Provides consistent messaging and behavior for standard actions.
+ */
+export const toastPatterns = {
+  success: {
+    saved: (itemName: string = 'Changes') =>
+      showSuccessToast('Saved', `${itemName} saved successfully`),
+    deleted: (itemName: string = 'Item') =>
+      showSuccessToast('Deleted', `${itemName} deleted successfully`),
+    published: (itemName: string = 'Content') =>
+      showSuccessToast('Published successfully!', `Your ${itemName} is now discoverable in the public library`),
+    copied: (itemName: string = 'Content') =>
+      showCopySuccessToast(itemName),
+    updated: (itemName: string = 'Settings') =>
+      showSuccessToast('Updated', `${itemName} updated successfully`),
+    uploaded: (itemName: string = 'File') =>
+      showSuccessToast('Success', `${itemName} uploaded successfully`),
+    formatted: (itemName: string = 'JSON') =>
+      showSuccessToast(`${itemName} formatted successfully`, `Your ${itemName} has been properly formatted.`),
+  },
+  error: {
+    save: (error: unknown, itemName: string = 'changes') =>
+      showErrorToast(error, `Failed to save ${itemName}`),
+    delete: (error: unknown, itemName: string = 'item') =>
+      showErrorToast(error, `Failed to delete ${itemName}`),
+    publish: (error: unknown) =>
+      showErrorToast(error, 'Failed to publish'),
+    load: (error: unknown, itemName: string = 'data') =>
+      showErrorToast(error, `Failed to load ${itemName}`),
+    upload: (error: unknown) =>
+      showErrorToast(error, 'Upload failed'),
+    format: () =>
+      showErrorToast('Cannot format invalid JSON', 'Format failed'),
+    export: (error: unknown) =>
+      showErrorToast(error, 'Export failed'),
+    copy: () =>
+      showErrorToast('Failed to copy to clipboard', 'Copy failed'),
+  },
+  validation: {
+    required: (fieldName: string = 'field') =>
+      showValidationErrorToast(`${fieldName} is required`),
+    invalid: (fieldName: string = 'Input', details?: string) =>
+      showValidationErrorToast(`Invalid ${fieldName}`, details),
+    noData: (action: string = 'perform this action') =>
+      showValidationErrorToast('No data', `Please enter some data to ${action}`),
+    noJson: (action: string) =>
+      showValidationErrorToast('No JSON', `Please enter some JSON to ${action}`),
+  },
+  info: {
+    loading: (message: string = 'Loading...') =>
+      showLoadingToast(message),
+    processing: (action: string = 'your request') =>
+      showLoadingToast(`Processing ${action}...`),
+  }
+} as const;

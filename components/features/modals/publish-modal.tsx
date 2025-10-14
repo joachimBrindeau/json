@@ -4,23 +4,14 @@ import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns, showErrorToast } from '@/lib/utils/toast-helpers';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { publishFormSchema, PublishFormData } from '@/lib/validation/schemas';
 import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
+import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/form-fields';
 import { Globe, Users, Eye, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
@@ -42,7 +33,6 @@ export function PublishModal({
   currentTitle,
   onPublished,
 }: PublishModalProps) {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize form with react-hook-form and Zod validation
@@ -82,35 +72,24 @@ export function PublishModal({
         })
         .catch(error => {
           logger.error({ err: error, shareId }, 'Failed to load document data for publish modal');
-          toast({
-            title: 'Failed to load document data',
-            description: error instanceof Error ? error.message : 'Using default values',
-            variant: 'destructive'
-          });
+          showErrorToast(error, 'Failed to load document data');
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, [isOpen, shareId, currentTitle, reset, toast]);
+  }, [isOpen, shareId, currentTitle, reset]);
 
   // Submit handler with type-safe form data
   const onSubmit = async (data: PublishFormData) => {
     try {
       await apiClient.post(`/api/json/${shareId}/publish`, data);
-      toast({
-        title: 'Published successfully!',
-        description: `Your JSON is now discoverable in the public library`,
-      });
+      toastPatterns.success.published('JSON');
       onPublished?.();
       onClose();
     } catch (error) {
       logger.error({ err: error, shareId, formData: data }, 'Failed to publish JSON to library');
-      toast({
-        title: 'Failed to publish',
-        description: error instanceof Error ? error.message : 'Please try again later',
-        variant: 'destructive',
-      });
+      toastPatterns.error.publish(error);
     }
   };
 
@@ -157,96 +136,63 @@ export function PublishModal({
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Title */}
-            <div>
-              <Label htmlFor="title" className="text-sm font-medium">
-                Title <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="title"
-                {...register('title')}
-                placeholder="e.g., E-commerce Product API Response"
-                maxLength={200}
-                className="mt-1"
-              />
-              {errors.title && (
-                <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>
-              )}
-            </div>
+            <FormInput
+              id="title"
+              label="Title"
+              required
+              placeholder="e.g., E-commerce Product API Response"
+              maxLength={200}
+              error={errors.title?.message}
+              {...register('title')}
+            />
 
             {/* Description */}
-            <div>
-              <Label htmlFor="description" className="text-sm font-medium">
-                Short Description
-              </Label>
-              <Textarea
-                id="description"
-                {...register('description')}
-                placeholder="Brief description for search results and previews..."
-                maxLength={300}
-                rows={2}
-                className="mt-1"
-              />
-              {errors.description && (
-                <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>
-              )}
-              <div className="text-xs text-muted-foreground mt-1">
-                {watchedDescription?.length || 0}/300 characters
-              </div>
-            </div>
+            <FormTextarea
+              id="description"
+              label="Short Description"
+              placeholder="Brief description for search results and previews..."
+              maxLength={300}
+              rows={2}
+              showCharCount
+              error={errors.description?.message}
+              value={watchedDescription}
+              {...register('description')}
+            />
 
             {/* Rich Content */}
-            <div>
-              <Label htmlFor="rich-content" className="text-sm font-medium">
-                Detailed Explanation <span className="text-muted-foreground text-xs">(Optional)</span>
-              </Label>
-              <div className="mt-1">
-                <Controller
-                  name="richContent"
-                  control={control}
-                  render={({ field }) => (
-                    <RichTextEditor
-                      content={field.value || ''}
-                      onChange={field.onChange}
-                      placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
-                    />
-                  )}
-                />
-              </div>
-              {errors.richContent && (
-                <p className="text-xs text-red-500 mt-1">{errors.richContent.message}</p>
-              )}
-              <div className="text-xs text-muted-foreground mt-1">
-                Rich text with formatting, links, and lists for better SEO and user experience
-              </div>
-            </div>
-
-            {/* Category */}
-            <div>
-              <Label htmlFor="category" className="text-sm font-medium">
-                Category
-              </Label>
+            <FormRichText
+              label="Detailed Explanation"
+              error={errors.richContent?.message}
+              description="Rich text with formatting, links, and lists for better SEO and user experience"
+            >
               <Controller
-                name="category"
+                name="richContent"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DOCUMENT_CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <RichTextEditor
+                    content={field.value || ''}
+                    onChange={field.onChange}
+                    placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
+                  />
                 )}
               />
-              {errors.category && (
-                <p className="text-xs text-red-500 mt-1">{errors.category.message}</p>
+            </FormRichText>
+
+            {/* Category */}
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  label="Category"
+                  placeholder="Select a category"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                  error={errors.category?.message}
+                />
               )}
-            </div>
+            />
 
             {/* Tags */}
             <Controller

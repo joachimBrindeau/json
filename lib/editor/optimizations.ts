@@ -1,4 +1,5 @@
 import type { editor } from 'monaco-editor';
+import { isLargeFile } from '@/lib/config/editor-config';
 
 // Performance-optimized Monaco configuration
 export const OPTIMIZED_MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptions = {
@@ -170,7 +171,7 @@ export async function loadJsonProgressive(
 export async function formatJsonWithWorker(json: string): Promise<string> {
   return new Promise((resolve, reject) => {
     // For small JSON, format inline
-    if (json.length < 100000) {
+    if (!isLargeFile(json.length)) {
       try {
         const parsed = JSON.parse(json);
         resolve(JSON.stringify(parsed, null, 2));

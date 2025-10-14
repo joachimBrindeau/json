@@ -284,6 +284,39 @@ const parseArray = (
 };
 
 /**
+ * Helper function to parse root data (object or array)
+ * Follows DRY principle - eliminates duplicate logic for object/array handling
+ */
+const parseRootData = (
+  context: ParserContext,
+  json: object | unknown[],
+  rootNodeId: string,
+  type: 'object' | 'array'
+): SeaNode[] => {
+  const childCount = type === 'object' ? Object.keys(json).length : (json as unknown[]).length;
+  const rootNode = createRootNode(rootNodeId, type, childCount);
+
+  const nextDepth = ROOT_NODE_DEPTH + 1;
+  const nextParentNodePathIds = [rootNodeId];
+
+  const childNodes = type === 'object'
+    ? parseObject(context, json as object, nextDepth, nextParentNodePathIds, null, false)
+    : parseArray(context, json as unknown[], nextDepth, nextParentNodePathIds, rootNodeId, undefined);
+
+  // Create edge from root to first child (only for objects)
+  if (type === 'object' && childNodes.length > 0) {
+    context.defaultEdges.push(createDefaultEdge({
+      sourceNodeId: rootNodeId,
+      targetNodeId: childNodes[0].id,
+      sourceHandleId: 'root-output',
+      targetHandleId: undefined,
+    }));
+  }
+
+  return [rootNode, ...childNodes];
+};
+
+/**
  * Main parser function - converts JSON to flow nodes and edges
  * Creates a root node for better UX, then parses the actual data
  */
@@ -300,47 +333,12 @@ export const jsonParser = (
     visitedObjects: new WeakSet(),
   };
 
-  let flowNodes: SeaNode[] = [];
-
-  // Create root node
   const rootNodeId = formatNodeId(context.nodeSequence);
   context.nodeSequence++;
 
-  if (isObject(json)) {
-    // Root is an object - create root node + parse object
-    const childCount = Object.keys(json).length;
-    const rootNode = createRootNode(rootNodeId, 'object', childCount);
-    flowNodes.push(rootNode);
-
-    // Parse the actual object at depth 1
-    const nextDepth = ROOT_NODE_DEPTH + 1;
-    const nextParentNodePathIds = [rootNodeId];
-    const objectNodes = parseObject(context, json, nextDepth, nextParentNodePathIds, null, false);
-    flowNodes.push(...objectNodes);
-
-    // Create edge from root to first object node
-    if (objectNodes.length > 0) {
-      context.defaultEdges.push(createDefaultEdge({
-        sourceNodeId: rootNodeId,
-        targetNodeId: objectNodes[0].id,
-        sourceHandleId: 'root-output',
-        targetHandleId: undefined,
-      }));
-    }
-  } else if (isArray(json)) {
-    // Root is an array - create root node + parse array
-    const childCount = json.length;
-    const rootNode = createRootNode(rootNodeId, 'array', childCount);
-    flowNodes.push(rootNode);
-
-    // Parse the array at depth 1
-    const nextDepth = ROOT_NODE_DEPTH + 1;
-    const nextParentNodePathIds = [rootNodeId];
-    const arrayNodes = parseArray(context, json, nextDepth, nextParentNodePathIds, rootNodeId, undefined);
-    flowNodes.push(...arrayNodes);
-
-    // Edge from root to array items is created by parseArray via chain edges
-  }
+  const flowNodes = isObject(json)
+    ? parseRootData(context, json, rootNodeId, 'object')
+    : parseRootData(context, json, rootNodeId, 'array');
 
   return {
     flowNodes,

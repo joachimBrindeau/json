@@ -97,6 +97,8 @@ self.onmessage = function (e) {
 };
 
 // Generate flow nodes for massive JSON visualization
+// Config values come from VIEWER_CONFIG.worker (lib/config/viewer-config.ts)
+// and are passed via postMessage from the calling code
 function generateFlowNodes(jsonString, config = {}) {
   const {
     maxDepth = 10,
@@ -104,7 +106,7 @@ function generateFlowNodes(jsonString, config = {}) {
     enableClustering = true,
     clusterSize = 50,
     chunkSize = 500,
-    maxTotalNodes = 10000,
+    maxTotalNodes = 10000, // See VIEWER_CONFIG.worker.maxTotalNodes
   } = config;
 
   try {

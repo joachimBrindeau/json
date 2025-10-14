@@ -25,6 +25,7 @@ import {
 import { useJsonProcessing, JsonNode } from './hooks/useJsonProcessing';
 import { ErrorBoundary } from '../error-boundary';
 import { useToast } from '@/hooks/use-toast';
+import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
 
 export interface ViewerMode {
   type: 'tree' | 'flow' | 'list' | 'raw';
@@ -207,10 +208,10 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(({
   enableCopy = true,
   enableStats = true,
   enablePerformanceInfo = false,
-  
+
   // Performance
-  maxNodes = 10000,
-  virtualizeThreshold = 1000,
+  maxNodes = VIEWER_CONFIG.performance.warningNodeCount,
+  virtualizeThreshold = VIEWER_CONFIG.performance.virtualizeThreshold,
   
   // Search
   searchTerm: externalSearchTerm = '',

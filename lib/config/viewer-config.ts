@@ -163,6 +163,20 @@ export const VIEWER_CONFIG = {
      * @default 50
      */
     clusterSize: 50,
+
+    /**
+     * Maximum total nodes to process before truncation
+     * Hard limit to prevent memory issues with extremely large datasets
+     * @default 10000
+     */
+    maxTotalNodes: 10000,
+
+    /**
+     * Chunk size for progressive rendering
+     * Number of nodes/edges to send in each chunk
+     * @default 500
+     */
+    chunkSize: 500,
   },
 } as const;
 

@@ -36,6 +36,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLoginModal } from '@/hooks/use-login-modal';
 import { DocumentCard, DocumentSkeleton, getCategoryIcon, type BaseDocument } from '@/components/features/documents';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 interface PrivateDocument extends BaseDocument {
   createdAt: string;
@@ -184,7 +185,7 @@ export default function MyLibraryPage() {
     return (
       <MainLayout>
         <div className="h-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <LoadingSpinner />
         </div>
       </MainLayout>
     );

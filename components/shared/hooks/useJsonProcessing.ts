@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
 
 export interface JsonNode {
   id: string;
@@ -154,7 +155,7 @@ export const useJsonProcessing = (
   options: UseJsonProcessingOptions = {}
 ) => {
   const {
-    maxNodes = 10000,
+    maxNodes = VIEWER_CONFIG.performance.maxNodes,
     enablePerformanceMonitoring = true,
     enableValidation = true,
     enableStructureAnalysis = true,

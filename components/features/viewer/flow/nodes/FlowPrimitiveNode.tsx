@@ -6,28 +6,35 @@ import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullCh
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowNodeHandles } from '@/components/features/viewer/flow/FlowNodeHandles';
 
+/**
+ * Lookup pattern for rendering different primitive types
+ * Follows KISS principle - simpler than multiple conditionals
+ */
+const PRIMITIVE_RENDERERS: Record<JsonDataType, (data: PrimitiveNodeData) => JSX.Element> = {
+  [JsonDataType.String]: (data) => (
+    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-mono">
+      {data.stringifiedJson}
+    </span>
+  ),
+  [JsonDataType.Number]: (data) => (
+    <span className="text-green-600 font-mono text-sm">{data.value}</span>
+  ),
+  [JsonDataType.Boolean]: (data) => (
+    <FlowBooleanChip value={data.value as boolean} size="sm" />
+  ),
+  [JsonDataType.Null]: () => <FlowNullChip size="sm" />,
+  // Fallback for object/array (should not happen in primitive nodes)
+  [JsonDataType.Object]: () => <span className="text-sm">Object</span>,
+  [JsonDataType.Array]: () => <span className="text-sm">Array</span>,
+};
+
 const PrimitiveNodeComponent = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
+  const renderer = PRIMITIVE_RENDERERS[data.dataType];
+
   return (
     <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive}>
       <FlowNodeHandles nodeId={id} hasDefaultTarget hasDefaultSource={false} />
-
-      <div className="text-center">
-        {data.dataType === JsonDataType.String && (
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-mono">
-            {data.stringifiedJson}
-          </span>
-        )}
-
-        {data.dataType === JsonDataType.Number && (
-          <span className="text-green-600 font-mono text-sm">{data.value}</span>
-        )}
-
-        {data.dataType === JsonDataType.Boolean && (
-          <FlowBooleanChip value={data.value as boolean} size="sm" />
-        )}
-
-        {data.dataType === JsonDataType.Null && <FlowNullChip size="sm" />}
-      </div>
+      <div className="text-center">{renderer(data)}</div>
     </FlowNodeShell>
   );
 };

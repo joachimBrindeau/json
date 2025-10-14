@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { LoadingState } from '@/components/shared/loading-state'
+import { EmptyState } from '@/components/shared/empty-state'
+import { AlertTriangle } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
@@ -51,18 +54,21 @@ export function TagAnalytics() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    )
+    return <LoadingState message="Loading tag analytics..." size="md" />
   }
 
   if (!analytics) {
     return (
-      <div className="text-center p-8 text-gray-500">
-        Failed to load tag analytics
-      </div>
+      <EmptyState
+        icon={<AlertTriangle className="h-12 w-12" />}
+        title="Failed to Load Analytics"
+        description="Unable to load tag analytics. Please try again."
+        action={{
+          label: 'Retry',
+          onClick: fetchTagAnalytics,
+          variant: 'outline'
+        }}
+      />
     )
   }
 

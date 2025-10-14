@@ -2,22 +2,12 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { RichTextEditor } from '@/components/rich-text-editor';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
+import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/form-fields';
 import {
   Globe,
   Lock,
@@ -103,8 +93,8 @@ export function JsonMetadataForm({
   const formContent = (
     <div className="space-y-6">
       {/* Visibility Toggle */}
-      <div>
-        <Label className="text-sm font-medium mb-2 block">Visibility</Label>
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Visibility</div>
         <div className="flex gap-2">
           <Button
             type="button"
@@ -127,8 +117,8 @@ export function JsonMetadataForm({
             Public
           </Button>
         </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          {formData.visibility === 'public' 
+        <div className="text-xs text-muted-foreground">
+          {formData.visibility === 'public'
             ? 'Visible in public library and searchable by others'
             : 'Only visible to you in your private library'
           }
@@ -136,86 +126,55 @@ export function JsonMetadataForm({
       </div>
 
       {/* Title */}
-      <div>
-        <Label htmlFor="title" className="text-sm font-medium">
-          Title <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-          placeholder="e.g., E-commerce Product API Response"
-          maxLength={200}
-          className="mt-1"
-        />
-        <div className="text-xs text-muted-foreground mt-1">
-          {formData.title.length}/200 characters
-        </div>
-      </div>
+      <FormInput
+        id="title"
+        label="Title"
+        required
+        value={formData.title}
+        onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+        placeholder="e.g., E-commerce Product API Response"
+        maxLength={200}
+        showCharCount
+      />
 
       {/* Description */}
-      <div>
-        <Label htmlFor="description" className="text-sm font-medium">
-          Short Description
-        </Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-          placeholder="Brief description for search results and previews..."
-          maxLength={300}
-          rows={2}
-          className="mt-1"
-        />
-        <div className="text-xs text-muted-foreground mt-1">
-          {formData.description.length}/300 characters
-        </div>
-      </div>
+      <FormTextarea
+        id="description"
+        label="Short Description"
+        value={formData.description}
+        onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+        placeholder="Brief description for search results and previews..."
+        maxLength={300}
+        rows={2}
+        showCharCount
+      />
 
       {/* Rich Content */}
-      <div>
-        <Label htmlFor="rich-content" className="text-sm font-medium">
-          Detailed Explanation <span className="text-muted-foreground text-xs">(Optional)</span>
-        </Label>
-        <ErrorBoundary
-          level="widget"
-          fallback={<div className="text-xs text-muted-foreground p-2">Rich text editor unavailable</div>}
-          compactMode
+      <ErrorBoundary
+        level="widget"
+        fallback={<div className="text-xs text-muted-foreground p-2">Rich text editor unavailable</div>}
+        compactMode
+      >
+        <FormRichText
+          label="Detailed Explanation"
+          description="Rich text with formatting, links, and lists for better SEO and user experience"
         >
-        <div className="mt-1">
           <RichTextEditor
             content={formData.richContent}
             onChange={(content) => setFormData((prev) => ({ ...prev, richContent: content }))}
             placeholder="Add detailed explanations, use cases, examples, or documentation for this JSON..."
           />
-        </div>
-        </ErrorBoundary>
-        <div className="text-xs text-muted-foreground mt-1">
-          Rich text with formatting, links, and lists for better SEO and user experience
-        </div>
-      </div>
+        </FormRichText>
+      </ErrorBoundary>
 
       {/* Category */}
-      <div>
-        <Label htmlFor="category" className="text-sm font-medium">
-          Category
-        </Label>
-        <Select
-          value={formData.category}
-          onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-        >
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            {DOCUMENT_CATEGORIES.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FormSelect
+        label="Category"
+        placeholder="Select a category"
+        value={formData.category}
+        onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+        options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+      />
 
       {/* Tags */}
       <ErrorBoundary

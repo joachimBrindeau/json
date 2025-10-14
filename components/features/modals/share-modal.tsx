@@ -12,17 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Copy, Check, Globe, Lock, Users, Eye, X, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
+import { FormInput, FormTextarea, FormSelect } from '@/components/shared/form-fields';
+import { Copy, Check, Globe, Lock, Users, Eye, CheckCircle2, Loader2 } from 'lucide-react';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import {
   TwitterShareButton,
@@ -43,11 +36,10 @@ import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import {
   showCopySuccessToast,
-  showErrorToast,
   showValidationErrorToast,
-  showSuccessToast,
   showInfoToast,
 } from '@/lib/utils/toast-helpers';
+import { useApiMutation } from '@/hooks/use-api-mutation';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { shareFormSchema, type ShareFormData } from '@/lib/validation/schemas';
 
@@ -169,11 +161,35 @@ export function ShareModal({
       setTimeout(() => setCopied(false), 2000);
       showCopySuccessToast('Share link');
     } catch (err) {
+      // Log only - clipboard errors are typically user-related, not API errors
       logger.error({ err, shareUrl }, 'Failed to copy share link to clipboard');
-      showErrorToast(err, 'Failed to copy link');
     }
   }, [shareUrl]);
 
+
+  // Setup mutations with centralized error handling
+  const publishMutation = useApiMutation(
+    async (data: Omit<ShareFormData, 'visibility'>) =>
+      apiClient.post(`/api/json/${shareId}/publish`, data),
+    {
+      successMessage: 'Published successfully!',
+      onSuccess: () => {
+        onUpdated?.();
+        onOpenChange(false);
+      },
+    }
+  );
+
+  const unpublishMutation = useApiMutation(
+    async () => apiClient.delete(`/api/json/${shareId}/publish`),
+    {
+      successMessage: 'Made private',
+      onSuccess: () => {
+        onUpdated?.();
+        onOpenChange(false);
+      },
+    }
+  );
 
   const handleSave = useCallback(async () => {
     // Validate form before submission
@@ -190,9 +206,8 @@ export function ShareModal({
       return;
     }
 
+    setIsUpdating(true);
     try {
-      setIsUpdating(true);
-
       // If we don't have a shareId yet, we need to save/create the JSON first
       if (!shareId) {
         // For new documents without a shareId, we need to save with title first
@@ -214,29 +229,18 @@ export function ShareModal({
 
       if (isPublic) {
         // Publish to public library - exclude visibility from API payload
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { visibility, ...publishData } = formData;
-        await apiClient.post(`/api/json/${shareId}/publish`, publishData);
-
-        showSuccessToast('Published successfully!', {
-          description: 'Your JSON is now discoverable in the public library',
-        });
+        await publishMutation.mutate(publishData);
       } else {
         // Make private
-        await apiClient.delete(`/api/json/${shareId}/publish`);
-
-        showSuccessToast('Made private', {
-          description: 'Your JSON is now private but still shareable via link',
-        });
+        await unpublishMutation.mutate();
       }
-
-      onUpdated?.();
-      onOpenChange(false);
-    } catch (error) {
-      showErrorToast(error, 'Failed to update');
     } finally {
       setIsUpdating(false);
     }
-  }, [isPublic, shareId, onUpdated, onOpenChange, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPublic, shareId, form, publishMutation, unpublishMutation]);
 
   // Allow modal to open even without shareId - it can handle creating one
 
@@ -277,22 +281,17 @@ export function ShareModal({
           )}
 
           {/* Title - Always visible */}
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium">
-              Title <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              {...form.register('title')}
-              placeholder="e.g., E-commerce Product API Response"
-              maxLength={200}
-              className="font-medium"
-              disabled={isLoadingMetadata}
-            />
-            {form.formState.errors.title && (
-              <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
-            )}
-          </div>
+          <FormInput
+            id="title"
+            label="Title"
+            required
+            placeholder="e.g., E-commerce Product API Response"
+            maxLength={200}
+            className="font-medium"
+            disabled={isLoadingMetadata}
+            error={form.formState.errors.title?.message}
+            {...form.register('title')}
+          />
 
           {/* Public/Private Toggle */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -369,55 +368,33 @@ export function ShareModal({
                 <span className="font-medium">Set optional fields</span>
               </div>
 {/* Description */}
-              <div>
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  {...form.register('description')}
-                  placeholder="Optional: Describe what this JSON represents..."
-                  maxLength={1000}
-                  rows={3}
-                  className="mt-1"
-                  disabled={isLoadingMetadata}
-                />
-                {form.formState.errors.description && (
-                  <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
-                )}
-              </div>
+              <FormTextarea
+                id="description"
+                label="Description"
+                placeholder="Optional: Describe what this JSON represents..."
+                maxLength={1000}
+                rows={3}
+                disabled={isLoadingMetadata}
+                error={form.formState.errors.description?.message}
+                {...form.register('description')}
+              />
 
               {/* Category */}
-              <div>
-                <Label htmlFor="category" className="text-sm font-medium">
-                  Category
-                </Label>
-                <Controller
-                  name="category"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isLoadingMetadata}
-                    >
-                      <SelectTrigger className="mt-1" disabled={isLoadingMetadata}>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DOCUMENT_CATEGORIES.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {form.formState.errors.category && (
-                  <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+              <Controller
+                name="category"
+                control={form.control}
+                render={({ field }) => (
+                  <FormSelect
+                    label="Category"
+                    placeholder="Select a category"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                    disabled={isLoadingMetadata}
+                    error={form.formState.errors.category?.message}
+                  />
                 )}
-              </div>
+              />
 
               {/* Tags */}
               <Controller

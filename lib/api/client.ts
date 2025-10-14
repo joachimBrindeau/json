@@ -5,6 +5,7 @@
 
 import ky, { HTTPError, type Options } from 'ky';
 import { logger } from '@/lib/logger';
+import { showErrorToast } from '@/lib/utils/toast-helpers';
 
 /**
  * Custom API error class
@@ -12,12 +13,17 @@ import { logger } from '@/lib/logger';
 export class ApiError extends Error {
   constructor(
     message: string,
-    public statusCode: number,
+    public status: number,
     public code?: string,
     public details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
+    // Maintain legacy statusCode for backward compatibility
+    Object.defineProperty(this, 'statusCode', {
+      get() { return this.status; },
+      enumerable: true,
+    });
   }
 }
 
@@ -26,6 +32,8 @@ export class ApiError extends Error {
  */
 export interface RequestOptions extends Options {
   skipErrorHandling?: boolean;
+  skipErrorToast?: boolean;
+  errorContext?: string;
 }
 
 /**
@@ -41,7 +49,7 @@ const api = ky.create({
   },
   hooks: {
     beforeRequest: [
-      (request) => {
+      () => {
         // Add auth headers if needed
         if (typeof window !== 'undefined') {
           // Client-side: get token from storage if needed
@@ -53,12 +61,12 @@ const api = ky.create({
       },
     ],
     afterResponse: [
-      async (request, _options, response) => {
+      async (_request, _options, response) => {
         // Log responses in development
         if (process.env.NODE_ENV === 'development') {
           logger.debug({
-            method: request.method,
-            url: request.url,
+            method: _request.method,
+            url: _request.url,
             status: response.status,
           }, 'API Response');
         }
@@ -78,7 +86,7 @@ const api = ky.create({
 });
 
 /**
- * API client with typed methods
+ * API client with typed methods and centralized error handling
  */
 export const apiClient = {
   /**
@@ -88,7 +96,7 @@ export const apiClient = {
     try {
       return await api.get(url, options).json<T>();
     } catch (error) {
-      throw handleError(error);
+      throw handleError(error, `GET ${url}`, options);
     }
   },
 
@@ -103,7 +111,7 @@ export const apiClient = {
       }
       return await api.post(url, { json: data, ...options }).json<T>();
     } catch (error) {
-      throw handleError(error);
+      throw handleError(error, `POST ${url}`, options);
     }
   },
 
@@ -114,7 +122,7 @@ export const apiClient = {
     try {
       return await api.put(url, { json: data, ...options }).json<T>();
     } catch (error) {
-      throw handleError(error);
+      throw handleError(error, `PUT ${url}`, options);
     }
   },
 
@@ -125,7 +133,7 @@ export const apiClient = {
     try {
       return await api.delete(url, options).json<T>();
     } catch (error) {
-      throw handleError(error);
+      throw handleError(error, `DELETE ${url}`, options);
     }
   },
 
@@ -136,15 +144,17 @@ export const apiClient = {
     try {
       return await api.patch(url, { json: data, ...options }).json<T>();
     } catch (error) {
-      throw handleError(error);
+      throw handleError(error, `PATCH ${url}`, options);
     }
   },
 };
 
 /**
- * Handle ky errors and convert to ApiError
+ * Handle ky errors and convert to ApiError with centralized logging and toast notifications
  */
-function handleError(error: unknown): never {
+async function handleError(error: unknown, context?: string, options?: RequestOptions): Promise<never> {
+  let apiError: ApiError;
+
   if (error instanceof HTTPError) {
     const status = error.response.status;
     let message = error.message;
@@ -152,23 +162,49 @@ function handleError(error: unknown): never {
     let details: unknown;
 
     // Try to parse error response
-    error.response.json().then((body: any) => {
+    try {
+      const body = await error.response.json() as {
+        error?: string;
+        message?: string;
+        code?: string;
+        details?: unknown;
+      };
       message = body.error || body.message || message;
       code = body.code;
       details = body.details;
-    }).catch(() => {
+    } catch {
       // Ignore parse errors
-    });
+    }
 
-    throw new ApiError(message, status, code, details);
+    apiError = new ApiError(message, status, code, details);
+  } else if (error instanceof Error) {
+    apiError = new ApiError(error.message, 500);
+  } else {
+    apiError = new ApiError('An unknown error occurred', 500);
   }
 
-  // Handle non-HTTP errors
-  if (error instanceof Error) {
-    throw new ApiError(error.message, 500);
+  // Centralized logging with context
+  const logContext = options?.errorContext || context || 'API call';
+  logger.error({
+    err: apiError,
+    context: logContext,
+    status: apiError.status,
+    code: apiError.code
+  }, 'API call failed');
+
+  // Show toast for user-facing errors (4xx except auth errors)
+  // Skip if explicitly disabled or if it's an auth/forbidden error
+  const shouldShowToast =
+    !options?.skipErrorToast &&
+    apiError.status >= 400 &&
+    apiError.status < 500 &&
+    ![401, 403].includes(apiError.status);
+
+  if (shouldShowToast) {
+    showErrorToast(apiError, logContext);
   }
 
-  throw new ApiError('An unknown error occurred', 500);
+  throw apiError;
 }
 
 /**

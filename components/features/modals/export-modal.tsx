@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { BaseModal } from '@/components/shared/base-modal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +19,7 @@ import {
   Info
 } from 'lucide-react';
 import { exportData, downloadExportedData, ExportOptions } from '@/lib/utils/export-utils';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 
@@ -74,18 +68,13 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
   const [minify, setMinify] = useState(false);
   const [useFilteredData, setUseFilteredData] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
   const dataToExport = useFilteredData && filteredData ? filteredData : jsonData;
   const selectedFormat = EXPORT_FORMATS.find(f => f.value === format)!;
 
   const handleExport = async () => {
     if (!dataToExport) {
-      toast({
-        title: 'No data to export',
-        description: 'Please load some JSON data first.',
-        variant: 'destructive',
-      });
+      toastPatterns.validation.noData('export');
       return;
     }
 
@@ -102,19 +91,12 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
       const result = exportData(dataToExport, options);
       downloadExportedData(result);
 
-      toast({
-        title: 'Export successful',
-        description: `Data exported as ${result.filename}`,
-      });
+      showSuccessToast('Export successful', { description: `Data exported as ${result.filename}` });
 
       onOpenChange(false);
     } catch (error) {
       logger.error({ err: error, format, minify, includeMetadata }, 'Export operation failed');
-      toast({
-        title: 'Export failed',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        variant: 'destructive',
-      });
+      toastPatterns.error.export(error);
     } finally {
       setIsExporting(false);
     }
@@ -158,25 +140,33 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
   const suitability = getFormatSuitability();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Export JSON Data
-          </DialogTitle>
-        </DialogHeader>
-
-        <ErrorBoundary
-          level="component"
-          fallback={
-            <div className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load export options</p>
-            </div>
-          }
-          enableRetry
-          maxRetries={2}
-        >
+    <BaseModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Export JSON Data"
+      icon={<Download className="h-5 w-5" />}
+      className="sm:max-w-[600px]"
+      primaryAction={{
+        label: isExporting ? 'Exporting...' : 'Export & Download',
+        onClick: handleExport,
+        loading: isExporting,
+        disabled: isExporting || !dataToExport,
+      }}
+      secondaryAction={{
+        label: 'Cancel',
+        onClick: () => onOpenChange(false),
+      }}
+    >
+      <ErrorBoundary
+        level="component"
+        fallback={
+          <div className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">Failed to load export options</p>
+          </div>
+        }
+        enableRetry
+        maxRetries={2}
+      >
         <div className="space-y-6">
           {/* Data Preview */}
           <div className="bg-gray-50 p-3 rounded-lg">
@@ -302,31 +292,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
             </div>
           </div>
         </div>
-        </ErrorBoundary>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleExport} 
-            disabled={isExporting || !dataToExport}
-            data-testid="export-download"
-          >
-            {isExporting ? (
-              <>
-                <Download className="h-4 w-4 mr-2 animate-spin" />
-                Exporting...
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" />
-                Export & Download
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </ErrorBoundary>
+    </BaseModal>
   );
 }

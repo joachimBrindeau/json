@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { memo, useCallback, useState, useEffect, useRef } from 'react';
 import { useBackendStore } from '@/lib/store/backend';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns } from '@/lib/utils/toast-helpers';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -43,7 +43,6 @@ function SidebarComponent({
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const { toast } = useToast();
   const { openModal } = useLoginModal();
   const { uploadJson, showLibraryHint, isDirty, sidebarScrollPosition, setSidebarScrollPosition } = useBackendStore();
   const { totalJsons } = useLibraryStats();
@@ -119,23 +118,15 @@ function SidebarComponent({
 
       try {
         const document = await uploadJson(file);
-        toast({
-          title: 'Success',
-          description: `${document.title} uploaded successfully`,
-        });
+        toastPatterns.success.uploaded(document.title);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        });
+        toastPatterns.error.upload(error);
       }
 
       // Reset file input
       e.target.value = '';
     },
-    [uploadJson, toast, isMobile, onOpenChange]
+    [uploadJson, isMobile, onOpenChange]
   );
 
   const navigation = [

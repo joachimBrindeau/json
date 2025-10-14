@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { PageSkeleton } from '@/components/ui/skeleton-screen';
+import { PageSkeleton } from '@/components/ui/skeleton';
 
 interface NavigationContextType {
   isNavigating: boolean;

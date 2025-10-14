@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger'
 import { apiClient } from '@/lib/api/client'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { showApiErrorToast } from '@/lib/utils/toast-helpers'
+import { LoadingSpinner } from '@/components/shared/loading-spinner'
 
 interface SEOData {
   pageKey: string
@@ -47,7 +48,7 @@ export function SEOManager() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <LoadingSpinner />
       </div>
     )
   }

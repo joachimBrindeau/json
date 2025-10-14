@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -26,7 +27,6 @@ import {
   generateDiffSummary,
   formatDiffOperation
 } from '@/lib/json';
-import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
 import dynamic from 'next/dynamic';
 import type { OnMount, Monaco } from '@monaco-editor/react';
@@ -71,7 +71,6 @@ export function ViewerCompare({
   const [isDarkMode, setIsDarkMode] = useState(false);
   const editor1Ref = useRef<any>(null);
   const editor2Ref = useRef<any>(null);
-  const { toast } = useToast();
 
   // Update local state when initialJson1 changes (from store)
   useEffect(() => {
@@ -144,25 +143,18 @@ export function ViewerCompare({
 
   const handleCompare = useCallback(() => {
     if (!canCompare) {
-      toast({
-        title: 'Cannot compare',
-        description: 'Please provide valid JSON in both inputs',
-        variant: 'destructive',
-      });
+      toastPatterns.validation.invalid('JSON', 'Please provide valid JSON in both inputs');
       return;
     }
 
     if (onViewChange) {
       onViewChange('results');
     }
-    
+
     if (diffResult) {
-      toast({
-        title: 'Comparison complete',
-        description: generateDiffSummary(diffResult),
-      });
+      showSuccessToast('Comparison complete', { description: generateDiffSummary(diffResult) });
     }
-  }, [canCompare, diffResult, onViewChange, toast]);
+  }, [canCompare, diffResult, onViewChange]);
 
   const handleReset = useCallback(() => {
     setJson1('');
@@ -177,46 +169,54 @@ export function ViewerCompare({
     try {
       const parsed = JSON.parse(json1);
       setJson1(JSON.stringify(parsed, null, 2));
-      toast({ title: 'JSON 1 formatted successfully' });
+      showSuccessToast('JSON 1 formatted successfully');
     } catch {
-      toast({ title: 'Cannot format invalid JSON', variant: 'destructive' });
+      toastPatterns.error.format();
     }
-  }, [hasValidJson1, json1, toast]);
+  }, [hasValidJson1, json1]);
 
   const formatJson2 = useCallback(() => {
     if (!hasValidJson2) return;
     try {
       const parsed = JSON.parse(json2);
       setJson2(JSON.stringify(parsed, null, 2));
-      toast({ title: 'JSON 2 formatted successfully' });
+      showSuccessToast('JSON 2 formatted successfully');
     } catch {
-      toast({ title: 'Cannot format invalid JSON', variant: 'destructive' });
+      toastPatterns.error.format();
     }
-  }, [hasValidJson2, json2, toast]);
+  }, [hasValidJson2, json2]);
 
   const handleCopyJson1 = useCallback(() => {
     if (!json1) {
-      toast({ title: 'No JSON', description: 'Please enter some JSON first', variant: 'destructive' });
+      toastPatterns.validation.noJson('copy');
       return;
     }
-    copyJsonToClipboard(json1, (title, desc, variant) => 
-      toast({ title, description: desc, variant: variant as any })
-    );
-  }, [json1, toast]);
+    copyJsonToClipboard(json1, (title, desc, variant) => {
+      if (variant === 'destructive') {
+        showErrorToast(desc || 'Failed to copy', title);
+      } else {
+        showSuccessToast(title, { description: desc });
+      }
+    });
+  }, [json1]);
 
   const handleCopyJson2 = useCallback(() => {
     if (!json2) {
-      toast({ title: 'No JSON', description: 'Please enter some JSON first', variant: 'destructive' });
+      toastPatterns.validation.noJson('copy');
       return;
     }
-    copyJsonToClipboard(json2, (title, desc, variant) => 
-      toast({ title, description: desc, variant: variant as any })
-    );
-  }, [json2, toast]);
+    copyJsonToClipboard(json2, (title, desc, variant) => {
+      if (variant === 'destructive') {
+        showErrorToast(desc || 'Failed to copy', title);
+      } else {
+        showSuccessToast(title, { description: desc });
+      }
+    });
+  }, [json2]);
 
   const handleDownloadDiff = useCallback(() => {
     if (!diffResult) return;
-    
+
     const diffReport = {
       timestamp: new Date().toISOString(),
       summary: generateDiffSummary(diffResult),
@@ -227,11 +227,17 @@ export function ViewerCompare({
         newValue: op.value
       }))
     };
-    
-    downloadJson(JSON.stringify(diffReport, null, 2), 'json-diff-report.json', 
-      (title, desc, variant) => toast({ title, description: desc, variant: variant as any })
+
+    downloadJson(JSON.stringify(diffReport, null, 2), 'json-diff-report.json',
+      (title, desc, variant) => {
+        if (variant === 'destructive') {
+          showErrorToast(desc || 'Failed to download', title);
+        } else {
+          showSuccessToast(title, { description: desc });
+        }
+      }
     );
-  }, [diffResult, toast]);
+  }, [diffResult]);
 
   // Handle synchronized scrolling - improved sync logic
   const handleEditor1Mount = useCallback((editor: any, monaco?: any) => {

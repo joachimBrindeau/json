@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Copy, Download, Share2, Code, Save, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useBackendStore } from '@/lib/store/backend';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns, showErrorToast, showSuccessToast, showInfoToast } from '@/lib/utils/toast-helpers';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json';
 import { ShareModal } from '@/components/features/modals';
 import { EmbedModal } from '@/components/features/modals/embed-modal';
@@ -19,7 +19,6 @@ import { useLoginModal } from '@/hooks/use-login-modal';
 import { logger } from '@/lib/logger';
 
 export function ViewerActions() {
-  const { toast } = useToast();
   const { data: session } = useSession();
   const { openModal } = useLoginModal();
   const {
@@ -38,20 +37,9 @@ export function ViewerActions() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const showToast = useCallback(
-    (title: string, description: string, variant?: string) => {
-      toast({
-        title,
-        description,
-        variant: variant as 'default' | 'destructive' | null | undefined,
-      });
-    },
-    [toast]
-  );
-
   const handleSave = useCallback(async () => {
     if (!currentJson) {
-      showToast('No JSON', 'Please enter some JSON to save', 'destructive');
+      toastPatterns.validation.noJson('save');
       return;
     }
 
@@ -69,36 +57,48 @@ export function ViewerActions() {
     try {
       setIsSaving(true);
       await saveJson();
-      showToast('Saved', currentDocument ? 'JSON updated successfully' : 'JSON saved to library');
-    } catch (_) {
-      showToast('Error', 'Failed to save JSON', 'destructive');
+      toastPatterns.success.saved(currentDocument ? 'JSON' : 'JSON to library');
+    } catch (error) {
+      toastPatterns.error.save(error, 'JSON');
     } finally {
       setIsSaving(false);
     }
-  }, [currentJson, currentDocument, saveJson, showToast, session, openModal]);
+  }, [currentJson, currentDocument, saveJson, session, openModal]);
 
   const handleCopyJson = useCallback(() => {
     if (!currentJson) {
-      showToast('No JSON', 'Please enter some JSON first', 'destructive');
+      toastPatterns.validation.noJson('copy');
       return;
     }
-    copyJsonToClipboard(currentJson, showToast);
-  }, [currentJson, showToast]);
+    copyJsonToClipboard(currentJson, (title, desc, variant) => {
+      if (variant === 'destructive') {
+        showErrorToast(desc || 'Failed to copy', title);
+      } else {
+        showSuccessToast(title, { description: desc });
+      }
+    });
+  }, [currentJson]);
 
   const handleExport = useCallback(() => {
     if (!currentJson) {
-      showToast('No JSON', 'Please enter some JSON first', 'destructive');
+      toastPatterns.validation.noJson('export');
       return;
     }
     const filename = currentDocument?.title
       ? `${currentDocument.title.replace(/[^a-z0-9]/gi, '_')}.json`
       : `json-${shareId || Date.now()}.json`;
-    downloadJson(currentJson, filename, showToast);
-  }, [currentJson, currentDocument?.title, shareId, showToast]);
+    downloadJson(currentJson, filename, (title, desc, variant) => {
+      if (variant === 'destructive') {
+        showErrorToast(desc || 'Failed to export', title);
+      } else {
+        showSuccessToast(title, { description: desc });
+      }
+    });
+  }, [currentJson, currentDocument?.title, shareId]);
 
   const handleShare = useCallback(async () => {
     if (!currentJson) {
-      showToast('No JSON', 'Please enter some JSON to share', 'destructive');
+      toastPatterns.validation.noJson('share');
       return;
     }
 
@@ -112,15 +112,15 @@ export function ViewerActions() {
       logger.error({ err: error }, 'Share error in ViewerActions');
       // Even if sharing fails, still open the modal - it can handle creating/saving the JSON
       setShareModalOpen(true);
-      showToast('Info', 'Opening share dialog...', 'default');
+      showInfoToast('Opening share dialog...');
     } finally {
       setIsSharing(false);
     }
-  }, [currentJson, shareJson, showToast]);
+  }, [currentJson, shareJson]);
 
   const handleEmbed = useCallback(() => {
     if (!currentJson) {
-      showToast('No JSON', 'Please enter some JSON to embed', 'destructive');
+      toastPatterns.validation.noJson('embed');
       return;
     }
 
@@ -130,11 +130,11 @@ export function ViewerActions() {
     }
 
     setEmbedModalOpen(true);
-  }, [currentJson, showToast, session, openModal]);
+  }, [currentJson, session, openModal]);
 
   const handleDelete = useCallback(async () => {
     if (!currentDocument?.shareId) {
-      showToast('No document', 'No saved document to delete', 'destructive');
+      toastPatterns.validation.noData('delete');
       return;
     }
 
@@ -153,14 +153,14 @@ export function ViewerActions() {
     setIsDeleting(true);
     try {
       await deleteDocument(currentDocument.shareId);
-      showToast('Document deleted', 'The document has been successfully deleted');
+      toastPatterns.success.deleted('Document');
     } catch (error) {
       logger.error({ err: error, shareId: currentDocument.shareId }, 'Delete error in ViewerActions');
-      showToast('Delete failed', 'Failed to delete the document', 'destructive');
+      toastPatterns.error.delete(error, 'document');
     } finally {
       setIsDeleting(false);
     }
-  }, [currentDocument, session, deleteDocument, showToast, openModal]);
+  }, [currentDocument, session, deleteDocument, openModal]);
 
   return (
     <>
@@ -323,15 +323,15 @@ export function ViewerActions() {
               await saveJson(title);
               // After saving, the store should be updated with new shareId and currentDocument
               // Show success message but keep modal open to display the generated link
-              showToast('Saved', `JSON saved as "${title}" - link generated!`);
-            } catch (_) {
-              showToast('Error', 'Failed to save JSON', 'destructive');
+              showSuccessToast('Saved', { description: `JSON saved as "${title}" - link generated!` });
+            } catch (error) {
+              toastPatterns.error.save(error, 'JSON');
             } finally {
               setIsSaving(false);
             }
           } else {
             // Regular share/update operation
-            showToast('Updated', 'JSON sharing settings updated successfully');
+            toastPatterns.success.updated('JSON sharing settings');
           }
         }}
       />

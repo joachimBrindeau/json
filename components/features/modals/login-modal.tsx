@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { FormInput } from '@/components/shared/form-fields';
 import {
   Dialog,
   DialogContent,
@@ -164,62 +164,56 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignup && (
-            <div className="space-y-2">
-              <Label htmlFor="name">Name (optional)</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  className="pl-9"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={isLoading}
-                />
-              </div>
+            <div className="relative">
+              <User className="absolute left-3 top-9 h-4 w-4 text-muted-foreground z-10" />
+              <FormInput
+                id="name"
+                label="Name (optional)"
+                type="text"
+                placeholder="Your name"
+                className="pl-9"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                disabled={isLoading}
+              />
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="pl-9"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                disabled={isLoading}
-                required
-              />
-            </div>
+          <div className="relative">
+            <Mail className="absolute left-3 top-9 h-4 w-4 text-muted-foreground z-10" />
+            <FormInput
+              id="email"
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              className="pl-9"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              disabled={isLoading}
+              required
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                className="pl-9 pr-9"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                disabled={isLoading}
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-9 h-4 w-4 text-muted-foreground z-10" />
+            <FormInput
+              id="password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              className="pl-9 pr-9"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              disabled={isLoading}
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-9 z-10"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>

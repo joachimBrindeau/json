@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef, memo, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns } from '@/lib/utils/toast-helpers';
 import { useBackendStore } from '@/lib/store/backend';
 import { validateJson } from '@/lib/json';
 import { Search, Zap, AlertTriangle } from 'lucide-react';
@@ -41,7 +41,6 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
 });
 
 function JsonEditorComponent() {
-  const { toast } = useToast();
   const { currentJson, setCurrentJson } = useBackendStore();
   const [localContent, setLocalContent] = useState('');
   const { searchTerm, setSearchTerm } = useSearch();
@@ -104,22 +103,15 @@ function JsonEditorComponent() {
         setLocalContent(formatted);
         setCurrentJson(formatted);
         setLoadingProgress(0);
-        toast({
-          title: 'JSON formatted successfully',
-          description: 'Your JSON has been properly formatted.',
-        });
+        toastPatterns.success.formatted('JSON');
       } catch (error) {
-        toast({
-          title: 'Format failed',
-          description: 'Cannot format invalid JSON',
-          variant: 'destructive',
-        });
+        toastPatterns.error.format();
       } finally {
         setIsLoading(false);
         setLoadingProgress(0);
       }
     }
-  }, [setCurrentJson, toast]);
+  }, [setCurrentJson]);
 
   // Custom editor mount handler to add commands and validation
   const handleCustomEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {

@@ -3,18 +3,19 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  FileJson, 
-  Eye, 
-  AlertTriangle, 
-  Database, 
-  TreePine, 
+import {
+  FileJson,
+  Eye,
+  AlertTriangle,
+  Database,
+  TreePine,
   Waves,
   Upload,
   Search,
   Filter,
   RefreshCw
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -237,17 +238,16 @@ export const LoadingErrorState = ({
 );
 
 // Loading states
-export const LoadingState = ({ 
-  message = 'Loading...', 
-  compact = false 
-}: { 
+export const LoadingState = ({
+  message = 'Loading...',
+  compact = false
+}: {
   message?: string;
   compact?: boolean;
 }) => (
   <Card className="h-full flex items-center justify-center">
     <div className={`text-center ${compact ? 'max-w-sm' : 'max-w-md'}`}>
-      <div className={`animate-spin rounded-full border-b-2 border-primary mx-auto mb-4 ${compact ? 'h-8 w-8' : 'h-12 w-12'}`} />
-      <p className={`text-muted-foreground ${compact ? 'text-sm' : ''}`}>{message}</p>
+      <LoadingSpinner size={compact ? 'md' : 'lg'} label={message} />
     </div>
   </Card>
 );

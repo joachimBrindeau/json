@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/shared/base-modal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toastPatterns, showErrorToast } from '@/lib/utils/toast-helpers';
 import { Copy, Eye, Smartphone, Share, Sparkles, Code2, X, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
@@ -31,7 +31,6 @@ type ViewMode = 'smart' | 'editor' | 'flow' | 'tree' | 'list' | 'tabs';
 type Theme = 'light' | 'dark' | 'auto';
 
 export function EmbedModal({ isOpen, onClose, shareId, jsonPreview }: EmbedModalProps) {
-  const { toast } = useToast();
   const [embedType, setEmbedType] = useState<EmbedType>('widget');
   const [viewMode, setViewMode] = useState<ViewMode>('smart');
   const [theme, setTheme] = useState<Theme>('auto');
@@ -130,20 +129,13 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
     try {
       await navigator.clipboard.writeText(embedCode);
       setCopied(true);
-      toast({
-        title: 'Copied!',
-        description: 'Embed code copied to clipboard',
-      });
+      toastPatterns.success.copied('Embed code');
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       logger.error({ err: error, embedType, viewMode }, 'Failed to copy embed code to clipboard');
-      toast({
-        title: 'Copy failed',
-        description: 'Please copy the code manually',
-        variant: 'destructive',
-      });
+      showErrorToast('Please copy the code manually', 'Copy failed');
     }
-  }, [embedCode, toast, embedType, viewMode]);
+  }, [embedCode, embedType, viewMode]);
 
   const openPreview = useCallback(() => {
     try {
@@ -190,21 +182,13 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
         previewWindow.document.close();
       } else {
         setPreviewError(true);
-        toast({
-          title: 'Preview Failed',
-          description: 'Could not open preview window. Please check your popup blocker settings.',
-          variant: 'destructive',
-        });
+        showErrorToast('Could not open preview window. Please check your popup blocker settings.', 'Preview Failed');
       }
     } catch (error) {
       setPreviewError(true);
-      toast({
-        title: 'Preview Error',
-        description: 'Failed to generate preview. Please try again.',
-        variant: 'destructive',
-      });
+      showErrorToast('Failed to generate preview. Please try again.', 'Preview Error');
     }
-  }, [embedCode, toast]);
+  }, [embedCode]);
 
   const embedTypes = [
     {
@@ -234,16 +218,16 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-y-auto p-8">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-500" />
-            Embed Your JSON
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <BaseModal
+      open={isOpen}
+      onOpenChange={onClose}
+      title="Embed Your JSON"
+      icon={<Sparkles className="h-5 w-5 text-blue-500" />}
+      className="max-w-5xl w-[95vw]"
+      maxHeight="90vh"
+      showFooter={false}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Configuration */}
           <div className="space-y-6">
             {/* Embed Type Selection */}
@@ -591,7 +575,6 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </BaseModal>
   );
 }

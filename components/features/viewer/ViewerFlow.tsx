@@ -6,6 +6,7 @@
 
 import dynamic from 'next/dynamic';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 const FlowView = dynamic(
   () => import('./flow/FlowView').then(m => ({ default: m.FlowView })),
@@ -13,7 +14,7 @@ const FlowView = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner />
       </div>
     ),
   }

@@ -15,6 +15,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { User, Mail, Calendar, FileJson, Download, LogOut, Settings, Trash2, Link2, Plus, Github, Chrome, Key } from 'lucide-react';
 import { DebugAvatar } from '@/components/debug/debug-avatar';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -125,7 +126,7 @@ export default function ProfilePage() {
     return (
       <MainLayout>
         <div className="h-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <LoadingSpinner />
         </div>
       </MainLayout>
     );

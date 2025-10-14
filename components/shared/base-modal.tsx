@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 export interface BaseModalProps {
   open: boolean;
@@ -230,7 +231,7 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(({
                   disabled={primaryAction.disabled || primaryAction.loading}
                 >
                   {primaryAction.loading && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+                    <LoadingSpinner size="sm" className="mr-2" />
                   )}
                   {primaryAction.label}
                 </Button>
