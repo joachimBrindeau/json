@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Node, Edge, useNodesState, useEdgesState, NodeChange, EdgeChange } from 'reactflow';
+import { Node, Edge, useNodesState, useEdgesState, NodeChange, EdgeChange } from '@xyflow/react';
 import { useFlowCollapse } from './useFlowCollapse';
 
 export type FlowNodesState = {

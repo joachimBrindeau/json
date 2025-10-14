@@ -4,7 +4,7 @@
  * Provides runtime type checking for node data types to ensure type safety
  */
 
-import { Node } from 'reactflow';
+import { Node } from '@xyflow/react';
 import {
   NodeType,
   RootSeaNode,

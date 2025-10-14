@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { ViewerList } from './ViewerList';
 import { ViewerActions } from './ViewerActions';
 import { useJsonParser } from './useJsonParser';
 import { useAutoOptimize } from './useAutoOptimize';
+import { useSearch } from '@/hooks/use-search';
 import type { ViewMode } from './types';
 import type { JsonValue } from '@/lib/types/json';
 import { logger } from '@/lib/logger';
@@ -72,11 +73,15 @@ export const Viewer = ({
   initialViewMode = 'tree',
   viewMode: controlledViewMode,
   onViewModeChange,
+  searchTerm: controlledSearchTerm,
+  onSearchChange: controlledOnSearchChange,
   enableActions = true,
   height = 600,
   className = '',
   enableSearch = true,
   enableViewModeSwitch = true,
+  maxNodes,
+  virtualizeThreshold,
 }: ViewerProps) => {
   // Use controlled mode if provided, otherwise use internal state
   const effectiveInitialMode = initialViewMode || initialMode;
@@ -92,6 +97,11 @@ export const Viewer = ({
     }
   };
 
+  // Centralized search state management
+  const { searchTerm: internalSearch, setSearchTerm: setInternalSearch } = useSearch();
+  const effectiveSearch = controlledSearchTerm ?? internalSearch;
+  const effectiveSetSearch = controlledOnSearchChange ?? setInternalSearch;
+
   // Handle both jsonString and content props for backwards compatibility
   const jsonStr = useMemo(() => {
     if (jsonString) return jsonString;
@@ -103,8 +113,8 @@ export const Viewer = ({
   // Parse JSON
   const { data, error, stats } = useJsonParser(jsonStr);
 
-  // Auto-detect optimization needs
-  const { shouldVirtualize, performanceLevel } = useAutoOptimize(jsonStr, data);
+  // Auto-detect optimization needs - pass maxNodes prop to allow override
+  const { shouldVirtualize, performanceLevel } = useAutoOptimize(jsonStr, data, maxNodes);
 
   if (error) {
     return (
@@ -215,6 +225,9 @@ export const Viewer = ({
             virtualized={shouldVirtualize}
             height={height}
             enableSearch={enableSearch}
+            searchTerm={effectiveSearch}
+            onSearchChange={effectiveSetSearch}
+            maxNodes={maxNodes}
           />
         )}
 
@@ -227,7 +240,13 @@ export const Viewer = ({
         )}
 
         {viewMode === 'list' && (
-          <ViewerList data={data} height={height} />
+          <ViewerList
+            data={data}
+            height={height}
+            searchTerm={effectiveSearch}
+            onSearchChange={effectiveSetSearch}
+            virtualizeThreshold={virtualizeThreshold}
+          />
         )}
       </div>
     </div>

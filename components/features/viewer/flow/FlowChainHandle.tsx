@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { Handle, HandleProps, HandleType, Position } from 'reactflow';
+import { Handle, HandleProps, HandleType, Position } from '@xyflow/react';
 import { sizes } from '@/components/features/viewer/flow/utils/flow-constants';
 
 const hiddenHandleStyle = {

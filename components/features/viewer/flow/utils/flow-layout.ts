@@ -1,5 +1,5 @@
 import * as dagre from 'dagre';
-import { Edge, XYPosition } from 'reactflow';
+import { Edge, XYPosition } from '@xyflow/react';
 import { sizes } from './flow-constants';
 import { SeaNode, NodeType } from './flow-types';
 import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-utils';

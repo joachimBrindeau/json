@@ -1,19 +1,17 @@
 /**
  * Tree search hook - filters nodes based on search term
+ * Now accepts external search state for centralized control
  */
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { JsonNode } from './types';
 
 interface TreeSearchResult {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
   filteredNodes: JsonNode[];
   matchCount: number;
 }
 
-export const useViewerTreeSearch = (nodes: JsonNode[]): TreeSearchResult => {
-  const [searchTerm, setSearchTerm] = useState('');
+export const useViewerTreeSearch = (nodes: JsonNode[], searchTerm: string = ''): TreeSearchResult => {
 
   const { filteredNodes, matchCount } = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -49,8 +47,6 @@ export const useViewerTreeSearch = (nodes: JsonNode[]): TreeSearchResult => {
   }, [nodes, searchTerm]);
 
   return {
-    searchTerm,
-    setSearchTerm,
     filteredNodes,
     matchCount,
   };

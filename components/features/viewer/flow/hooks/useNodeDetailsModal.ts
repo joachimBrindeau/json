@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Node } from 'reactflow';
+import { Node } from '@xyflow/react';
 import { extractNodeDetails, NodeDetails } from '../utils/flow-node-details';
 
 export type NodeDetailsModalState = {

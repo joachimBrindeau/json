@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo } from 'react';
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 
 /**
  * Build a map of node ID to its direct children for O(1) lookups

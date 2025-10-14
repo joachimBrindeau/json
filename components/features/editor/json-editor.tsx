@@ -20,6 +20,12 @@ import {
 } from '@/lib/editor/optimizations';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
+import { useSearch } from '@/hooks/use-search';
+import {
+  isLargeFile,
+  getDebounceDelay,
+  shouldUseProgressiveLoad
+} from '@/lib/config/editor-config';
 
 // Monaco editor with enhanced loading state
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -38,11 +44,11 @@ function JsonEditorComponent() {
   const { toast } = useToast();
   const { currentJson, setCurrentJson } = useBackendStore();
   const [localContent, setLocalContent] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchTerm, setSearchTerm } = useSearch();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const decorationsRef = useRef<string[]>([]);
-  const isLargeFile = currentJson.length > 100000; // 100KB threshold
+  const isLargeFileFlag = isLargeFile(currentJson.length);
 
   // Use Monaco editor hook
   const {
@@ -85,9 +91,9 @@ function JsonEditorComponent() {
       try {
         // Use Web Worker for large files
         const formatted = await formatJsonWithWorker(content);
-        
+
         // For very large files, load progressively
-        if (formatted.length > 500000) {
+        if (shouldUseProgressiveLoad(formatted.length)) {
           await loadJsonProgressive(editorRef.current, formatted, (loaded, total) => {
             setLoadingProgress(Math.round((loaded / total) * 100));
           });
@@ -156,8 +162,8 @@ function JsonEditorComponent() {
 
   // Debounced change handler for better performance
   const debouncedSetCurrentJson = useMemo(
-    () => debounce(setCurrentJson, isLargeFile ? 500 : 100),
-    [setCurrentJson, isLargeFile]
+    () => debounce(setCurrentJson, getDebounceDelay(currentJson.length)),
+    [setCurrentJson, currentJson.length]
   );
 
   const handleMonacoChange = useCallback(
@@ -165,13 +171,13 @@ function JsonEditorComponent() {
       const newValue = value || '';
       setLocalContent(newValue);
       // Use debounced update for large files
-      if (isLargeFile) {
+      if (isLargeFileFlag) {
         debouncedSetCurrentJson(newValue);
       } else {
         setCurrentJson(newValue);
       }
     },
-    [setCurrentJson, debouncedSetCurrentJson, isLargeFile]
+    [setCurrentJson, debouncedSetCurrentJson, isLargeFileFlag]
   );
 
   // Search functionality

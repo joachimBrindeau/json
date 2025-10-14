@@ -5,7 +5,7 @@
  * Simplified from the original 400+ line implementation.
  */
 
-import { Edge } from 'reactflow';
+import { Edge } from '@xyflow/react';
 import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import { isArray, isObject, getJsonDataType, validateJsonDataType } from './flow-utils';
 import { JsonDataType, NodeType } from './flow-types';

@@ -5,7 +5,7 @@
  */
 
 import { useMemo } from 'react';
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 import { jsonParser } from '../utils/flow-parser';
 import { getLayoutedSeaNodes } from '../utils/flow-layout';
 import { logger } from '@/lib/logger';

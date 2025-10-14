@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search } from 'lucide-react';
@@ -13,6 +13,9 @@ import { Search } from 'lucide-react';
 interface ViewerListProps {
   data: any;
   height?: number;
+  virtualizeThreshold?: number;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
 interface FlatItem {
@@ -85,8 +88,13 @@ function formatValue(value: any, type: string): string {
   return String(value);
 }
 
-export const ViewerList = ({ data, height = 600 }: ViewerListProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
+export const ViewerList = ({
+  data,
+  height = 600,
+  virtualizeThreshold,
+  searchTerm = '',
+  onSearchChange,
+}: ViewerListProps) => {
 
   const flatItems = useMemo(() => {
     if (!data) return [];
@@ -113,7 +121,7 @@ export const ViewerList = ({ data, height = 600 }: ViewerListProps) => {
             type="text"
             placeholder="Search keys or values..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             className="pl-10"
           />
         </div>

@@ -3,20 +3,30 @@
  */
 
 import { useMemo } from 'react';
+import {
+  VIEWER_CONFIG,
+  getPerformanceLevel,
+  shouldVirtualize as shouldVirtualizeHelper,
+  type PerformanceLevel,
+} from '@/lib/config/viewer-config';
 
 interface OptimizationResult {
   shouldVirtualize: boolean;
   estimatedNodes: number;
-  performanceLevel: 'excellent' | 'good' | 'warning' | 'critical';
+  performanceLevel: PerformanceLevel;
 }
 
-export const useAutoOptimize = (jsonString: string, data: any): OptimizationResult => {
+export const useAutoOptimize = (
+  jsonString: string,
+  data: any,
+  maxNodes?: number
+): OptimizationResult => {
   return useMemo(() => {
     if (!data) {
       return {
         shouldVirtualize: false,
         estimatedNodes: 0,
-        performanceLevel: 'excellent',
+        performanceLevel: 'excellent' as PerformanceLevel,
       };
     }
 
@@ -26,45 +36,35 @@ export const useAutoOptimize = (jsonString: string, data: any): OptimizationResu
     // Estimate node count
     const estimatedNodes = estimateNodeCount(data);
 
-    // Determine if virtualization is needed
-    const shouldVirtualize = 
-      sizeMB > 1 ||           // > 1MB
-      estimatedNodes > 1000;  // > 1000 nodes
-
-    // Performance level
-    let performanceLevel: OptimizationResult['performanceLevel'] = 'excellent';
-    if (sizeMB > 100 || estimatedNodes > 50000) {
-      performanceLevel = 'critical';
-    } else if (sizeMB > 20 || estimatedNodes > 10000) {
-      performanceLevel = 'warning';
-    } else if (sizeMB > 5 || estimatedNodes > 5000) {
-      performanceLevel = 'good';
-    }
+    // Use centralized config with optional override
+    const nodeThreshold = maxNodes ?? VIEWER_CONFIG.performance.maxNodes;
+    const shouldVirtualize = shouldVirtualizeHelper(sizeMB, estimatedNodes);
+    const performanceLevel = getPerformanceLevel(sizeMB, estimatedNodes);
 
     return {
       shouldVirtualize,
       estimatedNodes,
       performanceLevel,
     };
-  }, [jsonString, data]);
+  }, [jsonString, data, maxNodes]);
 };
 
 // Helper to estimate node count
 function estimateNodeCount(obj: any, maxDepth = 10, currentDepth = 0): number {
   if (currentDepth > maxDepth) return 1;
-  
+
   if (Array.isArray(obj)) {
-    return 1 + obj.reduce((sum, item) => 
+    return 1 + obj.reduce((sum: number, item: any) =>
       sum + estimateNodeCount(item, maxDepth, currentDepth + 1), 0
     );
   }
-  
+
   if (obj && typeof obj === 'object') {
-    return 1 + Object.values(obj).reduce((sum, value) => 
+    return 1 + Object.values(obj).reduce((sum: number, value: any) =>
       sum + estimateNodeCount(value, maxDepth, currentDepth + 1), 0
     );
   }
-  
+
   return 1;
 }
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { memo, useMemo } from 'react';
-import { Handle, HandleProps, HandleType, Position } from 'reactflow';
+import { Handle, HandleProps, HandleType, Position } from '@xyflow/react';
 
 const hiddenHandleStyle = {
   backgroundColor: 'transparent',

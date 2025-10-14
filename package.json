@@ -95,7 +95,7 @@
     "react-hook-form": "^7.65.0",
     "react-share": "^5.2.2",
     "react-window": "^1.8.11",
-    "reactflow": "^11.11.4",
+    "@xyflow/react": "^12.3.2",
     "socket.io": "^4.8.1",
     "tailwind-merge": "^3.3.1",
     "web-vitals": "^5.1.0",

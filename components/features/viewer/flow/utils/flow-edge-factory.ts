@@ -6,7 +6,7 @@
  */
 
 import { nanoid } from 'nanoid';
-import { Edge } from 'reactflow';
+import { Edge } from '@xyflow/react';
 import { EdgeType } from './flow-types';
 
 /**

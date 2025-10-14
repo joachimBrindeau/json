@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { NodeProps } from 'reactflow';
+import { NodeProps } from '@xyflow/react';
 import { JsonDataType, NodeType, PrimitiveNodeData } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';

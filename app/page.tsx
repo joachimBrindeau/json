@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useBackendStore } from '@/lib/store/backend';
+import { useSearch } from '@/hooks/use-search';
+import { useViewerSettings } from '@/hooks/use-viewer-settings';
 import { 
   FileJson, 
   Zap, 
@@ -214,10 +216,11 @@ const colors = {
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchTerm, setSearchTerm } = useSearch();
   const [showFlowHint, setShowFlowHint] = useState(false);
   const [hasInteractedWithTabs, setHasInteractedWithTabs] = useState(false);
   const { currentJson } = useBackendStore();
+  const viewerSettings = useViewerSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -412,8 +415,8 @@ export default function HomePage() {
                     ) : (
                       <Viewer
                         content={currentJson}
-                        maxNodes={1000}
-                        virtualizeThreshold={100}
+                        maxNodes={viewerSettings.performance.maxNodes}
+                        virtualizeThreshold={viewerSettings.performance.virtualizeThreshold}
                         initialViewMode={activeTab as 'tree' | 'list' | 'flow'}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}

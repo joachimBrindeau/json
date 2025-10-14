@@ -21,6 +21,9 @@ interface ViewerTreeProps {
   virtualized?: boolean;
   height?: number;
   enableSearch?: boolean;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
+  maxNodes?: number;
 }
 
 export const ViewerTree = ({
@@ -28,9 +31,12 @@ export const ViewerTree = ({
   virtualized = false,
   height = 600,
   enableSearch = true,
+  searchTerm = '',
+  onSearchChange,
+  maxNodes,
 }: ViewerTreeProps) => {
   const { nodes, expandedNodes, toggleNode, expandAll, collapseAll } = useViewerTreeState(data);
-  const { searchTerm, setSearchTerm, filteredNodes, matchCount } = useViewerTreeSearch(nodes);
+  const { filteredNodes, matchCount } = useViewerTreeSearch(nodes, searchTerm);
 
   const [selectedNode, setSelectedNode] = useState<JsonNode | null>(null);
   const [showNodeDetails, setShowNodeDetails] = useState(false);
@@ -39,11 +45,11 @@ export const ViewerTree = ({
   // Debounce search input to reduce filtering operations during typing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setSearchTerm(inputValue);
+      onSearchChange?.(inputValue);
     }, 200); // 200ms debounce for search
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, setSearchTerm]);
+  }, [inputValue, onSearchChange]);
 
   const handleNodeDoubleClick = useCallback((node: JsonNode) => {
     setSelectedNode(node);

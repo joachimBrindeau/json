@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { EdgeProps, getBezierPath } from 'reactflow';
+import { EdgeProps, getBezierPath } from '@xyflow/react';
 
 const DefaultEdgeComponent = ({
   id,

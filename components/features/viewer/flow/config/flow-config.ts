@@ -2,7 +2,7 @@
  * Flow view configuration - centralized constants and settings
  */
 
-import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node } from 'reactflow';
+import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node, MarkerType } from '@xyflow/react';
 import { FlowRootNode } from '../nodes/FlowRootNode';
 import { FlowObjectNode } from '../nodes/FlowObjectNode';
 import { FlowArrayNode } from '../nodes/FlowArrayNode';
@@ -59,9 +59,20 @@ export const FLOW_DEFAULT_VIEWPORT = {
 } as const;
 
 /**
- * Default edge options (undefined to use ReactFlow defaults)
+ * Default edge options with arrow markers
  */
-export const FLOW_DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions | undefined = undefined;
+export const FLOW_DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions = {
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 20,
+    height: 20,
+    color: '#3b82f6',
+  },
+  style: {
+    strokeWidth: 2,
+    stroke: '#3b82f6',
+  },
+};
 
 /**
  * MiniMap node color function

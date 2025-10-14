@@ -1,4 +1,4 @@
-import { Node } from 'reactflow';
+import { Node } from '@xyflow/react';
 
 /**
  * Primitive data type is different between Javascript and JSON areas.
