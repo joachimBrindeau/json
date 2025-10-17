@@ -37,6 +37,32 @@ deploy() {
     ssh ${SERVER} << 'EOF'
 cd ~/production/json-viewer-io
 
+# Create backup before deployment
+echo "💾 Creating backup of current deployment..."
+BACKUP_DIR="${HOME}/production/json-viewer-io-backups"
+BACKUP_NAME="backup-$(date +'%Y-%m-%d-%H_%M_%S')"
+BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
+
+mkdir -p "$BACKUP_PATH"
+
+# Copy current deployment (exclude large directories)
+rsync -a --exclude 'node_modules' --exclude '.next' --exclude '.git' ./ "$BACKUP_PATH/" 2>/dev/null || true
+
+# Save current commit hash if git repo exists
+if [ -d .git ]; then
+  git rev-parse HEAD > "$BACKUP_PATH/.commit" 2>/dev/null || true
+fi
+
+echo "✅ Backup created: $BACKUP_NAME"
+
+# Cleanup old backups (keep only last 5)
+BACKUP_COUNT=$(ls -1dt ${BACKUP_DIR}/backup-* 2>/dev/null | wc -l)
+if [ "$BACKUP_COUNT" -gt 5 ]; then
+  BACKUPS_TO_DELETE=$((BACKUP_COUNT - 5))
+  echo "🧹 Removing $BACKUPS_TO_DELETE old backup(s)..."
+  ls -1dt ${BACKUP_DIR}/backup-* | tail -n "$BACKUPS_TO_DELETE" | xargs rm -rf
+fi
+
 # Validate environment file exists
 if [ ! -f .env ]; then
     echo "❌ ERROR: .env file not found on server!"
