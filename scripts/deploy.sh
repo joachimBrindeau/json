@@ -37,24 +37,42 @@ deploy() {
     ssh ${SERVER} << 'EOF'
 cd ~/production/json-viewer-io
 
-# Set production environment
-cat > .env << 'ENVEOF'
-DATABASE_URL="postgresql://json_viewer_user:json_viewer_secure_pass@postgres:5432/json_viewer"
-REDIS_URL="redis://redis:6379"
-NEXTAUTH_SECRET="your-secret-key-here"
-NEXTAUTH_URL="https://json-viewer.io"
-NEXT_PUBLIC_APP_URL="https://json-viewer.io"
-NODE_ENV="production"
-ENVEOF
+# Validate environment file exists
+if [ ! -f .env ]; then
+    echo "❌ ERROR: .env file not found on server!"
+    echo "Please create .env from .env.production.template"
+    echo "Example: cp .env.production.template .env"
+    echo "Then edit .env with your production credentials"
+    exit 1
+fi
 
-# Use server docker config
-cp config/docker-compose.server.yml docker-compose.yml
+# Verify required environment variables
+echo "🔍 Validating environment variables..."
+required_vars=("DATABASE_URL" "REDIS_URL" "NEXTAUTH_SECRET" "NEXTAUTH_URL" "NEXT_PUBLIC_APP_URL")
+missing_vars=()
 
-# Stop, build, start
-docker-compose down --remove-orphans
+for var in "${required_vars[@]}"; do
+    if ! grep -q "^${var}=" .env; then
+        missing_vars+=("$var")
+    elif grep -q "^${var}=.*REPLACE.*" .env || grep -q "^${var}=.*your-.*" .env; then
+        echo "⚠️  WARNING: ${var} appears to contain placeholder value"
+        missing_vars+=("$var")
+    fi
+done
+
+if [ ${#missing_vars[@]} -gt 0 ]; then
+    echo "❌ ERROR: Missing or invalid environment variables:"
+    printf '  - %s\n' "${missing_vars[@]}"
+    exit 1
+fi
+
+echo "✅ Environment variables validated"
+
+# Stop, build, start (use config file directly with BuildKit)
+docker compose -f config/docker-compose.server.yml down --remove-orphans
 npm ci
 npm run build
-docker-compose up -d
+DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build
 
 # Wait for health
 for i in {1..30}; do
@@ -87,39 +105,22 @@ EOF
     log "Deployment completed!"
 }
 
-# Simple verification with cache busting
+# Comprehensive verification using dedicated script
 verify() {
     log "Verifying deployment..."
 
-    # Wait for app to be ready
-    for i in {1..20}; do
-        if curl -f -s https://json-viewer.io/api/health >/dev/null 2>&1; then
-            log "Health check passed"
-            break
-        fi
-        sleep 3
-    done
+    # Wait a bit for caches to clear
+    log "Waiting for caches to clear..."
+    sleep 10
 
-    # Cache busting - wait a bit more and force fresh content
-    log "Cache busting - waiting for fresh content..."
-    sleep 15
-
-    # Multiple attempts with cache-busting headers
-    for attempt in {1..3}; do
-        log "Verification attempt $attempt/3..."
-        if ! curl -H "Cache-Control: no-cache" -H "Pragma: no-cache" -s "https://json-viewer.io/library?t=$(date +%s)&attempt=$attempt" | grep -qi "share a json"; then
-            log "Verification passed on attempt $attempt!"
-            break
-        fi
-        if [ $attempt -eq 3 ]; then
-            log "ERROR: 'Share a JSON' button still present after 3 attempts"
-            return 1
-        fi
-        sleep 5
-    done
-
-    log "Verification passed!"
-    return 0
+    # Run comprehensive verification script
+    if ./scripts/verify-deployment.sh "https://json-viewer.io"; then
+        log "Verification passed!"
+        return 0
+    else
+        log "ERROR: Deployment verification failed"
+        return 1
+    fi
 }
 
 # Main execution

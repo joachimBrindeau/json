@@ -264,12 +264,12 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Disable lint and type checking during builds for quick deployment
+  // Enable type checking and linting in builds for production safety
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 };
 

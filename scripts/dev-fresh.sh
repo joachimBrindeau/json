@@ -15,18 +15,18 @@ NC='\033[0m' # No Color
 
 # Step 1: Start Docker containers (if not already running)
 echo -e "\n${BLUE}📦 Starting Docker containers...${NC}"
-if docker compose -f docker-compose.local.yml ps | grep -q "Up"; then
+if docker compose -f config/docker-compose.local.yml ps | grep -q "Up"; then
   echo -e "${GREEN}✓ Docker containers already running${NC}"
 else
-  docker compose -f docker-compose.local.yml up -d postgres redis
+  docker compose -f config/docker-compose.local.yml up -d postgres redis
   echo -e "${GREEN}✓ Docker containers started${NC}"
-  
+
   # Wait for PostgreSQL to be ready
   echo -e "${YELLOW}⏳ Waiting for PostgreSQL to be ready...${NC}"
   sleep 3
-  
+
   # Check if database is ready
-  until docker compose -f docker-compose.local.yml exec -T postgres pg_isready -U json_viewer_user -d json_viewer > /dev/null 2>&1; do
+  until docker compose -f config/docker-compose.local.yml exec -T postgres pg_isready -U json_viewer_user -d json_viewer > /dev/null 2>&1; do
     echo -e "${YELLOW}⏳ Waiting for database...${NC}"
     sleep 1
   done
