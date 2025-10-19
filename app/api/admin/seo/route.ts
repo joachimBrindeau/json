@@ -68,7 +68,7 @@ export const POST = withAuth(async (request, session) => {
       return badRequest(error.issues[0].message);
     }
 
-    logger.error({ err: error, userId: session?.user?.id }, 'Failed to update SEO settings');
+    logger.error({ err: error, userId: session.user.id }, 'Failed to update SEO settings');
     return internalServerError('Failed to update SEO settings');
   }
 });

@@ -9,9 +9,26 @@ interface PopoverContextType {
 
 const PopoverContext = createContext<PopoverContextType | undefined>(undefined);
 
-export function Popover({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  
+export function Popover({
+  children,
+  open: controlledOpen,
+  onOpenChange
+}: {
+  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  };
+
   return (
     <PopoverContext.Provider value={{ open, setOpen }}>
       <div className="relative">
@@ -36,7 +53,7 @@ export function PopoverTrigger({
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
       onClick: () => setOpen(!open)
-    });
+    } as any);
   }
   
   return (
@@ -46,12 +63,14 @@ export function PopoverTrigger({
   );
 }
 
-export function PopoverContent({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
-  className?: string; 
+export function PopoverContent({
+  children,
+  className = "",
+  align = "center"
+}: {
+  children: React.ReactNode;
+  className?: string;
+  align?: "start" | "center" | "end";
 }) {
   const context = useContext(PopoverContext);
   if (!context) throw new Error('PopoverContent must be used within Popover');

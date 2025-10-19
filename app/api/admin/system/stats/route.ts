@@ -31,7 +31,7 @@ export async function GET(_request: NextRequest) {
     // Redis health check
     let redisStatus: 'connected' | 'disconnected' | 'error' = 'disconnected'
     let redisResponseTime: number | undefined
-    let redisInfo: { memoryUsed?: number; memoryMax?: number } = {}
+    const redisInfo: { memoryUsed?: number; memoryMax?: number } = {}
 
     try {
       const { redis } = await import('@/lib/redis')

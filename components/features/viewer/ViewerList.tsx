@@ -6,9 +6,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search } from 'lucide-react';
+import { SearchBar } from '@/components/shared/search-bar';
 
 interface ViewerListProps {
   data: any;
@@ -114,19 +113,16 @@ export const ViewerList = ({
   return (
     <div className="flex flex-col h-full">
       {/* Search bar */}
-      <div className="p-4 border-b bg-gray-50">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search keys or values..."
+      <div className="p-2 border-b bg-gray-50">
+        <div className="flex items-center gap-2">
+          <SearchBar
             value={searchTerm}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            className="pl-10"
+            onChange={(value) => onSearchChange?.(value)}
+            placeholder="Search keys or values..."
           />
-        </div>
-        <div className="mt-2 text-sm text-gray-600">
-          Showing {filteredItems.length} of {flatItems.length} items
+          <Badge variant="secondary" className="whitespace-nowrap">
+            {filteredItems.length} / {flatItems.length}
+          </Badge>
         </div>
       </div>
 

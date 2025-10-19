@@ -12,10 +12,11 @@ import * as responses from '@/lib/api/responses';
 
 /**
  * API route handler function type
+ * Updated for Next.js 15 - params is now a Promise and context is required
  */
-export type ApiRouteHandler<T = unknown> = (
+export type ApiRouteHandler<T = unknown, P = Record<string, string>> = (
   request: NextRequest,
-  context?: { params: Record<string, string> }
+  context: { params: Promise<P> }
 ) => Promise<NextResponse<T>> | NextResponse<T>;
 
 /**
@@ -102,10 +103,10 @@ function handleZodError(error: ZodError): ValidationError {
  *   }
  * });
  */
-export function withErrorHandler<T = unknown>(
-  handler: ApiRouteHandler<T>,
+export function withErrorHandler<T = unknown, P = Record<string, string>>(
+  handler: ApiRouteHandler<T, P>,
   options: ErrorHandlerOptions = {}
-): ApiRouteHandler<T> {
+): ApiRouteHandler<T, P> {
   const {
     logErrors = true,
     transformError,
@@ -113,7 +114,7 @@ export function withErrorHandler<T = unknown>(
     includeRequestId = true,
   } = options;
 
-  return async (request: NextRequest, context?: { params: Record<string, string> }) => {
+  return async (request: NextRequest, context: { params: Promise<P> }) => {
     const requestId = generateRequestId();
     const requestMetadata = extractRequestMetadata(request);
 
@@ -248,11 +249,11 @@ export function createErrorHandler(options: ErrorHandlerOptions) {
  *   return responses.success(validated);
  * });
  */
-export function withValidationHandler<T = unknown>(
-  handler: ApiRouteHandler<T>,
+export function withValidationHandler<T = unknown, P = Record<string, string>>(
+  handler: ApiRouteHandler<T, P>,
   options: Omit<ErrorHandlerOptions, 'transformError'> = {}
-): ApiRouteHandler<T> {
-  return withErrorHandler(handler, {
+): ApiRouteHandler<T, P> {
+  return withErrorHandler<T, P>(handler, {
     ...options,
     transformError: (error) => {
       if (error instanceof ZodError) {
@@ -276,11 +277,11 @@ export function withValidationHandler<T = unknown>(
  *   return responses.success(users);
  * });
  */
-export function withDatabaseHandler<T = unknown>(
-  handler: ApiRouteHandler<T>,
+export function withDatabaseHandler<T = unknown, P = Record<string, string>>(
+  handler: ApiRouteHandler<T, P>,
   options: Omit<ErrorHandlerOptions, 'transformError'> = {}
-): ApiRouteHandler<T> {
-  return withErrorHandler(handler, {
+): ApiRouteHandler<T, P> {
+  return withErrorHandler<T, P>(handler, {
     ...options,
     transformError: (error) => {
       if (isPrismaError(error)) {
@@ -311,9 +312,9 @@ export function composeErrorHandlers(
 ) {
   return <T = unknown>(handler: ApiRouteHandler<T>): ApiRouteHandler<T> => {
     return handlers.reduceRight(
-      (wrappedHandler, middleware) => middleware(wrappedHandler),
-      handler
-    );
+      (wrappedHandler, middleware) => middleware(wrappedHandler as any),
+      handler as any
+    ) as any;
   };
 }
 
@@ -360,5 +361,5 @@ export async function catchAllErrors(
   options: ErrorHandlerOptions = {}
 ): Promise<NextResponse> {
   const wrappedHandler: ApiRouteHandler = async () => handler();
-  return withErrorHandler(wrappedHandler, options)(request);
+  return withErrorHandler(wrappedHandler, options)(request, { params: Promise.resolve({}) });
 }

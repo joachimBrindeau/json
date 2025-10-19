@@ -42,7 +42,7 @@ async function performCleanup(baseURL: string) {
     await browser.close();
     
   } catch (error) {
-    console.log('⚠️ Cleanup operations failed:', error.message);
+    console.log('⚠️ Cleanup operations failed:', (error as Error).message);
     // Don't throw - cleanup failures shouldn't fail tests
   }
 }

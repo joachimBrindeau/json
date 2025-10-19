@@ -60,7 +60,7 @@ export const POST = withOptionalAuth(async (request, session) => {
   });
 
   // Create chunks for large JSONs
-  const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent) : [];
+  const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent as any) : [];
 
   // Save to database with transaction - Prisma errors automatically handled by middleware
   const result = await prisma.$transaction(async (tx) => {
@@ -68,7 +68,7 @@ export const POST = withOptionalAuth(async (request, session) => {
     const document = await tx.jsonDocument.create({
       data: {
         title: title || file.name,
-        content: parsedContent,
+        content: parsedContent as any,
         size: BigInt(analysis.size),
         nodeCount: analysis.nodeCount,
         maxDepth: analysis.maxDepth,
@@ -93,7 +93,7 @@ export const POST = withOptionalAuth(async (request, session) => {
         data: chunks.map((chunk) => ({
           documentId: document.id,
           chunkIndex: chunk.index,
-          content: chunk.content,
+          content: chunk.content as any,
           size: chunk.size,
           path: chunk.path,
           checksum: chunk.checksum,

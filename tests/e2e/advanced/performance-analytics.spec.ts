@@ -582,6 +582,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
 // Helper function for complex structure generation (added to PerformanceTestGenerator)
 declare module '../../../lib/performance-test-generator' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace PerformanceTestGenerator {
     function generateComplexStructure(complexity: number): any;
   }

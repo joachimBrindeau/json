@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Globe,
   Zap,
@@ -55,5 +56,6 @@ export interface BaseDocument {
     image?: string;
   };
   preview?: string;
-  content?: unknown;
+  content?: any;
+  [key: string]: any;
 }

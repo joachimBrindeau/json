@@ -53,13 +53,9 @@ const TYPE_COLORS = {
 };
 
 const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModalProps) => {
-  if (!node) return null;
-
-  const TypeIcon = TYPE_ICONS[node.type];
-  const typeColorClass = TYPE_COLORS[node.type];
-
   // Detect special types for string values
   const detections = useMemo(() => {
+    if (!node) return [];
     if (node.type === 'string' && typeof node.value === 'string') {
       return detectTypes(node.value);
     }
@@ -67,7 +63,12 @@ const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModa
       return detectTypes(node.value);
     }
     return [];
-  }, [node.type, node.value]);
+  }, [node]);
+
+  if (!node) return null;
+
+  const TypeIcon = TYPE_ICONS[node.type];
+  const typeColorClass = TYPE_COLORS[node.type];
 
   // Determine which renderer to use
   const renderContent = () => {

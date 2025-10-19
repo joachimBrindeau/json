@@ -100,7 +100,7 @@ export class AuthHelper {
       console.log(`✅ Successfully logged in as ${user.email}`);
 
     } catch (error) {
-      console.error(`❌ Login failed for ${user.email}:`, error.message);
+      console.error(`❌ Login failed for ${user.email}:`, (error as Error).message);
 
       // Take screenshot for debugging
       await this.page.screenshot({
@@ -165,7 +165,7 @@ export class AuthHelper {
       console.log(`✅ Successfully logged in via API as ${user.email} (session cookie present and added to browser)`);
 
     } catch (error) {
-      console.error(`❌ API Login failed for ${user.email}:`, error.message);
+      console.error(`❌ API Login failed for ${user.email}:`, (error as Error).message);
       throw error;
     }
   }
@@ -224,7 +224,7 @@ export class AuthHelper {
       console.log('✅ Successfully logged out');
       
     } catch (error) {
-      console.error('❌ Logout failed:', error.message);
+      console.error('❌ Logout failed:', (error as Error).message);
       throw error;
     }
   }

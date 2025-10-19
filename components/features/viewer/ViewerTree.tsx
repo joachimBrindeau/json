@@ -6,14 +6,14 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { VariableSizeList as List } from 'react-window';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { ViewerTreeNode } from './ViewerTreeNode';
 import { useViewerTreeState } from './ViewerTreeState';
 import { useViewerTreeSearch } from './ViewerTreeSearch';
 import { NodeDetailsModal } from '@/components/features/viewer/node-details/NodeDetailsModal';
+import { SearchBar } from '@/components/shared/search-bar';
 import type { JsonNode } from './types';
 
 interface ViewerTreeProps {
@@ -67,18 +67,13 @@ export const ViewerTree = ({
       <div className="viewer-tree">
         {/* Search bar */}
         {enableSearch && (
-          <div className="p-4 border-b bg-gray-50">
+          <div className="p-2 border-b bg-gray-50">
             <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search keys and values..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+              <SearchBar
+                value={inputValue}
+                onChange={setInputValue}
+                placeholder="Search keys and values..."
+              />
               {inputValue && (
                 <Badge variant="secondary">
                   {matchCount} matches
@@ -131,18 +126,13 @@ export const ViewerTree = ({
     <div className="viewer-tree">
       {/* Search bar */}
       {enableSearch && (
-        <div className="p-4 border-b bg-gray-50">
+        <div className="p-2 border-b bg-gray-50">
           <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search keys and values..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <SearchBar
+              value={inputValue}
+              onChange={setInputValue}
+              placeholder="Search keys and values..."
+            />
             {inputValue && (
               <Badge variant="secondary">
                 {matchCount} matches

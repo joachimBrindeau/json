@@ -320,11 +320,13 @@ export const generate = {
   mixedTypes: () => generateFromSchema(schemas.mixedTypes),
 };
 
-export default {
+const jsonSchemaGenerator = {
   schemas,
   generate,
   generateFromSchema,
   generateMultiple,
   jsf,
 };
+
+export default jsonSchemaGenerator;
 

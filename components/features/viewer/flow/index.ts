@@ -37,7 +37,6 @@ export { FlowHandle } from './FlowHandle';
 export { FlowCollapseButton } from './FlowCollapseButton';
 
 // Hooks
-export { useFlowCollapse } from './hooks/useFlowCollapse';
 export { useFlowParser } from './hooks/useFlowParser';
 export { useFlowNodes } from './hooks/useFlowNodes';
 export { useNodeDetailsModal } from './hooks/useNodeDetailsModal';

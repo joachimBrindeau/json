@@ -179,14 +179,16 @@ export function useDocumentList<T extends { id: string; title?: string }>(
 
   // Load initial data when filters change
   useEffect(() => {
-    if (enabled) {
+    // Only fetch on client side to prevent hydration mismatch
+    if (enabled && typeof window !== 'undefined') {
       fetchDocuments(true);
     }
   }, [enabled, debouncedQuery, filters.category, filters.visibility, filters.sortBy, filters.dateRange, filters.complexity, filters.minSize, filters.maxSize]);
 
   // Load more when page changes
   useEffect(() => {
-    if (page > 1 && enabled) {
+    // Only fetch on client side to prevent hydration mismatch
+    if (page > 1 && enabled && typeof window !== 'undefined') {
       fetchDocuments(false);
     }
   }, [page, enabled]);

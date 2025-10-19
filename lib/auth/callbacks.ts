@@ -17,7 +17,7 @@ const prisma = getPrismaClient();
  * - jwt: Populates JWT token with user data and handles updates
  * - session: Populates session with JWT data
  */
-export const authCallbacks: CallbacksOptions = {
+export const authCallbacks: Partial<CallbacksOptions> = {
   /**
    * SignIn callback
    * Called when user signs in (credentials or OAuth)

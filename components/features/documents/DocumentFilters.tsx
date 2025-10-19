@@ -36,10 +36,29 @@ export function DocumentFilters({
 }: DocumentFiltersProps) {
   // Use AdvancedSearch for public library
   if (showAdvancedSearch) {
+    const searchFilters = {
+      query: filters.query || '',
+      category: filters.category || '',
+      tags: filters.tags || [],
+      sortBy: filters.sortBy || 'recent',
+      dateRange: '',
+      complexity: '',
+      minSize: '',
+      maxSize: '',
+    };
+
     return (
       <AdvancedSearch
-        filters={filters}
-        onFiltersChange={onFiltersChange}
+        filters={searchFilters}
+        onFiltersChange={(newFilters) => {
+          onFiltersChange({
+            ...filters,
+            query: newFilters.query,
+            category: newFilters.category || undefined,
+            tags: newFilters.tags,
+            sortBy: newFilters.sortBy,
+          });
+        }}
         className={className}
       />
     );

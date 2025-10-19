@@ -45,7 +45,7 @@ function MainLayoutComponent({ children }: MainLayoutProps) {
           <HeaderNav onMobileMenuToggle={() => setMobileMenuOpen(true)} />
         </ErrorBoundary>
 
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-hidden">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>

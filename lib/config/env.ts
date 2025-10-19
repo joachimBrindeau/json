@@ -119,88 +119,78 @@ const clientEnvSchema = z.object({
   BASE_URL: z.string().url().optional(),
 });
 
+/**
+ * Build environment object from process.env
+ * Shared logic for both client and server validation
+ */
+function buildEnvObject() {
+  return {
+    // Node Environment
+    NODE_ENV: process.env.NODE_ENV,
+
+    // Database (server only, but included for consistency)
+    DATABASE_URL: process.env.DATABASE_URL,
+
+    // Redis (server only)
+    REDIS_URL: process.env.REDIS_URL,
+
+    // NextAuth (server only)
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+
+    // OAuth Providers (server only)
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+
+    // Admin (server only)
+    SUPERADMIN_EMAILS: process.env.SUPERADMIN_EMAILS,
+
+    // Public URLs (client + server)
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+    NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
+
+    // Performance (client + server)
+    MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
+    JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
+
+    // Analytics (client + server)
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
+    NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
+
+    // SEO (client + server)
+    GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
+    NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
+    BING_VERIFICATION: process.env.BING_VERIFICATION,
+    FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
+
+    // Build (client + server)
+    BUILD_ID: process.env.BUILD_ID,
+    CI: process.env.CI,
+
+    // Testing (client + server)
+    PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
+    BASE_URL: process.env.BASE_URL,
+  };
+}
+
 // Parse and validate environment variables at module load time
 function validateEnv() {
   try {
+    const envObject = buildEnvObject();
+
     // On the client, only validate public environment variables
     if (!isServer) {
-      const parsed = clientEnvSchema.parse({
-        NODE_ENV: process.env.NODE_ENV,
-        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-        NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
-        NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
-        MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
-        JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
-        NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-        NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
-        NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
-        GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
-        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-        YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
-        BING_VERIFICATION: process.env.BING_VERIFICATION,
-        FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
-        BUILD_ID: process.env.BUILD_ID,
-        CI: process.env.CI,
-        PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
-        BASE_URL: process.env.BASE_URL,
-      });
+      const parsed = clientEnvSchema.parse(envObject);
       return parsed as any; // Type assertion for compatibility
     }
 
     // On the server, validate all environment variables
-    const parsed = serverEnvSchema.parse({
-      // Node Environment
-      NODE_ENV: process.env.NODE_ENV,
-
-      // Database
-      DATABASE_URL: process.env.DATABASE_URL,
-
-      // Redis
-      REDIS_URL: process.env.REDIS_URL,
-
-      // NextAuth
-      NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-
-      // OAuth Providers
-      GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
-      GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
-      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-
-      // Admin
-      SUPERADMIN_EMAILS: process.env.SUPERADMIN_EMAILS,
-
-      // Public URLs
-      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-      NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
-      NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
-
-      // Performance
-      MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
-      JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
-
-      // Analytics
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-      NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
-      NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
-
-      // SEO
-      GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
-      NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-      YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
-      BING_VERIFICATION: process.env.BING_VERIFICATION,
-      FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
-
-      // Build
-      BUILD_ID: process.env.BUILD_ID,
-      CI: process.env.CI,
-
-      // Testing
-      PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
-      BASE_URL: process.env.BASE_URL,
-    });
-
+    const parsed = serverEnvSchema.parse(envObject);
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {

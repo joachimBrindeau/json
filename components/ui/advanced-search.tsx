@@ -172,12 +172,12 @@ export function AdvancedSearch({
                   <Calendar className="h-4 w-4" />
                   Date Range
                 </label>
-                <Select value={filters.dateRange} onValueChange={(value) => updateFilter('dateRange', value)}>
+                <Select value={filters.dateRange || 'all'} onValueChange={(value) => updateFilter('dateRange', value === 'all' ? '' : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any time" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any time</SelectItem>
+                    <SelectItem value="all">Any time</SelectItem>
                     <SelectItem value="day">Past day</SelectItem>
                     <SelectItem value="week">Past week</SelectItem>
                     <SelectItem value="month">Past month</SelectItem>
@@ -192,12 +192,12 @@ export function AdvancedSearch({
                   <Activity className="h-4 w-4" />
                   Complexity
                 </label>
-                <Select value={filters.complexity} onValueChange={(value) => updateFilter('complexity', value)}>
+                <Select value={filters.complexity || 'all'} onValueChange={(value) => updateFilter('complexity', value === 'all' ? '' : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any complexity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any complexity</SelectItem>
+                    <SelectItem value="all">Any complexity</SelectItem>
                     <SelectItem value="simple">Simple</SelectItem>
                     <SelectItem value="moderate">Moderate</SelectItem>
                     <SelectItem value="complex">Complex</SelectItem>
@@ -213,24 +213,24 @@ export function AdvancedSearch({
                   Size Range
                 </label>
                 <div className="flex gap-2">
-                  <Select value={filters.minSize} onValueChange={(value) => updateFilter('minSize', value)}>
+                  <Select value={filters.minSize || 'none'} onValueChange={(value) => updateFilter('minSize', value === 'none' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Min" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No min</SelectItem>
+                      <SelectItem value="none">No min</SelectItem>
                       <SelectItem value="1kb">1 KB</SelectItem>
                       <SelectItem value="10kb">10 KB</SelectItem>
                       <SelectItem value="100kb">100 KB</SelectItem>
                       <SelectItem value="1mb">1 MB</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={filters.maxSize} onValueChange={(value) => updateFilter('maxSize', value)}>
+                  <Select value={filters.maxSize || 'none'} onValueChange={(value) => updateFilter('maxSize', value === 'none' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Max" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No max</SelectItem>
+                      <SelectItem value="none">No max</SelectItem>
                       <SelectItem value="10kb">10 KB</SelectItem>
                       <SelectItem value="100kb">100 KB</SelectItem>
                       <SelectItem value="1mb">1 MB</SelectItem>

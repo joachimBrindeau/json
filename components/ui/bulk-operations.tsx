@@ -122,7 +122,7 @@ export function BulkOperations({
           <Checkbox
             checked={allSelected}
             ref={(el) => {
-              if (el) el.indeterminate = someSelected;
+              if (el) (el as any).indeterminate = someSelected;
             }}
             onCheckedChange={toggleAll}
             disabled={disabled}

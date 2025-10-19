@@ -16,9 +16,9 @@ export const LazyMonacoEditor = lazy(() =>
   import('@monaco-editor/react').then(module => ({ default: module.default }))
 );
 
-export const LazyReactFlow = lazy(() => 
-  import('reactflow').then(module => ({ 
-    default: module.ReactFlow 
+export const LazyReactFlow = lazy(() =>
+  import('@xyflow/react').then(module => ({
+    default: module.ReactFlow
   }))
 );
 

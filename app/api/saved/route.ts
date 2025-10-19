@@ -1,27 +1,32 @@
-import { NextResponse } from 'next/server';
 import { withAuth, handleApiError, validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse } from '@/lib/api/utils';
 import { getUserDocuments } from '@/lib/db/queries/documents';
 import { success, badRequest, error as errorResponse } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
-export const GET = withAuth(async (request) => {
+export const GET = withAuth(async (request, session) => {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Validate parameters
     const pagination = validatePaginationParams(searchParams);
     pagination.limit = searchParams.get('limit') ? pagination.limit : 50; // Higher default for private library
-    
-    const sort = validateSortParam(
+
+    const sortResult = validateSortParam(
       searchParams.get('sort') || 'recent',
       ['recent', 'title', 'size', 'updated']
     );
-    
+
+    // Check if sort validation failed
+    if (typeof sortResult === 'object' && 'error' in sortResult) {
+      return errorResponse(sortResult.error, { status: sortResult.status });
+    }
+
+    const sort = sortResult as string;
     const search = validateSearchParam(searchParams.get('search'));
 
     // Get user documents
-    const result = await getUserDocuments(request.user.id, {
+    const result = await getUserDocuments(session.user.id, {
       page: pagination.page,
       limit: pagination.limit,
       search: search || undefined,

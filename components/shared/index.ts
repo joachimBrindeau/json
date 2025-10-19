@@ -57,7 +57,3 @@ export type {
   UseJsonProcessingOptions 
 } from './hooks/useJsonProcessing';
 
-// Re-export commonly used types and utilities
-export type {
-  ViewerMode,
-} from './json-viewer-base';

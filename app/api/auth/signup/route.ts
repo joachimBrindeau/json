@@ -19,7 +19,7 @@ const signupSchema = z.object({
  * POST create new user account
  * Now using withValidationHandler for automatic Zod validation and Prisma error handling
  */
-export const POST = withValidationHandler(async (request: NextRequest) => {
+export const POST = withValidationHandler(async (request: NextRequest, _context: { params: Promise<Record<string, string>> }) => {
   // Parse and validate request body - Zod errors automatically handled by middleware
   const body = await request.json();
   const { name, email, password } = signupSchema.parse(body);

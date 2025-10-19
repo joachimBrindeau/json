@@ -1,30 +1,23 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
-import { UnifiedButton } from '@/components/ui/unified-button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useDarkMode } from '@/hooks/use-dark-mode';
 import { useBackendStore } from '@/lib/store/backend';
-import {
-  ArrowRightLeft,
-  FileJson,
-  FileCode,
-  FileSpreadsheet,
-  FileText,
-  Search
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { FileJson, FileCode, FileSpreadsheet, FileText, Search, ArrowRightLeft } from 'lucide-react';
 import { FormatSelector } from '@/components/ui/format-selector';
 import { ViewerActions } from '@/components/features/viewer';
-import { EditorActions } from '@/components/features/editor/EditorActions';
-import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { EditorPane } from '@/components/features/editor/EditorPane';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { validateJson } from '@/lib/utils/json-validators';
 import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
+import { useClipboard } from '@/hooks/use-clipboard';
+import { useDownload } from '@/hooks/use-download';
+import type { EditorAction } from '@/types/editor-actions';
+import { createResetAction, createConvertAction, createUndoAction, createRedoAction } from '@/lib/editor/action-factories';
 
 type ConversionFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'typescript' | 'javascript';
 type InputFormat = 'autodetect' | ConversionFormat;
@@ -139,6 +132,16 @@ export default function ConvertPage() {
   // Use Monaco editor hook for both editors
   const inputEditor = useMonacoEditor(input.length);
   const outputEditor = useMonacoEditor(output.length, { readOnly: true });
+
+  // Clipboard and download hooks
+  const { copy, copied } = useClipboard({
+    successMessage: 'Copied!',
+    successDescription: 'Converted data copied to clipboard',
+  });
+  const { download } = useDownload({
+    successMessage: 'Downloaded!',
+    successDescription: 'File downloaded successfully',
+  });
 
   // Initialize input from currentJson when page loads
   useEffect(() => {
@@ -347,7 +350,7 @@ export default function ConvertPage() {
     if (jsonMatch) {
       try {
         // Remove trailing semicolons and fix common JS-to-JSON issues
-        let jsonStr = jsonMatch[0]
+        const jsonStr = jsonMatch[0]
           .replace(/,\s*}/g, '}')
           .replace(/,\s*]/g, ']')
           .replace(/(\w+):/g, '"$1":')
@@ -701,33 +704,6 @@ export default data;`;
     }
   }, [selectedFormat, inputFormat, input, hasValidInput]);
 
-  const handleSample = useCallback(() => {
-    const sample = JSON.stringify({
-      name: "John Doe",
-      age: 30,
-      email: "john@example.com",
-      address: {
-        street: "123 Main St",
-        city: "New York",
-        country: "USA"
-      },
-      hobbies: ["reading", "coding", "gaming"],
-      metadata: {
-        created: "2024-01-01T00:00:00Z",
-        updated: "2024-01-15T12:30:00Z"
-      },
-      settings: {
-        theme: "dark",
-        notifications: {
-          email: true,
-          push: false
-        }
-      }
-    }, null, 2);
-    setInput(sample);
-    setOutput('');
-  }, []);
-
   const handleReset = useCallback(() => {
     setInput('');
     setOutput('');
@@ -736,7 +712,6 @@ export default data;`;
       description: 'Cleared input and output',
     });
   }, [toast]);
-
 
   const getOutputLanguage = () => {
     switch (selectedFormat) {
@@ -750,105 +725,127 @@ export default data;`;
     }
   };
 
+  const getFormatLabel = (format: ConversionFormat | InputFormat) => {
+    if (format === 'autodetect') return 'JSON';
+    return conversionOptions.find(opt => opt.id === format)?.label || format.toUpperCase();
+  };
+
+  // Custom magic action for Convert
+  const convertMagicAction = useMemo(() => [{
+    id: 'convert',
+    label: 'Convert',
+    icon: ArrowRightLeft,
+    onClick: () => performConversion(),
+    disabled: !input || !hasValidInput,
+  }], [input, hasValidInput]);
+
+  // Define input pane actions - Undo, Redo, Clear (Copy/Download/Share/Format/Minify/Convert provided by ViewerActions)
+  const inputActions: EditorAction[] = useMemo(() => [
+    createUndoAction({
+      editor: inputEditor.editorRef,
+      position: 'right',
+    }),
+    createRedoAction({
+      editor: inputEditor.editorRef,
+      position: 'right',
+    }),
+    createResetAction({
+      onReset: () => setInput(''),
+      hasData: !!input,
+      id: 'reset-input',
+      position: 'right',
+      showText: false,
+      tooltip: 'Clear input',
+    }),
+  ], [input, inputEditor.editorRef]);
+
+  // Define output pane actions - only Reset (Copy/Download/Share provided by ViewerActions)
+  const outputActions: EditorAction[] = useMemo(() => [
+    createResetAction({
+      onReset: () => setOutput(''),
+      hasData: !!output,
+      id: 'reset-output',
+      position: 'right',
+      showText: false,
+      tooltip: 'Clear output',
+    }),
+  ], [output]);
+
   return (
     <MainLayout>
-      <div className="h-full flex flex-col">
-        {/* Action buttons header - consistent with editor */}
-        <div className="flex items-center justify-between gap-2 p-2 border-b bg-muted/50">
-          {/* Search bar */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-            <Input
-              placeholder="Search JSON content..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-7 pl-7 text-sm"
+      <div className="h-full flex flex-col lg:flex-row overflow-hidden">
+        <EditorPane
+          title="Input"
+          value={input}
+          language={inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat}
+          onChange={(value) => {
+            const newValue = value || '';
+            setInput(newValue);
+            setCurrentJson(newValue);
+          }}
+          actions={inputActions}
+          customActions={
+            <ViewerActions
+              value={input}
+              onChange={setInput}
+              customMagicActions={convertMagicAction}
             />
-          </div>
-          
-          {/* Action buttons for convert functionality */}
-          <div className="flex items-center gap-1">
-            <UnifiedButton
-              variant="outline"
-              size="sm"
-              onClick={() => performConversion()}
-              disabled={!input || !hasValidInput}
-              className="h-7 px-2 text-xs"
-              title="Convert JSON"
-            >
-              <ArrowRightLeft className="h-3 w-3 mr-1" />
-              Convert
-            </UnifiedButton>
-            <EditorActions
-              output={output}
-              hasContent={!!(input || output)}
-              onSample={handleSample}
-              onReset={handleReset}
-              filename="converted"
-              fileExtension={conversionOptions.find(opt => opt.id === selectedFormat)?.fileExtension || 'txt'}
-              mimeType={conversionOptions.find(opt => opt.id === selectedFormat)?.mimeType || 'text/plain'}
-              outputLabel="converted data"
+          }
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          headerContent={
+            <FormatSelector
+              value={inputFormat}
+              onValueChange={(value) => setInputFormat(value as InputFormat)}
+              options={inputFormatOptions}
             />
-            <ViewerActions />
-          </div>
-        </div>
+          }
+          validationBadge={
+            hasValidInput ? (
+              <Button
+                variant="green"
+                size="sm"
+                onClick={() => performConversion()}
+                className="h-6 text-xs"
+              >
+                <ArrowRightLeft className="h-3 w-3 mr-1" />
+                Convert {getFormatLabel(inputFormat)} to {getFormatLabel(selectedFormat)}
+              </Button>
+            ) : null
+          }
+          theme={inputEditor.theme}
+          onMount={inputEditor.handleEditorDidMount}
+          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          options={inputEditor.editorOptions}
+          className="border-r"
+        />
 
-
-        {/* Editors container */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-4 p-2 sm:p-4 overflow-hidden">
-          {/* Input editor */}
-          <div className="flex-1 min-h-[200px] lg:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>Input</span>
-                <FormatSelector
-                  value={inputFormat}
-                  onValueChange={(value) => setInputFormat(value as InputFormat)}
-                  options={inputFormatOptions}
-                />
-              </div>
-            </div>
-            <div className="flex-1 min-h-0">
-              <MonacoEditor
-                height="100%"
-                language={inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat}
-                value={input}
-                onChange={(value) => {
-                  const newValue = value || '';
-                  setInput(newValue);
-                  setCurrentJson(newValue);
-                }}
-                theme={inputEditor.theme}
-                onMount={inputEditor.handleEditorDidMount}
-                beforeMount={(monaco) => defineMonacoThemes(monaco)}
-                options={inputEditor.editorOptions}
-              />
-            </div>
-          </div>
-
-          {/* Output editor */}
-          <div className="flex-1 min-h-[200px] lg:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <span>Output</span>
-              <FormatSelector
-                value={selectedFormat}
-                onValueChange={(value) => setSelectedFormat(value as ConversionFormat)}
-                options={conversionOptions}
-              />
-            </div>
-            <div className="flex-1 min-h-0">
-              <MonacoEditor
-                height="100%"
-                language={getOutputLanguage()}
-                value={output}
-                theme={outputEditor.theme}
-                onMount={outputEditor.handleEditorDidMount}
-                beforeMount={(monaco) => defineMonacoThemes(monaco)}
-                options={outputEditor.editorOptions}
-              />
-            </div>
-          </div>
-        </div>
+        <EditorPane
+          title="Output"
+          value={output}
+          language={getOutputLanguage()}
+          readOnly
+          actions={outputActions}
+          customActions={
+            <ViewerActions
+              value={output}
+              onChange={setOutput}
+            />
+          }
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          headerContent={
+            <FormatSelector
+              value={selectedFormat}
+              onValueChange={(value) => setSelectedFormat(value as ConversionFormat)}
+              options={conversionOptions}
+            />
+          }
+          theme={outputEditor.theme}
+          onMount={outputEditor.handleEditorDidMount}
+          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          options={outputEditor.editorOptions}
+        />
       </div>
     </MainLayout>
   );

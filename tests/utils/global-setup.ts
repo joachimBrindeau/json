@@ -74,7 +74,7 @@ async function waitForServer(page: any, baseURL: string, maxRetries = 20) {
       
       console.log(`⚠️ Server responded with status ${response?.status()}, retrying...`);
     } catch (error) {
-      console.log(`⚠️ Server check attempt ${i + 1}/${maxRetries} failed:`, error.message);
+      console.log(`⚠️ Server check attempt ${i + 1}/${maxRetries} failed:`, (error as Error).message);
     }
     
     if (i < maxRetries - 1) {
@@ -115,7 +115,7 @@ async function verifyBasicApp(page: any, baseURL: string) {
     }
 
   } catch (error) {
-    console.warn('⚠️ Basic app verification failed:', error.message);
+    console.warn('⚠️ Basic app verification failed:', (error as Error).message);
   }
 }
 
@@ -144,7 +144,7 @@ async function cleanupTestUsers() {
 
     console.log(`  ✅ Deleted ${result.count} existing test users`);
   } catch (error) {
-    console.log('  ⚠️ Error cleaning up test users:', error.message);
+    console.log('  ⚠️ Error cleaning up test users:', (error as Error).message);
   } finally {
     await prisma.$disconnect();
   }
@@ -211,7 +211,7 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
         console.log(`  ❌ Failed to create user ${user.email}: ${response.status()} - ${responseText}`);
       }
     } catch (error) {
-      console.log(`  ❌ Error creating user ${user.email}:`, error.message);
+      console.log(`  ❌ Error creating user ${user.email}:`, (error as Error).message);
     }
     
     // Small delay between user creations to avoid overwhelming the server
@@ -270,7 +270,7 @@ async function ensureDockerDependencies() {
 
         console.log('  ✅ Docker containers started successfully');
       } catch (error) {
-        console.error('  ❌ Failed to start Docker containers:', error.message);
+        console.error('  ❌ Failed to start Docker containers:', (error as Error).message);
         throw error;
       }
     }
@@ -282,7 +282,7 @@ async function ensureDockerDependencies() {
     await verifyRedis();
 
   } catch (error) {
-    console.error('  ❌ Docker dependency check failed:', error.message);
+    console.error('  ❌ Docker dependency check failed:', (error as Error).message);
     throw error;
   }
 }
@@ -329,7 +329,7 @@ async function verifyPostgreSQL() {
     await prisma.$disconnect();
     console.log('  ✅ PostgreSQL is accessible');
   } catch (error) {
-    console.error('  ❌ PostgreSQL connection failed:', error.message);
+    console.error('  ❌ PostgreSQL connection failed:', (error as Error).message);
     throw new Error('PostgreSQL is not accessible - check DATABASE_URL in .env');
   }
 }

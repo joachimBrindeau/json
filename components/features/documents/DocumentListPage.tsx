@@ -97,7 +97,7 @@ export function DocumentListPage<T extends BaseDocument>({
     deleteDocument,
   } = useDocumentList<T>({
     endpoint,
-    enabled: enabled && typeof window !== 'undefined', // Only run on client side
+    enabled, // Enable on both server and client for consistent hydration
   });
 
   // Safety check for SSR
@@ -144,9 +144,17 @@ export function DocumentListPage<T extends BaseDocument>({
   const handleClearFilters = () => {
     setFilters({
       query: '',
+      tags: [],
       sortBy: filters.sortBy,
     });
   };
+
+  // Delete handler wrapper
+  const handleDelete = showDeleteButton
+    ? (doc: T) => {
+        deleteDocument(doc.id);
+      }
+    : undefined;
 
   const hasActiveFilters = !!(
     filters.query ||
@@ -202,7 +210,7 @@ export function DocumentListPage<T extends BaseDocument>({
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               loadMoreRef={loadMoreRef}
-              onDelete={deleteDocument}
+              onDelete={handleDelete}
               onBulkDelete={handleBulkDelete}
               onBulkExport={handleBulkExport}
               showAuthor={showAuthor}

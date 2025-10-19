@@ -2,9 +2,8 @@
 
 import React, { memo, useState, useCallback, useMemo, useRef } from 'react';
 import { VariableSizeList as List } from 'react-window';
-import { UnifiedButton } from '@/components/ui/unified-button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,15 +16,15 @@ import {
   Waves,
   Copy,
   Download,
-  Search,
   Settings,
   Filter,
   FileJson,
 } from 'lucide-react';
 import { useJsonProcessing, JsonNode } from './hooks/useJsonProcessing';
-import { ErrorBoundary } from '../error-boundary';
+import { ErrorBoundary } from './error-boundary';
 import { useToast } from '@/hooks/use-toast';
 import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
+import { SearchBar } from '@/components/shared/search-bar';
 
 export interface ViewerMode {
   type: 'tree' | 'flow' | 'list' | 'raw';
@@ -136,7 +135,7 @@ const TreeNodeComponent = memo(({
     <div
       style={style}
       className={`json-node flex items-center gap-2 px-2 ${nodeHeight} hover:bg-gray-50 cursor-pointer ${
-        isHighlighted ? 'bg-yellow-100 border-l-2 border-yellow-400' : ''
+        isHighlighted ? 'bg-red-50 border-l-4 border-red-500' : ''
       }`}
       data-testid="json-node"
       data-type={node.type}
@@ -148,7 +147,7 @@ const TreeNodeComponent = memo(({
 
       {/* Expand/Collapse */}
       {hasChildren ? (
-        <UnifiedButton
+        <Button
           variant="ghost"
           size="icon"
           icon={isExpanded ? ChevronDown : ChevronRight}
@@ -275,9 +274,9 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(({
   }, [flatNodes, searchTerm, createSearchFilter]);
 
   // Handle view mode change
-  const handleViewModeChange = useCallback((mode: ViewerMode['type']) => {
-    setViewMode(mode);
-    onViewModeChange?.(mode);
+  const handleViewModeChange = useCallback((mode: string) => {
+    setViewMode(mode as ViewerMode['type']);
+    onViewModeChange?.(mode as ViewerMode['type']);
   }, [onViewModeChange]);
 
   // Handle node expansion
@@ -459,18 +458,14 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(({
         <div className={`flex items-center justify-between gap-2 border-b bg-gray-50/50 ${compactMode ? 'p-2' : 'p-4'}`}>
           {/* Left side - Search */}
           {enableSearch && (
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-              <Input
-                placeholder="Search JSON..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`pl-7 text-sm ${compactMode ? 'h-6 text-xs' : 'h-8'}`}
-                data-testid="search-input"
-              />
-            </div>
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search JSON..."
+              className={compactMode ? 'h-6 text-xs' : ''}
+            />
           )}
-          
+
           {/* Right side - Stats and Actions */}
           <div className="flex items-center gap-2">
             {/* Stats */}
@@ -501,7 +496,7 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(({
                 Copy
               </Button>
             )}
-            
+
             {enableDownload && (
               <Button
                 variant="outline"

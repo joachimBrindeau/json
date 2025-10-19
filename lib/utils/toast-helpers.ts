@@ -244,19 +244,19 @@ export function showValidationErrorToast(
 export const toastPatterns = {
   success: {
     saved: (itemName: string = 'Changes') =>
-      showSuccessToast('Saved', `${itemName} saved successfully`),
+      showSuccessToast('Saved', { description: `${itemName} saved successfully` }),
     deleted: (itemName: string = 'Item') =>
-      showSuccessToast('Deleted', `${itemName} deleted successfully`),
+      showSuccessToast('Deleted', { description: `${itemName} deleted successfully` }),
     published: (itemName: string = 'Content') =>
-      showSuccessToast('Published successfully!', `Your ${itemName} is now discoverable in the public library`),
+      showSuccessToast('Published successfully!', { description: `Your ${itemName} is now discoverable in the public library` }),
     copied: (itemName: string = 'Content') =>
       showCopySuccessToast(itemName),
     updated: (itemName: string = 'Settings') =>
-      showSuccessToast('Updated', `${itemName} updated successfully`),
+      showSuccessToast('Updated', { description: `${itemName} updated successfully` }),
     uploaded: (itemName: string = 'File') =>
-      showSuccessToast('Success', `${itemName} uploaded successfully`),
+      showSuccessToast('Success', { description: `${itemName} uploaded successfully` }),
     formatted: (itemName: string = 'JSON') =>
-      showSuccessToast(`${itemName} formatted successfully`, `Your ${itemName} has been properly formatted.`),
+      showSuccessToast(`${itemName} formatted successfully`, { description: `Your ${itemName} has been properly formatted.` }),
   },
   error: {
     save: (error: unknown, itemName: string = 'changes') =>

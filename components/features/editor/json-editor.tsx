@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, memo, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns } from '@/lib/utils/toast-helpers';
 import { useBackendStore } from '@/lib/store/backend';
 import { validateJson } from '@/lib/json';
-import { Search, Zap, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { ViewerActions } from '@/components/features/viewer';
-import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { EditorPane } from '@/components/features/editor/EditorPane';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
@@ -26,6 +24,7 @@ import {
   getDebounceDelay,
   shouldUseProgressiveLoad
 } from '@/lib/config/editor-config';
+import type { EditorAction } from '@/types/editor-actions';
 
 function JsonEditorComponent() {
   const { currentJson, setCurrentJson } = useBackendStore();
@@ -240,49 +239,18 @@ function JsonEditorComponent() {
   const wordCount = localContent ? localContent.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   const lineCount = localContent ? localContent.split('\n').length : 1;
 
+  // Define actions - empty array, all actions provided by ViewerActions
+  const editorActions: EditorAction[] = useMemo(() => [], []);
+
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Action buttons header - consistent with other views */}
-      <div className="flex items-center justify-between gap-2 p-2 border-b bg-muted/50">
-        {/* Search bar */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-          <Input
-            placeholder="Search JSON keys and values..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              handleSearch(e.target.value);
-            }}
-            className="h-7 pl-7 text-sm"
-            data-testid="search-input"
-          />
-        </div>
-        
-        {/* Action buttons with Format first */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={formatJson}
-            disabled={charCount === 0 || !isValid}
-            className="h-7 px-2 text-xs"
-            title="Format JSON"
-          >
-            <Zap className="h-3 w-3 mr-1" />
-            Format
-          </Button>
-          <ViewerActions />
-        </div>
-      </div>
-
       {/* Loading progress for large files */}
       {loadingProgress > 0 && (
         <div className="px-2 py-1 bg-blue-50 dark:bg-blue-950 border-b">
           <div className="flex items-center gap-2">
             <span className="text-xs text-blue-600 dark:text-blue-400">Loading JSON:</span>
             <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-blue-600 transition-all duration-300"
                 style={{ width: `${loadingProgress}%` }}
               />
@@ -291,34 +259,37 @@ function JsonEditorComponent() {
           </div>
         </div>
       )}
-      
-      {/* Full-height Monaco editor */}
-      <ErrorBoundary
-        level="component"
-        fallback={
-          <div className="flex items-center justify-center h-full border">
-            <p className="text-sm text-muted-foreground">Failed to load code editor</p>
-          </div>
-        }
-        enableRetry
-        maxRetries={2}
-      >
-      <div className="flex-1 overflow-hidden" data-testid="json-textarea">
-        <MonacoEditor
-          height="100%"
-          language="json"
-          theme={theme}
-          value={localContent}
-          onChange={handleMonacoChange}
-          onMount={handleCustomEditorMount}
-          beforeMount={(monaco) => {
-            // Define themes before mount to ensure they're available
-            defineMonacoThemes(monaco);
-          }}
-          options={editorOptions}
-        />
+
+      {/* Full-height Monaco editor with EditorPane */}
+      <div className="flex-1 min-h-0 overflow-hidden" data-testid="json-textarea">
+        <ErrorBoundary
+          level="component"
+          fallback={
+            <div className="flex items-center justify-center h-full border">
+              <p className="text-sm text-muted-foreground">Failed to load code editor</p>
+            </div>
+          }
+          enableRetry
+          maxRetries={2}
+        >
+          <EditorPane
+            title="JSON Editor"
+            value={localContent}
+            onChange={handleMonacoChange}
+            actions={editorActions}
+            customActions={<ViewerActions value={localContent} onChange={setLocalContent} />}
+            searchValue={searchTerm}
+            onSearchChange={(value) => {
+              setSearchTerm(value);
+              handleSearch(value);
+            }}
+            theme={theme}
+            onMount={handleCustomEditorMount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={editorOptions}
+          />
+        </ErrorBoundary>
       </div>
-      </ErrorBoundary>
 
       {/* Status bar - moved to bottom */}
       <div className="flex-none flex items-center justify-between px-3 py-1 bg-muted border-t text-xs">

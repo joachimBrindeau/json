@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { suggestTags } from '@/lib/tags/tag-utils';
 import { tagSuggestLimiter } from '@/lib/middleware/rate-limit';

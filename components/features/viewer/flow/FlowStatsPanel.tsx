@@ -25,8 +25,8 @@ export function FlowStatsPanel() {
 
     // Calculate max depth
     const maxDepth = nodes.reduce((max, node) => {
-      const depth = node.data?.depth || 0;
-      return Math.max(max, depth);
+      const depth = (node.data as any)?.depth || 0;
+      return Math.max(max, depth as number);
     }, 0);
 
     return {

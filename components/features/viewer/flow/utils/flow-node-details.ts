@@ -25,8 +25,8 @@ export const extractNodeDetails = (node: Node): NodeDetails => {
     childCount = (value as unknown[]).length;
     key = node.data.isRootNode ? 'JSON Root' : `[${node.data.arrayIndex}]`;
   } else {
-    value = node.data.value;
-    key = node.data.propertyK || node.id;
+    value = (node.data as any).value;
+    key = (node.data as any).propertyK || node.id;
   }
 
   const type = node.type === 'primitive'
@@ -42,8 +42,8 @@ export const extractNodeDetails = (node: Node): NodeDetails => {
     key,
     value,
     type,
-    level: node.data.level || 0,
-    path: node.data.parentNodePathIds?.join('.') || 'root',
+    level: (node.data as any).level || 0,
+    path: (node.data as any).parentNodePathIds?.join('.') || 'root',
     size: JSON.stringify(value).length,
     childCount,
   };

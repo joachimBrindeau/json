@@ -15,9 +15,9 @@ import { NodeType } from '../utils/flow-types';
  * Single source of truth for all node components
  */
 export const FLOW_NODE_TYPES: NodeTypes = {
-  [NodeType.Object]: FlowObjectNode,
-  [NodeType.Array]: FlowArrayNode,
-  [NodeType.Primitive]: FlowPrimitiveNode,
+  [NodeType.Object]: FlowObjectNode as any,
+  [NodeType.Array]: FlowArrayNode as any,
+  [NodeType.Primitive]: FlowPrimitiveNode as any,
 };
 
 /**

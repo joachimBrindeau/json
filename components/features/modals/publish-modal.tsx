@@ -36,7 +36,7 @@ export function PublishModal({
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize form with react-hook-form and Zod validation
-  const { register, handleSubmit, watch, setValue, control, reset, formState: { errors, isSubmitting } } = useValidatedForm(publishFormSchema, {
+  const { register, handleSubmit, watch, setValue, control, reset, formState: { errors, isSubmitting } } = useValidatedForm<typeof publishFormSchema>(publishFormSchema, {
     defaultValues: {
       title: currentTitle || '',
       description: '',
@@ -65,7 +65,7 @@ export function PublishModal({
               title: doc.title || currentTitle || '',
               description: doc.description || '',
               richContent: doc.richContent || '',
-              category: doc.category || '',
+              category: (doc.category || '') as any,
               tags: doc.tags || [],
             });
           }
@@ -134,7 +134,7 @@ export function PublishModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
             {/* Title */}
             <FormInput
               id="title"
@@ -142,7 +142,7 @@ export function PublishModal({
               required
               placeholder="e.g., E-commerce Product API Response"
               maxLength={200}
-              error={errors.title?.message}
+              error={errors.title?.message as string}
               {...register('title')}
             />
 
@@ -154,7 +154,7 @@ export function PublishModal({
               maxLength={300}
               rows={2}
               showCharCount
-              error={errors.description?.message}
+              error={errors.description?.message as string}
               value={watchedDescription}
               {...register('description')}
             />
@@ -162,7 +162,7 @@ export function PublishModal({
             {/* Rich Content */}
             <FormRichText
               label="Detailed Explanation"
-              error={errors.richContent?.message}
+              error={errors.richContent?.message as string}
               description="Rich text with formatting, links, and lists for better SEO and user experience"
             >
               <Controller
@@ -189,7 +189,7 @@ export function PublishModal({
                   value={field.value}
                   onValueChange={field.onChange}
                   options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
-                  error={errors.category?.message}
+                  error={errors.category?.message as string}
                 />
               )}
             />
@@ -208,7 +208,7 @@ export function PublishModal({
               )}
             />
             {errors.tags && (
-              <p className="text-xs text-red-500 mt-1">{errors.tags.message}</p>
+              <p className="text-xs text-red-500 mt-1">{errors.tags.message as string}</p>
             )}
 
             {/* Preview */}
@@ -233,7 +233,7 @@ export function PublishModal({
                 )}
                 <div className="flex items-center gap-2 mt-2">
                   {watchedCategory && <Badge variant="outline">{watchedCategory}</Badge>}
-                  {watchedTags?.map((tag) => (
+                  {watchedTags?.map((tag: string) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
                       #{tag}
                     </Badge>

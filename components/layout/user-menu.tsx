@@ -11,10 +11,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
+import {
+  User,
+  Settings,
+  LogOut,
   LogIn,
   Database,
   BarChart,
@@ -72,15 +72,15 @@ export function UserMenu() {
 
   if (!session) {
     return (
-      <Button 
-        size="sm" 
+      <Button
+        variant="green"
+        size="xs"
+        icon={LogIn}
+        text="Sign in"
         onClick={() => openModal('general')}
         className="select-none transition-all duration-200 hover:scale-105"
         data-testid="sign-in-button"
-      >
-        <LogIn className="h-4 w-4 mr-2" />
-        Sign in
-      </Button>
+      />
     );
   }
 
@@ -97,8 +97,8 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="relative h-9 w-9 rounded-full hover:ring-2 hover:ring-primary/20 transition-all"
           data-testid="user-menu"
         >

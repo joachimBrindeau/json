@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { config } from '../lib/config';
+
+const isCI = !!process.env.CI;
+const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -13,18 +15,18 @@ export default defineConfig({
   /* Retry on CI only */
   retries: 0,
   /* Opt out of parallel tests on CI. */
-  workers: config.build.isCI ? 1 : undefined,
+  workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    config.build.isCI ? ['github'] : ['list'],
+    isCI ? ['github'] : ['list'],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: config.testing.baseUrl,
+    baseURL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

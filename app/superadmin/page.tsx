@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { isSuperAdmin } from '@/lib/auth/admin'
 import { SuperAdminDashboard } from '@/components/features/admin/super-admin-dashboard'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Superadmin Dashboard - JSON Viewer',
   description: 'Administrative dashboard for system management',

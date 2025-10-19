@@ -412,6 +412,54 @@ export function handleDatabaseError(error: unknown): {
 }
 
 /**
+ * Verify document ownership with authentication
+ * Returns the document if found and user has access, or an error response
+ */
+export async function verifyDocumentOwnership(
+  id: string,
+  userId: string,
+  selectFields?: any
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  status?: number;
+}> {
+  const { prisma } = await import('@/lib/db');
+  
+  try {
+    const document = await prisma.jsonDocument.findFirst({
+      where: {
+        OR: [{ id }, { shareId: id }],
+      },
+      select: selectFields || {
+        id: true,
+        userId: true,
+        version: true
+      }
+    });
+
+    if (!document) {
+      return { success: false, error: 'Document not found', status: 404 };
+    }
+
+    if ((document as any).userId !== userId) {
+      return { success: false, error: 'Access denied - not document owner', status: 403 };
+    }
+
+    return {
+      success: true,
+      data: document
+    };
+  } catch (error) {
+    return {
+      success: false,
+      ...handleDatabaseError(error)
+    };
+  }
+}
+
+/**
  * Format document for API response
  */
 export function formatDocumentForResponse(doc: any, includeContent = false) {

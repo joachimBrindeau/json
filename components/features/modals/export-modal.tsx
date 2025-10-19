@@ -177,7 +177,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
                   <Checkbox
                     id="use-filtered"
                     checked={useFilteredData}
-                    onCheckedChange={setUseFilteredData}
+                    onCheckedChange={(checked) => setUseFilteredData(checked === true)}
                     data-testid="use-filtered-data"
                   />
                   <Label htmlFor="use-filtered" className="text-sm">
@@ -270,7 +270,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
                   <Checkbox
                     id="minify"
                     checked={minify}
-                    onCheckedChange={setMinify}
+                    onCheckedChange={(checked) => setMinify(checked === true)}
                     data-testid="minify"
                   />
                   <Label htmlFor="minify" className="text-sm">Minify output</Label>
@@ -283,7 +283,7 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
               <Checkbox
                 id="metadata"
                 checked={includeMetadata}
-                onCheckedChange={setIncludeMetadata}
+                onCheckedChange={(checked) => setIncludeMetadata(checked === true)}
                 data-testid="include-metadata"
               />
               <Label htmlFor="metadata" className="text-sm">

@@ -28,7 +28,7 @@ export default function MyLibraryPage() {
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
-      openModal('saved');
+      openModal('save');
       router.push('/');
       return;
     }

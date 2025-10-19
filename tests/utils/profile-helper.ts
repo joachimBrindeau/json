@@ -3,6 +3,7 @@ import { MainLayoutPage } from '../page-objects/main-layout-page';
 import { APIHelper } from './api-helper';
 import { AuthHelper } from './auth-helper';
 import { JSON_SAMPLES } from '../fixtures/json-samples';
+import { TEST_USERS } from '../fixtures/users';
 
 export interface ProfileTestData {
   documents: Array<{
@@ -48,7 +49,7 @@ export class ProfileHelper {
   /**
    * Common pattern: Setup authenticated user with test data
    */
-  async setupUserWithData(userType: 'regular' | 'content_creator' = 'regular', testData?: ProfileTestData): Promise<void> {
+  async setupUserWithData(userType: keyof typeof TEST_USERS = 'regular', testData?: ProfileTestData): Promise<void> {
     // Login
     await this.authHelper.login(userType);
     expect(await this.layoutPage.isLoggedIn()).toBe(true);
@@ -212,18 +213,16 @@ export class ProfileHelper {
       let downloadPromise = this.layoutPage.page.waitForEvent('download');
       await exportButton.click();
 
-      if (options.confirm !== false) {
-        const exportDialog = this.layoutPage.page.locator('[data-testid="export-confirmation"]');
-        if (await exportDialog.isVisible()) {
-          if (options.confirm === false) {
-            const cancelExport = this.layoutPage.page.locator('[data-testid="cancel-export"]');
-            await cancelExport.click();
-            return { filename: '', success: false, error: 'Export cancelled' };
-          } else {
-            const confirmExport = this.layoutPage.page.locator('[data-testid="confirm-export"]');
-            downloadPromise = this.layoutPage.page.waitForEvent('download');
-            await confirmExport.click();
-          }
+      const exportDialog = this.layoutPage.page.locator('[data-testid="export-confirmation"]');
+      if (await exportDialog.isVisible()) {
+        if (options.confirm === false) {
+          const cancelExport = this.layoutPage.page.locator('[data-testid="cancel-export"]');
+          await cancelExport.click();
+          return { filename: '', success: false, error: 'Export cancelled' };
+        } else {
+          const confirmExport = this.layoutPage.page.locator('[data-testid="confirm-export"]');
+          downloadPromise = this.layoutPage.page.waitForEvent('download');
+          await confirmExport.click();
         }
       }
 
@@ -231,7 +230,7 @@ export class ProfileHelper {
       return { filename: download.suggestedFilename(), success: true };
 
     } catch (error) {
-      return { filename: '', success: false, error: error.message };
+      return { filename: '', success: false, error: (error as Error).message };
     }
   }
 
@@ -260,7 +259,7 @@ export class ProfileHelper {
       return { success: false, confirmationRequired: false, error: 'Delete confirmation dialog not found' };
 
     } catch (error) {
-      return { success: false, confirmationRequired: false, error: error.message };
+      return { success: false, confirmationRequired: false, error: (error as Error).message };
     }
   }
 
@@ -309,7 +308,7 @@ export class ProfileHelper {
       return { success: false, error: 'Account deletion did not complete' };
 
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   }
 
@@ -371,7 +370,7 @@ export class ProfileHelper {
       return { success: false, error: 'Edit profile button not found' };
 
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   }
 
@@ -420,7 +419,7 @@ export class ProfileHelper {
       return { success: false, error: 'Notification settings not found' };
 
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   }
 

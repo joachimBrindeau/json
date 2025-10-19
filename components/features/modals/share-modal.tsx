@@ -85,6 +85,7 @@ export function ShareModal({
       // Reset states when opening
       setIsSaving(false);
       setIsUpdating(false);
+      // Use currentVisibility prop to set initial state (respects user's button choice)
       setIsPublic(currentVisibility === 'public');
 
       try {
@@ -105,13 +106,15 @@ export function ShareModal({
         form.reset({
           title: response.document.title || currentTitle || '',
           description: response.document.description || '',
-          category: response.document.category || '',
+          category: (response.document.category || '') as any,
           tags: response.document.tags || [],
-          visibility: response.document.visibility as 'public' | 'private',
+          // Use currentVisibility prop instead of API response to respect user's choice
+          visibility: currentVisibility,
         });
 
-        // Update visibility state
-        setIsPublic(response.document.visibility === 'public');
+        // Keep the visibility state from currentVisibility prop (user's button choice)
+        // Don't override with API response
+        setIsPublic(currentVisibility === 'public');
 
       } catch (error) {
         // If error, fall back to current title (document might not exist yet)
@@ -213,7 +216,6 @@ export function ShareModal({
 
       if (isPublic) {
         // Publish to public library - exclude visibility from API payload
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { visibility, ...publishData } = formData;
         await publishMutation.mutate(publishData);
       } else {
@@ -223,7 +225,6 @@ export function ShareModal({
     } finally {
       setIsUpdating(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPublic, shareId, form, publishMutation, unpublishMutation]);
 
   // Allow modal to open even without shareId - it can handle creating one
@@ -273,7 +274,7 @@ export function ShareModal({
             maxLength={200}
             className="font-medium"
             disabled={isLoadingMetadata}
-            error={form.formState.errors.title?.message}
+            error={form.formState.errors.title?.message as string}
             {...form.register('title')}
           />
 
@@ -291,7 +292,7 @@ export function ShareModal({
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {isPublic 
+                {isPublic
                   ? 'Anyone can discover this JSON in the public library'
                   : 'Only people with the link can access this JSON'}
               </p>
@@ -301,6 +302,35 @@ export function ShareModal({
               onCheckedChange={setIsPublic}
               disabled={isLoadingMetadata}
             />
+          </div>
+
+          {/* Info box explaining the current mode */}
+          <div className={`p-3 rounded-lg border ${isPublic ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+            <div className="flex items-start gap-2">
+              {isPublic ? (
+                <>
+                  <Globe className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-900">
+                    <p className="font-medium mb-1">Public Link</p>
+                    <p className="text-blue-700">
+                      Your JSON will be listed in the public library where anyone can discover it.
+                      You can add a description, category, and tags to help others find it.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-gray-900">
+                    <p className="font-medium mb-1">Private Link</p>
+                    <p className="text-gray-700">
+                      Your JSON will not appear in the public library. Only people with the direct link can access it.
+                      Perfect for sharing sensitive data or work-in-progress documents.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Share URL */}
@@ -349,8 +379,11 @@ export function ShareModal({
             <div className="space-y-4 p-4 border rounded-lg bg-blue-50/50">
               <div className="flex items-center gap-2 text-blue-900">
                 <Users className="h-4 w-4" />
-                <span className="font-medium">Set optional fields</span>
+                <span className="font-medium">Public Library Details</span>
               </div>
+              <p className="text-sm text-blue-700 -mt-2">
+                Help others discover your JSON by adding details below
+              </p>
 {/* Description */}
               <FormTextarea
                 id="description"
@@ -359,7 +392,7 @@ export function ShareModal({
                 maxLength={1000}
                 rows={3}
                 disabled={isLoadingMetadata}
-                error={form.formState.errors.description?.message}
+                error={form.formState.errors.description?.message as string}
                 {...form.register('description')}
               />
 
@@ -375,7 +408,7 @@ export function ShareModal({
                     onValueChange={field.onChange}
                     options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
                     disabled={isLoadingMetadata}
-                    error={form.formState.errors.category?.message}
+                    error={form.formState.errors.category?.message as string}
                   />
                 )}
               />
@@ -395,7 +428,7 @@ export function ShareModal({
                 )}
               />
               {form.formState.errors.tags && (
-                <p className="text-sm text-red-500">{form.formState.errors.tags.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.tags.message as string}</p>
               )}
 
               {/* Preview */}
@@ -411,7 +444,7 @@ export function ShareModal({
                   )}
                   <div className="flex items-center gap-1 mt-2">
                     {category && <Badge variant="outline" className="text-xs">{category}</Badge>}
-                    {form.watch('tags').slice(0, 3).map((tag) => (
+                    {form.watch('tags').slice(0, 3).map((tag: string) => (
                       <Badge key={tag} variant="secondary" className="text-xs">
                         #{tag}
                       </Badge>

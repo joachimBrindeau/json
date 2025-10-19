@@ -39,12 +39,20 @@ lsof -ti:3456 | xargs kill -9 2>/dev/null || echo -e "${GREEN}✓ No existing se
 
 # Step 3: Clear Next.js cache
 echo -e "\n${BLUE}🧹 Clearing Next.js cache...${NC}"
-rm -rf .next
+rm -rf .next node_modules/.cache
 echo -e "${GREEN}✓ Cache cleared${NC}"
 
-# Step 4: Start dev server
+# Step 4: Start dev server and precompile pages
 echo -e "\n${BLUE}🎯 Starting development server...${NC}"
 echo -e "${GREEN}✓ Server will start at http://localhost:3456${NC}\n"
 
-npm run dev:next
+# Start dev server in background
+npm run dev:next &
+DEV_SERVER_PID=$!
+
+# Wait for server and precompile main pages
+node scripts/precompile-pages.js
+
+# Bring dev server back to foreground
+wait $DEV_SERVER_PID
 

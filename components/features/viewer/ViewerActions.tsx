@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { UnifiedButton } from '@/components/ui/unified-button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Copy, Download, Share2, Code, Save, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Copy, Download, Share2, Code, Save, MoreHorizontal, Trash2, Lock, Globe, ExternalLink, PaintbrushIcon, Zap, Minimize2 } from 'lucide-react';
 import { useBackendStore } from '@/lib/store/backend';
 import { toastPatterns, showErrorToast, showSuccessToast, showInfoToast } from '@/lib/utils/toast-helpers';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json';
@@ -17,10 +17,27 @@ import { EmbedModal } from '@/components/features/modals/embed-modal';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
 import { logger } from '@/lib/logger';
+import { IconDropdown, type DropdownAction } from '@/components/features/editor/IconDropdown';
+import { useToast } from '@/hooks/use-toast';
+import { validateJson } from '@/lib/utils/json-validators';
 
-export function ViewerActions() {
+interface ViewerActionsProps {
+  /** Editor value for format/minify operations */
+  value?: string;
+  /** Callback to update editor value */
+  onChange?: (value: string) => void;
+  /** Additional custom actions to show in magic dropdown */
+  customMagicActions?: DropdownAction[];
+}
+
+export function ViewerActions({
+  value = '',
+  onChange,
+  customMagicActions = [],
+}: ViewerActionsProps = {}) {
   const { data: session } = useSession();
   const { openModal } = useLoginModal();
+  const { toast } = useToast();
   const {
     currentJson,
     currentDocument,
@@ -36,6 +53,55 @@ export function ViewerActions() {
   const [isSharing, setIsSharing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [shareType, setShareType] = useState<'public' | 'private'>('public');
+
+  // Format handler
+  const handleFormat = useCallback(() => {
+    if (!value?.trim()) {
+      toastPatterns.validation.noJson('format');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      const formatted = JSON.stringify(parsed, null, 2);
+      onChange?.(formatted);
+      toast({
+        title: 'Formatted!',
+        description: 'JSON has been formatted successfully',
+      });
+    } catch (e) {
+      toast({
+        title: 'Invalid JSON',
+        description: (e as Error).message,
+        variant: 'destructive',
+      });
+    }
+  }, [value, onChange, toast]);
+
+  // Minify handler
+  const handleMinify = useCallback(() => {
+    if (!value?.trim()) {
+      toastPatterns.validation.noJson('minify');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      const minified = JSON.stringify(parsed);
+      onChange?.(minified);
+      toast({
+        title: 'Minified!',
+        description: 'JSON has been minified successfully',
+      });
+    } catch (e) {
+      toast({
+        title: 'Invalid JSON',
+        description: (e as Error).message,
+        variant: 'destructive',
+      });
+    }
+  }, [value, onChange, toast]);
 
   const handleSave = useCallback(async () => {
     if (!currentJson) {
@@ -96,13 +162,14 @@ export function ViewerActions() {
     });
   }, [currentJson, currentDocument?.title, shareId]);
 
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(async (type: 'public' | 'private' = 'public') => {
     if (!currentJson) {
       toastPatterns.validation.noJson('share');
       return;
     }
 
     setIsSharing(true);
+    setShareType(type);
 
     try {
       await shareJson();
@@ -117,6 +184,29 @@ export function ViewerActions() {
       setIsSharing(false);
     }
   }, [currentJson, shareJson]);
+
+  const handleNativeShare = useCallback(async () => {
+    if (!currentJson) {
+      toastPatterns.validation.noJson('share');
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: currentDocument?.title || 'JSON Document',
+          text: 'Check out this JSON document',
+          url: shareId ? `${window.location.origin}/share/${shareId}` : window.location.href,
+        });
+        showSuccessToast('Shared successfully');
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          logger.error({ err: error }, 'Native share error');
+          showErrorToast('Failed to share', 'Native share');
+        }
+      }
+    }
+  }, [currentJson, currentDocument?.title, shareId]);
 
   const handleEmbed = useCallback(() => {
     if (!currentJson) {
@@ -162,26 +252,74 @@ export function ViewerActions() {
     }
   }, [currentDocument, session, deleteDocument, openModal]);
 
+  // Share dropdown actions
+  const shareActions: DropdownAction[] = [
+    {
+      id: 'public',
+      label: 'Generate public link',
+      icon: Globe,
+      onClick: () => handleShare('public'),
+      disabled: isSharing,
+    },
+    {
+      id: 'private',
+      label: 'Generate private link',
+      icon: Lock,
+      onClick: () => handleShare('private'),
+      disabled: isSharing,
+    },
+    {
+      id: 'embed',
+      label: 'Embed in a page',
+      icon: Code,
+      onClick: handleEmbed,
+    },
+  ];
+
+  // Magic actions dropdown (Format & Minify + custom actions)
+  const hasValidValue = validateJson(value);
+  const canUseFormatMinify = !!value && hasValidValue && !!onChange;
+
+  const magicActions: DropdownAction[] = [
+    {
+      id: 'format',
+      label: 'Format',
+      icon: Zap,
+      onClick: handleFormat,
+      disabled: !canUseFormatMinify,
+    },
+    {
+      id: 'minify',
+      label: 'Minify',
+      icon: Minimize2,
+      onClick: handleMinify,
+      disabled: !canUseFormatMinify,
+    },
+    ...customMagicActions,
+  ];
+
   return (
     <>
       {/* Desktop view - show all buttons */}
       <div className="hidden sm:flex items-center gap-1">
-        <UnifiedButton
-          variant="green"
-          size="xs"
-          icon={Save}
-          text={session ? "Save" : "Sign in"}
-          onClick={handleSave}
-          disabled={isSaving || !currentJson}
-          isLoading={isSaving}
-          loadingText="Saving..."
-          title={session ? "Save to library" : "Sign in to save"}
-          data-testid={session ? "save-button" : "viewer-sign-in-button"}
-        />
+        {session && (
+          <Button
+            variant="green"
+            size="xs"
+            icon={Save}
+            text="Save"
+            onClick={handleSave}
+            disabled={isSaving || !currentJson}
+            isLoading={isSaving}
+            loadingText="Saving..."
+            title="Save to library"
+            data-testid="save-button"
+          />
+        )}
 
         {/* Delete button - only show if document is saved */}
         {currentDocument?.shareId && session && (
-          <UnifiedButton
+          <Button
             variant="destructive"
             size="xs"
             icon={Trash2}
@@ -193,47 +331,45 @@ export function ViewerActions() {
             title="Delete this document"
           />
         )}
-        
-        <UnifiedButton
+
+        {/* Icon-only buttons for Copy, Export, Magic, and Share */}
+        {magicActions.length > 0 && (
+          <IconDropdown
+            icon={PaintbrushIcon}
+            tooltip="Format Actions"
+            actions={magicActions}
+            disabled={!currentJson}
+            width="w-40"
+          />
+        )}
+
+        <Button
           variant="outline"
-          size="xs"
-          icon={Copy}
-          text="Copy"
+          size="icon"
           onClick={handleCopyJson}
           disabled={!currentJson}
           title="Copy JSON"
-        />
-        
-        <UnifiedButton
+          className="h-7 w-7"
+        >
+          <Copy className="h-3 w-3" />
+        </Button>
+
+        <Button
           variant="outline"
-          size="xs"
-          icon={Download}
-          text="Export"
+          size="icon"
           onClick={handleExport}
           disabled={!currentJson}
           title="Export JSON"
-        />
-        
-        <UnifiedButton
-          variant="outline"
-          size="xs"
+          className="h-7 w-7"
+        >
+          <Download className="h-3 w-3" />
+        </Button>
+
+        <IconDropdown
           icon={Share2}
-          text="Share"
-          onClick={handleShare}
+          tooltip="Share JSON"
+          actions={shareActions}
           disabled={!currentJson || isSharing}
-          isLoading={isSharing}
-          loadingText="Sharing..."
-          title="Share JSON"
-        />
-        
-        <UnifiedButton
-          variant="outline"
-          size="xs"
-          icon={Code}
-          text="Embed"
-          onClick={handleEmbed}
-          disabled={!currentJson}
-          title="Embed JSON"
         />
       </div>
 
@@ -241,7 +377,7 @@ export function ViewerActions() {
       <div className="sm:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <UnifiedButton
+            <Button
               variant="outline"
               size="xs"
               icon={MoreHorizontal}
@@ -250,14 +386,16 @@ export function ViewerActions() {
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={handleSave}
-              disabled={isSaving || !currentJson}
-              className="text-sm"
-            >
-              <Save className="h-3 w-3 mr-2" />
-              {session ? "Save to library" : "Sign in to save"}
-            </DropdownMenuItem>
+            {session && (
+              <DropdownMenuItem
+                onClick={handleSave}
+                disabled={isSaving || !currentJson}
+                className="text-sm"
+              >
+                <Save className="h-3 w-3 mr-2" />
+                Save to library
+              </DropdownMenuItem>
+            )}
 
             {/* Delete option - only show if document is saved */}
             {currentDocument?.shareId && session && (
@@ -270,7 +408,39 @@ export function ViewerActions() {
                 {isDeleting ? "Deleting..." : "Delete"}
               </DropdownMenuItem>
             )}
-            
+
+            {/* Magic actions for mobile */}
+            <DropdownMenuItem
+              onClick={handleFormat}
+              disabled={!canUseFormatMinify || !currentJson}
+              className="text-sm"
+            >
+              <Zap className="h-3 w-3 mr-2" />
+              Format
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={handleMinify}
+              disabled={!canUseFormatMinify || !currentJson}
+              className="text-sm"
+            >
+              <Minimize2 className="h-3 w-3 mr-2" />
+              Minify
+            </DropdownMenuItem>
+
+            {/* Custom magic actions for mobile */}
+            {customMagicActions.map((action) => (
+              <DropdownMenuItem
+                key={action.id}
+                onClick={action.onClick}
+                disabled={action.disabled || !currentJson}
+                className="text-sm"
+              >
+                <action.icon className="h-3 w-3 mr-2" />
+                {action.label}
+              </DropdownMenuItem>
+            ))}
+
             <DropdownMenuItem
               onClick={handleCopyJson}
               disabled={!currentJson}
@@ -279,7 +449,7 @@ export function ViewerActions() {
               <Copy className="h-3 w-3 mr-2" />
               Copy JSON
             </DropdownMenuItem>
-            
+
             <DropdownMenuItem
               onClick={handleExport}
               disabled={!currentJson}
@@ -288,14 +458,24 @@ export function ViewerActions() {
               <Download className="h-3 w-3 mr-2" />
               Export JSON
             </DropdownMenuItem>
-            
+
+            {/* Share options for mobile - use native share if available */}
             <DropdownMenuItem
-              onClick={handleShare}
+              onClick={() => handleShare('public')}
               disabled={!currentJson || isSharing}
               className="text-sm"
             >
-              <Share2 className="h-3 w-3 mr-2" />
-              Share JSON
+              <Globe className="h-3 w-3 mr-2" />
+              Public link
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem
+              onClick={() => handleShare('private')}
+              disabled={!currentJson || isSharing}
+              className="text-sm"
+            >
+              <Lock className="h-3 w-3 mr-2" />
+              Private link
             </DropdownMenuItem>
             
             <DropdownMenuItem
@@ -304,8 +484,19 @@ export function ViewerActions() {
               className="text-sm"
             >
               <Code className="h-3 w-3 mr-2" />
-              Embed JSON
+              Embed
             </DropdownMenuItem>
+            
+            {typeof navigator !== 'undefined' && 'share' in navigator && (
+              <DropdownMenuItem
+                onClick={handleNativeShare}
+                disabled={!currentJson}
+                className="text-sm"
+              >
+                <ExternalLink className="h-3 w-3 mr-2" />
+                Share
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -313,9 +504,9 @@ export function ViewerActions() {
       <ShareModal
         open={shareModalOpen}
         onOpenChange={setShareModalOpen}
-        shareId={shareId || ''} 
+        shareId={shareId || ''}
         currentTitle={currentDocument?.title}
-        currentVisibility={currentDocument?.visibility as 'public' | 'private'}
+        currentVisibility={shareType}
         onUpdated={async (title?: string) => {
           // If this is a save operation without current document, save the JSON now
           if (!currentDocument && title) {

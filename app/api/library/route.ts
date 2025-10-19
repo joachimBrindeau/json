@@ -15,10 +15,17 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   // Validate parameters
   const pagination = validatePaginationParams(searchParams);
-  const sort = validateSortParam(
+  const sortResult = validateSortParam(
     searchParams.get('sort') || 'recent',
     ['recent', 'popular', 'views', 'size', 'title']
   );
+
+  // Check if sort validation failed
+  if (typeof sortResult === 'object' && 'error' in sortResult) {
+    throw new ValidationError(sortResult.error);
+  }
+
+  const sort = sortResult as string;
   const search = validateSearchParam(searchParams.get('search'));
   const category = searchParams.get('category');
   const dateRange = searchParams.get('dateRange');
@@ -39,10 +46,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     limit: pagination.limit,
     search: search || undefined,
     category: category || undefined,
-    dateRange: dateRange || undefined,
-    complexity: complexity || undefined,
-    minSize: minSize || undefined,
-    maxSize: maxSize || undefined,
     sortBy: sort,
     sortOrder: 'desc'
   });

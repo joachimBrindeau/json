@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { validateJson, formatJson as formatJsonUtil } from './json-utils';
+import { validateJson, formatJson as formatJsonUtil } from '@/lib/json/json-utils';
 
 // Shared editor functionality
 export const useEditorActions = (

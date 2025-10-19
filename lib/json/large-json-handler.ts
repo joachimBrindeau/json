@@ -94,7 +94,7 @@ export class LargeJsonHandler {
           __loadChunk: (index: number) => this.loadChunk(chunks, index),
           __totalChunks: chunks.length,
           __originalSize: size,
-        },
+        } as any,
         isChunked: true,
         stats: {
           size,

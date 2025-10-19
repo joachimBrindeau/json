@@ -127,7 +127,7 @@ export class MainLayoutPage extends BasePage {
       // User is logged in if user menu is visible and sign in button is not visible
       return userMenuVisible && !signInButtonVisible;
     } catch (error) {
-      console.log(`🔍 Error in isLoggedIn check: ${error.message}`);
+      console.log(`🔍 Error in isLoggedIn check: ${(error as Error).message}`);
       return false;
     }
   }

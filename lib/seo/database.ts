@@ -57,10 +57,10 @@ export async function generateDatabaseSEOMetadata(pageKey: keyof typeof PAGE_SEO
   return generateSEOMetadata({
     title: fallbackConfig.title,
     description: fallbackConfig.description,
-    keywords: fallbackConfig.keywords,
+    keywords: fallbackConfig.keywords as any,
     ogImage: fallbackConfig.ogImage,
     canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/${pageKey === 'home' ? '' : pageKey}`,
-    noIndex: fallbackConfig.noIndex,
+    noIndex: (fallbackConfig as any).noIndex,
   });
 }
 
@@ -185,7 +185,7 @@ export async function seedSEOSettings() {
 
   try {
     for (const settings of defaultSettings) {
-      await upsertSEOSettings(settings.pageKey, settings);
+      await upsertSEOSettings(settings.pageKey, settings as any);
     }
     logger.info({ count: defaultSettings.length }, 'SEO settings seeded successfully');
   } catch (error) {

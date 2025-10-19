@@ -36,7 +36,7 @@ export async function GET() {
       error instanceof Error ? error.message : 'Health check failed',
       {
         status: 503,
-        data: {
+        metadata: {
           timestamp: new Date().toISOString(),
           services: {
             database: 'unhealthy',

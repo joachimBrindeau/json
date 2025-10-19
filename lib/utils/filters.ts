@@ -84,8 +84,8 @@ export function sortByDate<T extends Record<string, unknown>>(
   direction: 'asc' | 'desc' = 'desc'
 ): T[] {
   return [...items].sort((a, b) => {
-    const dateA = new Date(a[dateField]);
-    const dateB = new Date(b[dateField]);
+    const dateA = new Date(a[dateField] as any);
+    const dateB = new Date(b[dateField] as any);
 
     // Handle invalid dates
     if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
@@ -216,7 +216,7 @@ export function filterByDateRange<T extends Record<string, unknown>>(
   endDate?: Date
 ): T[] {
   return items.filter((item) => {
-    const itemDate = new Date(item[dateField]);
+    const itemDate = new Date(item[dateField] as any);
     if (isNaN(itemDate.getTime())) return false;
 
     if (startDate && itemDate < startDate) return false;

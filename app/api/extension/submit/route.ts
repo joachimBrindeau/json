@@ -17,19 +17,23 @@ export async function POST(request: NextRequest) {
   const monitor = createPerformanceMonitor();
 
   try {
-    const { jsonData, sourceUrl, extensionId, source } = await request.json();
+    // Support both old (source) and new (sourceType) field names for backward compatibility
+    const { jsonData, sourceUrl, extensionId, source, sourceType } = await request.json();
 
     if (!jsonData) {
       return badRequest('No JSON data provided', { headers: corsHeaders });
     }
 
-    // Parse JSON if it's a string
+    // Parse JSON if it's a string (backward compatibility with old extension version)
     let parsedContent: unknown;
     try {
       parsedContent = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
     } catch {
       return badRequest('Invalid JSON format', { headers: corsHeaders });
     }
+
+    // Use sourceType if available, fallback to source for backward compatibility
+    const finalSourceType = sourceType || source || 'n8n-node';
 
     // Analyze JSON structure
     const analysis = await analyzeJsonStream(parsedContent as string | object, {
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Create a temporary share without authentication
     // Set visibility to public and isAnonymous to true for easy access
-    const titlePrefix = source === 'n8n-workflow' ? 'n8n Workflow' : 'n8n Node Output';
+    const titlePrefix = finalSourceType === 'n8n-workflow' ? 'n8n Workflow' : 'n8n Node Output';
     const document = await prisma.jsonDocument.create({
       data: {
         title: `${titlePrefix} - ${new Date().toLocaleString()}`,
@@ -53,8 +57,7 @@ export async function POST(request: NextRequest) {
         visibility: 'public',
         isAnonymous: true,
         metadata: {
-          source: source || 'extension',
-          sourceType: source || 'n8n-node',
+          sourceType: finalSourceType,
           extensionId,
           sourceUrl,
           uploadedAt: new Date().toISOString(),
@@ -87,11 +90,22 @@ export async function POST(request: NextRequest) {
       },
     }, { headers: corsHeaders });
   } catch (error) {
+    // Extract request data for error logging (may not be available if parsing failed)
+    let requestData: { extensionId?: string; sourceUrl?: string } = {};
+    try {
+      const body = await request.clone().json();
+      requestData = {
+        extensionId: body.extensionId,
+        sourceUrl: body.sourceUrl,
+      };
+    } catch {
+      // Ignore parsing errors in error handler
+    }
+
     logger.error(
       {
         err: error,
-        extensionId: request.headers.get('x-extension-id'),
-        sourceUrl: request.headers.get('x-source-url')
+        ...requestData,
       },
       'Extension JSON submission error'
     );

@@ -21,6 +21,7 @@ import type { ViewMode } from './types';
 import type { JsonValue } from '@/lib/types/json';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { SearchBar } from '@/components/shared/search-bar';
 
 interface ViewerProps {
   jsonString?: string;
@@ -174,40 +175,14 @@ export const Viewer = ({
             </div>
           )}
 
-          {/* Stats */}
-          {stats && (
-            <div className="flex gap-2">
-              <Badge variant="outline">{stats.type}</Badge>
-              <Badge variant="outline">
-                {stats.keys} {stats.type === 'array' ? 'items' : 'keys'}
-              </Badge>
-              <Badge variant="outline">
-                {(stats.size / 1024).toFixed(1)} KB
-              </Badge>
-              {shouldVirtualize && (
-                <Badge variant="secondary">
-                  <Eye className="h-3 w-3 mr-1" />
-                  Virtualized
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Performance indicator */}
-          {performanceLevel !== 'excellent' && (
-            <Badge
-              variant={
-                performanceLevel === 'critical'
-                  ? 'destructive'
-                  : performanceLevel === 'warning'
-                    ? 'destructive'
-                    : 'secondary'
-              }
-            >
-              {performanceLevel === 'critical' && 'Large JSON'}
-              {performanceLevel === 'warning' && 'Medium JSON'}
-              {performanceLevel === 'good' && 'Optimized'}
-            </Badge>
+          {/* Search bar for flow mode only */}
+          {viewMode === 'flow' && enableSearch && (
+            <SearchBar
+              value={effectiveSearch}
+              onChange={effectiveSetSearch}
+              placeholder="Search nodes..."
+              className="max-w-md"
+            />
           )}
         </div>
 
@@ -239,7 +214,7 @@ export const Viewer = ({
         )}
 
         {viewMode === 'flow' && (
-          <ViewerFlow data={data} height={height} />
+          <ViewerFlow data={data} height={height} searchTerm={effectiveSearch} />
         )}
 
         {viewMode === 'list' && (

@@ -5,6 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
+import { createHash } from 'crypto';
 import { withAuth, validateRequest, handleApiError, withCors } from '@/lib/api/utils';
 import { fileUploadSchema, jsonAnalysisOptionsSchema } from '@/lib/api/validators';
 import { success, badRequest, unprocessableEntity } from '@/lib/api/responses';
@@ -61,7 +62,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
     const analysis = await analyzeJsonStream(parsedContent as string | object, analysisOptions);
 
     // Create chunks for large JSONs
-    const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent) : [];
+    const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent as any) : [];
 
     // Save to database with transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -69,7 +70,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
       const document = await tx.jsonDocument.create({
         data: {
           title: title || file.name,
-          content: parsedContent,
+          content: parsedContent as any,
           size: BigInt(analysis.size),
           nodeCount: analysis.nodeCount,
           maxDepth: analysis.maxDepth,
@@ -92,7 +93,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
           data: chunks.map((chunk) => ({
             documentId: document.id,
             chunkIndex: chunk.index,
-            content: chunk.content,
+            content: chunk.content as any,
             size: chunk.size,
             path: chunk.path,
             checksum: chunk.checksum,
@@ -156,13 +157,13 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
 });
 
 // Apply CORS middleware and export
-export const POST = withCors(uploadHandler, {
+export const POST = withCors(uploadHandler as any, {
   methods: ['POST', 'OPTIONS'],
   headers: ['Content-Type'],
 });
 
 // Handle OPTIONS for CORS using the utility
-export const OPTIONS = withCors(async () => new Response(null), {
+export const OPTIONS = withCors(async () => new Response(null) as any, {
   methods: ['POST', 'OPTIONS'],
   headers: ['Content-Type'],
 });

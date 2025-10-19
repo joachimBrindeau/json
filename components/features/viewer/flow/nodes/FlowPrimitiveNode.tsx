@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import { JsonDataType, NodeType, PrimitiveNodeData } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
@@ -19,7 +19,7 @@ const CHAIN_HANDLE_STYLE = {
  * Lookup pattern for rendering different primitive types
  * Follows KISS principle - simpler than multiple conditionals
  */
-const PRIMITIVE_RENDERERS: Record<JsonDataType, (data: PrimitiveNodeData) => JSX.Element> = {
+const PRIMITIVE_RENDERERS: Record<JsonDataType, (data: PrimitiveNodeData) => React.JSX.Element> = {
   [JsonDataType.String]: (data) => (
     <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-mono">
       {data.stringifiedJson}
@@ -37,11 +37,11 @@ const PRIMITIVE_RENDERERS: Record<JsonDataType, (data: PrimitiveNodeData) => JSX
   [JsonDataType.Array]: () => <span className="text-sm">Array</span>,
 };
 
-const PrimitiveNodeComponent = ({ id, data }: NodeProps<PrimitiveNodeData>) => {
-  const renderer = PRIMITIVE_RENDERERS[data.dataType];
+const PrimitiveNodeComponent = ({ id, data }: NodeProps<any>) => {
+  const renderer = PRIMITIVE_RENDERERS[data.dataType as JsonDataType];
 
   return (
-    <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive}>
+    <FlowNodeShell nodeId={id} nodeType={NodeType.Primitive} isHighlight={data.isHighlighted}>
       {/* Handles - primitive nodes only have target handles */}
       <FlowHandle id={id} type="target" direction="horizontal" />
       <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />

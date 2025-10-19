@@ -28,12 +28,14 @@ import {
   formatDiffOperation
 } from '@/lib/json';
 import { useBackendStore } from '@/lib/store/backend';
-import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { EditorPane } from '@/components/features/editor/EditorPane';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import type { EditorAction } from '@/types/editor-actions';
+import { ViewerActions } from '@/components/features/viewer/ViewerActions';
 
 interface JsonCompareProps {
   initialJson1?: string;
@@ -123,27 +125,7 @@ export function ViewerCompare({
     }
   }, [onViewChange]);
 
-  const formatJson1 = useCallback(() => {
-    if (!hasValidJson1) return;
-    try {
-      const parsed = JSON.parse(json1);
-      setJson1(JSON.stringify(parsed, null, 2));
-      showSuccessToast('JSON 1 formatted successfully');
-    } catch {
-      toastPatterns.error.format();
-    }
-  }, [hasValidJson1, json1]);
 
-  const formatJson2 = useCallback(() => {
-    if (!hasValidJson2) return;
-    try {
-      const parsed = JSON.parse(json2);
-      setJson2(JSON.stringify(parsed, null, 2));
-      showSuccessToast('JSON 2 formatted successfully');
-    } catch {
-      toastPatterns.error.format();
-    }
-  }, [hasValidJson2, json2]);
 
   const handleCopyJson1 = useCallback(() => {
     if (!json1) {
@@ -339,107 +321,58 @@ export function ViewerCompare({
     );
   };
 
+  // No custom actions needed - Format/Minify/Copy/Download/Share all provided by ViewerActions
+  const json1Actions: EditorAction[] = useMemo(() => [], []);
+  const json2Actions: EditorAction[] = useMemo(() => [], []);
+
   if (activeView === 'input') {
     return (
       <div className={`h-full flex flex-col ${className}`}>
         {/* Editors container with more padding - responsive */}
-        <div className="flex-1 flex flex-col md:flex-row gap-4 p-2 md:p-4 overflow-hidden">
-          {/* Left editor with its own action bar */}
-          <div className="flex-1 min-h-[250px] sm:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
-              <span>JSON 1 (Original)</span>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={formatJson1}
-                  disabled={!json1 || !hasValidJson1}
-                  className="h-6 px-2 text-xs"
-                >
-                  <Zap className="h-3 w-3 mr-1" />
-                  Format
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyJson1}
-                  disabled={!json1}
-                  className="h-6 px-2 text-xs"
-                >
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <MonacoEditor
-                height="100%"
-                language="json"
-                theme={editor1.theme}
-                value={json1}
-                onChange={(value) => {
-                  const newValue = value || '';
-                  setJson1(newValue);
-                  // Sync changes back to the store for json1
-                  setCurrentJson(newValue);
-                }}
-                onMount={handleEditor1Mount}
-                beforeMount={(monaco) => defineMonacoThemes(monaco)}
-                options={editor1.editorOptions}
-              />
-            </div>
-            <div className="px-2 py-1 bg-muted/50 border-t text-xs text-muted-foreground">
-              <Badge variant={hasValidJson1 ? 'default' : json1 ? 'destructive' : 'secondary'} className="text-xs">
-                {hasValidJson1 ? '✓ Valid' : json1 ? '✗ Invalid' : 'Empty'}
-              </Badge>
-            </div>
-          </div>
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          <EditorPane
+            title="JSON 1 (Original)"
+            value={json1}
+            onChange={(value) => {
+              const newValue = value || '';
+              setJson1(newValue);
+              setCurrentJson(newValue);
+            }}
+            actions={json1Actions}
+            customActions={<ViewerActions value={json1} onChange={setJson1} />}
+            showSearch={false}
+            validationBadge={
+              <Button
+                variant="green"
+                size="sm"
+                onClick={handleCompare}
+                disabled={!hasValidJson1 || !hasValidJson2}
+                className="h-6 text-xs"
+              >
+                <GitCompare className="h-3 w-3 mr-1" />
+                Compare JSON
+              </Button>
+            }
+            theme={editor1.theme}
+            onMount={handleEditor1Mount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={editor1.editorOptions}
+            className="border-r"
+          />
 
-          {/* Right editor with its own action bar */}
-          <div className="flex-1 min-h-[250px] sm:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
-              <span>JSON 2 (Modified)</span>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={formatJson2}
-                  disabled={!json2 || !hasValidJson2}
-                  className="h-6 px-2 text-xs"
-                >
-                  <Zap className="h-3 w-3 mr-1" />
-                  Format
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyJson2}
-                  disabled={!json2}
-                  className="h-6 px-2 text-xs"
-                >
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <MonacoEditor
-                height="100%"
-                language="json"
-                theme={editor2.theme}
-                value={json2}
-                onChange={(value) => setJson2(value || '')}
-                onMount={handleEditor2Mount}
-                beforeMount={(monaco) => defineMonacoThemes(monaco)}
-                options={editor2.editorOptions}
-              />
-            </div>
-            <div className="px-2 py-1 bg-muted/50 border-t text-xs text-muted-foreground">
-              <Badge variant={hasValidJson2 ? 'default' : json2 ? 'destructive' : 'secondary'} className="text-xs">
-                {hasValidJson2 ? '✓ Valid' : json2 ? '✗ Invalid' : 'Empty'}
-              </Badge>
-            </div>
-          </div>
+          <EditorPane
+            title="JSON 2 (Modified)"
+            value={json2}
+            onChange={(value) => setJson2(value || '')}
+            actions={json2Actions}
+            customActions={<ViewerActions value={json2} onChange={setJson2} />}
+            showSearch={false}
+            validationBadge={null}
+            theme={editor2.theme}
+            onMount={handleEditor2Mount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={editor2.editorOptions}
+          />
         </div>
 
         {/* Action buttons bar below editors */}

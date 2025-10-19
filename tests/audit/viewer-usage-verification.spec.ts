@@ -237,7 +237,9 @@ test.describe('Viewer Component Usage Verification', () => {
     console.log('  - JsonActionButtons');
     
     // Write results to file
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('path');
     const reportPath = path.join(__dirname, '../test-results/viewer-usage-report.json');
     fs.mkdirSync(path.dirname(reportPath), { recursive: true });

@@ -52,7 +52,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
     router.push = (...args) => {
       handleRouteChangeStart();
-      const result = originalPush.apply(router, args);
+      const result = originalPush.apply(router, args) as any;
       // Next.js router.push returns a promise
       if (result && typeof result.then === 'function') {
         result.finally(handleRouteChangeComplete);
@@ -65,7 +65,7 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
     router.replace = (...args) => {
       handleRouteChangeStart();
-      const result = originalReplace.apply(router, args);
+      const result = originalReplace.apply(router, args) as any;
       if (result && typeof result.then === 'function') {
         result.finally(handleRouteChangeComplete);
       } else {

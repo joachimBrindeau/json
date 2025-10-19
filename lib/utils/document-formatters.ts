@@ -3,7 +3,7 @@
  * Centralized formatting functions for document display and API responses
  */
 
-import { formatSize } from './formatters';
+import { formatSize, formatCount } from './formatters';
 import type { JsonValue } from '@/lib/api/types';
 
 /**
@@ -65,7 +65,7 @@ export function isValidShareId(id: string): boolean {
  * Format view count with abbreviations (e.g., 1.2k, 1.5M)
  * Uses the general formatCount utility for consistency
  */
-export { formatCount as formatViewCount } from './formatters';
+export const formatViewCount = formatCount;
 
 /**
  * Format document complexity for display

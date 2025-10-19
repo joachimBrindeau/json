@@ -62,7 +62,7 @@ const ObjectNodePropertyComponent = ({
         )}
         {isNumberData && (
           <span className="overflow-hidden text-ellipsis whitespace-nowrap text-green-600 font-mono text-sm">
-            {propertyV}
+            {String(propertyV)}
           </span>
         )}
         {isBooleanData && <FlowBooleanChip value={propertyV as boolean} size="sm" />}

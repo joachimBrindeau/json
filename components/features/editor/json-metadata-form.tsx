@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useFormSubmit } from '@/hooks/use-form-submit';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/form-fields';
 import {

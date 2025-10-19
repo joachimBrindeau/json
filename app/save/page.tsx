@@ -138,9 +138,9 @@ const DocumentRow = memo(function DocumentRow({
           onClick={handleLoad}
         >
           {document.visibility === 'public' ? (
-            <Globe className="h-4 w-4 text-green-500" title="Published to public library" />
+            <Globe className="h-4 w-4 text-green-500" aria-label="Published to public library" />
           ) : (
-            <Lock className="h-4 w-4 text-muted-foreground" title="Private" />
+            <Lock className="h-4 w-4 text-muted-foreground" aria-label="Private" />
           )}
           <span className="truncate max-w-48" data-testid="json-title">
             {document.title}
@@ -353,7 +353,6 @@ function LibraryPageComponent() {
         }
       } catch (err) {
         logger.error({ err, shareId }, 'Failed to load document');
-        setError('Failed to load document');
       }
     },
     [loadFromShareId]
@@ -438,8 +437,7 @@ function LibraryPageComponent() {
         action={{
           label: 'Try Again',
           onClick: refetch,
-          variant: 'default',
-          icon: Database
+          variant: 'default'
         }}
       />
     );
@@ -454,10 +452,8 @@ function LibraryPageComponent() {
         action={{
           label: 'Create New JSON',
           onClick: () => window.location.href = '/',
-          variant: 'default',
-          icon: Plus
+          variant: 'default'
         }}
-        testId="empty-state"
       />
     );
   }

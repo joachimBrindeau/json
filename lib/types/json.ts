@@ -20,7 +20,7 @@ export interface JsonObject {
 /**
  * JSON array type
  */
-export interface JsonArray extends Array<JsonValue> {}
+export type JsonArray = Array<JsonValue>;
 
 /**
  * Any valid JSON value

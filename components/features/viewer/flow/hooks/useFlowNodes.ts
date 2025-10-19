@@ -49,10 +49,11 @@ function getDescendantIds(nodeId: string, childrenMap: Map<string, string[]>): s
 export const useFlowNodes = (
   parsedNodes: Node[],
   parsedEdges: Edge[],
-  onToggleCollapse?: (parentId: string, childId: string) => void
+  onToggleCollapse?: (parentId: string, childId: string) => void,
+  searchTerm: string = ''
 ): FlowNodesState => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [collapsedBranches, setCollapsedBranches] = useState<Set<string>>(new Set());
 
   // Build children map
@@ -107,6 +108,36 @@ export const useFlowNodes = (
 
     const toggleHandler = onToggleCollapse || handleToggleCollapse;
 
+    // Helper function to check if node matches search term
+    const matchesSearch = (node: Node): boolean => {
+      if (!searchTerm) return false;
+      
+      const term = searchTerm.toLowerCase();
+      const nodeData = node.data;
+      
+      // Search in node ID
+      if (node.id.toLowerCase().includes(term)) return true;
+
+      // Search in stringified JSON
+      if ((nodeData as any)?.stringifiedJson && (nodeData as any).stringifiedJson.toLowerCase().includes(term)) {
+        return true;
+      }
+
+      // Search in object keys/values
+      if ((nodeData as any)?.obj) {
+        const objStr = JSON.stringify((nodeData as any).obj).toLowerCase();
+        if (objStr.includes(term)) return true;
+      }
+      
+      // Search in primitive values
+      if (nodeData?.value !== undefined) {
+        const valueStr = String(nodeData.value).toLowerCase();
+        if (valueStr.includes(term)) return true;
+      }
+      
+      return false;
+    };
+
     const visibleNodes = parsedNodes.map((node) => ({
       id: node.id,
       type: node.type,
@@ -115,6 +146,8 @@ export const useFlowNodes = (
         ...node.data,
         onToggleCollapse: toggleHandler,
         collapsedBranches,
+        isHighlighted: matchesSearch(node),
+        searchTerm,
       },
       hidden: hiddenNodes.has(node.id),
     }));
@@ -129,7 +162,7 @@ export const useFlowNodes = (
 
     setNodes(visibleNodes);
     setEdges(visibleEdges);
-  }, [parsedNodes, parsedEdges, collapsedBranches, hiddenNodes, handleToggleCollapse, onToggleCollapse, setNodes, setEdges]);
+  }, [parsedNodes, parsedEdges, collapsedBranches, hiddenNodes, handleToggleCollapse, onToggleCollapse, searchTerm, setNodes, setEdges]);
 
   return {
     nodes,

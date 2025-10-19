@@ -305,7 +305,7 @@ export function detectBase64(value: string): DetectionResult | null {
 export function detectTypes(value: unknown): DetectionResult[] {
   if (typeof value !== 'string') {
     // Check for coordinate objects
-    const coordDetection = detectCoordinates(value);
+    const coordDetection = detectCoordinates(value as any);
     if (coordDetection) return [coordDetection];
     return [];
   }

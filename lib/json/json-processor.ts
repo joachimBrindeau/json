@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { Transform, Readable } from 'stream';
 import { JSONPath } from 'jsonpath-plus';
 import fastJsonStringify from 'fast-json-stringify';
-import { prisma } from './db';
+import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
 import type { JsonValue } from '@/lib/api/types';

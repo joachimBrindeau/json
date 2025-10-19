@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const result = await getDocumentById(id, session?.user?.id, { includeContent: true });
 
     if (!result.success) {
-      return errorResponse(result.error || 'Document not found', { status: result.status || 404 });
+      return errorResponse((result as any).error || 'Document not found', { status: (result as any).status || 404 });
     }
 
     return success(formatDocumentResponse(result.data));
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-export const PUT = withAuth(async (request, { params }: { params: Promise<{ id: string }> }) => {
+export const PUT = withAuth(async (request, session, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params;
     const { content } = await request.json();
@@ -39,7 +39,7 @@ export const PUT = withAuth(async (request, { params }: { params: Promise<{ id: 
     const { parsedContent, stats } = validateAndAnalyzeJson(content);
 
     // Update the document with validation
-    const result = await updateDocument(id, request.user.id, {
+    const result = await updateDocument(id, session.user.id, {
       content: parsedContent,
       metadata: {
         size: BigInt(stats.size),

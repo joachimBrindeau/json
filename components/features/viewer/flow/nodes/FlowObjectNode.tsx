@@ -17,8 +17,8 @@ const CHAIN_HANDLE_STYLE = {
   boxShadow: '0 2px 4px rgba(148, 163, 184, 0.3)',
 } as const;
 
-const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
-  const { obj, isRootNode, collapsedBranches, onToggleCollapse, stringifiedJson } = data;
+const ObjectNodeComponent = ({ id, data }: NodeProps<any>) => {
+  const { obj, isRootNode, collapsedBranches, onToggleCollapse, stringifiedJson, isHighlighted } = data;
 
   // Use consolidated toolbar hook
   const toolbarData = useFlowNodeToolbar({ nodeId: id });
@@ -40,7 +40,7 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
           key={propertyK}
           nodeId={id}
           propertyK={propertyK}
-          propertyV={propertyV}
+          propertyV={propertyV as any}
           hasChildNode={hasChildNode}
           childNodeId={childNodeId}
           collapsedBranches={collapsedBranches}
@@ -64,7 +64,7 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<ObjectNodeData>) => {
         copyDescription="Object JSON copied to clipboard"
       />
 
-      <FlowNodeShell nodeId={id} nodeType={NodeType.Object}>
+      <FlowNodeShell nodeId={id} nodeType={NodeType.Object} isHighlight={isHighlighted}>
         {/* Handles */}
         {!isRootNode && <FlowHandle id={id} type="target" direction="horizontal" />}
         <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />

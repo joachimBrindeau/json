@@ -152,10 +152,10 @@ export const GET = withAuth(async (request, session, { params }: { params: Promi
     }
 
     // Cache for future requests
-    await JsonCache.set(document.id, jsonData);
+    await JsonCache.set(document.id, jsonData as any);
 
     // Create streaming response
-    const stream = createJsonStream(jsonData);
+    const stream = createJsonStream(jsonData as any);
 
     // Prepare response headers - only include metadata for public documents
     const headers: Record<string, string> = {

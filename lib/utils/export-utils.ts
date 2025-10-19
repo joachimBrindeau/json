@@ -25,15 +25,15 @@ export interface ExportResult {
 export function jsonToCsv(data: JsonValue): string {
   if (Array.isArray(data)) {
     if (data.length === 0) return '';
-    
+
     // Get headers from first object
-    const headers = Object.keys(data[0]);
+    const headers = Object.keys(data[0] as any);
     const csvRows = [headers.join(',')];
-    
+
     // Add data rows
     data.forEach(item => {
       const values = headers.map(header => {
-        const value = item[header];
+        const value = (item as any)[header];
         if (value === null || value === undefined) return '';
         if (typeof value === 'object') return JSON.stringify(value);
         if (typeof value === 'string' && value.includes(',')) return `"${value.replace(/"/g, '""')}"`;
@@ -160,7 +160,7 @@ export function exportData(data: JsonValue, options: ExportOptions): ExportResul
   
   // Add metadata if requested
   const exportData = options.includeMetadata ? {
-    ...data,
+    ...(data as any),
     __export_metadata: {
       timestamp: new Date().toISOString(),
       source: 'json-viewer',

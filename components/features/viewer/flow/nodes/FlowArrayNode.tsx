@@ -18,8 +18,8 @@ const ARRAY_HANDLE_STYLE = {
   boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
 } as const;
 
-const ArrayNodeComponent = ({ id, data }: NodeProps<ArrayNodeData>) => {
-  const { arrayIndex, items, isRootNode, stringifiedJson } = data;
+const ArrayNodeComponent = ({ id, data }: NodeProps<any>) => {
+  const { arrayIndex, items, isRootNode, stringifiedJson, isHighlighted } = data;
 
   // Use consolidated toolbar hook
   const toolbarData = useFlowNodeToolbar({ nodeId: id });
@@ -68,7 +68,7 @@ const ArrayNodeComponent = ({ id, data }: NodeProps<ArrayNodeData>) => {
         copyDescription="Array JSON copied to clipboard"
       />
 
-      <FlowNodeShell nodeId={id} nodeType={NodeType.Array}>
+      <FlowNodeShell nodeId={id} nodeType={NodeType.Array} isHighlight={isHighlighted}>
         {/* Handles */}
         {!isRootNode && <FlowHandle id={id} type="target" direction="horizontal" />}
         <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />

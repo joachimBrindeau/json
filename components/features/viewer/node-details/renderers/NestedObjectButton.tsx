@@ -59,9 +59,9 @@ export const NestedObjectButton = ({ value, label, type }: NestedObjectButtonPro
             <TabsContent value="content" className="flex-1 min-h-0 mt-4">
               <ScrollArea className="h-full pr-4">
                 {isArray ? (
-                  <ArrayRenderer value={value as unknown[]} />
+                  <ArrayRenderer value={value as unknown[]} detections={[]} nodeDetails={null as any} />
                 ) : (
-                  <ObjectRenderer value={value as Record<string, unknown>} />
+                  <ObjectRenderer value={value as Record<string, unknown>} detections={[]} nodeDetails={null as any} />
                 )}
               </ScrollArea>
             </TabsContent>

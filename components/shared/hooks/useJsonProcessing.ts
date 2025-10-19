@@ -195,7 +195,7 @@ export const useJsonProcessing = (
         maxDepth: 0,
         size,
         parseTime,
-        type: getValueType(parsed),
+        type: getValueType(parsed) as any,
         keys: Array.isArray(parsed)
           ? parsed.length
           : typeof parsed === 'object' && parsed !== null

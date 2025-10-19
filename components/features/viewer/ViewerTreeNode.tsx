@@ -6,7 +6,7 @@
 
 import { memo, useCallback } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-import { UnifiedButton } from '@/components/ui/unified-button';
+import { Button } from '@/components/ui/button';
 import type { JsonNode } from './types';
 
 interface ViewerTreeNodeProps {
@@ -70,12 +70,18 @@ export const ViewerTreeNode = memo(({
     }
   };
 
+  const tooltipContent = isComplexField
+    ? `${node.type === 'array' ? 'Array' : 'Object'} with ${node.childCount} ${
+        node.type === 'array' ? 'items' : 'properties'
+      } - Double-click for details`
+    : 'Double-click to view details';
+
   return (
     <div
       style={style}
       className={`json-node flex items-center gap-2 px-2 py-1 cursor-pointer transition-colors duration-150 ${
         isHighlighted
-          ? 'bg-yellow-100 border-l-2 border-yellow-400'
+          ? 'bg-red-50 border-l-4 border-red-500'
           : isComplexField
             ? 'hover:bg-blue-50 border-l-2 border-transparent hover:border-blue-200'
             : 'hover:bg-gray-50'
@@ -83,20 +89,14 @@ export const ViewerTreeNode = memo(({
       data-testid="json-node"
       data-type={node.type}
       onDoubleClick={handleDoubleClick}
-      title={
-        isComplexField
-          ? `${node.type === 'array' ? 'Array' : 'Object'} with ${node.childCount} ${
-              node.type === 'array' ? 'items' : 'properties'
-            } - Double-click for details`
-          : 'Double-click to view details'
-      }
+      title={tooltipContent}
     >
       {/* Indentation */}
       <div style={{ marginLeft: `${node.level * 16}px` }} />
 
       {/* Expand/Collapse button */}
       {hasChildren && isComplexField ? (
-        <UnifiedButton
+        <Button
           variant="ghost"
           size="icon"
           onClick={handleToggle}
@@ -108,7 +108,7 @@ export const ViewerTreeNode = memo(({
           ) : (
             <ChevronRight className="h-3 w-3" />
           )}
-        </UnifiedButton>
+        </Button>
       ) : (
         <div className="w-5" />
       )}

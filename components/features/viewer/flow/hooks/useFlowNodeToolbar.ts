@@ -18,7 +18,7 @@ export const useFlowNodeToolbar = ({ nodeId }: UseFlowNodeToolbarParams) => {
   const hasChildren = edges.some((edge) => edge.source === nodeId);
   
   // Track connections
-  const connections = useNodeConnections(nodeId);
+  const connections = useNodeConnections({ id: nodeId });
   const sourceConnections = connections.filter(conn => conn.source === nodeId);
   const targetConnections = connections.filter(conn => conn.target === nodeId);
   
@@ -30,7 +30,7 @@ export const useFlowNodeToolbar = ({ nodeId }: UseFlowNodeToolbarParams) => {
     hasChildren,
     sourceConnections,
     targetConnections,
-    connectedNodesData,
+    connectedNodesData: connectedNodesData as any,
   };
 };
 

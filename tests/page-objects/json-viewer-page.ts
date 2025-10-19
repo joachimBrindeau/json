@@ -21,15 +21,28 @@ export class JsonViewerPage extends BasePage {
 
   // Viewer content areas
   readonly viewerContainer: Locator;
-  readonly treeView: Locator;
-  readonly flowView: Locator;
-  readonly listView: Locator;
+  readonly treeView!: Locator;
+  readonly flowView!: Locator;
+  readonly listView!: Locator;
   readonly jsonNodes: Locator;
 
   // Code editor elements (actual implementation)
   readonly monacoEditor: Locator;
   readonly editorContent: Locator;
   readonly loadingIndicator: Locator;
+
+  // Node controls
+  readonly expandableNodes: Locator;
+  readonly expandButtons: Locator;
+  readonly collapseButtons: Locator;
+
+  // Node type selectors
+  readonly objectNodes!: Locator;
+  readonly arrayNodes!: Locator;
+  readonly stringNodes!: Locator;
+  readonly numberNodes!: Locator;
+  readonly booleanNodes!: Locator;
+  readonly nullNodes!: Locator;
 
   // Side panels and modals
   readonly nodeDetailsModal: Locator;
@@ -239,10 +252,10 @@ export class JsonViewerPage extends BasePage {
       console.log('✅ JSON input completed');
       
     } catch (error) {
-      console.error('❌ JSON input failed:', error.message);
-      await this.page.screenshot({ 
+      console.error('❌ JSON input failed:', (error as Error).message);
+      await this.page.screenshot({
         path: `test-results/json-input-failure-${Date.now()}.png`,
-        fullPage: true 
+        fullPage: true
       });
       throw error;
     }
@@ -341,7 +354,7 @@ export class JsonViewerPage extends BasePage {
       console.log('✅ Successfully switched to tree view');
       
     } catch (error) {
-      console.error('❌ Failed to switch to tree view:', error.message);
+      console.error('❌ Failed to switch to tree view:', (error as Error).message);
       // Don't throw error, just log it
     }
   }
@@ -399,7 +412,7 @@ export class JsonViewerPage extends BasePage {
       console.warn('⚠️ Could not detect current view mode');
       return 'unknown';
     } catch (error) {
-      console.error('❌ Error getting current view mode:', error.message);
+      console.error('❌ Error getting current view mode:', (error as Error).message);
       return 'unknown';
     }
   }
@@ -656,7 +669,7 @@ export class JsonViewerPage extends BasePage {
       console.log('✅ JSON processing wait completed');
       
     } catch (error) {
-      console.warn('⚠️ Error waiting for JSON processing:', error.message);
+      console.warn('⚠️ Error waiting for JSON processing:', (error as Error).message);
       // Don't throw error, just log it and continue
     }
   }
@@ -723,7 +736,7 @@ export class JsonViewerPage extends BasePage {
       if (editor) {
         const model = editor.getModel();
         if (model) {
-          const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+          const markers = (window as any).monaco.editor.getModelMarkers({ resource: model.uri });
           if (markers.length > 0) {
             return markers[0].message;
           }
@@ -735,7 +748,7 @@ export class JsonViewerPage extends BasePage {
           JSON.parse(value);
           return null;
         } catch (e) {
-          return e.message;
+          return (e as Error).message;
         }
       }
       return null;
@@ -796,7 +809,7 @@ export class JsonViewerPage extends BasePage {
         mode: 'flow',
         nodeCount: 0,
         working: false,
-        error: error.message,
+        error: (error as Error).message,
       });
     }
 

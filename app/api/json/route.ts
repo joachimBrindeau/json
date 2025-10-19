@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
 import {
@@ -81,7 +80,7 @@ export const POST = withAuth(async (request, session) => {
       data: {
         shareId,
         title: title || 'Untitled JSON',
-        content: parsedContent,
+        content: parsedContent as any,
         checksum,
         size: BigInt(jsonString.length),
         visibility: 'private', // Default to private
@@ -92,7 +91,7 @@ export const POST = withAuth(async (request, session) => {
           createdAt: new Date().toISOString(),
           userAgent: request.headers.get('user-agent') || 'unknown',
           source: 'api'
-        }
+        } as any
       }
     });
 
@@ -105,7 +104,7 @@ export const POST = withAuth(async (request, session) => {
       title: document.title
     });
 
-    monitor.end('json_create_success');
+    monitor.end();
 
     return created({
       shareId: document.shareId,
@@ -115,7 +114,7 @@ export const POST = withAuth(async (request, session) => {
     }, { message: 'JSON document created successfully' });
 
   } catch (error) {
-    monitor.end('json_create_error');
+    monitor.end();
     logger.error({ err: error }, 'JSON creation error');
 
     return internalServerError('Failed to create JSON document');

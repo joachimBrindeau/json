@@ -424,7 +424,7 @@ export class SetupHelpers {
       },
       startTrace: async () => {
         await client.send('Tracing.start', {
-          categories: ['blink.user_timing'],
+          categories: ['blink.user_timing'] as any,
           options: 'sampling-frequency=10000',
         });
       },

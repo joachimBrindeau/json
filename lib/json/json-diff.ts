@@ -38,9 +38,9 @@ export function deepEqual(a: JsonValue, b: JsonValue): boolean {
   if (Array.isArray(a) !== Array.isArray(b)) return false;
   
   if (Array.isArray(a)) {
-    if (a.length !== b.length) return false;
+    if (a.length !== (b as any).length) return false;
     for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
+      if (!deepEqual(a[i], (b as any)[i])) return false;
     }
     return true;
   }
@@ -52,7 +52,7 @@ export function deepEqual(a: JsonValue, b: JsonValue): boolean {
   
   for (const key of keysA) {
     if (!keysB.includes(key)) return false;
-    if (!deepEqual(a[key], b[key])) return false;
+    if (!deepEqual((a as any)[key], (b as any)[key])) return false;
   }
   
   return true;
@@ -159,7 +159,7 @@ export function compareJson(oldJson: JsonValue, newJson: JsonValue): DiffResult 
           operations.push({
             op: 'add',
             path: createPath([...path, key]),
-            value: newVal[key],
+            value: (newVal as any)[key],
           });
           summary.added++;
         } else if (!newKeys.has(key)) {
@@ -167,12 +167,12 @@ export function compareJson(oldJson: JsonValue, newJson: JsonValue): DiffResult 
           operations.push({
             op: 'remove',
             path: createPath([...path, key]),
-            oldValue: oldVal[key],
+            oldValue: (oldVal as any)[key],
           });
           summary.removed++;
         } else {
           // Compare property values
-          compare(oldVal[key], newVal[key], [...path, key]);
+          compare((oldVal as any)[key], (newVal as any)[key], [...path, key]);
         }
       }
       return;
@@ -211,9 +211,9 @@ export function applyDiff(json: JsonValue, operations: DiffOperation[]): JsonVal
     switch (op.op) {
       case 'add':
       case 'replace':
-        setValueAtPath(result, pathSegments, op.value);
+        setValueAtPath(result, pathSegments, op.value as any);
         break;
-      
+
       case 'remove':
         removeValueAtPath(result, pathSegments);
         break;
@@ -231,21 +231,21 @@ function setValueAtPath(obj: JsonValue, path: string[], value: JsonValue): void 
     return; // Can't replace root
   }
 
-  let current = obj;
-  
+  let current: any = obj;
+
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i];
-    
+
     if (!(segment in current)) {
       // Determine if next segment is array index or object key
       const nextSegment = path[i + 1];
       const isArrayIndex = /^\d+$/.test(nextSegment);
       current[segment] = isArrayIndex ? [] : {};
     }
-    
+
     current = current[segment];
   }
-  
+
   const lastSegment = path[path.length - 1];
   current[lastSegment] = value;
 }
@@ -258,8 +258,8 @@ function removeValueAtPath(obj: JsonValue, path: string[]): void {
     return; // Can't remove root
   }
 
-  let current = obj;
-  
+  let current: any = obj;
+
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i];
     if (!(segment in current)) {
@@ -267,9 +267,9 @@ function removeValueAtPath(obj: JsonValue, path: string[]): void {
     }
     current = current[segment];
   }
-  
+
   const lastSegment = path[path.length - 1];
-  
+
   if (Array.isArray(current)) {
     const index = parseInt(lastSegment, 10);
     if (!isNaN(index) && index >= 0 && index < current.length) {

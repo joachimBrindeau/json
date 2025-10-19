@@ -23,9 +23,10 @@ const FlowView = dynamic(
 interface ViewerFlowProps {
   data: any;
   height?: number;
+  searchTerm?: string;
 }
 
-export const ViewerFlow = ({ data, height }: ViewerFlowProps) => {
+export const ViewerFlow = ({ data, height, searchTerm }: ViewerFlowProps) => {
   return (
     <ErrorBoundary
       level="component"
@@ -38,7 +39,7 @@ export const ViewerFlow = ({ data, height }: ViewerFlowProps) => {
       maxRetries={2}
     >
     <div style={height ? { height } : undefined} className={height ? "w-full" : "w-full h-full"}>
-      <FlowView json={data} />
+      <FlowView json={data} searchTerm={searchTerm} />
     </div>
     </ErrorBoundary>
   );

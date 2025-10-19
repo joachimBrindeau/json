@@ -120,7 +120,8 @@ export function useApiData<T, TRaw = T>(
 
   // Initial fetch and dependency-triggered refetch
   useEffect(() => {
-    if (enabled) {
+    // Only fetch on client side to prevent SSR issues
+    if (enabled && typeof window !== 'undefined') {
       refetch();
     } else {
       setLoading(false);
@@ -129,7 +130,8 @@ export function useApiData<T, TRaw = T>(
 
   // Auto-refresh interval
   useEffect(() => {
-    if (enabled && refreshInterval && refreshInterval > 0) {
+    // Only run on client side
+    if (enabled && refreshInterval && refreshInterval > 0 && typeof window !== 'undefined') {
       const interval = setInterval(refetch, refreshInterval);
       return () => clearInterval(interval);
     }

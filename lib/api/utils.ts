@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ZodSchema, ZodError } from 'zod';
 import { createHash } from 'crypto';
@@ -65,9 +65,9 @@ export interface ValidationResult<T> {
  * });
  */
 export function withAuth<T extends any[]>(
-  handler: (req: NextRequest, session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>, ...args: T) => Promise<NextResponse>
+  handler: (req: NextRequest, session: Session, ...args: T) => Promise<NextResponse | Response>
 ) {
-  return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
+  return async (req: NextRequest, ...args: T): Promise<NextResponse | Response> => {
     try {
       const session = await getServerSession(authOptions);
 
@@ -78,7 +78,7 @@ export function withAuth<T extends any[]>(
         );
       }
 
-      return await handler(req, session, ...args);
+      return await handler(req, session as Session, ...args);
     } catch (error) {
       return handleApiError(error);
     }
@@ -90,12 +90,12 @@ export function withAuth<T extends any[]>(
  * Allows anonymous access but provides session if available
  */
 export function withOptionalAuth<T extends any[]>(
-  handler: (req: NextRequest, session: Awaited<ReturnType<typeof getServerSession>> | null, ...args: T) => Promise<NextResponse>
+  handler: (req: NextRequest, session: Session | null, ...args: T) => Promise<NextResponse>
 ) {
   return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
     try {
       const session = await getServerSession(authOptions);
-      return await handler(req, session, ...args);
+      return await handler(req, session as Session | null, ...args);
     } catch (error) {
       return handleApiError(error);
     }
@@ -114,7 +114,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     return createApiResponse(
       {
         error: 'Validation failed',
-        details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '),
+        details: (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', '),
       },
       { status: 400 }
     );
@@ -442,7 +442,7 @@ export function sanitizeString(input: unknown): string {
  */
 export function validateSortParam(
   sortParam: string | null,
-  allowedSorts: string[],
+  allowedSorts: readonly string[],
   defaultSort: string = allowedSorts[0]
 ): string | { error: string; status: number } {
   if (!sortParam) {

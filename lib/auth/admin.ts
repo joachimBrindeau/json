@@ -57,6 +57,10 @@ export function checkSuperAdmin(userEmail?: string | null): boolean {
   if (!userEmail) {
     return false
   }
+  // Safety check for config.auth.superadminEmails
+  if (!config.auth?.superadminEmails || !Array.isArray(config.auth.superadminEmails)) {
+    return false
+  }
   return config.auth.superadminEmails.includes(userEmail)
 }
 

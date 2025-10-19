@@ -50,7 +50,6 @@ export const GET = withAuth(async (request: NextRequest, session) => {
     limit: pagination.limit,
     search: search || undefined,
     category: category || undefined,
-    visibility: visibility as 'private' | 'public' || undefined,
     sortBy,
     sortOrder: 'desc',
     includeContent: false, // Don't include full content for list view

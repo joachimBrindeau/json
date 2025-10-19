@@ -12,7 +12,6 @@ export const OPTIMIZED_MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptio
   renderLineHighlight: 'none', // Reduce rendering overhead
   renderWhitespace: 'none',
   renderControlCharacters: false,
-  renderIndentGuides: false,
   
   // Optimize scrolling and rendering
   scrollbar: {

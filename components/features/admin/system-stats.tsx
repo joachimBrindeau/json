@@ -170,7 +170,7 @@ export function SystemStats() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => clearCache.mutate()}
+              onClick={() => clearCache.mutate('')}
               disabled={clearCache.isLoading}
               className="w-full sm:w-auto"
             >

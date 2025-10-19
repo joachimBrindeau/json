@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
@@ -46,5 +46,3 @@ export default defineConfig({
   outputDir: './test-results/',
   testIgnore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
 });
-
-import devices from '@playwright/test';

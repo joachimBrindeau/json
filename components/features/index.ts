@@ -19,8 +19,8 @@ export * from './modals';
 export * from './editor';
 
 // Admin components (restricted access)
-export * from './admin';
+// Note: Import admin components directly from their files
 
 // Flow diagram components
-export * from './flow-diagram';
+// Note: Import flow diagram components directly from their files
 

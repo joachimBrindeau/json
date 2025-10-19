@@ -11,6 +11,7 @@ import {
   validatePaginationParams,
   handleDatabaseError,
   formatDocumentForResponse,
+  verifyDocumentOwnership,
   PaginationParams,
   PaginationResult,
   SearchParams,
@@ -430,15 +431,15 @@ export async function createJsonDocument(
         content: parsedContent,
         checksum,
         size: BigInt(jsonString.length),
-        nodeCount: analysis.stats?.nodes || 0,
-        maxDepth: analysis.stats?.maxDepth || 0,
-        complexity: analysis.complexity || 'Low',
+        nodeCount: (analysis as any).stats?.nodes || 0,
+        maxDepth: (analysis as any).stats?.maxDepth || 0,
+        complexity: (analysis as any).complexity || 'Low',
         visibility: input.visibility || 'private',
         userId: input.userId,
         category: input.category,
         tags: input.tags || [],
         metadata: {
-          analysis,
+          analysis: analysis as any,
           richContent: input.richContent || '',
           createdAt: new Date().toISOString(),
           source: 'api'
@@ -474,25 +475,18 @@ export async function updateDocument(
   status?: number;
 }> {
   try {
-    // First verify document exists and user owns it
-    const existingDocument = await prisma.jsonDocument.findFirst({
-      where: {
-        OR: [{ id }, { shareId: id }],
-      },
-      select: {
-        id: true,
-        userId: true,
-        version: true
-      }
+    // Verify document ownership
+    const verification = await verifyDocumentOwnership(id, userId, {
+      id: true,
+      userId: true,
+      version: true
     });
 
-    if (!existingDocument) {
-      return { success: false, error: 'Document not found', status: 404 };
+    if (!verification.success) {
+      return verification;
     }
 
-    if (existingDocument.userId !== userId) {
-      return { success: false, error: 'Access denied - not document owner', status: 403 };
-    }
+    const existingDocument = verification.data;
 
     // Update the document
     const document = await prisma.jsonDocument.update({
@@ -531,25 +525,18 @@ export async function deleteDocument(
   status?: number;
 }> {
   try {
-    // First verify document exists and user owns it
-    const existingDocument = await prisma.jsonDocument.findFirst({
-      where: {
-        OR: [{ id }, { shareId: id }],
-      },
-      select: {
-        id: true,
-        userId: true,
-        title: true
-      }
+    // Verify document ownership
+    const verification = await verifyDocumentOwnership(id, userId, {
+      id: true,
+      userId: true,
+      title: true
     });
 
-    if (!existingDocument) {
-      return { success: false, error: 'Document not found', status: 404 };
+    if (!verification.success) {
+      return verification;
     }
 
-    if (existingDocument.userId !== userId) {
-      return { success: false, error: 'Access denied - not document owner', status: 403 };
-    }
+    const existingDocument = verification.data;
 
     if (options.hardDelete) {
       // Hard delete - completely remove from database
@@ -645,25 +632,18 @@ export async function publishDocument(
   status?: number;
 }> {
   try {
-    // First verify document exists and user owns it
-    const existingDocument = await prisma.jsonDocument.findFirst({
-      where: {
-        OR: [{ id }, { shareId: id }],
-      },
-      select: {
-        id: true,
-        userId: true,
-        visibility: true
-      }
+    // Verify document ownership
+    const verification = await verifyDocumentOwnership(id, userId, {
+      id: true,
+      userId: true,
+      visibility: true
     });
 
-    if (!existingDocument) {
-      return { success: false, error: 'Document not found', status: 404 };
+    if (!verification.success) {
+      return verification;
     }
 
-    if (existingDocument.userId !== userId) {
-      return { success: false, error: 'Access denied - not document owner', status: 403 };
-    }
+    const existingDocument = verification.data;
 
     // Update to public with publish data
     const document = await prisma.jsonDocument.update({

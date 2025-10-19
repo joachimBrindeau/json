@@ -173,7 +173,7 @@ export const NodeRenderer = memo<NodeRendererProps>(({
 NodeRenderer.displayName = 'NodeRenderer';
 
 // Specialized node renderers for different use cases
-export interface CompactNodeRendererProps extends Omit<NodeRendererProps, 'compactMode'> {}
+export type CompactNodeRendererProps = Omit<NodeRendererProps, 'compactMode'>;
 
 export const CompactNodeRenderer = memo<CompactNodeRendererProps>((props) => (
   <NodeRenderer {...props} compactMode={true} showSizeInfo={false} indentSize={12} />
@@ -303,7 +303,7 @@ export const useNodeRenderer = (options: {
     ];
 
     if (isNodeHighlighted(node)) {
-      baseClasses.push('bg-yellow-100', 'border-l-2', 'border-yellow-400');
+      baseClasses.push('bg-red-50', 'border-l-4', 'border-red-500');
     }
 
     return baseClasses.join(' ');

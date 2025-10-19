@@ -1,19 +1,38 @@
-'use client';
+/**
+ * @deprecated This component is deprecated. Use action factory functions instead.
+ *
+ * Migration guide:
+ * ```typescript
+ * // Old approach:
+ * import { EditorActions } from '@/components/features/editor/EditorActions';
+ * <EditorActions output={output} hasContent={!!output} onReset={handleReset} />
+ *
+ * // New approach:
+ * import { createResetAction } from '@/lib/editor/action-factories';
+ *
+ * const actions = useMemo(() => [
+ *   createResetAction({ onReset: handleReset, hasData: !!output }),
+ * ], [output]);
+ *
+ * <EditorPane actions={actions} customActions={<ViewerActions />} ... />
+ * ```
+ *
+ * This file is kept for backward compatibility but will be removed in a future version.
+ * All editor pages have been migrated to use the new action-based architecture.
+ */
 
-import { useCallback } from 'react';
-import { UnifiedButton } from '@/components/ui/unified-button';
-import { Copy, Download, FileJson, RotateCcw, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useClipboard } from '@/hooks/use-clipboard';
-import { useDownload } from '@/hooks/use-download';
+import type { EditorAction } from '@/types/editor-actions';
+import {
+  createCopyAction,
+  createDownloadAction,
+  createResetAction,
+} from '@/lib/editor/action-factories';
 
-interface EditorActionsProps {
+interface CreateEditorActionsOptions {
   /** The output/result data to copy or download */
   output: string;
   /** Whether there's any input or output to reset */
   hasContent: boolean;
-  /** Callback when sample is clicked */
-  onSample?: () => void;
   /** Callback when reset is clicked */
   onReset?: () => void;
   /** Filename for download (without extension) */
@@ -24,100 +43,74 @@ interface EditorActionsProps {
   mimeType?: string;
   /** Custom label for the output (e.g., "formatted JSON", "converted data") */
   outputLabel?: string;
+  /** Copy function from useClipboard hook */
+  copy: (text: string) => Promise<void>;
+  /** Download function from useDownload hook */
+  download: (content: string, filename: string, mimeType: string) => void;
+  /** Toast function for error messages */
+  toast: (options: { title: string; description: string; variant?: 'destructive' }) => void;
+  /** Whether data was copied */
+  copied?: boolean;
 }
 
 /**
- * Common action buttons for editor pages (Format, Convert, etc.)
- * Provides: Copy, Download, Sample, Reset functionality
+ * Factory function to create editor actions
+ * @deprecated Use createStandardInputActions or createStandardOutputActions from action-presets instead
  */
-export function EditorActions({
+export function createEditorActionsArray({
   output,
   hasContent,
-  onSample,
   onReset,
   filename = 'output',
   fileExtension = 'json',
   mimeType = 'application/json',
   outputLabel = 'output',
-}: EditorActionsProps) {
-  const { toast } = useToast();
-  const { copy, copied } = useClipboard({
-    successMessage: 'Copied!',
-    successDescription: `${outputLabel} copied to clipboard`,
-  });
-  const { download } = useDownload({
-    successMessage: 'Downloaded!',
-    successDescription: 'File downloaded successfully',
-  });
+  copy,
+  download,
+  toast,
+  copied = false,
+}: CreateEditorActionsOptions): EditorAction[] {
+  const actions: EditorAction[] = [];
 
-  const handleCopy = useCallback(async () => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: `Generate ${outputLabel} first`,
-        variant: 'destructive',
-      });
-      return;
-    }
-    await copy(output);
-  }, [output, copy, toast, outputLabel]);
-
-  const handleDownload = useCallback(() => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: `Generate ${outputLabel} first`,
-        variant: 'destructive',
-      });
-      return;
-    }
-    download(output, `${filename}.${fileExtension}`, mimeType);
-  }, [output, download, toast, filename, fileExtension, mimeType, outputLabel]);
-
-  return (
-    <>
-      {onSample && (
-        <UnifiedButton
-          variant="outline"
-          size="xs"
-          icon={FileJson}
-          text="Sample"
-          onClick={onSample}
-          title="Load Sample JSON"
-        />
-      )}
-
-      <UnifiedButton
-        variant="outline"
-        size="xs"
-        icon={copied ? Check : Copy}
-        text={copied ? 'Copied' : 'Copy'}
-        onClick={handleCopy}
-        disabled={!output}
-        title={`Copy ${outputLabel}`}
-      />
-
-      <UnifiedButton
-        variant="outline"
-        size="xs"
-        icon={Download}
-        text="Download"
-        onClick={handleDownload}
-        disabled={!output}
-        title={`Download ${outputLabel}`}
-      />
-
-      {onReset && (
-        <UnifiedButton
-          variant="red"
-          size="xs"
-          icon={RotateCcw}
-          text="Reset"
-          onClick={onReset}
-          disabled={!hasContent}
-          title="Reset All"
-        />
-      )}
-    </>
+  actions.push(
+    createCopyAction({
+      data: output,
+      copy,
+      toast,
+      copied,
+      position: 'right',
+      showText: false,
+      tooltip: copied ? 'Copied!' : `Copy ${outputLabel}`,
+      noDataMessage: `Generate ${outputLabel} first`,
+    })
   );
+
+  actions.push(
+    createDownloadAction({
+      data: output,
+      download,
+      toast,
+      position: 'right',
+      showText: false,
+      tooltip: `Download ${outputLabel}`,
+      filename,
+      fileExtension,
+      mimeType,
+      noDataMessage: `Generate ${outputLabel} first`,
+    })
+  );
+
+  if (onReset) {
+    actions.push(
+      createResetAction({
+        onReset,
+        hasData: hasContent,
+        position: 'right',
+        showText: true,
+        tooltip: 'Reset All',
+      })
+    );
+  }
+
+  return actions;
 }

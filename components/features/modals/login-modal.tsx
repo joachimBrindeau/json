@@ -70,7 +70,7 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
       if (isSignup) {
         // Create account
         await apiClient.post('/api/auth/signup', {
-          name: formData.name.trim() || 'User',
+          name: formData.name?.trim() || 'User',
           email,
           password: formData.password,
         });

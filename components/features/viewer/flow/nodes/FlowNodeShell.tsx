@@ -21,7 +21,7 @@ const hostClassNames: Record<NodeType, string> = {
 const NodeShellComponent = ({ nodeId, nodeType, isHighlight = false, children }: Props) => {
   return (
     <div
-      className={cn(hostClassNames[nodeType], isHighlight && '!border-blue-500 dark:!border-blue-400')}
+      className={cn(hostClassNames[nodeType], isHighlight && '!border-red-500 dark:!border-red-400 !border-4')}
       data-node-id={nodeId}
     >
       {children}
