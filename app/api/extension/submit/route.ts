@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create a temporary share without authentication
+    // Set visibility to public and isAnonymous to true for easy access
     const document = await prisma.jsonDocument.create({
       data: {
         title: `Extension Import - ${new Date().toLocaleString()}`,
@@ -48,6 +49,8 @@ export async function POST(request: NextRequest) {
         maxDepth: analysis.maxDepth,
         complexity: analysis.complexity,
         checksum: analysis.checksum,
+        visibility: 'public',
+        isAnonymous: true,
         metadata: {
           source: 'extension',
           extensionId,
