@@ -6,6 +6,13 @@ import { success, badRequest, internalServerError } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
+// CORS headers to include in all responses
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export async function POST(request: NextRequest) {
   const monitor = createPerformanceMonitor();
 
@@ -13,7 +20,7 @@ export async function POST(request: NextRequest) {
     const { jsonData, sourceUrl, extensionId } = await request.json();
 
     if (!jsonData) {
-      return badRequest('No JSON data provided');
+      return badRequest('No JSON data provided', { headers: corsHeaders });
     }
 
     // Parse JSON if it's a string
@@ -21,7 +28,7 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
     } catch {
-      return badRequest('Invalid JSON format');
+      return badRequest('Invalid JSON format', { headers: corsHeaders });
     }
 
     // Analyze JSON structure
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
         maxDepth: document.maxDepth,
         processingTime: performance.duration,
       },
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     logger.error(
       {
@@ -86,6 +93,7 @@ export async function POST(request: NextRequest) {
 
     return internalServerError('Failed to process JSON data', {
       details: error instanceof Error ? error.message : 'Unknown error',
+      headers: corsHeaders,
     });
   }
 }
@@ -94,10 +102,6 @@ export async function POST(request: NextRequest) {
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
+    headers: corsHeaders,
   });
 }
