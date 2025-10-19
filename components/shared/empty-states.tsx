@@ -24,21 +24,23 @@ interface EmptyStateProps {
   action?: {
     label: string;
     onClick: () => void;
-    variant?: 'default' | 'outline' | 'secondary';
+    variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive';
   };
   className?: string;
   compact?: boolean;
+  withCard?: boolean;
 }
 
-export const EmptyState = ({ 
-  icon, 
-  title, 
-  description, 
-  action, 
-  className = '', 
-  compact = false 
-}: EmptyStateProps) => (
-  <Card className={`h-full flex items-center justify-center ${className}`}>
+export const EmptyState = ({
+  icon,
+  title,
+  description,
+  action,
+  className = '',
+  compact = false,
+  withCard = true
+}: EmptyStateProps) => {
+  const content = (
     <div className={`text-center text-muted-foreground ${compact ? 'max-w-sm' : 'max-w-md'}`}>
       {icon && (
         <div className="flex justify-center mb-4">
@@ -53,8 +55,8 @@ export const EmptyState = ({
       )}
       {action && (
         <div className="mt-4">
-          <Button 
-            variant={action.variant || 'outline'} 
+          <Button
+            variant={action.variant || 'outline'}
             onClick={action.onClick}
             size={compact ? 'sm' : 'default'}
           >
@@ -63,8 +65,22 @@ export const EmptyState = ({
         </div>
       )}
     </div>
-  </Card>
-);
+  );
+
+  if (withCard) {
+    return (
+      <Card className={`h-full flex items-center justify-center ${className}`}>
+        {content}
+      </Card>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col items-center justify-center text-center p-8 ${className}`}>
+      {content}
+    </div>
+  );
+};
 
 // JSON-specific empty states
 export const JsonEmptyState = ({ compact = false }: { compact?: boolean }) => (

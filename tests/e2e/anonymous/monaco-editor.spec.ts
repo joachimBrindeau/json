@@ -89,7 +89,7 @@ test.describe('Anonymous User - Monaco Editor Functionality', () => {
 
       // Trigger formatting (usually Ctrl+Alt+F or similar)
       await viewerPage.page.keyboard.press('Control+Alt+F');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Verify content is formatted (contains line breaks and indentation)
       const formattedContent = await viewerPage.jsonTextArea.inputValue();
@@ -148,11 +148,11 @@ test.describe('Anonymous User - Monaco Editor Functionality', () => {
       await viewerPage.jsonTextArea.focus();
       await viewerPage.page.keyboard.press('End');
       await viewerPage.page.keyboard.type(', "modified": true');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Undo the edit
       await viewerPage.page.keyboard.press('Control+Z');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Verify content was reverted
       const currentContent = await viewerPage.jsonTextArea.inputValue();
@@ -160,7 +160,7 @@ test.describe('Anonymous User - Monaco Editor Functionality', () => {
 
       // Redo the edit
       await viewerPage.page.keyboard.press('Control+Y');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Verify content was restored
       const redoneContent = await viewerPage.jsonTextArea.inputValue();
@@ -190,11 +190,11 @@ test.describe('Anonymous User - Monaco Editor Functionality', () => {
 
       // Open find dialog
       await viewerPage.page.keyboard.press('Control+F');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Type search term
       await viewerPage.page.keyboard.type('user');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Verify find functionality is working
       const hasSearchHighlight =
@@ -217,7 +217,7 @@ test.describe('Anonymous User - Monaco Editor Functionality', () => {
       // Add some content to trigger processing
       await viewerPage.page.keyboard.type(' ');
       await viewerPage.page.keyboard.press('Backspace');
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Cursor should remain in approximately same position
       // This is more of a performance/UX test

@@ -63,7 +63,8 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       if (formatElements > 0) {
         // Test different formatting options
         await viewerPage.page.locator('[data-testid*="export-options"]').first().click();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for export options dialog to appear
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Try compact/minified export
         const compactOption = viewerPage.page.locator('text=/compact|minif/i');
@@ -445,7 +446,8 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
       if (customizationElements > 0) {
         await viewerPage.page.locator('[data-testid*="export-options"]').first().click();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for customization dialog to appear
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Check for various customization options
         const optionElements = {
@@ -620,7 +622,8 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
       if (batchElements > 0) {
         await viewerPage.page.locator('[data-testid*="batch"]').first().click();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for batch export options to appear
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Select multiple export formats
         const formatOptions = await viewerPage.page

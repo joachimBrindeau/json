@@ -205,6 +205,11 @@ const nextConfig: NextConfig = {
         destination: '/library/:id',
         permanent: true,
       },
+      {
+        source: '/saved',
+        destination: '/save',
+        permanent: true,
+      },
     ];
   },
 

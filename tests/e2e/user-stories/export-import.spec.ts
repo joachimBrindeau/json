@@ -48,8 +48,7 @@ test.describe('User Story: Export and Import Functionality', () => {
     const exportButton = viewerPage.page.locator('[data-testid="export-button"], button:has-text("Export"), .export-btn');
     if (await exportButton.isVisible({ timeout: 3000 })) {
       await exportButton.click();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       // Check for formatting options
       const exportModal = viewerPage.page.locator('[data-testid="export-modal"], .modal, .export-dialog');
       if (await exportModal.isVisible({ timeout: 2000 })) {
@@ -60,12 +59,10 @@ test.describe('User Story: Export and Import Functionality', () => {
 
         if (await formattedOption.isVisible()) {
           await formattedOption.click();
-          await viewerPage.page.waitForTimeout(500);
         }
 
         if (await customIndentOption.isVisible()) {
           await customIndentOption.fill('4'); // 4-space indentation
-          await viewerPage.page.waitForTimeout(500);
         }
 
         // Confirm export
@@ -99,22 +96,21 @@ test.describe('User Story: Export and Import Functionality', () => {
     if (await uploadArea.isVisible({ timeout: 3000 })) {
       // Upload via drag-drop area
       await fileInput.setInputFiles(testFilePath);
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.waitForJSONProcessed();
     } else if (await fileInput.isVisible()) {
       // Direct file input
       await fileInput.setInputFiles(testFilePath);
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.waitForJSONProcessed();
     } else {
       // Look for upload button
       const uploadButton = viewerPage.page.locator('[data-testid="upload-button"], button:has-text("Upload"), .upload-btn');
       if (await uploadButton.isVisible()) {
         await uploadButton.click();
-        await viewerPage.page.waitForTimeout(1000);
         
         const fileInputModal = viewerPage.page.locator('input[type="file"]');
         if (await fileInputModal.isVisible()) {
           await fileInputModal.setInputFiles(testFilePath);
-          await viewerPage.page.waitForTimeout(2000);
+          await viewerPage.waitForJSONProcessed();
         }
       }
     }
@@ -145,7 +141,6 @@ test.describe('User Story: Export and Import Functionality', () => {
       const fileInput = viewerPage.page.locator('input[type="file"]');
       if (await fileInput.isVisible()) {
         await fileInput.setInputFiles(testFilePath);
-        await viewerPage.page.waitForTimeout(2000);
 
         // Should process the dropped file
         await viewerPage.waitForJSONProcessed();
@@ -165,8 +160,7 @@ test.describe('User Story: Export and Import Functionality', () => {
     const exportButton = viewerPage.page.locator('[data-testid="export-button"], button:has-text("Export")');
     if (await exportButton.isVisible({ timeout: 3000 })) {
       await exportButton.click();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       // Check for different format options
       const formatSelect = viewerPage.page.locator('[data-testid="export-format"], select[name="format"], .format-selector');
       if (await formatSelect.isVisible({ timeout: 2000 })) {
@@ -175,7 +169,6 @@ test.describe('User Story: Export and Import Functionality', () => {
         for (const format of formats) {
           try {
             await formatSelect.selectOption(format);
-            await viewerPage.page.waitForTimeout(500);
 
             const confirmExportButton = viewerPage.page.locator('[data-testid="confirm-export"], button:has-text("Export")');
             if (await confirmExportButton.isVisible()) {
@@ -225,13 +218,12 @@ test.describe('User Story: Export and Import Functionality', () => {
 
       // Clear current JSON
       await viewerPage.clearJSON();
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Re-import the exported file
       const fileInput = viewerPage.page.locator('input[type="file"]');
       if (await fileInput.isVisible()) {
         await fileInput.setInputFiles(downloadPath);
-        await viewerPage.page.waitForTimeout(2000);
 
         // Should have same structure
         await viewerPage.waitForJSONProcessed();
@@ -274,7 +266,7 @@ test.describe('User Story: Export and Import Functionality', () => {
     const fileInput = viewerPage.page.locator('input[type="file"]');
     if (await fileInput.isVisible({ timeout: 3000 })) {
       await fileInput.setInputFiles(invalidFilePath);
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Should show validation errors
       expect(await viewerPage.hasJSONErrors()).toBe(true);
@@ -295,13 +287,11 @@ test.describe('User Story: Export and Import Functionality', () => {
     const exportButton = viewerPage.page.locator('[data-testid="export-button"], button:has-text("Export")');
     if (await exportButton.isVisible({ timeout: 3000 })) {
       await exportButton.click();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       // Look for filename input
       const filenameInput = viewerPage.page.locator('[data-testid="export-filename"], input[name="filename"], .filename-input');
       if (await filenameInput.isVisible({ timeout: 2000 })) {
         await filenameInput.fill('my-custom-config');
-        await viewerPage.page.waitForTimeout(500);
 
         const confirmExportButton = viewerPage.page.locator('[data-testid="confirm-export"], button:has-text("Export")');
         if (await confirmExportButton.isVisible()) {
@@ -327,12 +317,11 @@ test.describe('User Story: Export and Import Functionality', () => {
     const batchImportButton = viewerPage.page.locator('[data-testid="batch-import"], button:has-text("Batch Import"), .batch-upload');
     if (await batchImportButton.isVisible({ timeout: 3000 })) {
       await batchImportButton.click();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       const fileInput = viewerPage.page.locator('input[type="file"][multiple]');
       if (await fileInput.isVisible()) {
         await fileInput.setInputFiles(testFiles);
-        await viewerPage.page.waitForTimeout(3000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should show batch processing results
         const batchResults = viewerPage.page.locator('[data-testid="batch-results"], .batch-results');
@@ -345,7 +334,6 @@ test.describe('User Story: Export and Import Functionality', () => {
       const fileInput = viewerPage.page.locator('input[type="file"]');
       if (await fileInput.isVisible()) {
         await fileInput.setInputFiles(testFiles[0]);
-        await viewerPage.page.waitForTimeout(2000);
 
         await viewerPage.waitForJSONProcessed();
         expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -360,7 +348,7 @@ test.describe('User Story: Export and Import Functionality', () => {
     const profileButton = viewerPage.page.locator('[data-testid="profile"], .profile, button:has-text("Profile")');
     if (await profileButton.isVisible({ timeout: 3000 })) {
       await profileButton.click();
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Look for export data option
       const exportDataButton = viewerPage.page.locator('[data-testid="export-data"], button:has-text("Export Data"), .export-library');
@@ -396,18 +384,16 @@ test.describe('User Story: Export and Import Functionality', () => {
     const settingsButton = viewerPage.page.locator('[data-testid="settings"], .settings, button:has-text("Settings")');
     if (await settingsButton.isVisible({ timeout: 3000 })) {
       await settingsButton.click();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       // Look for import data option
       const importDataButton = viewerPage.page.locator('[data-testid="import-data"], button:has-text("Import"), .import-library');
       if (await importDataButton.isVisible({ timeout: 3000 })) {
         await importDataButton.click();
-        await viewerPage.page.waitForTimeout(1000);
-
+        
         const fileInput = viewerPage.page.locator('input[type="file"]');
         if (await fileInput.isVisible()) {
           await fileInput.setInputFiles(backupPath);
-          await viewerPage.page.waitForTimeout(2000);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Should show import progress/results
           const importStatus = viewerPage.page.locator('[data-testid="import-status"], .import-results');
@@ -430,12 +416,12 @@ test.describe('User Story: Export and Import Functionality', () => {
       const fileInput = viewerPage.page.locator('input[type="file"]');
       if (await fileInput.isVisible({ timeout: 1000 })) {
         await fileInput.setInputFiles(filePath);
-        await viewerPage.page.waitForTimeout(500); // Quick succession
+        // Quick succession - minimal wait
       }
     }
 
     // Should handle concurrent operations gracefully
-    await viewerPage.page.waitForTimeout(3000);
+    await viewerPage.page.waitForLoadState('networkidle');
     
     // Should end up with valid JSON loaded
     await viewerPage.waitForJSONProcessed();
@@ -448,7 +434,6 @@ test.describe('User Story: Export and Import Functionality', () => {
     const fileInput = viewerPage.page.locator('input[type="file"]');
     if (await fileInput.isVisible({ timeout: 3000 })) {
       await fileInput.setInputFiles(testFilePath);
-      await viewerPage.page.waitForTimeout(2000);
 
       await viewerPage.waitForJSONProcessed();
 

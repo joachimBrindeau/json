@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import {
@@ -85,7 +86,7 @@ export default function TagAnalyticsPage() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-full">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
+          <LoadingSpinner size="md" />
         </div>
       </MainLayout>
     );

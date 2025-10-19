@@ -1,4 +1,4 @@
-import { Page, BrowserContext } from '@playwright/test';
+import { Page, BrowserContext, expect } from '@playwright/test';
 import { TEST_USERS } from '../fixtures/users';
 
 export class AuthHelper {
@@ -9,87 +9,105 @@ export class AuthHelper {
 
   /**
    * Login with test user credentials
+   * Uses UI-based login for proper NextAuth SessionProvider synchronization
    */
   async login(userType: keyof typeof TEST_USERS = 'regular') {
     const user = TEST_USERS[userType];
 
-    // Navigate to homepage
-    await this.page.goto('/');
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForTimeout(2000); // Wait for React hydration
-
     try {
-      // Look for sign in button with multiple selectors
+      // Navigate to homepage and wait for page to be fully loaded
+      await this.page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+      // Wait for NextAuth session check to complete by waiting for loading skeleton to disappear
+      await this.page.waitForSelector('[data-testid="user-menu-loading"]', {
+        state: 'hidden',
+        timeout: 10000
+      }).catch(() => {
+        // Loading skeleton might not appear if session resolves very quickly
+      });
+
+      // Check if already logged in
+      const userMenu = this.page.locator('[data-testid="user-menu"]');
       const signInButton = this.page.locator('[data-testid="sign-in-button"]');
       
-      await signInButton.waitFor({ state: 'visible', timeout: 10000 });
-      await signInButton.click();
-      
-      // Wait for login modal to appear with multiple possible selectors
-      await this.page.waitForSelector(
-        '[role="dialog"], .modal, [data-testid="login-modal"]',
-        { timeout: 10000 }
-      );
-      
-      // Wait a moment for modal to fully render
-      await this.page.waitForTimeout(1000);
-
-      // Fill in credentials with more robust selectors
-      const emailField = this.page.locator('#email, [name="email"], input[type="email"]').first();
-      const passwordField = this.page.locator('#password, [name="password"], input[type="password"]').first();
-      
-      await emailField.waitFor({ state: 'visible', timeout: 5000 });
-      await emailField.fill(user.email);
-      
-      await passwordField.waitFor({ state: 'visible', timeout: 5000 });
-      await passwordField.fill(user.password);
-      
-      // Wait for form to be ready
-      await this.page.waitForTimeout(500);
-
-      // Submit login form with multiple possible selectors
-      const submitButton = this.page.locator(
-        'button[type="submit"]:has-text("Sign In"), ' +
-        'button[type="submit"]:has-text("Sign in"), ' +
-        'button[type="submit"]:has-text("Login"), ' +
-        'form button:has-text("Sign In"), ' +
-        'form button:has-text("Login")'
-      ).first();
-      
-      await submitButton.click();
-      
-      // Wait for successful login with multiple success indicators
+      // Wait for either user menu or sign-in button to appear (one must be visible after loading)
       await Promise.race([
-        this.page.waitForSelector('[data-testid="user-menu"]', { timeout: 15000 }),
-        this.page.waitForFunction(() => {
-          return !document.querySelector('[role="dialog"]:has(input[type="email"])');
-        }, { timeout: 15000 })
+        userMenu.waitFor({ state: 'visible', timeout: 10000 }),
+        signInButton.waitFor({ state: 'visible', timeout: 10000 })
       ]);
-      
-      // Additional wait for any post-login navigation or state updates
-      await this.page.waitForTimeout(2000);
-      
-      // Ensure the user menu is actually visible and clickable
-      await this.page.waitForSelector('[data-testid="user-menu"]', { state: 'visible', timeout: 10000 });
-      
-      // Wait for React state to fully update
-      await this.page.waitForFunction(() => {
+
+      const isAlreadyLoggedIn = await userMenu.isVisible();
+
+      if (isAlreadyLoggedIn) {
+        console.log(`ℹ️ User already logged in, skipping login`);
+        return;
+      }
+
+      // Wait for the Sign in button to be visible and enabled
+      // Increased timeout to account for slow React hydration in production
+      await expect(signInButton).toBeVisible({ timeout: 30000 });
+      await expect(signInButton).toBeEnabled({ timeout: 10000 });
+
+      // Click the Sign in button to open login modal
+      await signInButton.click();
+
+      // Wait for login modal to appear with proper state check
+      const modal = this.page.locator('[role="dialog"]');
+      await expect(modal).toBeVisible({ timeout: 10000 });
+
+      // Fill in credentials with explicit waits
+      const emailInput = this.page.locator('#email');
+      const passwordInput = this.page.locator('#password');
+
+      await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+      await emailInput.fill(user.email);
+
+      await passwordInput.waitFor({ state: 'visible', timeout: 5000 });
+      await passwordInput.fill(user.password);
+
+      // Submit the login form
+      const submitButton = this.page.locator('button[type="submit"]').filter({ hasText: /sign in/i });
+      await submitButton.waitFor({ state: 'visible', timeout: 5000 });
+      await submitButton.click();
+
+      // Wait for modal to close (indicates login processing)
+      await modal.waitFor({ state: 'detached', timeout: 10000 }).catch(() => {
+        console.log('⚠️ Modal still visible, but continuing...');
+      });
+
+      // NOTE: The login modal now uses updateSession() + router.refresh()
+      // router.refresh() causes Next.js to revalidate server components
+      // Wait for the page to stabilize by checking for main content
+      await this.page.locator('main').waitFor({ state: 'attached', timeout: 10000 }).catch(() => {
+        console.log('⚠️ Page content not stable, but continuing...');
+      });
+
+      // Wait for the user menu to appear (indicates successful session sync)
+      // This should appear after both SessionProvider.update() and router.refresh() complete
+      await userMenu.waitFor({ state: 'visible', timeout: 30000 });
+
+      // Final verification that we're logged in
+      const isLoggedIn = await this.page.evaluate(() => {
         const userMenu = document.querySelector('[data-testid="user-menu"]');
         const signInButton = document.querySelector('[data-testid="sign-in-button"]');
-        return userMenu && !signInButton;
-      }, { timeout: 10000 });
-      
+        return !!userMenu && !signInButton;
+      });
+
+      if (!isLoggedIn) {
+        throw new Error('Login appeared to succeed but user menu is not visible');
+      }
+
       console.log(`✅ Successfully logged in as ${user.email}`);
-      
+
     } catch (error) {
       console.error(`❌ Login failed for ${user.email}:`, error.message);
-      
+
       // Take screenshot for debugging
-      await this.page.screenshot({ 
+      await this.page.screenshot({
         path: `test-results/login-failure-${userType}-${Date.now()}.png`,
-        fullPage: true 
+        fullPage: true
       });
-      
+
       throw error;
     }
   }
@@ -105,6 +123,8 @@ export class AuthHelper {
       const csrfToken = await this.getCSRFToken();
 
       // Make direct API call to NextAuth credentials endpoint
+      // IMPORTANT: Set maxRedirects: 0 to prevent following the 302 redirect
+      // Following the redirect causes timeout because homepage SSR takes 10+ seconds
       const response = await this.context.request.post('/api/auth/callback/credentials', {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -116,25 +136,34 @@ export class AuthHelper {
           callbackUrl: '/',
           csrfToken: csrfToken,
         },
+        maxRedirects: 0, // Don't follow redirects - we only need the session cookie
       });
 
-      if (!response.ok()) {
+      // Check if we got a successful response (200 or 302)
+      if (!response.ok() && response.status() !== 302) {
         throw new Error(`API Login failed: ${response.status()} - ${await response.text()}`);
       }
 
-      // Check for successful authentication in response
-      const responseText = await response.text();
-      if (responseText.includes('CredentialsSignin') || responseText.includes('error')) {
-        throw new Error(`Authentication failed: Invalid credentials`);
+      // Check for session token in response headers/cookies
+      const headers = response.headers();
+      const cookies = await this.context.cookies();
+      const sessionCookie = cookies.find(c => c.name === 'next-auth.session-token');
+
+      if (!sessionCookie) {
+        const responseText = await response.text();
+        console.error(`❌ No session cookie found after login`);
+        console.error(`Response status: ${response.status()}`);
+        console.error(`Response text (first 500 chars): ${responseText.substring(0, 500)}`);
+        throw new Error(`Authentication failed: No session cookie found`);
       }
-      
-      console.log(`✅ Successfully logged in via API as ${user.email}`);
-      
-      // Set a flag that we're logged in via API
-      await this.page.evaluate((email) => {
-        localStorage.setItem('test-logged-in-user', email);
-      }, user.email);
-      
+
+      // IMPORTANT: Add the session cookie to the browser context
+      // The API request context and browser page context have separate cookie storage
+      // We need to explicitly transfer the cookie so the browser can use it
+      await this.context.addCookies([sessionCookie]);
+
+      console.log(`✅ Successfully logged in via API as ${user.email} (session cookie present and added to browser)`);
+
     } catch (error) {
       console.error(`❌ API Login failed for ${user.email}:`, error.message);
       throw error;
@@ -166,14 +195,15 @@ export class AuthHelper {
         return;
       }
 
-      // Click the user dropdown menu with multiple possible selectors
+      // Click the user dropdown menu
       const userMenuButton = this.page.locator('[data-testid="user-menu"]');
-      
-      await userMenuButton.waitFor({ state: 'visible', timeout: 5000 });
+
+      await expect(userMenuButton).toBeVisible({ timeout: 15000 });
       await userMenuButton.click();
-      
-      // Wait for dropdown to open
-      await this.page.waitForTimeout(500);
+
+      // Wait for dropdown menu to be visible
+      const dropdownMenu = this.page.locator('[role="menu"]');
+      await expect(dropdownMenu).toBeVisible({ timeout: 15000 });
       
       // Click the Sign out option with multiple possible selectors
       const signOutButton = this.page.locator(
@@ -188,18 +218,8 @@ export class AuthHelper {
       await signOutButton.waitFor({ state: 'visible', timeout: 5000 });
       await signOutButton.click();
 
-      // Wait for logout to complete with multiple success indicators
-      await Promise.race([
-        this.page.waitForSelector('[data-testid="sign-in-button"]', { timeout: 10000 }),
-        this.page.waitForFunction(() => {
-          return !localStorage.getItem('test-logged-in-user');
-        }, { timeout: 10000 })
-      ]);
-      
-      // Clear any test login flags
-      await this.page.evaluate(() => {
-        localStorage.removeItem('test-logged-in-user');
-      });
+      // Wait for logout to complete - sign in button should appear
+      await this.page.waitForSelector('[data-testid="sign-in-button"]', { timeout: 10000 });
       
       console.log('✅ Successfully logged out');
       
@@ -253,17 +273,7 @@ export class AuthHelper {
       ]);
       
       // If any check succeeded, user is logged in
-      const isLoggedIn = loggedInChecks.some(result => result.status === 'fulfilled');
-      
-      // Also check localStorage flag for API logins
-      if (!isLoggedIn) {
-        const hasTestLoginFlag = await this.page.evaluate(() => {
-          return !!localStorage.getItem('test-logged-in-user');
-        });
-        return hasTestLoginFlag;
-      }
-      
-      return isLoggedIn;
+      return loggedInChecks.some(result => result.status === 'fulfilled');
     } catch (error) {
       return false;
     }

@@ -1,0 +1,1546 @@
+
+> json-share@1.0.1 test:e2e:smoke
+> ./node_modules/.bin/playwright test --grep "@smoke"
+
+🚀 Global setup started
+📡 Using base URL: http://localhost:3456
+📡 Checking if server is available...
+✅ Server responded with status 200
+✅ Server is available
+🧹 Cleaning up existing test users...
+  ✅ Deleted 7 existing test users
+👤 Creating test users...
+  Creating user: testuser@jsonshare.test
+  ✅ Created user: testuser@jsonshare.test
+  Creating user: admin@jsonshare.test
+  ✅ Created user: admin@jsonshare.test
+  Creating user: dev@jsonshare.test
+  ✅ Created user: dev@jsonshare.test
+  Creating user: power@jsonshare.test
+  ✅ Created user: power@jsonshare.test
+  Creating user: community@jsonshare.test
+  ✅ Created user: community@jsonshare.test
+  Creating user: temp1@jsonshare.test
+  ✅ Created user: temp1@jsonshare.test
+  Creating user: temp2@jsonshare.test
+  ✅ Created user: temp2@jsonshare.test
+🔍 Verifying basic app functionality...
+✅ Main content area found
+🎯 Global setup completed successfully
+JSON Path Conversion Test Results
+==================================================
+✅ Test 1: Root element
+   Input:    "root"
+   Expected: "$"
+   Result:   "$"
+
+✅ Test 2: Simple property
+   Input:    "root.name"
+   Expected: "$.name"
+   Result:   "$.name"
+
+✅ Test 3: Nested properties
+   Input:    "root.user.profile"
+   Expected: "$.user.profile"
+   Result:   "$.user.profile"
+
+✅ Test 4: Array index at end
+   Input:    "root.users.0"
+   Expected: "$.users[0]"
+   Result:   "$.users[0]"
+
+✅ Test 5: Property after array index
+   Input:    "root.users.0.name"
+   Expected: "$.users[0].name"
+   Result:   "$.users[0].name"
+
+✅ Test 6: Multiple array indices
+   Input:    "root.data.0.items.1.value"
+   Expected: "$.data[0].items[1].value"
+   Result:   "$.data[0].items[1].value"
+
+✅ Test 7: Property with hyphen
+   Input:    "root.special-key"
+   Expected: "$['special-key']"
+   Result:   "$['special-key']"
+
+✅ Test 8: Property with space
+   Input:    "root.special key"
+   Expected: "$['special key']"
+   Result:   "$['special key']"
+
+✅ Test 9: Property with special character
+   Input:    "root.special@key"
+   Expected: "$['special@key']"
+   Result:   "$['special@key']"
+
+✅ Test 10: Property starting with number
+   Input:    "root.123key"
+   Expected: "$['123key']"
+   Result:   "$['123key']"
+
+✅ Test 11: Mixed special and array
+   Input:    "root.data.special-key.0.nested"
+   Expected: "$.data['special-key'][0].nested"
+   Result:   "$.data['special-key'][0].nested"
+
+✅ Test 12: Already has brackets
+   Input:    "root['already-bracketed']"
+   Expected: "$['already-bracketed']"
+   Result:   "$['already-bracketed']"
+
+✅ Test 13: Double quoted brackets
+   Input:    "root["double-quoted"]"
+   Expected: "$["double-quoted"]"
+   Result:   "$["double-quoted"]"
+
+✅ Test 14: Empty string
+   Input:    ""
+   Expected: "$"
+   Result:   "$"
+
+✅ Test 15: Trailing dot
+   Input:    "root."
+   Expected: "$."
+   Result:   "$."
+
+✅ Test 16: Deep nesting
+   Input:    "root.a.b.c.d.e.f.g"
+   Expected: "$.a.b.c.d.e.f.g"
+   Result:   "$.a.b.c.d.e.f.g"
+
+✅ Test 17: Multiple consecutive indices
+   Input:    "root.array.0.1.2.3"
+   Expected: "$.array[0][1][2][3]"
+   Result:   "$.array[0][1][2][3]"
+
+✅ Test 18: Complex mixed path
+   Input:    "root.user-data.items.0.sub-items.1.value"
+   Expected: "$['user-data'].items[0]['sub-items'][1].value"
+   Result:   "$['user-data'].items[0]['sub-items'][1].value"
+
+✅ Test 19: Multiple special properties
+   Input:    "root.data.user.profile-info.address.zip-code"
+   Expected: "$.data.user['profile-info'].address['zip-code']"
+   Result:   "$.data.user['profile-info'].address['zip-code']"
+
+==================================================
+Summary: 19 passed, 0 failed out of 19 tests
+🎉 All tests passed!
+
+Running 55 tests using 8 workers
+
+Uploading JSON via multipart form data
+⏳ Inputting JSON (16 characters)
+⏳ Inputting JSON (257 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+  ✓   7 [chromium] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (10.6s)
+⚠️ Monaco API failed, trying keyboard input
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Successfully input JSON using keyboard
+  ✘   1 [chromium] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (14.5s)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+JSON upload failed: apiRequestContext.post: Timeout 15000ms exceeded.
+Call log:
+[2m  - → POST http://localhost:3456/api/json/upload[22m
+[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.37 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - Accept-Language: en-US,en;q=0.9[22m
+[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundaryxnLcBBZX5ZVSLbOV[22m
+[2m    - content-length: 245[22m
+
+    at APIHelper.uploadJSON [90m(/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/[39mtests/utils/api-helper.ts:34:47[90m)[39m
+    at [90m/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/[39mtests/e2e/smoke.spec.ts:65:42 {
+  name: [32m'TimeoutError'[39m,
+  [32mSymbol(step)[39m: {
+    location: {
+      file: [32m'/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts'[39m,
+      line: [33m34[39m,
+      column: [33m47[39m,
+      function: [32m'APIHelper.uploadJSON'[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m'POST "/api/json/upload"'[39m,
+    apiName: [32m'apiRequestContext.post'[39m,
+    params: {
+      url: [32m'/api/json/upload'[39m,
+      params: [90mundefined[39m,
+      encodedParams: [90mundefined[39m,
+      method: [32m'POST'[39m,
+      headers: [90mundefined[39m,
+      postData: [90mundefined[39m,
+      jsonData: [90mundefined[39m,
+      formData: [90mundefined[39m,
+      multipartData: [36m[Array][39m,
+      timeout: [33m15000[39m,
+      failOnStatusCode: [90mundefined[39m,
+      ignoreHTTPSErrors: [90mundefined[39m,
+      maxRedirects: [90mundefined[39m,
+      maxRetries: [90mundefined[39m,
+      __testHookLookup: [90mundefined[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@28'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@28'[39m,
+      _title: [32m'POST "/api/json/upload"'[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1760721208760[39m,
+    error: {
+      message: [32m'TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m'\x1B[2m  - → POST http://localhost:3456/api/json/upload\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.37 Safari/537.36\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept: */*\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - Accept-Language: en-US,en;q=0.9\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundaryxnLcBBZX5ZVSLbOV\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-length: 245\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m'\x1B[2m  - → POST http://localhost:3456/api/json/upload\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.37 Safari/537.36\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept: */*\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - Accept-Language: en-US,en;q=0.9\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundaryxnLcBBZX5ZVSLbOV\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-length: 245\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at APIHelper.uploadJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:34:47)\n'[39m +
+        [32m'    at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:65:42'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+  ✘   6 [chromium] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (15.8s)
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+Public library appears to be empty, which is acceptable
+⏳ Inputting JSON (1686 characters)
+⏳ Inputting JSON (158988 characters)
+⏳ Inputting JSON (105 characters)
+  ✓   4 [chromium] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (30.1s)
+✅ Found JSON content with selector: main > div > div
+  ✓   2 [chromium] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (30.0s)
+✅ JSON processing wait completed
+✅ JSON input completed
+  ✘   5 [chromium] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (31.1s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found JSON content with selector: main > div > div
+⚠️ Monaco API failed, trying keyboard input
+⚠️ Monaco API failed, trying keyboard input
+⚠️ Monaco API failed, trying keyboard input
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Successfully input JSON using keyboard
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+  ✘  14 [firefox] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (15.2s)
+✅ Found JSON content with selector: main > div > div
+✅ Successfully input JSON using keyboard
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✓   3 [chromium] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (54.4s)
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘   8 [chromium] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (1.0m)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✓  11 [chromium] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (59.7s)
+⚠️ Keyboard input failed, trying direct fill
+❌ JSON input failed: locator.all: Target page, context or browser has been closed
+  ✘   9 [chromium] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (1.1m)
+  ✘  12 [firefox] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (35.9s)
+⚠️ No JSON content selectors matched, waiting with generic timeout
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Target page, context or browser has been closed
+  ✘  10 [chromium] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (1.1m)
+⏳ Inputting JSON (257 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+⏳ Inputting JSON (16 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+  ✓  18 [firefox] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (7.6s)
+⚠️ Monaco API failed, trying keyboard input
+✅ Successfully input JSON using keyboard
+  ✘  15 [firefox] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (28.2s)
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Inputting JSON (158982 characters)
+✅ Successfully input JSON using keyboard
+✅ Found editor with selector: [data-testid="json-textarea"]
+⏳ Inputting JSON (1686 characters)
+⏳ Waiting for JSON to be processed...
+⚠️ Monaco API failed, trying keyboard input
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found editor with selector: [data-testid="json-textarea"]
+⏳ Inputting JSON (105 characters)
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+⚠️ Monaco API failed, trying keyboard input
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+  ✘  16 [firefox] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (31.0s)
+✅ Successfully input JSON using keyboard
+⚠️ No JSON content selectors matched, waiting with generic timeout
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Target page, context or browser has been closed
+❌ JSON input failed: page.waitForTimeout: Target page, context or browser has been closed
+⏳ Waiting for JSON to be processed...
+  ✘  13 [firefox] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (1.0m)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+  ✘  17 [firefox] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (34.7s)
+Public library appears to be empty, which is acceptable
+  ✓  19 [firefox] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (30.7s)
+Uploading JSON via multipart form data
+⏳ Inputting JSON (257 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Successfully input JSON using keyboard
+  ✓  23 [webkit] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (34.4s)
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+JSON upload failed: apiRequestContext.post: Timeout 15000ms exceeded.
+Call log:
+[2m  - → POST http://localhost:3456/api/json/upload[22m
+[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - Accept-Language: en-US,en;q=0.9[22m
+[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundary5oMmDYk4NnAPbTTg[22m
+[2m    - content-length: 245[22m
+
+    at APIHelper.uploadJSON [90m(/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/[39mtests/utils/api-helper.ts:34:47[90m)[39m
+    at [90m/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/[39mtests/e2e/smoke.spec.ts:65:42 {
+  name: [32m'TimeoutError'[39m,
+  [32mSymbol(step)[39m: {
+    location: {
+      file: [32m'/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts'[39m,
+      line: [33m34[39m,
+      column: [33m47[39m,
+      function: [32m'APIHelper.uploadJSON'[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m'POST "/api/json/upload"'[39m,
+    apiName: [32m'apiRequestContext.post'[39m,
+    params: {
+      url: [32m'/api/json/upload'[39m,
+      params: [90mundefined[39m,
+      encodedParams: [90mundefined[39m,
+      method: [32m'POST'[39m,
+      headers: [90mundefined[39m,
+      postData: [90mundefined[39m,
+      jsonData: [90mundefined[39m,
+      formData: [90mundefined[39m,
+      multipartData: [36m[Array][39m,
+      timeout: [33m15000[39m,
+      failOnStatusCode: [90mundefined[39m,
+      ignoreHTTPSErrors: [90mundefined[39m,
+      maxRedirects: [90mundefined[39m,
+      maxRetries: [90mundefined[39m,
+      __testHookLookup: [90mundefined[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@28'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@28'[39m,
+      _title: [32m'POST "/api/json/upload"'[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1760721322362[39m,
+    error: {
+      message: [32m'TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m'\x1B[2m  - → POST http://localhost:3456/api/json/upload\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept: */*\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - Accept-Language: en-US,en;q=0.9\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundary5oMmDYk4NnAPbTTg\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-length: 245\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m'\x1B[2m  - → POST http://localhost:3456/api/json/upload\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept: */*\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - Accept-Language: en-US,en;q=0.9\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundary5oMmDYk4NnAPbTTg\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - content-length: 245\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at APIHelper.uploadJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:34:47)\n'[39m +
+        [32m'    at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:65:42'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+  ✘  25 [webkit] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (18.8s)
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+⏳ Inputting JSON (16 characters)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Found editor with selector: [data-testid="json-textarea"]
+  ✓  22 [firefox] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (56.3s)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⚠️ Monaco API failed, trying keyboard input
+✅ Successfully input JSON using keyboard
+⚠️ Keyboard input failed, trying direct fill
+❌ JSON input failed: locator.all: Target page, context or browser has been closed
+⚠️ No JSON content selectors matched, waiting with generic timeout
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Target page, context or browser has been closed
+❌ JSON input failed: page.waitForTimeout: Target page, context or browser has been closed
+⏳ Waiting for JSON to be processed...
+  ✘  21 [firefox] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (1.1m)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘  20 [firefox] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (1.1m)
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+  ✘  26 [webkit] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (42.1s)
+  ✘  27 [webkit] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (42.8s)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+  ✓  24 [webkit] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (56.5s)
+Public library appears to be empty, which is acceptable
+  ✓  29 [webkit] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (34.6s)
+✅ Found JSON content with selector: main > div > div
+Uploading JSON via multipart form data
+✅ Upload successful: {
+  status: [33m200[39m,
+  result: {
+    success: [33mtrue[39m,
+    data: { document: [36m[Object][39m, analysis: [36m[Object][39m },
+    timestamp: [32m'2025-10-17T17:16:00.564Z'[39m
+  }
+}
+✅ JSON processing wait completed
+✅ JSON input completed
+  ✘  28 [webkit] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (40.5s)
+⏳ Inputting JSON (1686 characters)
+⏳ Inputting JSON (158947 characters)
+  ✓  30 [webkit] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (14.4s)
+⏳ Inputting JSON (105 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+⏳ Inputting JSON (257 characters)
+⚠️ Monaco API failed, trying keyboard input
+⚠️ Monaco API failed, trying keyboard input
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+⚠️ Monaco API failed, trying keyboard input
+  ✓  34 [Mobile Chrome] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (16.0s)
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Successfully input JSON using keyboard
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘  36 [Mobile Chrome] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (15.8s)
+✅ Successfully input JSON using keyboard
+✅ Found JSON content with selector: main > div > div
+⏳ Inputting JSON (16 characters)
+⏳ Waiting for JSON to be processed...
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Successfully input JSON using keyboard
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘  37 [Mobile Chrome] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (30.2s)
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+✅ Found JSON content with selector: main > div > div
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+  ✓  33 [webkit] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (54.4s)
+✅ Found JSON content with selector: main > div > div
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+  ✓  35 [Mobile Chrome] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (51.3s)
+⚠️ Keyboard input failed, trying direct fill
+❌ JSON input failed: locator.all: Target page, context or browser has been closed
+  ✘  31 [webkit] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (1.0m)
+✅ Found JSON content with selector: main > div > div
+⚠️ No JSON content selectors matched, waiting with generic timeout
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Target page, context or browser has been closed
+  ✘  32 [webkit] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (1.0m)
+✅ JSON processing wait completed
+✅ JSON input completed
+  ✓  41 [Mobile Chrome] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (8.8s)
+  ✘  38 [Mobile Chrome] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (42.2s)
+  ✘  39 [Mobile Chrome] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (40.7s)
+⏳ Inputting JSON (1686 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+Uploading JSON via multipart form data
+⚠️ Monaco API failed, trying keyboard input
+✅ Upload successful: {
+  status: [33m200[39m,
+  result: {
+    success: [33mtrue[39m,
+    data: { document: [36m[Object][39m, analysis: [36m[Object][39m },
+    timestamp: [32m'2025-10-17T17:16:58.990Z'[39m
+  }
+}
+⏳ Inputting JSON (158956 characters)
+  ✓  46 [Mobile Safari] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (4.8s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⏳ Inputting JSON (105 characters)
+⚠️ Monaco API failed, trying keyboard input
+Public library appears to be empty, which is acceptable
+  ✓  40 [Mobile Chrome] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (44.5s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+⏳ Inputting JSON (257 characters)
+✅ Successfully input JSON using keyboard
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+  ✓  45 [Mobile Safari] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (15.4s)
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘  48 [Mobile Safari] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (19.1s)
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Successfully input JSON using keyboard
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Inputting JSON (16 characters)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⚠️ Monaco API failed, trying keyboard input
+✅ Successfully input JSON using keyboard
+  ✓  52 [Mobile Safari] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (14.0s)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✘  49 [Mobile Safari] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (39.4s)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+  ✓  44 [Mobile Chrome] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (51.7s)
+⏳ Inputting JSON (159137 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ No JSON content selectors matched, waiting with generic timeout
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Target page, context or browser has been closed
+⚠️ Monaco API failed, trying keyboard input
+  ✘  42 [Mobile Chrome] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (1.0m)
+Public library appears to be empty, which is acceptable
+✅ Found JSON content with selector: main > div > div
+  ✓  50 [Mobile Safari] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (41.3s)
+⏳ Inputting JSON (1686 characters)
+⚠️ Keyboard input failed, trying direct fill
+❌ JSON input failed: locator.all: Target page, context or browser has been closed
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+  ✓  47 [Mobile Safari] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (56.0s)
+  ✘  43 [Mobile Chrome] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (1.0m)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+  ✘  51 [Mobile Safari] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (40.0s)
+⏳ Inputting JSON (105 characters)
+✅ Found editor with selector: [data-testid="json-textarea"]
+⚠️ Monaco API failed, trying keyboard input
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Successfully input JSON using keyboard
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+  ✓  55 [Mobile Safari] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (48.2s)
+⚠️ Keyboard input failed, trying direct fill
+❌ JSON input failed: locator.all: Target page, context or browser has been closed
+  ✘  53 [Mobile Safari] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (1.0m)
+✅ Found JSON content with selector: main > div > div
+⚠️ Error waiting for JSON processing: page.waitForTimeout: Test timeout of 60000ms exceeded.
+  ✘  54 [Mobile Safari] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (1.0m)
+🧹 Global teardown started
+✅ Server health check passed during teardown
+✅ Global teardown completed successfully
+
+
+  1) [chromium] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+
+    TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - → POST http://localhost:3456/api/json/upload[22m
+    [2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.37 Safari/537.36[22m
+    [2m    - accept: */*[22m
+    [2m    - accept-encoding: gzip,deflate,br[22m
+    [2m    - Accept-Language: en-US,en;q=0.9[22m
+    [2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundaryxnLcBBZX5ZVSLbOV[22m
+    [2m    - content-length: 245[22m
+
+
+       at utils/api-helper.ts:34
+
+      32 |       }
+      33 |
+    > 34 |       const formResponse = await this.request.post('/api/json/upload', {
+         |                                               ^
+      35 |         multipart: formData,
+      36 |       });
+      37 |
+        at APIHelper.uploadJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:34:47)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:65:42
+
+  2) [chromium] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="sign-in-button"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="sign-in-button"]')[22m
+
+
+      77 |
+      78 |     // Verify login button is present for anonymous users
+    > 79 |     await expect(layoutPage.loginButton).toBeVisible();
+         |                                          ^
+      80 |
+      81 |     // Test login
+      82 |     await authHelper.login('regular');
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:79:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-chromium/error-context.md
+
+  3) [chromium] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    TimeoutError: page.screenshot: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - taking page screenshot[22m
+    [2m  - waiting for fonts to load...[22m
+
+
+       at utils/auth-helper.ts:97
+
+       95 |
+       96 |       // Take screenshot for debugging
+    >  97 |       await this.page.screenshot({
+          |                       ^
+       98 |         path: `test-results/login-failure-${userType}-${Date.now()}.png`,
+       99 |         fullPage: true
+      100 |       });
+        at AuthHelper.login (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/auth-helper.ts:97:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:105:5
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/error-context.md
+
+  4) [chromium] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      183 |
+      184 |     // Should show error
+    > 185 |     expect(await viewerPage.hasJSONErrors()).toBe(true);
+          |                                              ^
+      186 |
+      187 |     // Error message should be informative
+      188 |     const errorMessage = await viewerPage.getErrorMessage();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:185:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-chromium/error-context.md
+
+  5) [chromium] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:242:5
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-chromium/error-context.md
+
+  6) [chromium] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:672
+
+      670 |       console.warn('⚠️ Error waiting for JSON processing:', error.message);
+      671 |       // Don't throw error, just log it and continue
+    > 672 |       await this.page.waitForTimeout(2000);
+          |                       ^
+      673 |     }
+      674 |   }
+      675 |
+        at JsonViewerPage.waitForJSONProcessed (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:672:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:297:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-chromium/error-context.md
+
+  7) [firefox] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+
+      12 |
+      13 |     // Load home page with domcontentloaded for better reliability
+    > 14 |     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+         |                ^
+      15 |     await layoutPage.waitForLoad();
+      16 |
+      17 |     // Verify core elements are present
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:14:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-d1e16--and-basic-navigation-works-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-d1e16--and-basic-navigation-works-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-d1e16--and-basic-navigation-works-firefox/error-context.md
+
+  8) [firefox] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:38:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-7c0af-pts-and-displays-JSON-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-7c0af-pts-and-displays-JSON-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-7c0af-pts-and-displays-JSON-smoke-firefox/error-context.md
+
+  9) [firefox] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+
+    TimeoutError: apiRequestContext.get: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - → GET http://localhost:3456/api/health[22m
+    [2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0.1) Gecko/20100101 Firefox/142.0.1[22m
+    [2m    - accept: */*[22m
+    [2m    - accept-encoding: gzip,deflate,br[22m
+    [2m    - Accept-Language: en-US,en;q=0.9[22m
+
+
+       at utils/api-helper.ts:182
+
+      180 |    */
+      181 |   async healthCheck() {
+    > 182 |     const response = await this.request.get('/api/health');
+          |                                         ^
+      183 |     
+      184 |     if (!response.ok()) {
+      185 |       throw new Error(`Health check failed: ${response.status()}`);
+        at APIHelper.healthCheck (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:182:41)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:60:36
+
+  10) [firefox] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="sign-in-button"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="sign-in-button"]')[22m
+
+
+      77 |
+      78 |     // Verify login button is present for anonymous users
+    > 79 |     await expect(layoutPage.loginButton).toBeVisible();
+         |                                          ^
+      80 |
+      81 |     // Test login
+      82 |     await authHelper.login('regular');
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:79:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-firefox/error-context.md
+
+  11) [firefox] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    TimeoutError: locator.waitFor: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+
+       at utils/auth-helper.ts:38
+
+      36 |
+      37 |       // Wait for button to be attached to DOM, visible, and enabled
+    > 38 |       await signInButton.waitFor({ state: 'visible', timeout: 15000 });
+         |                          ^
+      39 |       await this.page.waitForTimeout(500); // Let button become fully interactive
+      40 |
+      41 |       // Click the Sign in button to open login modal
+        at AuthHelper.login (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/auth-helper.ts:38:26)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:105:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-firefox/error-context.md
+
+  12) [firefox] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      183 |
+      184 |     // Should show error
+    > 185 |     expect(await viewerPage.hasJSONErrors()).toBe(true);
+          |                                              ^
+      186 |
+      187 |     // Error message should be informative
+      188 |     const errorMessage = await viewerPage.getErrorMessage();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:185:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-firefox/error-context.md
+
+  13) [firefox] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:242:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-firefox/error-context.md
+
+  14) [firefox] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:296:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-firefox/error-context.md
+
+  15) [webkit] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+
+    TimeoutError: apiRequestContext.post: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - → POST http://localhost:3456/api/json/upload[22m
+    [2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15[22m
+    [2m    - accept: */*[22m
+    [2m    - accept-encoding: gzip,deflate,br[22m
+    [2m    - Accept-Language: en-US,en;q=0.9[22m
+    [2m    - content-type: multipart/form-data; boundary=----WebKitFormBoundary5oMmDYk4NnAPbTTg[22m
+    [2m    - content-length: 245[22m
+
+
+       at utils/api-helper.ts:34
+
+      32 |       }
+      33 |
+    > 34 |       const formResponse = await this.request.post('/api/json/upload', {
+         |                                               ^
+      35 |         multipart: formData,
+      36 |       });
+      37 |
+        at APIHelper.uploadJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:34:47)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:65:42
+
+  16) [webkit] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="sign-in-button"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="sign-in-button"]')[22m
+
+
+      77 |
+      78 |     // Verify login button is present for anonymous users
+    > 79 |     await expect(layoutPage.loginButton).toBeVisible();
+         |                                          ^
+      80 |
+      81 |     // Test login
+      82 |     await authHelper.login('regular');
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:79:42
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-webkit/error-context.md
+
+  17) [webkit] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    TimeoutError: locator.waitFor: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+
+       at utils/auth-helper.ts:38
+
+      36 |
+      37 |       // Wait for button to be attached to DOM, visible, and enabled
+    > 38 |       await signInButton.waitFor({ state: 'visible', timeout: 15000 });
+         |                          ^
+      39 |       await this.page.waitForTimeout(500); // Let button become fully interactive
+      40 |
+      41 |       // Click the Sign in button to open login modal
+        at AuthHelper.login (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/auth-helper.ts:38:26)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:105:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-webkit/error-context.md
+
+  18) [webkit] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      183 |
+      184 |     // Should show error
+    > 185 |     expect(await viewerPage.hasJSONErrors()).toBe(true);
+          |                                              ^
+      186 |
+      187 |     // Error message should be informative
+      188 |     const errorMessage = await viewerPage.getErrorMessage();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:185:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-webkit/error-context.md
+
+  19) [webkit] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:242:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-webkit/error-context.md
+
+  20) [webkit] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:672
+
+      670 |       console.warn('⚠️ Error waiting for JSON processing:', error.message);
+      671 |       // Don't throw error, just log it and continue
+    > 672 |       await this.page.waitForTimeout(2000);
+          |                       ^
+      673 |     }
+      674 |   }
+      675 |
+        at JsonViewerPage.waitForJSONProcessed (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:672:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:297:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-webkit/error-context.md
+
+  21) [Mobile Chrome] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+
+    TimeoutError: apiRequestContext.get: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - → GET http://localhost:3456/api/json/ec9db9ed-3585-41ca-abf7-61b69f75135f/content[22m
+    [2m    - user-agent: Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.37 Mobile Safari/537.36[22m
+    [2m    - accept: */*[22m
+    [2m    - accept-encoding: gzip,deflate,br[22m
+    [2m    - Accept-Language: en-US,en;q=0.9[22m
+
+
+       at utils/api-helper.ts:59
+
+      57 |    */
+      58 |   async getJSON(id: string) {
+    > 59 |     const response = await this.request.get(`/api/json/${id}/content`);
+         |                                         ^
+      60 |
+      61 |     if (!response.ok()) {
+      62 |       throw new Error(`Failed to get JSON ${id}: ${response.status()}`);
+        at APIHelper.getJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/api-helper.ts:59:41)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:69:43
+
+  22) [Mobile Chrome] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="sign-in-button"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="sign-in-button"]')[22m
+
+
+      77 |
+      78 |     // Verify login button is present for anonymous users
+    > 79 |     await expect(layoutPage.loginButton).toBeVisible();
+         |                                          ^
+      80 |
+      81 |     // Test login
+      82 |     await authHelper.login('regular');
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:79:42
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-Mobile-Chrome/error-context.md
+
+  23) [Mobile Chrome] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    TimeoutError: locator.waitFor: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+
+       at utils/auth-helper.ts:38
+
+      36 |
+      37 |       // Wait for button to be attached to DOM, visible, and enabled
+    > 38 |       await signInButton.waitFor({ state: 'visible', timeout: 15000 });
+         |                          ^
+      39 |       await this.page.waitForTimeout(500); // Let button become fully interactive
+      40 |
+      41 |       // Click the Sign in button to open login modal
+        at AuthHelper.login (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/auth-helper.ts:38:26)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:105:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-Mobile-Chrome/error-context.md
+
+  24) [Mobile Chrome] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      183 |
+      184 |     // Should show error
+    > 185 |     expect(await viewerPage.hasJSONErrors()).toBe(true);
+          |                                              ^
+      186 |
+      187 |     // Error message should be informative
+      188 |     const errorMessage = await viewerPage.getErrorMessage();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:185:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Chrome/error-context.md
+
+  25) [Mobile Chrome] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:242:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Chrome/error-context.md
+
+  26) [Mobile Chrome] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:672
+
+      670 |       console.warn('⚠️ Error waiting for JSON processing:', error.message);
+      671 |       // Don't throw error, just log it and continue
+    > 672 |       await this.page.waitForTimeout(2000);
+          |                       ^
+      673 |     }
+      674 |   }
+      675 |
+        at JsonViewerPage.waitForJSONProcessed (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:672:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:297:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Chrome/error-context.md
+
+  27) [Mobile Safari] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="sign-in-button"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="sign-in-button"]')[22m
+
+
+      77 |
+      78 |     // Verify login button is present for anonymous users
+    > 79 |     await expect(layoutPage.loginButton).toBeVisible();
+         |                                          ^
+      80 |
+      81 |     // Test login
+      82 |     await authHelper.login('regular');
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:79:42
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Authentication-flow-works-smoke-Mobile-Safari/error-context.md
+
+  28) [Mobile Safari] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    TimeoutError: page.screenshot: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - taking page screenshot[22m
+    [2m  - waiting for fonts to load...[22m
+
+
+       at utils/auth-helper.ts:97
+
+       95 |
+       96 |       // Take screenshot for debugging
+    >  97 |       await this.page.screenshot({
+          |                       ^
+       98 |         path: `test-results/login-failure-${userType}-${Date.now()}.png`,
+       99 |         fullPage: true
+      100 |       });
+        at AuthHelper.login (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/auth-helper.ts:97:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:105:5
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-Mobile-Safari/error-context.md
+
+  29) [Mobile Safari] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      183 |
+      184 |     // Should show error
+    > 185 |     expect(await viewerPage.hasJSONErrors()).toBe(true);
+          |                                              ^
+      186 |
+      187 |     // Error message should be informative
+      188 |     const errorMessage = await viewerPage.getErrorMessage();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:185:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-bd3e9-dling-works-correctly-smoke-Mobile-Safari/error-context.md
+
+  30) [Mobile Safari] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.screenshot: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:248
+
+      246 |     } catch (error) {
+      247 |       console.error('❌ JSON input failed:', error.message);
+    > 248 |       await this.page.screenshot({ 
+          |                       ^
+      249 |         path: `test-results/json-input-failure-${Date.now()}.png`,
+      250 |         fullPage: true 
+      251 |       });
+        at JsonViewerPage.inputJSON (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:248:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:242:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-Large-JSON-handling-works-smoke-Mobile-Safari/error-context.md
+
+  31) [Mobile Safari] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at page-objects/json-viewer-page.ts:672
+
+      670 |       console.warn('⚠️ Error waiting for JSON processing:', error.message);
+      671 |       // Don't throw error, just log it and continue
+    > 672 |       await this.page.waitForTimeout(2000);
+          |                       ^
+      673 |     }
+      674 |   }
+      675 |
+        at JsonViewerPage.waitForJSONProcessed (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/page-objects/json-viewer-page.ts:672:23)
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:297:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smoke-View-modes-switching-works-smoke-Mobile-Safari/error-context.md
+
+  31 failed
+    [chromium] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+    [chromium] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+    [chromium] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+    [chromium] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+    [chromium] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+    [chromium] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works 
+    [firefox] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+    [firefox] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+    [webkit] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+    [Mobile Chrome] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+    [Mobile Safari] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke 
+    [Mobile Safari] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+    [Mobile Safari] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke 
+    [Mobile Safari] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke 
+    [Mobile Safari] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke 
+  24 passed (6.3m)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

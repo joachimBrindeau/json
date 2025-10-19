@@ -1,0 +1,147 @@
+
+> json-share@1.0.1 test:e2e
+> NODE_OPTIONS='--max-old-space-size=4096' ./node_modules/.bin/playwright test
+
+🚀 Global setup started
+🎲 Initializing deterministic faker...
+✅ Faker initialized with seed
+🐳 Checking Docker dependencies...
+  ✅ Docker daemon is running
+  ✅ config-postgres-1: Up 10 hours (healthy)
+  ✅ config-redis-1: Up 10 hours (healthy)
+  ✅ PostgreSQL is accessible
+  ✅ Redis is accessible
+📡 Using base URL: http://localhost:3456
+📡 Checking if server is available...
+⚠️ Server check attempt 1/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 2/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 3/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 4/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 5/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 6/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 7/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 8/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 9/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 10/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 11/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 12/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 13/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 14/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 15/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 16/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 17/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 18/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 19/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+⏳ Waiting 3 seconds before retry...
+⚠️ Server check attempt 20/20 failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3456/
+Call log:
+[2m  - navigating to "http://localhost:3456/", waiting until "domcontentloaded"[22m
+
+❌ Global setup failed: Error: Server at http://localhost:3456 is not responding after 20 attempts
+    at waitForServer (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/global-setup.ts:86:9)
+    at globalSetup (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/global-setup.ts:37:5)
+    at Object.setup (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/tasks.js:174:27)
+    at taskLoop (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/taskRunner.js:62:11)
+    at TaskRunner.runDeferCleanup (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/taskRunner.js:78:5)
+    at TaskRunner.run (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/taskRunner.js:42:33)
+    at runTasks (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/tasks.js:80:18)
+    at runAllTestsWithConfig (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/runner/testRunner.js:380:18)
+    at runTests (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/program.js:251:18)
+    at i.<anonymous> (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/node_modules/playwright/lib/program.js:71:7)
+Error: Server at http://localhost:3456 is not responding after 20 attempts
+
+   at utils/global-setup.ts:86
+
+  84 |   }
+  85 |   
+> 86 |   throw new Error(`Server at ${baseURL} is not responding after ${maxRetries} attempts`);
+     |         ^
+  87 | }
+  88 |
+  89 | async function verifyBasicApp(page: any, baseURL: string) {
+    at waitForServer (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/global-setup.ts:86:9)
+    at globalSetup (/Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/utils/global-setup.ts:37:5)
+🧹 Global teardown started
+⚠️ Server health check failed during teardown (this is okay)
+✅ Global teardown completed successfully
+
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

@@ -100,7 +100,7 @@ VIEWPORTS.forEach((viewport) => {
       
       if (await modalTriggers.count() > 0) {
         await modalTriggers.first().click();
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('networkidle'); // Wait for modal rendering
 
         // Check if modal appears
         const modal = page.locator('[role="dialog"], .modal, [data-testid*="modal"]');
@@ -181,7 +181,7 @@ VIEWPORTS.forEach((viewport) => {
           
           // Click to open menu
           await mobileMenuButton.first().click();
-          await page.waitForTimeout(300);
+          await page.waitForLoadState('networkidle'); // Wait for menu expansion
           
           // Check menu items are accessible
           const menuItems = page.locator('nav a, [role="menuitem"]');

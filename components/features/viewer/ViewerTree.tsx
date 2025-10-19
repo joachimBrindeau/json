@@ -13,7 +13,7 @@ import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { ViewerTreeNode } from './ViewerTreeNode';
 import { useViewerTreeState } from './ViewerTreeState';
 import { useViewerTreeSearch } from './ViewerTreeSearch';
-import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
+import { NodeDetailsModal } from '@/components/features/viewer/node-details/NodeDetailsModal';
 import type { JsonNode } from './types';
 
 interface ViewerTreeProps {
@@ -122,15 +122,6 @@ export const ViewerTree = ({
             />
           )}
         </List>
-
-        {/* Node details modal */}
-        {selectedNode && (
-          <NodeDetailsModal
-            isOpen={showNodeDetails}
-            onClose={handleCloseNodeDetails}
-            node={selectedNode}
-          />
-        )}
       </div>
     );
   }
@@ -192,13 +183,11 @@ export const ViewerTree = ({
       </div>
 
       {/* Node details modal */}
-      {selectedNode && (
-        <NodeDetailsModal
-          isOpen={showNodeDetails}
-          onClose={handleCloseNodeDetails}
-          node={selectedNode}
-        />
-      )}
+      <NodeDetailsModal
+        open={showNodeDetails}
+        onOpenChange={(open) => !open && handleCloseNodeDetails()}
+        node={selectedNode}
+      />
     </div>
   );
 };

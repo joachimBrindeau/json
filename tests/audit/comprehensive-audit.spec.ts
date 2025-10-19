@@ -188,7 +188,7 @@ test.describe('Comprehensive Application Audit', () => {
         });
 
         // Wait for app to stabilize
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle'); // Wait for app initialization
 
         // Collect performance metrics
         const performanceMetrics = await page.evaluate(() => {
@@ -315,7 +315,7 @@ test.describe('Comprehensive Application Audit', () => {
             const tabButton = page.locator(`[data-testid="${tab.toLowerCase()}-view"], button:has-text("${tab}")`).first();
             if (await tabButton.isVisible()) {
               await tabButton.click().catch(() => {});
-              await page.waitForTimeout(500);
+              await page.waitForLoadState('networkidle'); // Wait for view mode switch
             }
           }
         }

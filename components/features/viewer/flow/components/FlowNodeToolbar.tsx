@@ -1,11 +1,13 @@
 /**
  * Unified NodeToolbar component for Flow nodes
- * 
+ *
  * Consolidates duplicate toolbar implementation from FlowObjectNode and FlowArrayNode
  * Follows DRY principle - single source of truth for node toolbar behavior
+ *
+ * NOTE: This is an embedded toolbar (not using @xyflow/react NodeToolbar) so it scales with zoom
  */
 
-import { Node, NodeToolbar, Position } from '@xyflow/react';
+import { Node } from '@xyflow/react';
 import { Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FLOW_STYLES } from '../utils/flow-styles';
@@ -59,29 +61,25 @@ export const FlowNodeToolbar = ({
   };
 
   return (
-    <NodeToolbar
-      isVisible
-      position={Position.Top}
-      align="center"
-      offset={10}
-      className={FLOW_STYLES.toolbar}
-    >
-      <ToolbarButton onClick={handleCopy} title="Copy JSON" icon={Copy} />
-      
-      {hasChildren && onToggleCollapse && (
-        <ToolbarButton
-          onClick={handleToggle}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
-          icon={isCollapsed ? Maximize2 : Minimize2}
+    <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-10">
+      <div className={FLOW_STYLES.toolbar}>
+        <ToolbarButton onClick={handleCopy} title="Copy JSON" icon={Copy} />
+
+        {hasChildren && onToggleCollapse && (
+          <ToolbarButton
+            onClick={handleToggle}
+            title={isCollapsed ? 'Expand' : 'Collapse'}
+            icon={isCollapsed ? Maximize2 : Minimize2}
+          />
+        )}
+
+        <ConnectionStats
+          sourceConnections={sourceConnections}
+          targetConnections={targetConnections}
+          connectedNodesData={connectedNodesData}
         />
-      )}
-      
-      <ConnectionStats
-        sourceConnections={sourceConnections}
-        targetConnections={targetConnections}
-        connectedNodesData={connectedNodesData}
-      />
-    </NodeToolbar>
+      </div>
+    </div>
   );
 };
 

@@ -35,7 +35,30 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         // Take screenshot of initial tree state
         await viewerPage.takeScreenshot('tree-view-expandable-nodes');
       } else {
-        test.skip('Tree view not available');
+        // Fail fast if tree view not available
+        expect(await viewerPage.treeViewButton.isVisible(), 'Tree view must be available for this test').toBe(true);
+      }
+    });
+
+    test('should display realistic deeply nested user data in tree view', async ({ dataGenerator }) => {
+      const nestedData = dataGenerator.generateRealisticDeepNesting();
+      const jsonString = JSON.stringify(nestedData, null, 2);
+
+      await viewerPage.inputJSON(jsonString);
+      await viewerPage.waitForJSONProcessed();
+
+      if (await viewerPage.treeViewButton.isVisible()) {
+        await viewerPage.switchToTreeView();
+
+        // Verify tree view displays nested structure
+        await expect(viewerPage.treeView).toBeVisible();
+
+        // Verify multiple levels of nesting
+        const expandableNodes = await viewerPage.expandableNodes.count();
+        expect(expandableNodes).toBeGreaterThan(5); // At least 5 levels deep
+
+        // Take screenshot
+        await viewerPage.takeScreenshot('tree-view-realistic-nested-data');
       }
     });
 
@@ -56,7 +79,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         const firstExpandButton = viewerPage.expandButtons.first();
         if (await firstExpandButton.isVisible()) {
           await firstExpandButton.click();
-          await viewerPage.page.waitForTimeout(500);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Should have more visible nodes after expansion
           const expandedNodeCount = await viewerPage.jsonNodes.count();
@@ -82,15 +105,15 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         const firstExpandButton = viewerPage.expandButtons.first();
         if (await firstExpandButton.isVisible()) {
           await firstExpandButton.click();
-          await viewerPage.page.waitForTimeout(500);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           const expandedNodeCount = await viewerPage.jsonNodes.count();
 
           // Find collapse button (might be same element with different state)
-          const collapseButton = viewerPage.collapseButtons.first().or(firstExpandButton);
+          const collapseButton = viewerPage.collapseButtons.first();
           if (await collapseButton.isVisible()) {
             await collapseButton.click();
-            await viewerPage.page.waitForTimeout(500);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Should have fewer visible nodes after collapse
             const collapsedNodeCount = await viewerPage.jsonNodes.count();
@@ -118,7 +141,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
 
         // Use expand all functionality
         await viewerPage.expandAll();
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should have more visible nodes
         const expandedNodeCount = await viewerPage.jsonNodes.count();
@@ -148,13 +171,13 @@ test.describe('Anonymous User - Tree View Interactions', () => {
 
         // First expand all nodes
         await viewerPage.expandAll();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         const fullyExpandedNodeCount = await viewerPage.jsonNodes.count();
 
         // Then collapse all
         await viewerPage.collapseAll();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should have fewer visible nodes
         const collapsedNodeCount = await viewerPage.jsonNodes.count();
@@ -175,7 +198,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
       if (await viewerPage.treeViewButton.isVisible()) {
         await viewerPage.switchToTreeView();
         await viewerPage.expandAll();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Check for different node type indicators
         const objectIcons = await viewerPage.page
@@ -249,7 +272,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         for (let i = 0; i < Math.min(4, expandButtons.length); i++) {
           if (await expandButtons[i].isVisible()) {
             await expandButtons[i].click();
-            await viewerPage.page.waitForTimeout(300);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Each expansion should reveal more content
             const currentNodes = await viewerPage.jsonNodes.count();
@@ -282,10 +305,10 @@ test.describe('Anonymous User - Tree View Interactions', () => {
 
         // Switch to different view and back
         await viewerPage.switchToListView();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         await viewerPage.switchToTreeView();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Expansion state preservation depends on implementation
         // Just verify tree view still works
@@ -335,13 +358,13 @@ test.describe('Anonymous User - Tree View Interactions', () => {
 
         // Try keyboard navigation
         await viewerPage.page.keyboard.press('ArrowDown');
-        await viewerPage.page.waitForTimeout(200);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         await viewerPage.page.keyboard.press('ArrowRight'); // Expand
-        await viewerPage.page.waitForTimeout(200);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         await viewerPage.page.keyboard.press('ArrowLeft'); // Collapse
-        await viewerPage.page.waitForTimeout(200);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should not cause errors
         expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -373,7 +396,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         const expandButton = viewerPage.expandButtons.first();
         if (await expandButton.isVisible()) {
           await expandButton.click();
-          await viewerPage.page.waitForTimeout(1000);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Should handle large expansion
           const nodeCount = await viewerPage.jsonNodes.count();
@@ -401,11 +424,11 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         if (await expandButton.isVisible()) {
           // Check for hover effects
           await expandButton.hover();
-          await viewerPage.page.waitForTimeout(200);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Click and check for transition effects
           await expandButton.click();
-          await viewerPage.page.waitForTimeout(300);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Visual feedback varies by implementation
           // Just ensure no errors occurred
@@ -437,7 +460,7 @@ test.describe('Anonymous User - Tree View Interactions', () => {
       if (await viewerPage.treeViewButton.isVisible()) {
         await viewerPage.switchToTreeView();
         await viewerPage.expandAll();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should handle mixed types correctly
         expect(await viewerPage.hasJSONErrors()).toBe(false);

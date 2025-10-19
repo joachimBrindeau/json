@@ -9,11 +9,6 @@ import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-util
  * Single Responsibility: Height calculation only
  */
 const calculateNodeHeight = (flowNode: SeaNode): number => {
-  // Root node has fixed height
-  if (flowNode.type === NodeType.Root) {
-    return 80; // Fixed height for root node
-  }
-
   if (isArraySeaNode(flowNode)) {
     return sizes.arrayNodeSize;
   }

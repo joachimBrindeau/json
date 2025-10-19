@@ -167,8 +167,8 @@ export class PageHelpers {
     const modeButton = this.page.locator(modeButtons[mode]);
     await modeButton.click();
     
-    // Wait for view to change
-    await this.page.waitForTimeout(1000);
+    // Wait for view mode to change by checking for active state
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 });
     console.log(`🔄 Switched to ${mode} view mode`);
   }
 
@@ -188,7 +188,7 @@ export class PageHelpers {
       if (await searchInput.count() > 0) {
         await searchInput.fill(searchTerm);
         await this.page.keyboard.press('Enter');
-        await this.page.waitForTimeout(500);
+        await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         console.log(`🔍 Searched for: ${searchTerm}`);
         return;
       }
@@ -210,7 +210,9 @@ export class PageHelpers {
     );
     
     await nodeToggle.click();
-    await this.page.waitForTimeout(300);
+    
+    // Wait for expansion/collapse animation to complete
+    await this.page.waitForLoadState('domcontentloaded');
     console.log(`🌲 Toggled JSON node: ${nodePath}`);
   }
 
@@ -229,7 +231,10 @@ export class PageHelpers {
       const copyButton = this.page.locator(selector);
       if (await copyButton.count() > 0) {
         await copyButton.click();
-        await this.page.waitForTimeout(500);
+        
+        // Wait for copy operation to complete (check for success indicator)
+        const copySuccess = this.page.locator('[data-testid="copy-success"], .copy-success');
+        await expect(copySuccess).toBeVisible({ timeout: 2000 }).catch(() => {});
         console.log('📋 JSON content copied to clipboard');
         return;
       }
@@ -345,7 +350,10 @@ export class PageHelpers {
       const closeButton = this.page.locator(selector);
       if (await closeButton.count() > 0) {
         await closeButton.click();
-        await this.page.waitForTimeout(500);
+        
+        // Wait for modal to be hidden
+        const modal = this.page.locator('[role="dialog"], .modal');
+        await expect(modal).not.toBeVisible({ timeout: 2000 });
         console.log('❌ Modal closed');
         return;
       }
@@ -353,7 +361,10 @@ export class PageHelpers {
 
     // Fallback to Escape key
     await this.page.keyboard.press('Escape');
-    await this.page.waitForTimeout(500);
+    
+    // Wait for modal to be hidden
+    const modal = this.page.locator('[role="dialog"], .modal');
+    await expect(modal).not.toBeVisible({ timeout: 2000 });
     console.log('❌ Modal closed with Escape key');
   }
 
@@ -408,7 +419,9 @@ export class PageHelpers {
       const submitButton = this.page.locator(selector);
       if (await submitButton.count() > 0) {
         await submitButton.click();
-        await this.page.waitForTimeout(1000);
+        
+        // Wait for form submission to complete
+        await this.page.waitForLoadState('networkidle', { timeout: 5000 });
         console.log('✅ Form submitted');
         return;
       }
@@ -428,7 +441,9 @@ export class PageHelpers {
     );
 
     await categoryFilter.click();
-    await this.page.waitForTimeout(1000);
+    
+    // Wait for filter to be applied
+    await this.page.waitForLoadState('networkidle', { timeout: 3000 });
     console.log(`🏷️ Filtered by category: ${category}`);
   }
 
@@ -441,7 +456,9 @@ export class PageHelpers {
     );
 
     await tagFilter.click();
-    await this.page.waitForTimeout(1000);
+    
+    // Wait for filter to be applied
+    await this.page.waitForLoadState('networkidle', { timeout: 3000 });
     console.log(`🏷️ Filtered by tag: ${tag}`);
   }
 
@@ -460,7 +477,9 @@ export class PageHelpers {
       if (await searchInput.count() > 0) {
         await searchInput.fill(searchTerm);
         await this.page.keyboard.press('Enter');
-        await this.page.waitForTimeout(1000);
+        
+        // Wait for search results to load
+        await this.page.waitForLoadState('networkidle', { timeout: 5000 });
         console.log(`🔍 Searched library for: ${searchTerm}`);
         return;
       }
@@ -493,7 +512,10 @@ export class PageHelpers {
     ]);
 
     // Additional wait for React hydration
-    await this.page.waitForTimeout(1000);
+    await Promise.race([
+      this.page.waitForLoadState('domcontentloaded'),
+      this.page.waitForFunction(() => document.readyState === 'complete', { timeout: 2000 })
+    ]).catch(() => {});
   }
 
   /**
@@ -517,7 +539,8 @@ export class PageHelpers {
       { timeout }
     );
 
-    await this.page.waitForTimeout(500);
+    // Wait for any pending updates to complete
+    await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
   }
 
   /**
@@ -542,7 +565,9 @@ export class PageHelpers {
   async scrollToElement(selector: string) {
     const element = this.page.locator(selector);
     await element.scrollIntoViewIfNeeded();
-    await this.page.waitForTimeout(300);
+    
+    // Wait for scroll to complete
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
@@ -616,7 +641,10 @@ export class PageHelpers {
       for (const tag of tags) {
         await tagInput.fill(tag);
         await this.page.keyboard.press('Enter');
-        await this.page.waitForTimeout(200);
+        
+        // Wait for tag to be added to the list
+        const addedTag = this.page.locator(`[data-tag="${tag}"]`);
+        await expect(addedTag).toBeVisible({ timeout: 2000 }).catch(() => {});
       }
     }
   }

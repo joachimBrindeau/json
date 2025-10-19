@@ -23,10 +23,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
       await page.goto('/');
 
       // Click signup button
-      await page
-        .locator('[data-testid="signup-button"]')
-        .or(page.locator('text="Sign Up"'))
-        .click();
+      const signupButton = page.locator('[data-testid="signup-button"]');
+      await expect(signupButton).toBeVisible();
+      await signupButton.click();
 
       // Fill signup form
       await page.locator('[data-testid="signup-name"]').fill(newUser.name);
@@ -60,12 +59,8 @@ test.describe('Authenticated User - Authentication Flows', () => {
       await page.locator('[data-testid="signup-submit"]').click();
 
       // Should show validation errors
-      const emailError = page
-        .locator('[data-testid="email-error"]')
-        .or(page.locator('.error', { hasText: 'email' }));
-      const passwordError = page
-        .locator('[data-testid="password-error"]')
-        .or(page.locator('.error', { hasText: 'password' }));
+      const emailError = page.locator('[data-testid="email-error"]');
+      const passwordError = page.locator('[data-testid="password-error"]');
 
       await expect(emailError).toBeVisible();
       await expect(passwordError).toBeVisible();
@@ -100,17 +95,15 @@ test.describe('Authenticated User - Authentication Flows', () => {
     });
 
     test('should sign up using Google OAuth', async ({ page, context }) => {
-      if (!OAUTH_PROVIDERS.google.enabled) {
-        test.skip('Google OAuth not enabled in test environment');
-      }
+      // Fail fast if OAuth not configured
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
 
       await page.goto('/');
       await page.locator('[data-testid="signup-button"]').click();
 
       // Click Google OAuth button
-      const googleButton = page
-        .locator('[data-testid="google-signup"]')
-        .or(page.locator('text="Continue with Google"'));
+      const googleButton = page.locator('[data-testid="google-signup"]');
+      await expect(googleButton).toBeVisible();
       await googleButton.click();
 
       // Note: In real implementation, this would redirect to Google OAuth
@@ -128,17 +121,15 @@ test.describe('Authenticated User - Authentication Flows', () => {
     });
 
     test('should sign up using GitHub OAuth', async ({ page }) => {
-      if (!OAUTH_PROVIDERS.github.enabled) {
-        test.skip('GitHub OAuth not enabled in test environment');
-      }
+      // Fail fast if OAuth not configured
+      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(true);
 
       await page.goto('/');
       await page.locator('[data-testid="signup-button"]').click();
 
       // Click GitHub OAuth button
-      const githubButton = page
-        .locator('[data-testid="github-signup"]')
-        .or(page.locator('text="Continue with GitHub"'));
+      const githubButton = page.locator('[data-testid="github-signup"]');
+      await expect(githubButton).toBeVisible();
       await githubButton.click();
 
       // Wait for OAuth completion
@@ -187,9 +178,7 @@ test.describe('Authenticated User - Authentication Flows', () => {
       await page.locator('[data-testid="login-submit"]').click();
 
       // Should show error message
-      const errorMessage = page
-        .locator('[data-testid="login-error"]')
-        .or(page.locator('.error', { hasText: 'Invalid credentials' }));
+      const errorMessage = page.locator('[data-testid="login-error"]');
       await expect(errorMessage).toBeVisible();
 
       // Should not be logged in
@@ -197,17 +186,15 @@ test.describe('Authenticated User - Authentication Flows', () => {
     });
 
     test('should sign in using Google OAuth', async ({ page }) => {
-      if (!OAUTH_PROVIDERS.google.enabled) {
-        test.skip('Google OAuth not enabled in test environment');
-      }
+      // Fail fast if OAuth not configured
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
 
       await page.goto('/');
       await layoutPage.openLoginModal();
 
       // Click Google login button
-      const googleButton = page
-        .locator('[data-testid="google-login"]')
-        .or(page.locator('text="Sign in with Google"'));
+      const googleButton = page.locator('[data-testid="google-login"]');
+      await expect(googleButton).toBeVisible();
       await googleButton.click();
 
       // Wait for OAuth completion
@@ -217,17 +204,15 @@ test.describe('Authenticated User - Authentication Flows', () => {
     });
 
     test('should sign in using GitHub OAuth', async ({ page }) => {
-      if (!OAUTH_PROVIDERS.github.enabled) {
-        test.skip('GitHub OAuth not enabled in test environment');
-      }
+      // Fail fast if OAuth not configured
+      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(true);
 
       await page.goto('/');
       await layoutPage.openLoginModal();
 
       // Click GitHub login button
-      const githubButton = page
-        .locator('[data-testid="github-login"]')
-        .or(page.locator('text="Sign in with GitHub"'));
+      const githubButton = page.locator('[data-testid="github-login"]');
+      await expect(githubButton).toBeVisible();
       await githubButton.click();
 
       // Wait for OAuth completion
@@ -400,16 +385,13 @@ test.describe('Authenticated User - Authentication Flows', () => {
       await page.locator('[data-testid="login-submit"]').click();
 
       // Should show network error message
-      const errorMessage = page
-        .locator('[data-testid="network-error"]')
-        .or(page.locator('.error', { hasText: 'network' }));
+      const errorMessage = page.locator('[data-testid="network-error"]');
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
     });
 
     test('should handle OAuth errors gracefully', async ({ page }) => {
-      if (!OAUTH_PROVIDERS.google.enabled) {
-        test.skip('Google OAuth not enabled in test environment');
-      }
+      // Fail fast if OAuth not configured
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
 
       await page.goto('/');
       await layoutPage.openLoginModal();

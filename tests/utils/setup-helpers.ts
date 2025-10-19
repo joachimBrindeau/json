@@ -357,8 +357,11 @@ export class SetupHelpers {
     // Wait for network to be idle
     await this.page.waitForLoadState('networkidle', { timeout });
 
-    // Additional wait for any async operations
-    await this.page.waitForTimeout(1000);
+    // Additional wait for any async operations to complete
+    await Promise.race([
+      this.page.waitForLoadState('domcontentloaded'),
+      this.page.waitForFunction(() => document.readyState === 'complete', { timeout: 2000 })
+    ]).catch(() => {});
 
     console.log('✅ Application ready');
   }
@@ -572,8 +575,8 @@ export async function waitForJsonProcessing(page: Page, timeout = 10000) {
     { timeout }
   );
 
-  // Additional small wait for stabilization
-  await page.waitForTimeout(500);
+  // Wait for viewer to be ready
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
 }
 
 /**

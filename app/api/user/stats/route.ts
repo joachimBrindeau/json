@@ -1,22 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { success, unauthorized, internalServerError } from '@/lib/api/responses';
+import { success, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
 /**
  * Optimized user statistics endpoint using database aggregation
  * Replaces N+1 query pattern with single aggregation query
  */
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request: NextRequest, session) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return unauthorized('Authentication required');
-    }
-
     // Single aggregation query instead of fetching all documents
     const stats = await prisma.jsonDocument.aggregate({
       where: {
@@ -36,4 +29,4 @@ export async function GET(_request: NextRequest) {
     logger.error({ err: error }, 'User stats API error');
     return internalServerError('Failed to fetch user statistics');
   }
-}
+});

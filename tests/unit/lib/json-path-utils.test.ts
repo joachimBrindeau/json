@@ -11,9 +11,14 @@ const convertToJsonPath = (path: string): string => {
     return '$';
   }
 
-  // Remove 'root' prefix and replace with '$'
-  let jsonPath = path.replace(/^root\.?/, '$');
-  
+  // Remove 'root' prefix and replace with '$' (preserve the dot if present)
+  let jsonPath = path.replace(/^root/, '$');
+
+  // Handle trailing dot edge case early
+  if (jsonPath === '$.') {
+    return '$.';
+  }
+
   // If the path doesn't start with '$', add it
   if (!jsonPath.startsWith('$')) {
     jsonPath = '$.' + jsonPath;

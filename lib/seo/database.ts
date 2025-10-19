@@ -1,30 +1,39 @@
 import { prisma } from '@/lib/db';
 import { generateSEOMetadata, PAGE_SEO, DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import { Metadata } from 'next';
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 
 /**
- * Cached database SEO fetcher (15 minutes cache)
+ * Cached database SEO fetcher with Next.js unstable_cache
+ * This provides longer-term caching across multiple renders and requests,
+ * preventing simultaneous database queries during SSR of multiple layouts
  */
-export const getSEOSettingsFromDatabase = cache(async (pageKey: string) => {
-  try {
-    const settings = await prisma.seoSettings.findFirst({
-      where: {
-        pageKey,
-        isActive: true,
-      },
-      orderBy: {
-        priority: 'desc', // Highest priority first (for A/B testing)
-      },
-    });
+export const getSEOSettingsFromDatabase = unstable_cache(
+  async (pageKey: string) => {
+    try {
+      const settings = await prisma.seoSettings.findFirst({
+        where: {
+          pageKey,
+          isActive: true,
+        },
+        orderBy: {
+          priority: 'desc', // Highest priority first (for A/B testing)
+        },
+      });
 
-    return settings;
-  } catch (error) {
-    logger.warn({ err: error, pageKey }, 'SEO database error, using fallbacks');
-    return null;
+      return settings;
+    } catch (error) {
+      logger.warn({ err: error, pageKey }, 'SEO database error, using fallbacks');
+      return null;
+    }
+  },
+  ['seo-settings'], // cache key prefix
+  {
+    revalidate: 60, // Revalidate every 60 seconds
+    tags: ['seo-settings'], // Allow manual cache invalidation
   }
-});
+);
 
 /**
  * Generate metadata with database fallback to hardcoded values

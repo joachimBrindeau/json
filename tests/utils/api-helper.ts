@@ -33,12 +33,14 @@ export class APIHelper {
 
       const formResponse = await this.request.post('/api/json/upload', {
         multipart: formData,
+        timeout: 60000, // 60 seconds for large file uploads
       });
 
       if (formResponse.ok()) {
         const result = await formResponse.json();
         console.log('✅ Upload successful:', { status: formResponse.status(), result });
-        return result.document || result;
+        // API returns { data: { document: {...} } } structure
+        return result.data?.document || result.document || result;
       } else {
         const errorText = await formResponse.text();
         console.error('❌ Upload failed:', { status: formResponse.status(), error: errorText });
@@ -56,19 +58,42 @@ export class APIHelper {
    */
   async getJSON(id: string) {
     const response = await this.request.get(`/api/json/${id}/content`);
-    
+
     if (!response.ok()) {
       throw new Error(`Failed to get JSON ${id}: ${response.status()}`);
     }
-    
+
     const result = await response.json();
-    // Return just the content, handling different response formats
-    if (result.document) {
-      return result.document.content || result.document;
+
+    // The /content endpoint returns: { success: true, data: { success: true, document: { content: {...} } } }
+    // We need to extract just the content JSON
+
+    // Check for nested success wrapper: result.data.document.content
+    if (result.data?.document?.content !== undefined) {
+      return result.data.document.content;
     }
-    if (result.content) {
+
+    // Check for direct document with content: result.data.document
+    if (result.data?.document) {
+      return result.data.document;
+    }
+
+    // Check for document at top level: result.document.content
+    if (result.document?.content !== undefined) {
+      return result.document.content;
+    }
+
+    // Check for document at top level without nested content
+    if (result.document) {
+      return result.document;
+    }
+
+    // Check for direct content: result.content
+    if (result.content !== undefined) {
       return result.content;
     }
+
+    // Fallback: return as-is
     return result;
   }
 

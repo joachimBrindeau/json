@@ -71,9 +71,9 @@ export function DynamicBreadcrumb({
     const segments = pathname.split('/').filter(Boolean);
     const items: BreadcrumbSegment[] = [];
 
-    // Always add home
+    // Always add home icon (no label text)
     items.push({
-      label: 'Home',
+      label: '',
       href: '/',
       isLast: segments.length === 0 && !currentTitle,
     });
@@ -196,13 +196,11 @@ export function DynamicBreadcrumb({
                   item.isLast ? (
                     <BreadcrumbPage className="flex items-center gap-1.5" data-testid="logo-desktop">
                       <Home className="h-4 w-4" />
-                      <span className="hidden sm:inline">{item.label}</span>
                     </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
                       <Link href={item.href!} className="flex items-center gap-1.5 hover:text-foreground transition-colors" data-testid="logo-desktop">
                         <Home className="h-4 w-4" />
-                        <span className="hidden sm:inline">{item.label}</span>
                       </Link>
                     </BreadcrumbLink>
                   )

@@ -8,7 +8,6 @@ import { Viewer } from '@/components/features/viewer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useBackendStore } from '@/lib/store/backend';
 import { useSearch } from '@/hooks/use-search';
@@ -24,7 +23,6 @@ import {
   ArrowRightLeft,
   Sparkles,
   Play,
-  Search,
   Users,
   Globe,
   Rocket,
@@ -37,10 +35,6 @@ import {
   Settings,
   PieChart,
   CheckCircle,
-  ExternalLink,
-  Download,
-  Upload,
-  Eye,
   Copy
 } from 'lucide-react';
 
@@ -55,7 +49,7 @@ const features = [
     icon: <TreePine className="w-5 h-5" />,
     title: 'Interactive Tree View',
     description: 'Navigate complex JSON structures with collapsible tree visualization, deep search, and node filtering capabilities',
-    link: '/'
+    link: '/viewer'
   },
   {
     icon: <Zap className="w-5 h-5" />,
@@ -175,7 +169,7 @@ const competitors = [
 const faqs = [
   {
     question: 'What is JSON and why is it so popular?',
-    answer: 'JSON (JavaScript Object Notation) is the most popular data interchange format used in modern web development. It&apos;s lightweight, human-readable, and supported by every programming language. JSON is used in REST APIs, configuration files, databases, and data transmission because it&apos;s simpler than XML and more structured than plain text. Over 95% of web APIs use JSON for data exchange.'
+    answer: 'JSON (JavaScript Object Notation) is the most popular data interchange format used in modern web development. It\'s lightweight, human-readable, and supported by every programming language. JSON is used in REST APIs, configuration files, databases, and data transmission because it\'s simpler than XML and more structured than plain text. Over 95% of web APIs use JSON for data exchange.'
   },
   {
     question: 'How do I format and validate JSON online for free?',
@@ -207,16 +201,15 @@ const faqs = [
   },
 ];
 
-// Professional color scheme - clean and minimal
 const colors = {
-  primary: 'blue', // Primary accent - blue
-  secondary: 'green', // Secondary accent - green  
+  primary: 'blue',
+  secondary: 'green',
 } as const;
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
-  const { searchTerm, setSearchTerm } = useSearch();
+  const { searchTerm, setSearchTerm} = useSearch();
   const [showFlowHint, setShowFlowHint] = useState(false);
   const [hasInteractedWithTabs, setHasInteractedWithTabs] = useState(false);
   const { currentJson } = useBackendStore();
@@ -230,20 +223,17 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Show subtle hint to try flow view when user is on editor with valid JSON
   useEffect(() => {
     if (activeTab === 'editor' && currentJson && !hasInteractedWithTabs) {
       try {
-        // Check if user has seen this hint before
         const hasSeenFlowHint = localStorage.getItem('hasSeenFlowHint');
         if (hasSeenFlowHint) return;
 
         const parsed = JSON.parse(currentJson);
-        // Only show hint if JSON has some complexity (objects/arrays)
         if (parsed && typeof parsed === 'object') {
           const timer = setTimeout(() => {
             setShowFlowHint(true);
-          }, 3000); // Show after 3 seconds on editor tab
+          }, 3000);
           return () => clearTimeout(timer);
         }
       } catch {
@@ -254,7 +244,6 @@ export default function HomePage() {
     }
   }, [activeTab, currentJson, hasInteractedWithTabs]);
 
-  // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -288,8 +277,7 @@ export default function HomePage() {
   };
 
   return (
-    <MainLayout variant="default">
-      {/* Structured Data for SEO */}
+    <MainLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -298,10 +286,9 @@ export default function HomePage() {
       />
       
       <div className="min-h-full">
-        {/* Hero Section with Integrated Editor and Tabs */}
+        {/* Hero Section */}
         <div className="relative bg-gradient-to-b from-background to-muted/30 border-b">
           <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-            {/* Hero Header */}
             <div className="text-center mb-8">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6">
                 <Badge variant="secondary" className="px-2 sm:px-4 py-1 sm:py-2 bg-primary/10 text-primary border-primary/20 text-xs sm:text-sm">
@@ -338,7 +325,6 @@ export default function HomePage() {
             {/* Browser-Like Editor with Tabs */}
             <div className="max-w-6xl mx-auto px-2 sm:px-4">
               <Card className="border-2 shadow-2xl overflow-hidden">
-                {/* Browser Header */}
                 <div className="border-b bg-muted/50 px-2 sm:px-4 py-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
@@ -356,7 +342,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Tabs Navigation */}
                 <div className="border-b">
                   <TabsNav 
                     value={activeTab} 
@@ -369,45 +354,9 @@ export default function HomePage() {
                       }
                     }} 
                     showEditor={true}
-                    highlightFlow={showFlowHint}
                   />
                 </div>
 
-                {/* Subtle Flow View Hint */}
-                {showFlowHint && (
-                  <div className="relative">
-                    <div className="absolute left-1/2 transform -translate-x-1/2 sm:left-32 sm:transform-none -top-14 z-50 animate-in fade-in-0 zoom-in-95 duration-200 w-80 max-w-[calc(100vw-2rem)]">
-                      <div 
-                        className={`bg-gradient-to-r from-${colors.primary}-50 to-indigo-50 dark:from-${colors.primary}-950/50 dark:to-indigo-950/50 border border-${colors.primary}-200 dark:border-${colors.primary}-800 rounded-lg px-3 py-2 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-200`}
-                        onClick={() => {
-                          setActiveTab('flow');
-                          setHasInteractedWithTabs(true);
-                          setShowFlowHint(false);
-                          localStorage.setItem('hasSeenFlowHint', 'true');
-                        }}
-                      >
-                        <div className={`flex items-center gap-2 text-sm text-${colors.primary}-700 dark:text-${colors.primary}-300`}>
-                          <Sparkles className="h-4 w-4" />
-                          <span>Try <strong>Flow</strong> view for visual JSON exploration!</span>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowFlowHint(false);
-                              localStorage.setItem('hasSeenFlowHint', 'true');
-                            }}
-                            className={`ml-2 text-${colors.primary}-600 hover:text-${colors.primary}-800 dark:text-${colors.primary}-400 dark:hover:text-${colors.primary}-200 hover:bg-${colors.primary}-100 dark:hover:bg-${colors.primary}-800 rounded px-1`}
-                          >
-                            ×
-                          </button>
-                        </div>
-                        {/* Arrow pointing up to Flow tab */}
-                        <div className={`absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gradient-to-br from-${colors.primary}-50 to-indigo-50 dark:from-${colors.primary}-950/50 dark:to-indigo-950/50 border-l border-t border-${colors.primary}-200 dark:border-${colors.primary}-800 rotate-45`}></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Content Area */}
                 <CardContent className="p-0">
                   <div className="h-[300px] sm:h-[400px] lg:h-[500px] relative">
                     {activeTab === 'editor' ? (
@@ -417,7 +366,7 @@ export default function HomePage() {
                         content={currentJson}
                         maxNodes={viewerSettings.performance.maxNodes}
                         virtualizeThreshold={viewerSettings.performance.virtualizeThreshold}
-                        initialViewMode={activeTab as 'tree' | 'list' | 'flow'}
+                        viewMode={activeTab as 'tree' | 'list' | 'flow'}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
                         enableViewModeSwitch={false}
@@ -427,54 +376,35 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              {/* Quick Actions - Mobile Accessibility Optimized */}
+              {/* Quick Actions */}
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 px-4 sm:px-0">
                 <Link href="/edit">
-                  <Button 
-                    size="lg"
-                    className="gap-2 text-sm sm:text-base px-4 sm:px-8 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]" 
-                  >
+                  <Button size="lg" className="gap-2 text-sm sm:text-base px-4 sm:px-8 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]">
                     <Code2 className="w-5 h-5" />
                     Open Full Editor
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
                 <Link href="/format">
-                  <Button 
-                    variant="outline"
-                    size="lg"
-                    className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
-                  >
+                  <Button variant="outline" size="lg" className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]">
                     <FileJson className="w-5 h-5" />
                     Format JSON
                   </Button>
                 </Link>
                 <Link href="/compare">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
-                  >
+                  <Button variant="outline" size="lg" className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]">
                     <Copy className="w-5 h-5" />
                     Compare JSON
                   </Button>
                 </Link>
                 <Link href="/convert">
-                  <Button 
-                    variant="outline"
-                    size="lg"
-                    className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
-                  >
+                  <Button variant="outline" size="lg" className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]">
                     <ArrowRightLeft className="w-5 h-5" />
                     Convert JSON
                   </Button>
                 </Link>
                 <Link href="/library">
-                  <Button 
-                    variant="outline"
-                    size="lg"
-                    className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
-                  >
+                  <Button variant="outline" size="lg" className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]">
                     <Database className="w-5 h-5" />
                     Browse Examples
                   </Button>
@@ -502,7 +432,7 @@ export default function HomePage() {
                   <Card className="group border-0 shadow-sm hover:shadow-lg transition-all duration-300 h-full bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <CardContent className="p-8">
                       <div className="mb-6">
-                        <div className={`w-12 h-12 rounded-xl bg-${colors.primary}-50 dark:bg-${colors.primary}-950/30 flex items-center justify-center text-${colors.primary}-600 dark:text-${colors.primary}-400 mb-4 group-hover:bg-${colors.primary}-100 dark:group-hover:bg-${colors.primary}-900/40 transition-colors duration-200`}>
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors duration-200">
                           {feature.icon}
                         </div>
                         <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
@@ -512,7 +442,7 @@ export default function HomePage() {
                       <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
                         {feature.description}
                       </p>
-                      <div className={`flex items-center text-${colors.primary}-600 dark:text-${colors.primary}-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-200`}>
+                      <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-200">
                         Explore <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                       </div>
                     </CardContent>
@@ -539,13 +469,13 @@ export default function HomePage() {
                   <Card key={index} className="group border-0 shadow-sm hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-900">
                     <CardContent className="p-8">
                       <div className="flex items-start gap-6">
-                        <div className={`w-14 h-14 rounded-xl bg-${colors.secondary}-50 dark:bg-${colors.secondary}-950/30 flex items-center justify-center text-${colors.secondary}-600 dark:text-${colors.secondary}-400 flex-shrink-0`}>
+                        <div className="w-14 h-14 rounded-xl bg-green-50 dark:bg-green-950/30 flex items-center justify-center flex-shrink-0">
                           {benefit.icon}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{benefit.title}</h3>
-                            <span className={`px-3 py-1 bg-${colors.secondary}-50 dark:bg-${colors.secondary}-950/30 text-${colors.secondary}-700 dark:text-${colors.secondary}-300 text-xs font-medium rounded-full`}>
+                            <span className="px-3 py-1 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
                               {benefit.stats}
                             </span>
                           </div>
@@ -588,7 +518,7 @@ export default function HomePage() {
                       <CardContent className="p-4 sm:p-6">
                         <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm sm:text-base">JSON Advantages</h4>
                         <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
-                          <li>• Lightweight &amp; fast parsing</li>
+                          <li>• Lightweight & fast parsing</li>
                           <li>• Human-readable format</li>
                           <li>• Universal language support</li>
                           <li>• Native JavaScript integration</li>
@@ -602,7 +532,7 @@ export default function HomePage() {
                         <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
                           <li>• REST API responses</li>
                           <li>• Configuration files</li>
-                          <li>• Data storage &amp; transfer</li>
+                          <li>• Data storage & transfer</li>
                           <li>• NoSQL databases</li>
                           <li>• Web app state management</li>
                         </ul>
@@ -610,8 +540,8 @@ export default function HomePage() {
                     </Card>
                   </div>
 
-                  <div className={`bg-${colors.primary}-50 dark:bg-${colors.primary}-950/30 rounded-lg p-4 sm:p-6 border border-${colors.primary}-200 dark:border-${colors.primary}-800`}>
-                    <h4 className={`font-semibold text-base sm:text-lg mb-3 text-${colors.primary}-900 dark:text-${colors.primary}-100`}>Did You Know?</h4>
+                  <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 sm:p-6 border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold text-base sm:text-lg mb-3 text-blue-900 dark:text-blue-100">Did You Know?</h4>
                     <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                       <li>• 95% of web APIs use JSON for data exchange</li>
                       <li>• JSON processing is 3x faster than XML</li>
@@ -699,7 +629,7 @@ export default function HomePage() {
                     <div className="space-y-2">
                       {useCase.tools.map((tool, toolIndex) => (
                         <div key={toolIndex} className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Check className={`w-3 h-3 text-${colors.secondary}-600 dark:text-${colors.secondary}-400 flex-shrink-0`} />
+                          <Check className="w-3 h-3 text-green-600 dark:text-green-400 flex-shrink-0" />
                           <span>{tool}</span>
                         </div>
                       ))}
@@ -780,7 +710,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Final CTA Section */}
+        {/* Final CTA */}
         <section className="bg-gray-50 dark:bg-gray-900/50 border-t" aria-labelledby="cta-heading">
           <div className="container mx-auto px-6 py-16">
             <div className="text-center max-w-4xl mx-auto">
@@ -788,8 +718,7 @@ export default function HomePage() {
                 Professional JSON Tools for Developers
               </h2>
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Stop struggling with basic JSON validators. Get the complete toolkit for modern development workflows. 
-                Start formatting, validating, and visualizing your JSON data like a pro - completely free, no registration required.
+                Stop struggling with basic JSON validators. Get the complete toolkit for modern development workflows.
               </p>
               
               <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
@@ -814,11 +743,11 @@ export default function HomePage() {
                   Professional grade
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className={`w-4 h-4 text-${colors.primary}-500`} />
+                  <Users className="w-4 h-4 text-blue-500" />
                   For developers
                 </div>
                 <div className="flex items-center gap-2">
-                  <Shield className={`w-4 h-4 text-${colors.secondary}-500`} />
+                  <Shield className="w-4 h-4 text-green-500" />
                   100% secure
                 </div>
               </div>

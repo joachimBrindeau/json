@@ -33,15 +33,15 @@ test.describe('Library Links', () => {
     expect(currentUrl).toContain('/library/');
     
     // Wait for the page content to load
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle'); // Wait for share page initialization
     
     // Check if Monaco editor is loaded (it's inside the json-textarea div)
     const editorContainer = page.locator('[data-testid="json-textarea"]');
     const monacoEditor = page.locator('.monaco-editor');
     
-    // Try to wait for either the container or the monaco editor directly
+    // Try to wait for the editor container
     try {
-      await expect(editorContainer.or(monacoEditor)).toBeVisible({ timeout: 10000 });
+      await expect(editorContainer).toBeVisible({ timeout: 10000 });
     } catch (error) {
       console.log('Editor not visible, checking if content is in store...');
     }
@@ -118,7 +118,7 @@ test.describe('Library Links', () => {
     await page.waitForURL(/\/library\/.+/, { timeout: 10000 });
     
     // Wait for content to be loaded
-    await page.waitForTimeout(2000); // Give time for the store to be updated
+    await page.waitForLoadState('networkidle'); // Wait for store update
     
     // Check the backend store state
     const storeState = await page.evaluate(() => {

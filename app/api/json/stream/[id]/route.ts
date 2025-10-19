@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { createJsonStream, JsonCache, createPerformanceMonitor } from '@/lib/json';
 import { createHash } from 'crypto';
 import { logger } from '@/lib/logger';
 import { notFound, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (request, session, { params }: { params: Promise<{ id: string }> }) => {
   const monitor = createPerformanceMonitor();
   const { id } = await params;
-
-  // Get user session for authorization
-  const session = await getServerSession(authOptions);
 
   try {
     // Try cache first
@@ -186,7 +182,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
-}
+});
 
 // Get document metadata without content
 export async function HEAD(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -28,26 +28,12 @@ import {
   formatDiffOperation
 } from '@/lib/json';
 import { useBackendStore } from '@/lib/store/backend';
-import dynamic from 'next/dynamic';
-import type { OnMount, Monaco } from '@monaco-editor/react';
-import type { editor } from 'monaco-editor';
+import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
-
-// Monaco editor with loading state
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-background border">
-      <div className="text-center">
-        <LoadingSpinner size="md" label="Loading Code Editor..." />
-      </div>
-    </div>
-  ),
-  ssr: false,
-});
 
 interface JsonCompareProps {
   initialJson1?: string;
@@ -58,8 +44,8 @@ interface JsonCompareProps {
 }
 
 export function ViewerCompare({
-  initialJson1 = '', 
-  initialJson2 = '', 
+  initialJson1 = '',
+  initialJson2 = '',
   className = '',
   activeView = 'input',
   onViewChange
@@ -68,9 +54,10 @@ export function ViewerCompare({
   const [json1, setJson1] = useState(initialJson1);
   const [json2, setJson2] = useState(initialJson2);
   const [syncScroll, setSyncScroll] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const editor1Ref = useRef<any>(null);
-  const editor2Ref = useRef<any>(null);
+
+  // Use Monaco editor hook for both editors
+  const editor1 = useMonacoEditor(json1.length);
+  const editor2 = useMonacoEditor(json2.length);
 
   // Update local state when initialJson1 changes (from store)
   useEffect(() => {
@@ -109,34 +96,6 @@ export function ViewerCompare({
   }, [parsedJson1, parsedJson2]);
 
   const canCompare = parsedJson1 && parsedJson2;
-
-  // Check for dark mode on mount and listen for changes
-  React.useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setIsDarkMode(isDark);
-    };
-    
-    checkDarkMode();
-    
-    // Listen for dark mode changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
-
-  // Update Monaco themes when dark mode changes
-  React.useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).monaco) {
-      const monaco = (window as any).monaco;
-      const theme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(theme);
-    }
-  }, [isDarkMode]);
 
   const hasValidJson1 = validateJson(json1);
   const hasValidJson2 = validateJson(json2);
@@ -240,104 +199,100 @@ export function ViewerCompare({
   }, [diffResult]);
 
   // Handle synchronized scrolling - improved sync logic
-  const handleEditor1Mount = useCallback((editor: any, monaco?: any) => {
-    editor1Ref.current = editor;
-    // Define custom themes and set the current theme
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-    
-    // Set up scroll synchronization
-    const scrollDisposable = editor.onDidScrollChange((e: any) => {
-      if (editor2Ref.current && syncScroll) {
-        // Prevent infinite loops by checking if this scroll was triggered by sync
-        if (!editor._syncingScroll) {
-          editor2Ref.current._syncingScroll = true;
-          editor2Ref.current.setScrollPosition({
-            scrollTop: e.scrollTop,
-            scrollLeft: e.scrollLeft
-          });
-          // Reset sync flag after a brief delay
-          setTimeout(() => {
-            if (editor2Ref.current) {
-              editor2Ref.current._syncingScroll = false;
-            }
-          }, 10);
-        }
-      }
-    });
-    
-    return scrollDisposable;
-  }, [syncScroll, isDarkMode]);
+  const handleEditor1Mount = useCallback((editorInstance: any, monaco?: any) => {
+    // Call the base mount handler from the hook
+    editor1.handleEditorDidMount(editorInstance, monaco);
 
-  const handleEditor2Mount = useCallback((editor: any, monaco?: any) => {
-    editor2Ref.current = editor;
-    // Define custom themes and set the current theme
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-    
     // Set up scroll synchronization
-    const scrollDisposable = editor.onDidScrollChange((e: any) => {
-      if (editor1Ref.current && syncScroll) {
+    const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
+      if (editor2.editorRef.current && syncScroll) {
         // Prevent infinite loops by checking if this scroll was triggered by sync
-        if (!editor._syncingScroll) {
-          editor1Ref.current._syncingScroll = true;
-          editor1Ref.current.setScrollPosition({
+        if (!(editorInstance as any)._syncingScroll) {
+          (editor2.editorRef.current as any)._syncingScroll = true;
+          editor2.editorRef.current.setScrollPosition({
             scrollTop: e.scrollTop,
             scrollLeft: e.scrollLeft
           });
           // Reset sync flag after a brief delay
           setTimeout(() => {
-            if (editor1Ref.current) {
-              editor1Ref.current._syncingScroll = false;
+            if (editor2.editorRef.current) {
+              (editor2.editorRef.current as any)._syncingScroll = false;
             }
           }, 10);
         }
       }
     });
-    
+
     return scrollDisposable;
-  }, [syncScroll, isDarkMode]);
+  }, [syncScroll, editor1, editor2]);
+
+  const handleEditor2Mount = useCallback((editorInstance: any, monaco?: any) => {
+    // Call the base mount handler from the hook
+    editor2.handleEditorDidMount(editorInstance, monaco);
+
+    // Set up scroll synchronization
+    const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
+      if (editor1.editorRef.current && syncScroll) {
+        // Prevent infinite loops by checking if this scroll was triggered by sync
+        if (!(editorInstance as any)._syncingScroll) {
+          (editor1.editorRef.current as any)._syncingScroll = true;
+          editor1.editorRef.current.setScrollPosition({
+            scrollTop: e.scrollTop,
+            scrollLeft: e.scrollLeft
+          });
+          // Reset sync flag after a brief delay
+          setTimeout(() => {
+            if (editor1.editorRef.current) {
+              (editor1.editorRef.current as any)._syncingScroll = false;
+            }
+          }, 10);
+        }
+      }
+    });
+
+    return scrollDisposable;
+  }, [syncScroll, editor1, editor2]);
 
   const renderDiffOperation = (op: DiffOperation, index: number) => {
-    const typeColors = {
+    const typeColors: Record<'add' | 'remove' | 'modify', string> = {
       add: 'border-green-300 bg-green-50',
-      remove: 'border-red-300 bg-red-50', 
+      remove: 'border-red-300 bg-red-50',
       modify: 'border-amber-300 bg-amber-50'
     };
 
-    const typeIcons = {
+    const typeIcons: Record<'add' | 'remove' | 'modify', React.ReactNode> = {
       add: <Plus className="h-5 w-5 text-green-600" />,
       remove: <Minus className="h-5 w-5 text-red-600" />,
       modify: <Edit className="h-5 w-5 text-amber-600" />
     };
 
-    const typeLabels = {
+    const typeLabels: Record<'add' | 'remove' | 'modify', string> = {
       add: 'Added',
       remove: 'Removed',
       modify: 'Modified'
     };
 
+    // Map operation type to display type
+    const displayType: 'add' | 'remove' | 'modify' =
+      op.op === 'replace' ? 'modify' :
+      op.op === 'add' ? 'add' :
+      op.op === 'remove' ? 'remove' : 'modify';
+
     return (
-      <div key={index} className={`p-4 mb-3 rounded-lg border-2 ${typeColors[op.op === 'replace' ? 'modify' : op.op]}`}>
+      <div key={index} className={`p-4 mb-3 rounded-lg border-2 ${typeColors[displayType]}`}>
         <div className="flex items-start gap-3">
-          <div className="flex-none mt-0.5">{typeIcons[op.op === 'replace' ? 'modify' : op.op]}</div>
+          <div className="flex-none mt-0.5">{typeIcons[displayType]}</div>
           <div className="flex-1 min-w-0">
             {/* Path and type badge */}
             <div className="flex items-center gap-2 mb-2">
               <code className="font-mono text-sm font-semibold text-foreground bg-background px-2 py-1 rounded border">
                 {op.path || '/'}
               </code>
-              <Badge 
+              <Badge
                 variant={op.op === 'add' ? 'default' : op.op === 'remove' ? 'destructive' : 'secondary'}
                 className="text-xs"
               >
-                {typeLabels[op.op === 'replace' ? 'modify' : op.op]}
+                {typeLabels[displayType]}
               </Badge>
             </div>
             
@@ -420,7 +375,7 @@ export function ViewerCompare({
               <MonacoEditor
                 height="100%"
                 language="json"
-                theme={isDarkMode ? "shadcn-dark" : "shadcn-light"}
+                theme={editor1.theme}
                 value={json1}
                 onChange={(value) => {
                   const newValue = value || '';
@@ -429,21 +384,8 @@ export function ViewerCompare({
                   setCurrentJson(newValue);
                 }}
                 onMount={handleEditor1Mount}
-                beforeMount={(monaco) => {
-                  // Define themes before mount
-                  defineMonacoThemes(monaco);
-                }}
-                options={{
-                  automaticLayout: true,
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", monospace',
-                  tabSize: 2,
-                  insertSpaces: true,
-                  lineNumbers: 'on',
-                }}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={editor1.editorOptions}
               />
             </div>
             <div className="px-2 py-1 bg-muted/50 border-t text-xs text-muted-foreground">
@@ -484,25 +426,12 @@ export function ViewerCompare({
               <MonacoEditor
                 height="100%"
                 language="json"
-                theme={isDarkMode ? "shadcn-dark" : "shadcn-light"}
+                theme={editor2.theme}
                 value={json2}
                 onChange={(value) => setJson2(value || '')}
                 onMount={handleEditor2Mount}
-                beforeMount={(monaco) => {
-                  // Define themes before mount
-                  defineMonacoThemes(monaco);
-                }}
-                options={{
-                  automaticLayout: true,
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", monospace',
-                  tabSize: 2,
-                  insertSpaces: true,
-                  lineNumbers: 'on',
-                }}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={editor2.editorOptions}
               />
             </div>
             <div className="px-2 py-1 bg-muted/50 border-t text-xs text-muted-foreground">

@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { success, unauthorized, internalServerError } from '@/lib/api/responses';
+import { success, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, session) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    // Only allow authenticated users to view analytics
-    if (!session?.user) {
-      return unauthorized('Authentication required');
-    }
 
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
@@ -144,10 +137,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error({ err: error, userId: (await getServerSession(authOptions))?.user?.id }, 'Tag analytics error');
+    logger.error({ err: error, userId: session?.user?.id }, 'Tag analytics error');
     return internalServerError('Failed to fetch tag analytics');
   }
-}
+});
 
 // Calculate trend score based on recent usage
 function calculateTrendScore(stats: {

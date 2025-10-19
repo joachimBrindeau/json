@@ -20,6 +20,7 @@ import { useSearch } from '@/hooks/use-search';
 import type { ViewMode } from './types';
 import type { JsonValue } from '@/lib/types/json';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 interface ViewerProps {
   jsonString?: string;
@@ -76,7 +77,7 @@ export const Viewer = ({
   searchTerm: controlledSearchTerm,
   onSearchChange: controlledOnSearchChange,
   enableActions = true,
-  height = 600,
+  height,
   className = '',
   enableSearch = true,
   enableViewModeSwitch = true,
@@ -138,9 +139,10 @@ export const Viewer = ({
   }
 
   return (
-    <div className={`viewer-container ${className}`}>
+    <div className={cn('viewer-container h-full flex flex-col', className)}>
       {/* Header */}
-      <div className="viewer-header flex items-center justify-between p-4 border-b bg-gray-50">
+      {(enableViewModeSwitch || enableActions || stats) && (
+        <div className="viewer-header flex items-center justify-between p-4 border-b bg-gray-50">
         <div className="flex items-center gap-4">
           {/* View mode selector */}
           {enableViewModeSwitch && (
@@ -216,9 +218,10 @@ export const Viewer = ({
           </div>
         )}
       </div>
+      )}
 
       {/* Content */}
-      <div className="viewer-content">
+      <div className={cn('viewer-content flex-1 overflow-hidden')}>
         {viewMode === 'tree' && (
           <ViewerTree
             data={data}

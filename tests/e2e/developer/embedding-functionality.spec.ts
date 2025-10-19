@@ -599,7 +599,7 @@ test.describe('Developer - Embedding Functionality', () => {
         alertTriggered = true;
       });
 
-      await page.waitForTimeout(2000); // Wait to see if any alerts fire
+      await page.waitForLoadState('networkidle'); // Wait for content rendering to complete
       expect(alertTriggered).toBe(false);
     });
 

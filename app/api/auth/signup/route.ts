@@ -1,16 +1,18 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { created } from '@/lib/api/responses';
 import { withValidationHandler } from '@/lib/api/middleware';
 import { ConflictError } from '@/lib/utils/app-errors';
+import { hashPassword } from '@/lib/auth/password';
+import { PASSWORD_REQUIREMENTS } from '@/lib/auth/constants';
+import { normalizeEmail } from '@/lib/utils/email';
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(PASSWORD_REQUIREMENTS.minLength, `Password must be at least ${PASSWORD_REQUIREMENTS.minLength} characters`),
 });
 
 /**
@@ -23,7 +25,7 @@ export const POST = withValidationHandler(async (request: NextRequest) => {
   const { name, email, password } = signupSchema.parse(body);
 
   // Normalize email
-  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedEmail = normalizeEmail(email);
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -36,8 +38,8 @@ export const POST = withValidationHandler(async (request: NextRequest) => {
     });
   }
 
-  // Hash password with a secure salt rounds
-  const hashedPassword = await bcrypt.hash(password, 12);
+  // Hash password using centralized password utility
+  const hashedPassword = await hashPassword(password);
 
   // Create user - Prisma P2002 (unique constraint) errors automatically handled by middleware
   const user = await prisma.user.create({

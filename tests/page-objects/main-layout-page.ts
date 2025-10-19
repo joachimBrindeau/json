@@ -118,7 +118,7 @@ export class MainLayoutPage extends BasePage {
     try {
       // Wait for page to be in stable state
       await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForTimeout(1000);
+      await this.page.waitForLoadState('networkidle');
       
       // Check if user menu (avatar) is visible in header
       const userMenuVisible = await this.page.locator('[data-testid="user-menu"]').isVisible();
@@ -286,7 +286,8 @@ export class MainLayoutPage extends BasePage {
 
     for (const viewport of viewports) {
       await this.page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await this.page.waitForTimeout(500); // Wait for responsive changes
+      // Wait for responsive layout changes to complete
+      await this.page.waitForLoadState('domcontentloaded');
 
       results.push({
         viewport: viewport.name,

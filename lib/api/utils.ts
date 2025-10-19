@@ -54,13 +54,18 @@ export interface ValidationResult<T> {
 /**
  * Higher-order function that wraps API route handlers with authentication
  * Ensures the user is authenticated before processing the request
+ *
+ * @param handler - The API route handler function
+ * @returns Wrapped handler with authentication check
+ *
+ * @example
+ * export const GET = withAuth(async (req, session) => {
+ *   // session is guaranteed to exist here
+ *   return createApiResponse({ userId: session.user.id });
+ * });
  */
 export function withAuth<T extends any[]>(
-  handler: (req: NextRequest, session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>, ...args: T) => Promise<NextResponse>,
-  options: {
-    requireEmailVerified?: boolean;
-    requireRole?: string;
-  } = {}
+  handler: (req: NextRequest, session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>, ...args: T) => Promise<NextResponse>
 ) {
   return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
     try {
@@ -73,22 +78,23 @@ export function withAuth<T extends any[]>(
         );
       }
 
-      // Check email verification if required
-      if (options.requireEmailVerified && !session.user.emailVerified) {
-        return createApiResponse(
-          { error: 'Email verification required' },
-          { status: 403 }
-        );
-      }
+      return await handler(req, session, ...args);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  };
+}
 
-      // Check role if required
-      if (options.requireRole && (session.user as any).role !== options.requireRole) {
-        return createApiResponse(
-          { error: 'Insufficient permissions' },
-          { status: 403 }
-        );
-      }
-
+/**
+ * Higher-order function that wraps API route handlers with optional authentication
+ * Allows anonymous access but provides session if available
+ */
+export function withOptionalAuth<T extends any[]>(
+  handler: (req: NextRequest, session: Awaited<ReturnType<typeof getServerSession>> | null, ...args: T) => Promise<NextResponse>
+) {
+  return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
+    try {
+      const session = await getServerSession(authOptions);
       return await handler(req, session, ...args);
     } catch (error) {
       return handleApiError(error);

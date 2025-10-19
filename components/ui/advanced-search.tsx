@@ -71,7 +71,7 @@ export function AdvancedSearch({
   // Count active filters (excluding query and sortBy)
   const activeFiltersCount = [
     filters.category,
-    filters.tags.length > 0 ? 'tags' : '',
+    filters.tags?.length > 0 ? 'tags' : '',
     filters.dateRange,
     filters.complexity,
     filters.minSize,
@@ -92,7 +92,7 @@ export function AdvancedSearch({
   };
 
   const removeTag = (tagToRemove: string) => {
-    updateFilter('tags', filters.tags.filter(tag => tag !== tagToRemove));
+    updateFilter('tags', (filters.tags || []).filter(tag => tag !== tagToRemove));
   };
 
   return (
@@ -245,13 +245,13 @@ export function AdvancedSearch({
       </div>
 
       {/* Active tags display */}
-      {filters.tags.length > 0 && (
+      {filters.tags && filters.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-muted-foreground flex items-center gap-1">
             <Hash className="h-3 w-3" />
             Tags:
           </span>
-          {filters.tags.map(tag => (
+          {(filters.tags || []).map(tag => (
             <Badge key={tag} variant="secondary" className="gap-1">
               {tag}
               <X 

@@ -97,7 +97,7 @@ test.describe('JSON Expand/Collapse Functionality', () => {
     await page.locator('[data-testid="tree-view"]').click();
     
     // Wait for tree view to render
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle'); // Wait for tree expansion
   });
 
   test('should display multiple expand buttons for complex nested JSON', async ({ page }) => {

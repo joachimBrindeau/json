@@ -62,6 +62,36 @@ test.describe('Advanced User - Large File Handling (Story 1)', () => {
       }
     });
 
+    test('should handle large realistic dataset efficiently', async ({ dataGenerator }) => {
+      // Generate large realistic dataset
+      const largeData = dataGenerator.generateLargeRealisticDataset();
+      const jsonString = JSON.stringify(largeData, null, 2);
+      const testFilePath = join(testFilesDir, 'test-realistic-large.json');
+
+      // Create test file
+      writeFileSync(testFilePath, jsonString);
+
+      const startTime = Date.now();
+
+      // Upload file
+      await viewerPage.uploadJSONFile(testFilePath);
+
+      const uploadTime = Date.now() - startTime;
+
+      // Verify file was processed successfully
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+
+      // Should process reasonably fast
+      expect(uploadTime).toBeLessThan(5_000);
+
+      // Verify content is displayed
+      const nodeCounts = await viewerPage.getNodeCounts();
+      expect(nodeCounts.total).toBeGreaterThan(50);
+
+      // Take screenshot
+      await viewerPage.takeScreenshot('large-realistic-dataset-processed');
+    });
+
     test(
       'should handle 500MB JSON file with chunking',
       async () => {

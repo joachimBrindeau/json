@@ -37,7 +37,7 @@ test.describe('User Story: Library Interaction', () => {
       // Search for specific terms
       await searchInput.fill('user');
       await viewerPage.page.keyboard.press('Enter');
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Should filter results
       const results = viewerPage.page.locator('[data-testid="search-results"], [data-testid="document-card"]');
@@ -47,7 +47,7 @@ test.describe('User Story: Library Interaction', () => {
       // Clear search
       await searchInput.clear();
       await viewerPage.page.keyboard.press('Enter');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
     }
   });
 
@@ -64,7 +64,7 @@ test.describe('User Story: Library Interaction', () => {
       for (const category of categories) {
         try {
           await categoryFilter.selectOption(category);
-          await viewerPage.page.waitForTimeout(1000);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Verify filtering worked
           const filteredResults = viewerPage.page.locator('[data-testid="document-card"]');
@@ -81,7 +81,7 @@ test.describe('User Story: Library Interaction', () => {
 
       // Reset filter
       await categoryFilter.selectOption('All');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
     }
   });
 
@@ -99,7 +99,7 @@ test.describe('User Story: Library Interaction', () => {
       if (tagCount > 0) {
         // Click first available tag
         await availableTags.first().click();
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should filter results by tag
         const taggedResults = viewerPage.page.locator('[data-testid="document-card"]');
@@ -121,7 +121,7 @@ test.describe('User Story: Library Interaction', () => {
       for (const option of sortOptions) {
         try {
           await sortSelect.selectOption(option);
-          await viewerPage.page.waitForTimeout(1000);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Verify sorting affects order
           const documentTitles = await viewerPage.page.locator('[data-testid="document-title"], .document-title, h3').allTextContents();
@@ -144,7 +144,7 @@ test.describe('User Story: Library Interaction', () => {
     if (await documentCard.isVisible({ timeout: 5000 })) {
       // Click to view details
       await documentCard.click();
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Should navigate to viewer or show details modal
       const viewerContent = viewerPage.page.locator('[data-testid="json-viewer"], .json-viewer, .viewer-container');
@@ -170,8 +170,7 @@ test.describe('User Story: Library Interaction', () => {
       const openButton = viewerPage.page.locator('[data-testid="open-viewer"], button:has-text("Open"), button:has-text("View")');
       if (await openButton.isVisible({ timeout: 3000 })) {
         await openButton.click();
-        await viewerPage.page.waitForTimeout(2000);
-
+        
         // Should load JSON in viewer
         await viewerPage.waitForJSONProcessed();
         expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -222,7 +221,7 @@ test.describe('User Story: Library Interaction', () => {
       const nextButton = pagination.locator('[data-testid="next-page"], button:has-text("Next"), .next-page');
       if (await nextButton.isVisible() && await nextButton.isEnabled()) {
         await nextButton.click();
-        await viewerPage.page.waitForTimeout(2000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should load different content
         const documents = viewerPage.page.locator('[data-testid="document-card"]');
@@ -232,7 +231,7 @@ test.describe('User Story: Library Interaction', () => {
         const prevButton = pagination.locator('[data-testid="prev-page"], button:has-text("Previous"), .prev-page');
         if (await prevButton.isVisible() && await prevButton.isEnabled()) {
           await prevButton.click();
-          await viewerPage.page.waitForTimeout(2000);
+          await viewerPage.page.waitForLoadState('networkidle');
         }
       }
     }
@@ -247,7 +246,7 @@ test.describe('User Story: Library Interaction', () => {
       // Search for something that definitely won't exist
       await searchInput.fill('xyznoresultstest123456789');
       await viewerPage.page.keyboard.press('Enter');
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Should show no results message
       const noResults = viewerPage.page.locator('[data-testid="no-results"], .no-results, .empty-state');
@@ -256,7 +255,7 @@ test.describe('User Story: Library Interaction', () => {
       // Clear search to restore results
       await searchInput.clear();
       await viewerPage.page.keyboard.press('Enter');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
     }
   });
 
@@ -293,8 +292,7 @@ test.describe('User Story: Library Interaction', () => {
     if (await documentCard.isVisible({ timeout: 5000 })) {
       // Hover to show preview
       await documentCard.hover();
-      await viewerPage.page.waitForTimeout(1000);
-
+      
       // Look for preview tooltip or preview panel
       const preview = viewerPage.page.locator('[data-testid="document-preview"], .preview-tooltip, .preview-panel');
       const hasPreview = await preview.isVisible({ timeout: 2000 });
@@ -314,14 +312,13 @@ test.describe('User Story: Library Interaction', () => {
     const documentCard = viewerPage.page.locator('[data-testid="document-card"], .document-item').first();
     if (await documentCard.isVisible({ timeout: 5000 })) {
       await documentCard.click();
-      await viewerPage.page.waitForTimeout(2000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Look for share functionality
       const shareButton = viewerPage.page.locator('[data-testid="share-button"], button:has-text("Share"), .share-btn');
       if (await shareButton.isVisible({ timeout: 3000 })) {
         await shareButton.click();
-        await viewerPage.page.waitForTimeout(1000);
-
+        
         // Should show share modal or options
         const shareModal = viewerPage.page.locator('[data-testid="share-modal"], .modal');
         const shareUrl = viewerPage.page.locator('[data-testid="share-url"], input[readonly]');
@@ -338,8 +335,8 @@ test.describe('User Story: Library Interaction', () => {
     // Simulate network conditions that might cause issues
     await viewerPage.page.goto('/saved');
     
-    // Wait longer to see how it handles slow loading
-    await viewerPage.page.waitForTimeout(5000);
+    // Wait for network to settle
+    await viewerPage.page.waitForLoadState('networkidle');
 
     // Should show either content or appropriate loading/error state
     const content = viewerPage.page.locator('[data-testid="public-library-content"], main');
@@ -359,17 +356,15 @@ test.describe('User Story: Library Interaction', () => {
 
     // Test keyboard navigation
     await viewerPage.page.keyboard.press('Tab'); // Should focus first interactive element
-    await viewerPage.page.waitForTimeout(500);
 
     // Continue tabbing through elements
     for (let i = 0; i < 5; i++) {
       await viewerPage.page.keyboard.press('Tab');
-      await viewerPage.page.waitForTimeout(200);
     }
 
     // Should be able to activate focused element with Enter
     await viewerPage.page.keyboard.press('Enter');
-    await viewerPage.page.waitForTimeout(1000);
+    await viewerPage.page.waitForLoadState('networkidle');
 
     // Should have navigated or activated something
     const currentUrl = viewerPage.page.url();
@@ -385,17 +380,17 @@ test.describe('User Story: Library Interaction', () => {
     if (await searchInput.isVisible({ timeout: 3000 })) {
       await searchInput.fill('test');
       await viewerPage.page.keyboard.press('Enter');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Click on a document
       const documentCard = viewerPage.page.locator('[data-testid="document-card"], .document-item').first();
       if (await documentCard.isVisible()) {
         await documentCard.click();
-        await viewerPage.page.waitForTimeout(2000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Navigate back
         await viewerPage.page.goBack();
-        await viewerPage.page.waitForTimeout(2000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should maintain search state
         const searchValue = await searchInput.inputValue();

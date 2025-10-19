@@ -11,6 +11,7 @@ import { generateWebApplicationStructuredData, renderJsonLd } from '@/lib/seo';
 import { generateDatabaseSEOMetadata } from '@/lib/seo/database';
 import { logger } from '@/lib/logger';
 import './globals.css';
+import 'leaflet/dist/leaflet.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

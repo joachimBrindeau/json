@@ -176,6 +176,7 @@ export function ViewerActions() {
           isLoading={isSaving}
           loadingText="Saving..."
           title={session ? "Save to library" : "Sign in to save"}
+          data-testid={session ? "save-button" : "viewer-sign-in-button"}
         />
 
         {/* Delete button - only show if document is saved */}

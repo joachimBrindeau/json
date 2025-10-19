@@ -712,7 +712,11 @@ export const useBackendStore = create<BackendAppState>()(
       },
 
       setLibraryUpdateCallback: (callback: () => void) => {
-        set({ onLibraryUpdate: callback });
+        // Only update if the callback is actually different to prevent unnecessary re-renders
+        const currentCallback = get().onLibraryUpdate;
+        if (currentCallback !== callback) {
+          set({ onLibraryUpdate: callback });
+        }
       },
 
       clearState: () => {

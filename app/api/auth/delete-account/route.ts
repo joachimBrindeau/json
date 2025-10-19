@@ -1,57 +1,35 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { success, unauthorized, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
-export async function DELETE() {
+export const DELETE = withAuth(async (_request: NextRequest, session) => {
   try {
-    const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
-      return unauthorized('Unauthorized');
+      return unauthorized('Email not found');
     }
 
-    // Start a transaction to delete all user data
-    await prisma.$transaction(async (tx) => {
-      // Find the user
-      const user = await tx.user.findUnique({
-        where: { email: session.user.email! },
-      });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      // Delete all documents owned by the user
-      await tx.document.deleteMany({
-        where: { userId: user.id },
-      });
-
-      // Delete the user's account
-      await tx.account.deleteMany({
-        where: { userId: user.id },
-      });
-
-      // Delete the user's sessions
-      await tx.session.deleteMany({
-        where: { userId: user.id },
-      });
-
-      // Finally, delete the user
-      await tx.user.delete({
-        where: { id: user.id },
-      });
-
-      logger.info(
-        {
-          userId: user.id,
-          email: session.user.email
-        },
-        'Account deleted successfully'
-      );
+    // Delete user - cascade will automatically delete all related data
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! },
     });
+
+    if (!user) {
+      return unauthorized('User not found');
+    }
+
+    await prisma.user.delete({
+      where: { id: user.id },
+    });
+
+    logger.info(
+      {
+        userId: user.id,
+        email: session.user.email
+      },
+      'Account deleted successfully'
+    );
 
     return success({ message: 'Account deleted successfully' });
   } catch (error) {
@@ -64,4 +42,4 @@ export async function DELETE() {
     );
     return internalServerError('Failed to delete account');
   }
-}
+});

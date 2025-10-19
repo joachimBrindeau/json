@@ -1,25 +1,17 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse } from '@/lib/api/utils';
+import { validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse, withAuth } from '@/lib/api/utils';
 import { getUserDocuments, createJsonDocument } from '@/lib/db/queries/documents';
 import { success, created } from '@/lib/api/responses';
 import { withErrorHandler } from '@/lib/api/middleware';
-import { ValidationError, AuthenticationError } from '@/lib/utils/app-errors';
+import { ValidationError } from '@/lib/utils/app-errors';
 import { DOCUMENT_CATEGORIES, isValidCategory, getCategoryValidationError } from '@/lib/constants/categories';
 
 const SORT_OPTIONS = ['recent', 'updated', 'views'] as const;
 
 /**
  * GET user's private documents with filtering
- * Now using withErrorHandler for automatic error handling
  */
-export const GET = withErrorHandler(async (request: NextRequest) => {
-  // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError();
-  }
+export const GET = withAuth(async (request: NextRequest, session) => {
 
   const { searchParams } = new URL(request.url);
 
@@ -77,14 +69,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
 /**
  * POST create private document
- * Now using withErrorHandler for automatic error handling
  */
-export const POST = withErrorHandler(async (request: NextRequest) => {
-  // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError();
-  }
+export const POST = withAuth(async (request: NextRequest, session) => {
 
   const data = await request.json();
 

@@ -34,7 +34,7 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
       }
 
       // Wait for formatting to complete
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
 
       // Get formatted content
       const formattedContent = await page.locator('[data-testid="json-textarea"]').inputValue();
@@ -91,7 +91,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting operation to complete
+      await page.waitForLoadState('networkidle');
 
       const formattedContent = await page.locator('[data-testid="json-textarea"]').inputValue();
 
@@ -145,7 +146,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting to complete
+      await page.waitForLoadState('networkidle');
 
       const formattedContent = await page.locator('[data-testid="json-textarea"]').inputValue();
 
@@ -175,7 +177,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting attempt to complete
+      await page.waitForLoadState('networkidle');
 
       // Should either show error or leave content unchanged
       const currentContent = await page.locator('[data-testid="json-textarea"]').inputValue();
@@ -236,7 +239,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await viewerPage.takeScreenshot('formatting-loading-indicator');
       }
 
-      await page.waitForTimeout(2000);
+      // Wait for formatting to complete
+      await page.waitForLoadState('networkidle');
 
       const formattedContent = await page.locator('[data-testid="json-textarea"]').inputValue();
 
@@ -280,7 +284,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting to complete
+      await page.waitForLoadState('networkidle');
 
       // Check if cursor position is maintained or reasonably positioned
       const cursorPosition = await textarea.evaluate(
@@ -309,7 +314,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting to complete
+      await page.waitForLoadState('networkidle');
 
       const formattedContent = await textarea.inputValue();
       expect(formattedContent).toContain('\n'); // Should be formatted
@@ -321,7 +327,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+KeyZ');
       }
 
-      await page.waitForTimeout(500);
+      // Wait for undo to complete
+      await page.waitForLoadState('networkidle');
 
       const undoneContent = await textarea.inputValue();
 
@@ -360,7 +367,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
         await page.keyboard.press('Control+Alt+KeyF');
       }
 
-      await page.waitForTimeout(1000);
+      // Wait for formatting to complete
+      await page.waitForLoadState('networkidle');
 
       const formattedContent = await page.locator('[data-testid="json-textarea"]').inputValue();
 
@@ -401,7 +409,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
           .filter({ hasText: /format/i })
           .first()
           .click();
-        await viewerPage.page.waitForTimeout(1000);
+        // Wait for formatting to complete
+        await viewerPage.page.waitForLoadState('networkidle');
 
         const formattedContent = await viewerPage.page
           .locator('[data-testid="json-textarea"]')
@@ -429,7 +438,8 @@ test.describe('Advanced User - Keyboard Shortcuts for Formatting (Story 6)', () 
 
         for (let i = 0; i < Math.min(options.length, 3); i++) {
           await options[i].click();
-          await viewerPage.page.waitForTimeout(500);
+          // Wait for style option to apply
+          await viewerPage.page.waitForLoadState('networkidle');
 
           const currentContent = await viewerPage.page
             .locator('[data-testid="json-textarea"]')

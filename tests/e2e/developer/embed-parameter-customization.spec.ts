@@ -284,7 +284,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
         );
 
         // Wait for iframe to reload with new theme
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle'); // Wait for theme switch reload
         await expect(iframe.locator('[data-testid="json-viewer"]')).toBeVisible();
 
         // Verify theme is applied
@@ -299,11 +299,11 @@ test.describe('Developer - Embed Parameter Customization', () => {
       // Test auto theme
       await page.emulateMedia({ colorScheme: 'dark' });
       await page.click('button:text("Auto Theme")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for auto theme reload
       await expect(iframe.locator('[data-testid="json-viewer"][data-theme="dark"]')).toBeVisible();
 
       await page.emulateMedia({ colorScheme: 'light' });
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for light theme switch
       // Note: Auto theme switching might require page reload in some implementations
     });
   });
@@ -480,7 +480,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Test sorting
       await iframe.locator('[data-testid="sort-key"]').selectOption('alphabetical');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for sort to apply
 
       const sortedItems = await iframe.locator('.list-item .item-key').allTextContents();
       const expectedSort = [...sortedItems].sort();
@@ -565,7 +565,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Test formatting
       await iframe.locator('[data-testid="format-button"]').click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for formatting
 
       // Verify JSON validation
       await expect(iframe.locator('[data-testid="validation-status"]')).toBeVisible();
@@ -579,7 +579,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Test suggestions and autocomplete
       await editor.type('{');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for autocomplete
 
       // Monaco's suggestion widget might appear
       const suggestions = iframe.locator('.suggest-widget');
@@ -657,7 +657,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
       // Test zoom and pan controls
       await expect(iframe.locator('[data-testid="zoom-controls"]')).toBeVisible();
       await iframe.locator('[data-testid="zoom-in"]').click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for zoom animation
 
       // Test node interactions
       const firstNode = iframe.locator('.flow-node').first();
@@ -789,7 +789,7 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
           for (const viewport of viewports) {
             await page.setViewportSize(viewport);
-            await page.waitForTimeout(500);
+            await page.waitForLoadState('networkidle'); // Wait for viewport change
 
             const newBounds = await iframe.boundingBox();
             expect(newBounds?.width).toBeLessThanOrEqual(viewport.width);
@@ -1158,14 +1158,14 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Perform actions that should trigger events
       await iframe.locator('.json-node').first().click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for click event
 
       await iframe.locator('.tree-node-toggle').first().click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for expand event
 
       if (await iframe.locator('[data-testid="search-box"]').isVisible()) {
         await iframe.locator('[data-testid="search-box"]').fill('order');
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('networkidle'); // Wait for search event
       }
 
       // Wait for events to be captured

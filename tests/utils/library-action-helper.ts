@@ -89,7 +89,9 @@ export class LibraryActionHelper {
     
     if (await confirmButton.isVisible({ timeout: 2000 })) {
       await confirmButton.click();
-      await this.viewerPage.page.waitForTimeout(2000); // Wait for save to complete
+      
+      // Wait for network activity to complete
+      await this.viewerPage.page.waitForLoadState('networkidle', { timeout: 10000 });
       
       // Check for success message
       try {
@@ -198,8 +200,8 @@ export class LibraryActionHelper {
         // Wait for progress to complete
         await expect(progressIndicator).not.toBeVisible({ timeout: 10000 });
       } else {
-        // No progress indicator, use standard wait
-        await this.viewerPage.page.waitForTimeout(5000);
+        // No progress indicator, wait for network to be idle
+        await this.viewerPage.page.waitForLoadState('networkidle', { timeout: 10000 });
       }
 
       // Check for completion
@@ -225,7 +227,9 @@ export class LibraryActionHelper {
     const searchInput = this.libraryPage.page.locator('[data-testid="library-search"], input[placeholder*="search"]');
     if (await searchInput.isVisible()) {
       await searchInput.fill(documentTitle);
-      await this.viewerPage.page.waitForTimeout(1000);
+      
+      // Wait for search results to load
+      await this.viewerPage.page.waitForLoadState('networkidle', { timeout: 5000 });
 
       // Look for the document
       const documentCard = this.libraryPage.page.locator(`[data-testid="document-card"]:has-text("${documentTitle}")`);
@@ -255,7 +259,9 @@ export class LibraryActionHelper {
       const confirmButton = this.viewerPage.page.locator('[data-testid="save-confirm"], button:has-text("Save")');
       if (await confirmButton.isVisible()) {
         await confirmButton.click();
-        await this.viewerPage.page.waitForTimeout(2000);
+        
+        // Wait for save operation to complete
+        await this.viewerPage.page.waitForLoadState('networkidle', { timeout: 5000 });
 
         // Check if there's a duplicate warning or if it was handled gracefully
         const duplicateWarning = this.viewerPage.page.locator('[data-testid="duplicate-warning"], .duplicate-error');
@@ -267,8 +273,8 @@ export class LibraryActionHelper {
           const successMsg = this.viewerPage.page.locator('.success-message, [data-testid="success-message"]');
           const saveSucceeded = await successMsg.isVisible({ timeout: 3000 });
           
-          return { 
-            allowed: saveSucceeded, 
+          return {
+            allowed: saveSucceeded,
             message: saveSucceeded ? 'Created variant' : 'Unknown result'
           };
         }

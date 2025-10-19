@@ -8,14 +8,9 @@ test.describe('Bug Hunting - Core Functionality', () => {
     await expect(page).toHaveTitle(/JSON Viewer/);
 
     // Check main navigation elements exist
-    const loginButton = page
-      .locator('text=Sign in')
-      .or(page.locator('[data-testid="login-button"]'))
-      .or(page.locator('button:has-text("Login")'));
-    const publicLibrary = page
-      .locator('text=Library')
-      .or(page.locator('a[href="/library"]'));
-    const developers = page.locator('text=Developers').or(page.locator('a[href="/developers"]'));
+    const loginButton = page.locator('[data-testid="login-button"]');
+    const publicLibrary = page.locator('a[href="/library"]');
+    const developers = page.locator('a[href="/developers"]');
 
     // Check if elements are visible (but don't fail if some are missing yet)
     const loginVisible = await loginButton.isVisible().catch(() => false);
@@ -29,10 +24,7 @@ test.describe('Bug Hunting - Core Functionality', () => {
     });
 
     // Check for JSON editor/viewer area
-    const editorArea = page
-      .locator('.monaco-editor')
-      .or(page.locator('[data-testid="json-editor"]'))
-      .or(page.locator('textarea'));
+    const editorArea = page.locator('[data-testid="json-editor"]');
     const editorVisible = await editorArea.isVisible().catch(() => false);
     console.log('Editor visible:', editorVisible);
   });
@@ -43,36 +35,28 @@ test.describe('Bug Hunting - Core Functionality', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
 
-    // Look for JSON input area - could be Monaco editor, textarea, or contenteditable
-    const jsonInput = page
-      .locator('.monaco-editor textarea')
-      .or(page.locator('textarea[placeholder*="JSON"]'))
-      .or(page.locator('[data-testid="json-input"]'))
-      .or(page.locator('textarea'))
-      .first();
+    // Look for JSON input area - use Monaco editor textarea
+    const jsonInput = page.locator('[data-testid="json-input"]');
 
     const testJSON = '{"name":"test","value":123,"active":true}';
 
     try {
       await jsonInput.fill(testJSON);
-      await page.waitForTimeout(1000); // Wait for any processing
+      await page.waitForLoadState('networkidle'); // Wait for JSON processing
 
       // Check if JSON was formatted or processed
       const content = await jsonInput.inputValue().catch(() => '');
       console.log('JSON input successful, content length:', content.length);
 
       // Look for format button
-      const formatButton = page
-        .locator('button:has-text("Format")')
-        .or(page.locator('[data-testid="format-button"]'))
-        .or(page.locator('button:has-text("Beautify")'));
+      const formatButton = page.locator('[data-testid="format-button"]');
 
       const formatButtonExists = await formatButton.isVisible().catch(() => false);
       console.log('Format button exists:', formatButtonExists);
 
       if (formatButtonExists) {
         await formatButton.click();
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('networkidle'); // Wait for format completion
       }
     } catch (error) {
       console.log('JSON input error:', error.message);
@@ -86,28 +70,19 @@ test.describe('Bug Hunting - Core Functionality', () => {
     await expect(page).toHaveURL(/save/);
 
     // Check for search functionality
-    const searchInput = page
-      .locator('input[placeholder*="search"]')
-      .or(page.locator('[data-testid="search-input"]'))
-      .or(page.locator('input[type="search"]'));
+    const searchInput = page.locator('[data-testid="search-input"]');
 
     const searchExists = await searchInput.isVisible().catch(() => false);
     console.log('Search input exists:', searchExists);
 
     // Check for library items or empty state
-    const libraryItems = page
-      .locator('[data-testid="library-item"]')
-      .or(page.locator('.library-item'))
-      .or(page.locator('article'));
+    const libraryItems = page.locator('[data-testid="library-item"]');
 
     const itemCount = await libraryItems.count();
     console.log('Library items found:', itemCount);
 
     // Check for empty state message
-    const emptyMessage = page
-      .locator('text=No JSON examples found')
-      .or(page.locator('text=No items found'))
-      .or(page.locator('[data-testid="empty-state"]'));
+    const emptyMessage = page.locator('[data-testid="empty-state"]');
 
     const emptyStateVisible = await emptyMessage.isVisible().catch(() => false);
     console.log('Empty state visible:', emptyStateVisible);
@@ -120,16 +95,13 @@ test.describe('Bug Hunting - Core Functionality', () => {
     await expect(page).toHaveURL(/developers/);
 
     // Look for API documentation or developer resources
-    const apiDocs = page
-      .locator('text=API')
-      .or(page.locator('text=Documentation'))
-      .or(page.locator('[data-testid="api-docs"]'));
+    const apiDocs = page.locator('[data-testid="api-docs"]');
 
     const apiDocsVisible = await apiDocs.isVisible().catch(() => false);
     console.log('API docs visible:', apiDocsVisible);
 
     // Check for code examples
-    const codeBlocks = page.locator('pre').or(page.locator('code'));
+    const codeBlocks = page.locator('pre');
     const codeCount = await codeBlocks.count();
     console.log('Code blocks found:', codeCount);
   });
@@ -144,10 +116,7 @@ test.describe('Bug Hunting - Core Functionality', () => {
     console.log('Save page URL:', currentUrl);
 
     // Check for login requirement message or redirect
-    const loginRequired = page
-      .locator('text=Sign in')
-      .or(page.locator('text=Login required'))
-      .or(page.locator('[data-testid="login-modal"]'));
+    const loginRequired = page.locator('[data-testid="login-modal"]');
 
     const loginRequiredVisible = await loginRequired.isVisible().catch(() => false);
     console.log('Login required:', loginRequiredVisible);
@@ -163,10 +132,7 @@ test.describe('Bug Hunting - Core Functionality', () => {
     console.log('Invalid route URL:', currentUrl);
 
     // Check for 404 message
-    const notFound = page
-      .locator('text=404')
-      .or(page.locator('text=Not Found'))
-      .or(page.locator('text=Page not found'));
+    const notFound = page.locator('text=404');
 
     const notFoundVisible = await notFound.isVisible().catch(() => false);
     console.log('404 page visible:', notFoundVisible);

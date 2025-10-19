@@ -25,7 +25,7 @@ interface ViewerFlowProps {
   height?: number;
 }
 
-export const ViewerFlow = ({ data, height = 600 }: ViewerFlowProps) => {
+export const ViewerFlow = ({ data, height }: ViewerFlowProps) => {
   return (
     <ErrorBoundary
       level="component"
@@ -37,7 +37,7 @@ export const ViewerFlow = ({ data, height = 600 }: ViewerFlowProps) => {
       enableRetry
       maxRetries={2}
     >
-    <div style={{ height }} className="w-full">
+    <div style={height ? { height } : undefined} className={height ? "w-full" : "w-full h-full"}>
       <FlowView json={data} />
     </div>
     </ErrorBoundary>

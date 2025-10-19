@@ -23,7 +23,8 @@ import {
   ChevronRight,
   Globe,
   X,
-  GitCompare
+  GitCompare,
+  ArrowRightLeft
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -44,7 +45,12 @@ function SidebarComponent({
   const router = useRouter();
   const { data: session } = useSession();
   const { openModal } = useLoginModal();
-  const { uploadJson, showLibraryHint, isDirty, sidebarScrollPosition, setSidebarScrollPosition } = useBackendStore();
+  // Use selective subscriptions to prevent unnecessary re-renders
+  const uploadJson = useBackendStore((state) => state.uploadJson);
+  const showLibraryHint = useBackendStore((state) => state.showLibraryHint);
+  const isDirty = useBackendStore((state) => state.isDirty);
+  const sidebarScrollPosition = useBackendStore((state) => state.sidebarScrollPosition);
+  const setSidebarScrollPosition = useBackendStore((state) => state.setSidebarScrollPosition);
   const { totalJsons } = useLibraryStats();
   const [showNewDraftDialog, setShowNewDraftDialog] = useState(false);
   
@@ -132,15 +138,15 @@ function SidebarComponent({
   const navigation = [
     {
       id: 'viewer',
-      name: 'Viewer',
-      href: '/',
+      name: 'View',
+      href: '/view',
       icon: Code2,
-      current: pathname === '/',
+      current: pathname === '/view',
       description: 'View JSON files',
     },
     {
       id: 'editor',
-      name: 'Editor',
+      name: 'Edit',
       href: '/edit',
       icon: FileJson,
       current: pathname.startsWith('/edit'),
@@ -153,6 +159,14 @@ function SidebarComponent({
       icon: FileJson,
       current: pathname.startsWith('/format'),
       description: 'Format and beautify JSON',
+    },
+    {
+      id: 'convert',
+      name: 'Convert',
+      href: '/convert',
+      icon: ArrowRightLeft,
+      current: pathname.startsWith('/convert'),
+      description: 'Convert between formats',
     },
     {
       id: 'compare',
@@ -186,12 +200,12 @@ function SidebarComponent({
     <div className={cn('flex h-full w-64 flex-col border-r bg-background transition-all duration-200 ease-in-out', className)}>
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b px-6">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <FileJson className="h-6 w-6 text-primary transition-transform hover:scale-110" />
           <span className="text-xl font-semibold text-foreground">
             JSON Viewer
           </span>
-        </div>
+        </Link>
         
         {/* Close button for mobile */}
         {isMobile && onOpenChange && (

@@ -38,7 +38,7 @@ export class ShareHelper {
     
     if (await shareButton.isVisible({ timeout: 5000 })) {
       await shareButton.click();
-      await this.page.waitForTimeout(2000);
+      await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
       return true;
     }
     return false;
@@ -81,11 +81,11 @@ export class ShareHelper {
     
     if (await copyButton.isVisible()) {
       await copyButton.click();
-      await this.page.waitForTimeout(1000);
-
+      
       // Check for success message
       const successMessage = this.page.locator('[data-testid="copy-success"], .success-message, .toast');
-      return await successMessage.isVisible({ timeout: 3000 });
+      await expect(successMessage).toBeVisible({ timeout: 3000 }).catch(() => {});
+      return await successMessage.isVisible({ timeout: 1000 }).catch(() => false);
     }
     return false;
   }
@@ -130,7 +130,7 @@ export class ShareHelper {
       if (await expirationSelect.isVisible({ timeout: 2000 })) {
         try {
           await expirationSelect.selectOption(options.expiration);
-          await this.page.waitForTimeout(300);
+          await this.page.waitForLoadState('domcontentloaded').catch(() => {});
         } catch {
           // Option might not exist, continue
         }
@@ -142,9 +142,9 @@ export class ShareHelper {
       const passwordCheckbox = this.page.locator('[data-testid="password-protect"], input[type="checkbox"], .password-option');
       if (await passwordCheckbox.isVisible({ timeout: 2000 })) {
         await passwordCheckbox.check();
-        await this.page.waitForTimeout(500);
-
+        
         const passwordInput = this.page.locator('[data-testid="share-password"], input[type="password"], .password-input');
+        await expect(passwordInput).toBeVisible({ timeout: 2000 }).catch(() => {});
         if (await passwordInput.isVisible()) {
           await passwordInput.fill(options.password);
           
@@ -161,7 +161,7 @@ export class ShareHelper {
       const visibilityOption = this.page.locator(`[data-testid="${options.visibility}-share"], input[value="${options.visibility}"], .${options.visibility}-option`);
       if (await visibilityOption.isVisible({ timeout: 2000 })) {
         await visibilityOption.click();
-        await this.page.waitForTimeout(500);
+        await this.page.waitForLoadState('domcontentloaded').catch(() => {});
       }
     }
 
@@ -169,7 +169,7 @@ export class ShareHelper {
     const generateButton = this.page.locator('[data-testid="generate-share"], button:has-text("Generate"), .generate-btn');
     if (await generateButton.isVisible()) {
       await generateButton.click();
-      await this.page.waitForTimeout(1000);
+      await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
     }
   }
 
@@ -200,12 +200,15 @@ export class ShareHelper {
    */
   async closeShareModal(): Promise<void> {
     const closeButton = this.page.locator('[data-testid="close-modal"], button:has-text("Close"), .close-btn');
+    const modal = this.page.locator('[data-testid="share-modal"], .modal, .share-dialog');
+    
     if (await closeButton.isVisible()) {
       await closeButton.click();
     } else {
       await this.page.keyboard.press('Escape');
     }
-    await this.page.waitForTimeout(500);
+    
+    await expect(modal).not.toBeVisible({ timeout: 2000 }).catch(() => {});
   }
 
   /**
@@ -215,11 +218,11 @@ export class ShareHelper {
     const qrButton = this.page.locator('[data-testid="qr-code"], button:has-text("QR Code"), .qr-btn');
     if (await qrButton.isVisible({ timeout: 2000 })) {
       await qrButton.click();
-      await this.page.waitForTimeout(1000);
 
       // Check if QR code appears
       const qrCodeImage = this.page.locator('[data-testid="qr-image"], img, canvas, .qr-code');
-      return await qrCodeImage.isVisible({ timeout: 3000 });
+      await expect(qrCodeImage).toBeVisible({ timeout: 3000 }).catch(() => {});
+      return await qrCodeImage.isVisible({ timeout: 1000 }).catch(() => false);
     }
     return false;
   }
@@ -257,13 +260,12 @@ export class ShareHelper {
     const revokeButton = this.page.locator('[data-testid="revoke-share"], button:has-text("Revoke"), .revoke-btn');
     if (await revokeButton.isVisible()) {
       await revokeButton.click();
-      await this.page.waitForTimeout(1000);
-
+      
       // Confirm revocation
       const confirmButton = this.page.locator('[data-testid="confirm-revoke"], button:has-text("Confirm")');
+      await expect(confirmButton).toBeVisible({ timeout: 2000 }).catch(() => {});
       if (await confirmButton.isVisible()) {
         await confirmButton.click();
-        await this.page.waitForTimeout(1000);
 
         // Check for success message
         const successMessage = this.page.locator('[data-testid="revoke-success"], .success-message');
@@ -271,7 +273,7 @@ export class ShareHelper {
           // Verify URL is no longer accessible
           try {
             await this.page.goto(shareUrl);
-            await this.page.waitForTimeout(2000);
+            await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
             
             const accessDenied = this.page.locator('[data-testid="access-denied"], .error-404, .not-found');
             return await accessDenied.isVisible({ timeout: 3000 });

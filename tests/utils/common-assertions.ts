@@ -110,7 +110,10 @@ export class CommonAssertions {
       ).first();
       
       await userMenuButton.click();
-      await this.page.waitForTimeout(500); // Wait for dropdown
+      
+      // Wait for dropdown menu to be visible
+      const dropdownMenu = this.page.locator('[role="menu"]');
+      await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
 
       // Check for sign out option
       const signOutButton = this.page.locator(
@@ -131,7 +134,9 @@ export class CommonAssertions {
 
       // Close the dropdown
       await this.page.keyboard.press('Escape');
-      await this.page.waitForTimeout(500);
+      
+      // Wait for dropdown to close
+      await expect(dropdownMenu).not.toBeVisible({ timeout: 2000 });
     }
 
     console.log('✅ Authentication assertion passed');
@@ -413,9 +418,8 @@ export class CommonAssertions {
     await searchInput.fill(searchTerm);
     await this.page.keyboard.press('Enter');
     
-    // Wait for search results
-    await this.page.waitForTimeout(1000);
-    await this.page.waitForLoadState('networkidle');
+    // Wait for search results to load
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 });
 
     // Verify expected results appear
     for (const result of expectedResults) {

@@ -236,8 +236,11 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
       await exportButton.click();
 
-      // Wait for export API call
-      await layoutPage.page.waitForTimeout(2000);
+      // Wait for export API call to complete
+      await layoutPage.page.waitForResponse(
+        (response) => response.url().includes('/api/user/export') && response.status() === 200,
+        { timeout: 5000 }
+      ).catch(() => null);
 
       if (exportData) {
         // Should include user profile information

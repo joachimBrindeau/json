@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { success } from '@/lib/api/responses';
 import { withDatabaseHandler } from '@/lib/api/middleware';
-import { AuthenticationError, NotFoundError, AuthorizationError } from '@/lib/utils/app-errors';
+import { withAuth } from '@/lib/api/utils';
+import { NotFoundError, AuthorizationError } from '@/lib/utils/app-errors';
 
 export const runtime = 'nodejs';
 
@@ -12,13 +11,8 @@ export const runtime = 'nodejs';
  * GET document metadata for authenticated user
  * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
-export const GET = withDatabaseHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+export const GET = withAuth(async (request, session, { params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    throw new AuthenticationError();
-  }
 
   const document = await prisma.jsonDocument.findFirst({
     where: {
@@ -48,14 +42,8 @@ export const GET = withDatabaseHandler(async (request: NextRequest, { params }: 
  * DELETE document with ownership verification
  * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
-export const DELETE = withDatabaseHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+export const DELETE = withAuth(async (request, session, { params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-
-  // SECURITY: Verify user is authenticated
-  if (!session?.user?.id) {
-    throw new AuthenticationError();
-  }
 
   // SECURITY: Verify document exists and user owns it before deleting
   const existingDocument = await prisma.jsonDocument.findFirst({

@@ -84,7 +84,7 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
 
       // Trigger formatting (common shortcut)
       await viewerPage.page.keyboard.press('Control+Alt+F');
-      await viewerPage.page.waitForTimeout(1000);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Verify content is now formatted
       const formattedContent = await viewerPage.jsonTextArea.inputValue();
@@ -201,7 +201,7 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
       await viewerPage.page.keyboard.press('End'); // Go to first line end
       await viewerPage.page.keyboard.press('ArrowLeft'); // Move to opening bracket
 
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Look for bracket matching highlight
       const hasBracketMatching = await viewerPage.page
@@ -221,12 +221,12 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
 
       // Switch to different view modes and back
       await viewerPage.switchToTreeView();
-      await viewerPage.page.waitForTimeout(500);
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Switch back to editor
       if (await viewerPage.page.locator('[data-testid="editor-view"], text="Editor"').isVisible()) {
         await viewerPage.page.locator('[data-testid="editor-view"], text="Editor"').click();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Verify formatting is preserved
         const currentContent = await viewerPage.jsonTextArea.inputValue();
@@ -254,7 +254,7 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
 
       if (await settingsButton.isVisible()) {
         await settingsButton.click();
-        await viewerPage.page.waitForTimeout(500);
+        await expect(viewerPage.page.locator('text="indent", text="tab", text="space"').first()).toBeVisible();
 
         // Look for indentation options
         const indentationOptions = await viewerPage.page
@@ -325,7 +325,7 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
       const foldButton = viewerPage.page.locator('.folding-icon').first();
       if (await foldButton.isVisible()) {
         await foldButton.click();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Content should be folded (less visible content)
         const foldedContent = await viewerPage.jsonTextArea.inputValue();

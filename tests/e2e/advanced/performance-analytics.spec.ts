@@ -208,7 +208,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Clear for next test
         await viewerPage.clearJSON();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for clear to complete
+        await viewerPage.page.waitForLoadState('networkidle');
       }
 
       // Processing times should scale reasonably
@@ -263,7 +264,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
               .first()
               .textContent();
             if (text) feedbackTexts.push(text);
-            await viewerPage.page.waitForTimeout(1000);
+            // Wait for next feedback update
+            await viewerPage.page.waitForLoadState('networkidle');
           }
 
           // Take screenshot of real-time feedback
@@ -424,7 +426,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
       const baselineTime = Date.now() - startTime;
 
       await viewerPage.clearJSON();
-      await viewerPage.page.waitForTimeout(500);
+      // Wait for clear to complete
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Optimized measurement (smaller, structured data)
       const optimizedJson = {
@@ -488,7 +491,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         });
 
         await viewerPage.clearJSON();
-        await viewerPage.page.waitForTimeout(200);
+        // Wait for clear to complete
+        await viewerPage.page.waitForLoadState('networkidle');
       }
 
       // Log performance comparison
@@ -543,7 +547,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
           expect(await viewerPage.hasJSONErrors()).toBe(false);
 
           await viewerPage.clearJSON();
-          await viewerPage.page.waitForTimeout(300);
+          // Wait for clear to complete
+          await viewerPage.page.waitForLoadState('networkidle');
         }
 
         // Log benchmark results

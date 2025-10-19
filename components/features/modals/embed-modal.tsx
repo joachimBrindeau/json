@@ -15,9 +15,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { toastPatterns, showErrorToast } from '@/lib/utils/toast-helpers';
+import { showErrorToast } from '@/lib/utils/toast-helpers';
 import { Copy, Eye, Smartphone, Share, Sparkles, Code2, X, ExternalLink, CheckCircle2 } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { useClipboard } from '@/hooks/use-clipboard';
 
 interface EmbedModalProps {
   isOpen: boolean;
@@ -40,9 +40,14 @@ export function EmbedModal({ isOpen, onClose, shareId, jsonPreview }: EmbedModal
   const [customWidth, setCustomWidth] = useState('100%');
   const [borderRadius, setBorderRadius] = useState('12');
   const [previewError, setPreviewError] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://json-viewer.io';
+
+  // Use clipboard hook for copy functionality
+  const { copy, copied } = useClipboard({
+    successMessage: 'Copied!',
+    successDescription: 'Embed code copied to clipboard',
+  });
 
   // Generate embed code based on selections
   const embedCode = useMemo(() => {
@@ -125,17 +130,9 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
     jsonPreview,
   ]);
 
-  const copyToClipboard = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(embedCode);
-      setCopied(true);
-      toastPatterns.success.copied('Embed code');
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      logger.error({ err: error, embedType, viewMode }, 'Failed to copy embed code to clipboard');
-      showErrorToast('Please copy the code manually', 'Copy failed');
-    }
-  }, [embedCode, embedType, viewMode]);
+  const copyToClipboard = useCallback(() => {
+    copy(embedCode);
+  }, [copy, embedCode]);
 
   const openPreview = useCallback(() => {
     try {

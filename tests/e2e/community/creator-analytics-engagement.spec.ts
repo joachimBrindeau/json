@@ -225,7 +225,7 @@ test.describe('Content Creator - Engagement Metrics and Analytics', () => {
           const weeklyView = chartControls.locator('[data-testid="weekly-view"]');
           if (await weeklyView.isVisible()) {
             await weeklyView.click();
-            await page.waitForTimeout(1000);
+            await page.waitForLoadState('networkidle'); // Wait for chart update
 
             // Chart should update
             const weeklyData = trendsChart.locator('[data-testid="chart-data"]');
@@ -235,7 +235,7 @@ test.describe('Content Creator - Engagement Metrics and Analytics', () => {
           const monthlyView = chartControls.locator('[data-testid="monthly-view"]');
           if (await monthlyView.isVisible()) {
             await monthlyView.click();
-            await page.waitForTimeout(1000);
+            await page.waitForLoadState('networkidle'); // Wait for monthly chart
           }
         }
       } else if (await timeAnalytics.isVisible()) {
@@ -719,7 +719,7 @@ test.describe('Content Creator - Engagement Metrics and Analytics', () => {
           const updateShare = shareModal.locator('[data-testid="update-share"]');
           if (await updateShare.isVisible()) {
             await updateShare.click();
-            await page.waitForTimeout(1000);
+            await page.waitForLoadState('networkidle'); // Wait for share URL update
 
             // Share URL should update
             const updatedUrl = await shareUrl.inputValue();

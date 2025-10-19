@@ -11,23 +11,13 @@
 import { Node } from '@xyflow/react';
 import {
   NodeType,
-  RootSeaNode,
   ObjectSeaNode,
   ArraySeaNode,
   PrimitiveSeaNode,
-  RootNodeData,
   ObjectNodeData,
   ArrayNodeData,
   PrimitiveNodeData,
 } from './flow-types';
-
-/**
- * Type guard to check if a node is a RootSeaNode
- * Currently unused - kept for potential future use
- */
-export function isRootNode(node: Node): node is RootSeaNode {
-  return node.type === NodeType.Root;
-}
 
 /**
  * Type guard to check if a node is an ObjectSeaNode
@@ -51,24 +41,6 @@ export function isArrayNode(node: Node): node is ArraySeaNode {
  */
 export function isPrimitiveNode(node: Node): node is PrimitiveSeaNode {
   return node.type === NodeType.Primitive;
-}
-
-/**
- * Type guard to check if node data is RootNodeData
- */
-export function isRootNodeData(data: unknown): data is RootNodeData {
-  if (!data || typeof data !== 'object') return false;
-  const d = data as Record<string, unknown>;
-  return (
-    'dataType' in d &&
-    (d.dataType === 'object' || d.dataType === 'array') &&
-    'label' in d &&
-    typeof d.label === 'string' &&
-    'childType' in d &&
-    (d.childType === 'object' || d.childType === 'array') &&
-    'childCount' in d &&
-    typeof d.childCount === 'number'
-  );
 }
 
 /**

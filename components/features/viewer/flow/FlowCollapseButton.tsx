@@ -3,7 +3,7 @@ import { memo } from 'react';
 interface FlowCollapseButtonProps {
   nodeId: string;
   isCollapsed: boolean;
-  onToggle: (nodeId: string) => void;
+  onToggle: () => void;
   position?: 'right' | 'inline';
 }
 
@@ -21,10 +21,10 @@ const FlowCollapseButtonComponent = ({
       style={{ borderRadius: '3px' }}
       onClick={(e) => {
         e.stopPropagation();
-        onToggle(nodeId);
+        onToggle();
       }}
       role="button"
-      aria-label={isCollapsed ? 'Expand node' : 'Collapse node'}
+      aria-label={isCollapsed ? 'Expand branch' : 'Collapse branch'}
       aria-expanded={!isCollapsed}
     >
       <span className="text-xs font-bold text-gray-600 dark:text-gray-400">

@@ -5,40 +5,26 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { UnifiedButton } from '@/components/ui/unified-button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useDarkMode } from '@/hooks/use-dark-mode';
 import { useBackendStore } from '@/lib/store/backend';
 import {
   ArrowRightLeft,
-  Copy,
-  Download,
   FileJson,
   FileCode,
   FileSpreadsheet,
   FileText,
-  RotateCcw,
-  Check,
   Search
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormatSelector } from '@/components/ui/format-selector';
 import { ViewerActions } from '@/components/features/viewer';
-import dynamic from 'next/dynamic';
-import type { OnMount, Monaco } from '@monaco-editor/react';
-import type { editor } from 'monaco-editor';
+import { EditorActions } from '@/components/features/editor/EditorActions';
+import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
-
-// Monaco editor with loading state
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-background border">
-      <div className="text-center">
-        <LoadingSpinner size="md" label="Loading Code Editor..." />
-      </div>
-    </div>
-  ),
-  ssr: false,
-});
+import { validateJson } from '@/lib/utils/json-validators';
+import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
 
 type ConversionFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'typescript' | 'javascript';
 type InputFormat = 'autodetect' | ConversionFormat;
@@ -145,14 +131,14 @@ export default function ConvertPage() {
   const { currentJson, setCurrentJson } = useBackendStore();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<ConversionFormat>('yaml');
   const [inputFormat, setInputFormat] = useState<InputFormat>('autodetect');
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  const inputEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const outputEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  // Use Monaco editor hook for both editors
+  const inputEditor = useMonacoEditor(input.length);
+  const outputEditor = useMonacoEditor(output.length, { readOnly: true });
 
   // Initialize input from currentJson when page loads
   useEffect(() => {
@@ -160,43 +146,6 @@ export default function ConvertPage() {
       setInput(currentJson);
     }
   }, [currentJson]);
-
-  // Check for dark mode on mount and listen for changes
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setIsDarkMode(isDark);
-    };
-    
-    checkDarkMode();
-    
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
-
-  // Update Monaco themes when dark mode changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'monaco' in window) {
-      const monaco = (window as { monaco: Monaco }).monaco;
-      const theme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(theme);
-    }
-  }, [isDarkMode]);
-
-  const validateJson = (json: string): boolean => {
-    if (!json.trim()) return false;
-    try {
-      JSON.parse(json);
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   // Auto-detect input format
   const detectInputFormat = (content: string): ConversionFormat => {
@@ -311,9 +260,9 @@ export default function ConvertPage() {
   const parseSimpleXml = (content: string): any => {
     // Very basic XML to JSON conversion
     const result: any = {};
-    const tagRegex = /<(\w+)>(.*?)<\/\1>/gs;
+    const tagRegex = /<(\w+)>(.*?)<\/\1>/g;
     let match;
-    
+
     while ((match = tagRegex.exec(content)) !== null) {
       const [, tagName, tagContent] = match;
       try {
@@ -322,7 +271,7 @@ export default function ConvertPage() {
         result[tagName] = tagContent.trim();
       }
     }
-    
+
     return Object.keys(result).length > 0 ? result : { content: content.replace(/<[^>]*>/g, '') };
   };
 
@@ -637,23 +586,15 @@ export default data;`;
 
   const performConversion = useCallback((format?: ConversionFormat) => {
     const targetFormat = format || selectedFormat;
-    
+
     if (!input.trim()) {
-      toast({
-        title: 'No input',
-        description: 'Please enter some data to convert',
-        variant: 'destructive',
-      });
+      toastPatterns.validation.noData('convert');
       return;
     }
 
     if (!hasValidInput) {
       const detectedFormat = inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
-      toast({
-        title: 'Invalid input',
-        description: `Please enter valid ${detectedFormat.toUpperCase()} to convert`,
-        variant: 'destructive',
-      });
+      toastPatterns.validation.invalid(detectedFormat.toUpperCase(), 'to convert');
       return;
     }
 
@@ -698,22 +639,17 @@ export default data;`;
       if (format) {
         // Only show toast for manual conversion, not automatic
         const detectedFormat = inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
-        toast({
-          title: 'Converted!',
+        showSuccessToast('Converted!', {
           description: `${detectedFormat.toUpperCase()} successfully converted to ${targetFormat.toUpperCase()}`,
         });
       }
     } catch (e) {
       if (format) {
         // Only show error toast for manual conversion
-        toast({
-          title: 'Conversion failed',
-          description: (e as Error).message,
-          variant: 'destructive',
-        });
+        showErrorToast(e, 'Conversion failed');
       }
     }
-  }, [input, selectedFormat, hasValidInput, toast]);
+  }, [input, selectedFormat, hasValidInput, inputFormat, detectInputFormat]);
 
   // Auto-convert when format changes and valid input exists
   useEffect(() => {
@@ -765,60 +701,6 @@ export default data;`;
     }
   }, [selectedFormat, inputFormat, input, hasValidInput]);
 
-  const handleCopy = useCallback(async () => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: 'Convert your JSON first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(output);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast({
-        title: 'Copied!',
-        description: 'Converted data copied to clipboard',
-      });
-    } catch {
-      toast({
-        title: 'Failed to copy',
-        description: 'Could not copy to clipboard',
-        variant: 'destructive',
-      });
-    }
-  }, [output, toast]);
-
-  const handleDownload = useCallback(() => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: 'Convert your JSON first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const option = conversionOptions.find(opt => opt.id === selectedFormat);
-    if (!option) return;
-
-    const blob = new Blob([output], { type: option.mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `converted.${option.fileExtension}`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: 'Downloaded!',
-      description: `${option.label} file downloaded successfully`,
-    });
-  }, [output, selectedFormat, toast]);
-
   const handleSample = useCallback(() => {
     const sample = JSON.stringify({
       name: "John Doe",
@@ -855,23 +737,6 @@ export default data;`;
     });
   }, [toast]);
 
-  const handleInputEditorMount: OnMount = useCallback((editor, monaco) => {
-    inputEditorRef.current = editor;
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-  }, [isDarkMode]);
-
-  const handleOutputEditorMount: OnMount = useCallback((editor, monaco) => {
-    outputEditorRef.current = editor;
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-  }, [isDarkMode]);
 
   const getOutputLanguage = () => {
     switch (selectedFormat) {
@@ -906,7 +771,7 @@ export default data;`;
             <UnifiedButton
               variant="outline"
               size="sm"
-              onClick={performConversion}
+              onClick={() => performConversion()}
               disabled={!input || !hasValidInput}
               className="h-7 px-2 text-xs"
               title="Convert JSON"
@@ -914,27 +779,16 @@ export default data;`;
               <ArrowRightLeft className="h-3 w-3 mr-1" />
               Convert
             </UnifiedButton>
-            <UnifiedButton
-              variant="outline"
-              size="sm"
-              onClick={handleSample}
-              className="h-7 px-2 text-xs"
-              title="Load Sample JSON"
-            >
-              <FileJson className="h-3 w-3 mr-1" />
-              Sample
-            </UnifiedButton>
-            <UnifiedButton
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              disabled={!input && !output}
-              className="h-7 px-2 text-xs"
-              title="Reset All"
-            >
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Reset
-            </UnifiedButton>
+            <EditorActions
+              output={output}
+              hasContent={!!(input || output)}
+              onSample={handleSample}
+              onReset={handleReset}
+              filename="converted"
+              fileExtension={conversionOptions.find(opt => opt.id === selectedFormat)?.fileExtension || 'txt'}
+              mimeType={conversionOptions.find(opt => opt.id === selectedFormat)?.mimeType || 'text/plain'}
+              outputLabel="converted data"
+            />
             <ViewerActions />
           </div>
         </div>
@@ -947,21 +801,11 @@ export default data;`;
             <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span>Input</span>
-                <Select value={inputFormat} onValueChange={setInputFormat}>
-                  <SelectTrigger className="h-6 w-24 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {inputFormatOptions.map((option) => (
-                      <SelectItem key={option.id} value={option.id} className="text-xs">
-                        <div className="flex items-center gap-1">
-                          {option.icon}
-                          {option.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormatSelector
+                  value={inputFormat}
+                  onValueChange={(value) => setInputFormat(value as InputFormat)}
+                  options={inputFormatOptions}
+                />
               </div>
             </div>
             <div className="flex-1 min-h-0">
@@ -974,88 +818,33 @@ export default data;`;
                   setInput(newValue);
                   setCurrentJson(newValue);
                 }}
-                theme={isDarkMode ? 'shadcn-dark' : 'shadcn-light'}
-                onMount={handleInputEditorMount}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  formatOnPaste: true,
-                  formatOnType: true,
-                  folding: true,
-                  bracketPairColorization: { enabled: true },
-                  padding: { top: 10, bottom: 10 },
-                }}
+                theme={inputEditor.theme}
+                onMount={inputEditor.handleEditorDidMount}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={inputEditor.editorOptions}
               />
             </div>
           </div>
 
           {/* Output editor */}
           <div className="flex-1 min-h-[200px] lg:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>Output</span>
-                <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                  <SelectTrigger className="h-6 w-24 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {conversionOptions.map((option) => (
-                      <SelectItem key={option.id} value={option.id} className="text-xs">
-                        <div className="flex items-center gap-1">
-                          {option.icon}
-                          {option.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <UnifiedButton
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopy}
-                  disabled={!output}
-                  className="h-6 px-2 text-xs"
-                >
-                  {copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-                  {copied ? 'Copied' : 'Copy'}
-                </UnifiedButton>
-                <UnifiedButton
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={!output}
-                  className="h-6 px-2 text-xs"
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  Download
-                </UnifiedButton>
-              </div>
+            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <span>Output</span>
+              <FormatSelector
+                value={selectedFormat}
+                onValueChange={(value) => setSelectedFormat(value as ConversionFormat)}
+                options={conversionOptions}
+              />
             </div>
             <div className="flex-1 min-h-0">
               <MonacoEditor
                 height="100%"
                 language={getOutputLanguage()}
                 value={output}
-                theme={isDarkMode ? 'shadcn-dark' : 'shadcn-light'}
-                onMount={handleOutputEditorMount}
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  folding: true,
-                  bracketPairColorization: { enabled: true },
-                  padding: { top: 10, bottom: 10 },
-                }}
+                theme={outputEditor.theme}
+                onMount={outputEditor.handleEditorDidMount}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={outputEditor.editorOptions}
               />
             </div>
           </div>

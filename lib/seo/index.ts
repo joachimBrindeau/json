@@ -361,5 +361,15 @@ export const PAGE_SEO = {
     description: 'Embeddable JSON viewer component for your website or application. Clean, fast, and feature-rich JSON visualization.',
     keywords: ['embedded json viewer', 'json widget', 'json component', 'json embed'],
     ogImage: '/og-embed.png'
+  },
+  blog: {
+    title: 'JSON Guides & Tutorials - Learn JSON Best Practices',
+    description: 'Comprehensive guides, tutorials, and best practices for working with JSON. Learn JSON formatting, validation, API integration, and advanced techniques for developers.',
+    keywords: [
+      'json tutorial', 'json guide', 'json best practices', 'json learning',
+      'json documentation', 'api tutorial', 'json for beginners', 'json advanced',
+      'rest api guide', 'json schema tutorial', 'json validation guide'
+    ],
+    ogImage: '/og-blog.png'
   }
 } as const;

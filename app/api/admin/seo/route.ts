@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { getAllSEOSettings, upsertSEOSettings } from '@/lib/seo/database';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import { success, unauthorized, badRequest, internalServerError } from '@/lib/api/responses';
+import { success, badRequest, internalServerError } from '@/lib/api/responses';
 import { config } from '@/lib/config';
+import { withAuth } from '@/lib/api/utils';
 
 const seoUpdateSchema = z.object({
   pageKey: z.string().min(1),
@@ -44,13 +43,7 @@ export async function GET() {
 }
 
 // POST - Update or create SEO settings
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    return unauthorized('Authentication required');
-  }
-
+export const POST = withAuth(async (request, session) => {
   // In production, add admin role check here
   // if (!session.user.isAdmin) {
   //   return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
@@ -78,4 +71,4 @@ export async function POST(request: NextRequest) {
     logger.error({ err: error, userId: session?.user?.id }, 'Failed to update SEO settings');
     return internalServerError('Failed to update SEO settings');
   }
-}
+});

@@ -1,0 +1,269 @@
+{
+  "metadata": {
+    "generated": "1893-08-02T19:19:22.0Z",
+    "totalRecords": 7547,
+    "version": "22.500552576.32835"
+  },
+  "records": [
+    {
+      "id": "185ff0c6-cbb7-47aa-9936-7019ea3aeffb",
+      "timestamp": "1913-03-26T16:23:40.0Z",
+      "value": 537.0937577212042,
+      "status": "active",
+      "tags": [
+        "triumphus",
+        "bellicus",
+        "arceo",
+        "acidus",
+        "maiores"
+      ]
+    },
+    {
+      "id": "caa38d8a-5978-4722-a20b-1b1024b52f41",
+      "timestamp": "1948-11-29T11:24:36.0Z",
+      "value": -500.24731635442635,
+      "status": "inactive",
+      "tags": [
+        "anser",
+        "confero",
+        "benigne",
+        "coepi",
+        "consequuntur"
+      ]
+    },
+    {
+      "id": "c7883d36-e363-4da2-93ef-d54e37b5b2e7",
+      "timestamp": "1968-02-18T22:44:28.0Z",
+      "value": 855.6588613693418,
+      "status": "active",
+      "tags": [
+        "valde",
+        "consequuntur",
+        "cubitum",
+        "harum",
+        "approbo"
+      ]
+    },
+    {
+      "id": "c46d3d79-42ec-42d2-86cf-62a226cd3d1f",
+      "timestamp": "1966-10-12T01:25:49.0Z",
+      "value": -536.4972742108291,
+      "status": "inactive",
+      "tags": [
+        "uberrime",
+        "calco",
+        "super",
+        "amplus",
+        "sordeo"
+      ]
+    },
+    {
+      "id": "7f3e277f-9118-4d69-97ec-e74692414b1c",
+      "timestamp": "1948-08-25T20:07:47.0Z",
+      "value": -316.1930098221459,
+      "status": "archived",
+      "tags": [
+        "fugiat",
+        "varius",
+        "delicate",
+        "virgo",
+        "truculenter"
+      ]
+    },
+    {
+      "id": "7e032167-65a2-4572-9186-0031ed37a71a",
+      "timestamp": "1953-04-03T06:06:42.0Z",
+      "value": -825.5037542842949,
+      "status": "archived",
+      "tags": [
+        "centum",
+        "video",
+        "civitas",
+        "cibus",
+        "cupressus"
+      ]
+    },
+    {
+      "id": "dc04cf69-2970-41e4-ba4f-11cb65d1cf9d",
+      "timestamp": "1903-10-04T20:12:56.0Z",
+      "value": 961.5001163388426,
+      "status": "inactive",
+      "tags": [
+        "depraedor",
+        "spiritus",
+        "amplitudo",
+        "commemoro",
+        "summisse"
+      ]
+    },
+    {
+      "id": "55e268ea-a378-49e5-943d-49721e7c06be",
+      "timestamp": "1940-08-24T11:01:43.0Z",
+      "value": 430.45571269369975,
+      "status": "pending",
+      "tags": [
+        "virga",
+        "suadeo",
+        "arcus",
+        "deleniti",
+        "vos"
+      ]
+    },
+    {
+      "id": "a2347cd7-4e5f-4c60-9bdb-d165f43c3bff",
+      "timestamp": "1910-03-26T13:57:23.0Z",
+      "value": -519.3806534400846,
+      "status": "pending",
+      "tags": [
+        "suffragium",
+        "bis",
+        "comprehendo",
+        "careo",
+        "conqueror"
+      ]
+    },
+    {
+      "id": "92434279-a9f2-4afb-8ce0-15cf24ae614d",
+      "timestamp": "1908-08-25T15:46:59.0Z",
+      "value": -642.7527918664338,
+      "status": "inactive",
+      "tags": [
+        "tabula",
+        "cura",
+        "tametsi",
+        "attonbitus",
+        "color"
+      ]
+    },
+    {
+      "id": "94f139cf-50fd-4889-840b-2e1229339011",
+      "timestamp": "1890-05-25T01:31:36.0Z",
+      "value": -422.2889393258549,
+      "status": "archived",
+      "tags": [
+        "supra",
+        "consequatur",
+        "sui",
+        "deripio",
+        "vallum"
+      ]
+    },
+    {
+      "id": "035c7b35-bd4b-41c3-a631-3241df6f6983",
+      "timestamp": "1944-08-15T18:57:39.0Z",
+      "value": 224.0048343153744,
+      "status": "pending",
+      "tags": [
+        "quibusdam",
+        "neque",
+        "tempus",
+        "quia",
+        "cultellus"
+      ]
+    },
+    {
+      "id": "1a112214-f75f-43e9-b470-b4e87b5c4df0",
+      "timestamp": "1916-05-03T18:50:51.0Z",
+      "value": 773.4360326815058,
+      "status": "active",
+      "tags": [
+        "constans",
+        "voro",
+        "creta",
+        "denuncio",
+        "bellicus"
+      ]
+    },
+    {
+      "id": "be91002d-52d5-4a57-8962-243b7534afbe",
+      "timestamp": "1923-08-19T14:23:16.0Z",
+      "value": -837.1099976360276,
+      "status": "inactive",
+      "tags": [
+        "turbo",
+        "canis",
+        "utrimque",
+        "attonbitus",
+        "adstringo"
+      ]
+    },
+    {
+      "id": "4d76edb8-c3d7-4689-92e6-b48b44ed8364",
+      "timestamp": "1933-01-19T08:18:24.0Z",
+      "value": 564.543780806483,
+      "status": "inactive",
+      "tags": [
+        "caecus",
+        "a",
+        "votum",
+        "rem",
+        "occaecati"
+      ]
+    },
+    {
+      "id": "0253b006-a5a5-4570-b956-a88890045b78",
+      "timestamp": "1918-07-07T05:34:26.0Z",
+      "value": -962.5522666441603,
+      "status": "archived",
+      "tags": [
+        "sollicito",
+        "admoneo",
+        "callide",
+        "desino",
+        "audeo"
+      ]
+    },
+    {
+      "id": "7d5b0d93-cf5b-4de3-9282-971ccd1cc1c8",
+      "timestamp": "1931-06-30T05:25:14.0Z",
+      "value": 601.8602310568704,
+      "status": "active",
+      "tags": [
+        "candidus",
+        "baiulus",
+        "acidus",
+        "cauda",
+        "aperiam"
+      ]
+    },
+    {
+      "id": "f2771a33-85b4-4cb7-b544-b50d4b4383b6",
+      "timestamp": "1955-01-30T01:15:43.0Z",
+      "value": 161.41140873768495,
+      "status": "archived",
+      "tags": [
+        "alioqui",
+        "autem",
+        "patrocinor",
+        "ancilla",
+        "thalassinus"
+      ]
+    },
+    {
+      "id": "499e9adc-a874-43a4-82c7-34b06e88480d",
+      "timestamp": "1957-02-26T08:10:50.0Z",
+      "value": -369.9690010042609,
+      "status": "active",
+      "tags": [
+        "audacia",
+        "caelestis",
+        "nihil",
+        "solium",
+        "trucido"
+      ]
+    },
+    {
+      "id": "8ca1926f-3454-4b10-ab10-a814f6ec41ce",
+      "timestamp": "1905-08-11T03:16:37.0Z",
+      "value": 478.64734640260826,
+      "status": "pending",
+      "tags": [
+        "civis",
+        "vero",
+        "subito",
+        "vobis",
+        "verto"
+      ]
+    }
+  ]
+}

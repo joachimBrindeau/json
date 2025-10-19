@@ -5,48 +5,33 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { UnifiedButton } from '@/components/ui/unified-button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useDarkMode } from '@/hooks/use-dark-mode';
 import { useBackendStore } from '@/lib/store/backend';
-import { 
-  Maximize2, 
-  Minimize2, 
-  Copy, 
-  Download, 
-  FileJson,
+import {
+  Minimize2,
   Zap,
   RotateCcw,
-  Check,
   Search
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ViewerActions } from '@/components/features/viewer';
-import dynamic from 'next/dynamic';
-import type { OnMount, Monaco } from '@monaco-editor/react';
-import type { editor } from 'monaco-editor';
+import { EditorActions } from '@/components/features/editor/EditorActions';
+import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
+import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
-
-// Monaco editor with loading state
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-background border">
-      <div className="text-center">
-        <LoadingSpinner size="md" label="Loading Code Editor..." />
-      </div>
-    </div>
-  ),
-  ssr: false,
-});
+import { validateJson } from '@/lib/utils/json-validators';
+import { toastPatterns } from '@/lib/utils/toast-helpers';
 
 export default function FormatPage() {
   const { currentJson, setCurrentJson } = useBackendStore();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  const inputEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const outputEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  // Use Monaco editor hook for both editors
+  const inputEditor = useMonacoEditor(input.length);
+  const outputEditor = useMonacoEditor(output.length, { readOnly: true });
 
   // Initialize input from currentJson when page loads
   useEffect(() => {
@@ -55,53 +40,11 @@ export default function FormatPage() {
     }
   }, [currentJson]);
 
-  // Check for dark mode on mount and listen for changes
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setIsDarkMode(isDark);
-    };
-    
-    checkDarkMode();
-    
-    // Listen for dark mode changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
-
-  // Update Monaco themes when dark mode changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'monaco' in window) {
-      const monaco = (window as { monaco: Monaco }).monaco;
-      const theme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(theme);
-    }
-  }, [isDarkMode]);
-
-  const validateJson = (json: string): boolean => {
-    if (!json.trim()) return false;
-    try {
-      JSON.parse(json);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const hasValidInput = validateJson(input);
 
   const formatJson = useCallback((minify = false) => {
     if (!input.trim()) {
-      toast({
-        title: 'No input',
-        description: 'Please enter some JSON to format',
-        variant: 'destructive',
-      });
+      toastPatterns.validation.noJson('format');
       return;
     }
 
@@ -124,57 +67,6 @@ export default function FormatPage() {
 
   const handleFormat = () => formatJson(false);
   const handleMinify = () => formatJson(true);
-
-  const handleCopy = useCallback(async () => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: 'Format your JSON first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(output);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast({
-        title: 'Copied!',
-        description: 'JSON copied to clipboard',
-      });
-    } catch {
-      toast({
-        title: 'Failed to copy',
-        description: 'Could not copy to clipboard',
-        variant: 'destructive',
-      });
-    }
-  }, [output, toast]);
-
-  const handleDownload = useCallback(() => {
-    if (!output) {
-      toast({
-        title: 'No output',
-        description: 'Format your JSON first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const blob = new Blob([output], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'formatted.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: 'Downloaded!',
-      description: 'JSON file downloaded successfully',
-    });
-  }, [output, toast]);
 
   const handleSample = useCallback(() => {
     const sample = JSON.stringify({
@@ -205,23 +97,6 @@ export default function FormatPage() {
     });
   }, [toast]);
 
-  const handleInputEditorMount: OnMount = useCallback((editor, monaco) => {
-    inputEditorRef.current = editor;
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-  }, [isDarkMode]);
-
-  const handleOutputEditorMount: OnMount = useCallback((editor, monaco) => {
-    outputEditorRef.current = editor;
-    if (monaco) {
-      defineMonacoThemes(monaco);
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
-    }
-  }, [isDarkMode]);
 
   return (
     <MainLayout>
@@ -259,22 +134,13 @@ export default function FormatPage() {
               disabled={!input || !hasValidInput}
               title="Minify JSON"
             />
-            <UnifiedButton
-              variant="outline"
-              size="xs"
-              icon={FileJson}
-              text="Sample"
-              onClick={handleSample}
-              title="Load Sample JSON"
-            />
-            <UnifiedButton
-              variant="red"
-              size="xs"
-              icon={RotateCcw}
-              text="Reset"
-              onClick={handleReset}
-              disabled={!input && !output}
-              title="Reset All"
+            <EditorActions
+              output={output}
+              hasContent={!!(input || output)}
+              onSample={handleSample}
+              onReset={handleReset}
+              filename="formatted"
+              outputLabel="formatted JSON"
             />
             <ViewerActions />
           </div>
@@ -298,69 +164,28 @@ export default function FormatPage() {
                   // Sync changes back to the store
                   setCurrentJson(newValue);
                 }}
-                theme={isDarkMode ? 'shadcn-dark' : 'shadcn-light'}
-                onMount={handleInputEditorMount}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  formatOnPaste: true,
-                  formatOnType: true,
-                  folding: true,
-                  bracketPairColorization: { enabled: true },
-                  padding: { top: 10, bottom: 10 },
-                }}
+                theme={inputEditor.theme}
+                onMount={inputEditor.handleEditorDidMount}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={inputEditor.editorOptions}
               />
             </div>
           </div>
 
           {/* Output editor */}
           <div className="flex-1 min-h-[200px] lg:min-h-[300px] flex flex-col bg-card rounded-lg border">
-            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground flex items-center justify-between">
+            <div className="px-2 py-1 bg-muted border-b text-xs font-medium text-muted-foreground">
               <span>Formatted Output</span>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <UnifiedButton
-                  variant="outline"
-                  icon={copied ? Check : Copy}
-                  text={copied ? 'Copied' : 'Copy'}
-                  onClick={handleCopy}
-                  disabled={!output}
-                  style={{ minHeight: '44px' }}
-                  className="h-11 sm:h-10"
-                />
-                <UnifiedButton
-                  variant="outline"
-                  icon={Download}
-                  text="Download"
-                  onClick={handleDownload}
-                  disabled={!output}
-                  style={{ minHeight: '44px' }}
-                  className="h-11 sm:h-10"
-                />
-              </div>
             </div>
             <div className="flex-1 min-h-0">
               <MonacoEditor
                 height="100%"
                 language="json"
                 value={output}
-                theme={isDarkMode ? 'shadcn-dark' : 'shadcn-light'}
-                onMount={handleOutputEditorMount}
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  wordWrap: 'on',
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  folding: true,
-                  bracketPairColorization: { enabled: true },
-                  padding: { top: 10, bottom: 10 },
-                }}
+                theme={outputEditor.theme}
+                onMount={outputEditor.handleEditorDidMount}
+                beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                options={outputEditor.editorOptions}
               />
             </div>
           </div>

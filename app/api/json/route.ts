@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import {
   analyzeJsonStream,
   chunkJsonData,
@@ -12,16 +10,15 @@ import {
 import { logger } from '@/lib/logger';
 import { success, created, badRequest, error, internalServerError } from '@/lib/api/responses';
 import { config } from '@/lib/config';
+import { withAuth } from '@/lib/api/utils';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, session) => {
   const monitor = createPerformanceMonitor();
 
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
     const userId = session?.user?.id || null;
     
     // Parse JSON body
@@ -123,4 +120,4 @@ export async function POST(request: NextRequest) {
 
     return internalServerError('Failed to create JSON document');
   }
-}
+});

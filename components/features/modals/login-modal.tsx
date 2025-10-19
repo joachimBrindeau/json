@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -18,56 +19,30 @@ import { useToast } from '@/hooks/use-toast';
 import { useFormSubmit } from '@/hooks/use-form-submit';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
+import { normalizeEmail } from '@/lib/utils/email';
+import type { LoginFormData, SignupFormData } from '@/lib/auth/types';
+import { LOGIN_CONTEXT_MESSAGES } from '@/lib/auth/constants';
 
 interface LoginModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  context?: 'library' | 'save' | 'share' | 'expire' | 'general' | 'publish' | 'saved';
+  context?: 'library' | 'save' | 'share' | 'expire' | 'general' | 'publish';
 }
-
-const contextMessages = {
-  library: {
-    title: 'Access Your Library',
-    description: 'Sign in to view and manage your saved JSONs',
-  },
-  save: {
-    title: 'Save to Library',
-    description: 'Sign in to save this JSON permanently to your library',
-  },
-  share: {
-    title: 'Share Permanently',
-    description: 'Sign in to create permanent share links that never expire',
-  },
-  expire: {
-    title: 'Save Before It Expires',
-    description: 'This JSON will expire soon. Sign in to save it permanently',
-  },
-  general: {
-    title: 'Sign in to JSON Viewer',
-    description: 'Sign in to save your JSONs permanently and access advanced features',
-  },
-  publish: {
-    title: 'Publish to Community',
-    description: 'Sign in to publish your JSON to the public community library',
-  },
-  saved: {
-    title: 'Access Saved JSONs',
-    description: 'Sign in to view and manage your saved JSON files',
-  },
-};
 
 export function LoginModal({ open, onOpenChange, context = 'general' }: LoginModalProps) {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupFormData>({
     name: '',
     email: '',
     password: '',
   });
 
   const { toast } = useToast();
-  const message = contextMessages[context];
+  const router = useRouter();
+  const { update: updateSession } = useSession();
+  const message = LOGIN_CONTEXT_MESSAGES[context] || LOGIN_CONTEXT_MESSAGES.general;
 
   const handleOAuthSignIn = async (provider: string) => {
     setIsOAuthLoading(true);
@@ -90,17 +65,19 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
         throw new Error('Please enter both email and password');
       }
 
+      const email = normalizeEmail(formData.email);
+
       if (isSignup) {
         // Create account
         await apiClient.post('/api/auth/signup', {
           name: formData.name.trim() || 'User',
-          email: formData.email.toLowerCase().trim(),
+          email,
           password: formData.password,
         });
 
         // Sign in after successful signup
         const signInResult = await signIn('credentials', {
-          email: formData.email.toLowerCase().trim(),
+          email,
           password: formData.password,
           redirect: false,
         });
@@ -111,7 +88,7 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
       } else {
         // Sign in
         const result = await signIn('credentials', {
-          email: formData.email.toLowerCase().trim(),
+          email,
           password: formData.password,
           redirect: false,
         });
@@ -122,13 +99,20 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
       }
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast({
           title: isSignup ? 'Welcome!' : 'Welcome back!',
           description: isSignup ? 'Account created successfully' : 'Signed in successfully',
         });
+
         onOpenChange(false);
-        window.location.reload();
+
+        // DRY KISS SOLID: Combine SessionProvider update with router refresh
+        // updateSession() triggers client-side SessionProvider refetch
+        // router.refresh() triggers server component revalidation
+        // Together they ensure complete session synchronization
+        await updateSession();
+        router.refresh();
       },
       onError: (error) => {
         logger.error(

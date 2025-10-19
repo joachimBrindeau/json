@@ -14,7 +14,6 @@ import React, { useCallback } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
-  Controls,
   Background,
   MiniMap,
   Node,
@@ -22,7 +21,7 @@ import {
   Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
+import { NodeDetailsModal } from '@/components/features/viewer/node-details/NodeDetailsModal';
 import { cn } from '@/lib/utils';
 import {
   FLOW_NODE_TYPES,
@@ -37,8 +36,6 @@ import { useFlowParser } from './hooks/useFlowParser';
 import { useFlowNodes } from './hooks/useFlowNodes';
 import { useNodeDetailsModal } from './hooks/useNodeDetailsModal';
 import { FlowControls } from './FlowControls';
-import { FlowStatsPanel } from './FlowStatsPanel';
-import { FlowLegendPanel } from './FlowLegendPanel';
 
 interface JsonFlowViewProps {
   json: unknown;
@@ -119,20 +116,12 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
           defaultEdgeOptions={FLOW_DEFAULT_EDGE_OPTIONS}
         >
           <Background variant="dots" gap={12} size={1} />
-          <Controls
-            showZoom
-            showFitView
-            showInteractive
-            className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
-          />
           <MiniMap
             nodeColor={getMinimapNodeColor}
             className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
             maskColor="rgb(0, 0, 0, 0.1)"
           />
           <FlowControls />
-          <FlowStatsPanel />
-          <FlowLegendPanel />
         </ReactFlow>
       </div>
 

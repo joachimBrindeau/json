@@ -145,9 +145,9 @@ export class JsonViewerPage extends BasePage {
     try {
       console.log(`⏳ Inputting JSON (${jsonString.length} characters)`);
       
-      // Wait for page to be ready
+      // Wait for page to be ready and React to hydrate
       await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForTimeout(2000); // Wait for React hydration
+      await this.page.waitForLoadState('networkidle');
 
       // Find the Monaco editor with multiple possible selectors
       const editorSelectors = [
@@ -166,8 +166,8 @@ export class JsonViewerPage extends BasePage {
           const element = this.page.locator(selector).first();
           if (await element.isVisible({ timeout: 2000 })) {
             console.log(`✅ Found editor with selector: ${selector}`);
+            await element.waitFor({ state: 'visible' });
             await element.click();
-            await this.page.waitForTimeout(500);
             editorFound = true;
             break;
           }
@@ -206,7 +206,6 @@ export class JsonViewerPage extends BasePage {
         try {
           // Focus and select all existing content
           await this.page.keyboard.press('Meta+a'); // Mac Cmd+A
-          await this.page.waitForTimeout(100);
           
           // Type JSON in manageable chunks
           const chunkSize = 500;
@@ -214,7 +213,6 @@ export class JsonViewerPage extends BasePage {
             for (let i = 0; i < jsonString.length; i += chunkSize) {
               const chunk = jsonString.substring(i, i + chunkSize);
               await this.page.keyboard.type(chunk, { delay: 5 });
-              await this.page.waitForTimeout(50);
             }
           } else {
             await this.page.keyboard.type(jsonString, { delay: 5 });
@@ -235,9 +233,6 @@ export class JsonViewerPage extends BasePage {
         }
       }
 
-      // Wait for content to be processed
-      await this.page.waitForTimeout(2000);
-      
       // Wait for any auto-processing to complete
       await this.waitForJSONProcessed();
       
@@ -322,8 +317,8 @@ export class JsonViewerPage extends BasePage {
         console.warn('⚠️ Tree view button not found, might already be active');
       }
       
-      // Wait for tab switch
-      await this.page.waitForTimeout(1500);
+      // Wait for tab content to be visible
+      await this.page.waitForLoadState('domcontentloaded');
       
       // Wait for tree content to appear
       const treeContentSelectors = [
@@ -356,9 +351,9 @@ export class JsonViewerPage extends BasePage {
    */
   async switchToFlowView() {
     await this.flowViewButton.click();
-    await this.page.waitForTimeout(1000); // Wait for tab switch
-    // Wait for flow view to load (has different loading pattern)
-    await this.page.waitForTimeout(2000);
+    // Wait for flow view to load
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForSelector('.react-flow__renderer, .json-flow-flow, .flow-view-content', { timeout: 5000 }).catch(() => {});
   }
 
   /**
@@ -366,14 +361,9 @@ export class JsonViewerPage extends BasePage {
    */
   async switchToListView() {
     await this.listViewButton.click();
-    await this.page.waitForTimeout(1500); // Wait longer for tab switch and re-rendering
     // Wait for list view to appear - try different selectors as list might render differently
-    try {
-      await this.page.waitForSelector('.json-node[data-testid="json-node"]', { timeout: 5000 });
-    } catch {
-      // List view might take longer to render or have different structure
-      await this.page.waitForTimeout(2000);
-    }
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForSelector('.json-node[data-testid="json-node"], div.flex.items-center.px-4.py-2', { timeout: 5000 }).catch(() => {});
   }
 
   /**
@@ -422,7 +412,8 @@ export class JsonViewerPage extends BasePage {
       if (await this.searchInput.isVisible({ timeout: 2000 })) {
         await this.searchInput.fill(query);
         await this.page.keyboard.press('Enter');
-        await this.page.waitForTimeout(500); // Wait for search results
+        // Wait for search results to appear
+        await this.page.waitForLoadState('domcontentloaded');
       } else {
         // Search functionality not available - skip quietly
         console.log('Search functionality not available, skipping search for:', query);
@@ -460,7 +451,6 @@ export class JsonViewerPage extends BasePage {
       for (const button of expandButtons) {
         if (await button.isVisible()) {
           await button.click();
-          await this.page.waitForTimeout(100);
         }
       }
     }
@@ -478,7 +468,6 @@ export class JsonViewerPage extends BasePage {
       for (const button of collapseButtons) {
         if (await button.isVisible()) {
           await button.click();
-          await this.page.waitForTimeout(100);
         }
       }
     }
@@ -580,8 +569,10 @@ export class JsonViewerPage extends BasePage {
       await this.page.locator('[data-testid="publish-title"]').fill(title);
     }
 
-    await this.page.locator('[data-testid="publish-confirm"]').click();
-    await this.page.waitForTimeout(1000); // Wait for publish to complete
+    const confirmButton = this.page.locator('[data-testid="publish-confirm"]');
+    await confirmButton.click();
+    // Wait for publish to complete - modal should close
+    await this.publishModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
 
   /**
@@ -612,8 +603,8 @@ export class JsonViewerPage extends BasePage {
     console.log('⏳ Waiting for JSON to be processed...');
     
     try {
-      // Wait for initial processing
-      await this.page.waitForTimeout(1000);
+      // Wait for page to stabilize
+      await this.page.waitForLoadState('domcontentloaded');
       
       // Wait for loading spinner to disappear if it exists
       const loadingSelectors = [
@@ -657,19 +648,16 @@ export class JsonViewerPage extends BasePage {
       }
       
       if (!contentFound) {
-        console.warn('⚠️ No JSON content selectors matched, waiting with generic timeout');
-        await this.page.waitForTimeout(3000);
+        console.warn('⚠️ No JSON content selectors matched');
+        // Wait for network to settle as fallback
+        await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       }
-      
-      // Additional wait for any animations or lazy loading
-      await this.page.waitForTimeout(1000);
       
       console.log('✅ JSON processing wait completed');
       
     } catch (error) {
       console.warn('⚠️ Error waiting for JSON processing:', error.message);
       // Don't throw error, just log it and continue
-      await this.page.waitForTimeout(2000);
     }
   }
 

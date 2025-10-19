@@ -5,7 +5,7 @@ test('Debug library page', async ({ page }) => {
 
   // Wait for page to load completely
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
+  await page.waitForLoadState('networkidle'); // Wait for library page initialization
 
   // Take a screenshot
   await page.screenshot({ path: 'debug-public-library.png', fullPage: true });

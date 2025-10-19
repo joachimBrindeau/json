@@ -96,8 +96,8 @@ export class PublishHelper {
       }
     }
 
-    // Wait for form to be ready
-    await this.page.waitForTimeout(500);
+    // Wait for form validation to complete
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -187,9 +187,10 @@ export class PublishHelper {
         const viewButton = previewViewModes.locator(`[data-testid="preview-${options.viewMode}-view"]`);
         if (await viewButton.isVisible()) {
           await viewButton.click();
-          await this.page.waitForTimeout(500);
           
+          // Wait for view content to be visible
           const viewContent = previewModal.locator(`[data-testid="preview-${options.viewMode}-content"]`);
+          await expect(viewContent).toBeVisible({ timeout: 5000 });
           return await viewContent.isVisible();
         }
       }
@@ -200,9 +201,10 @@ export class PublishHelper {
       const themeSelector = previewModal.locator('[data-testid="preview-theme-selector"]');
       if (await themeSelector.isVisible()) {
         await themeSelector.selectOption(options.theme);
-        await this.page.waitForTimeout(500);
         
+        // Wait for theme to be applied
         const previewContent = previewModal.locator('[data-testid="preview-content"]');
+        await this.page.waitForLoadState('networkidle');
         const hasClass = await previewContent.getAttribute('class');
         return hasClass?.includes(options.theme) || false;
       }

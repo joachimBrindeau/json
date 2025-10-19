@@ -79,10 +79,9 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const categorySelect = libraryPage.page.locator('[data-testid="publish-category"]');
       if (await categorySelect.isVisible()) {
         await categorySelect.click();
-        await libraryPage.page
-          .locator('[data-value="API Response"]')
-          .or(libraryPage.page.locator('text="API Response"'))
-          .click();
+        const categoryOption = libraryPage.page.locator('[data-value="API Response"]');
+        await expect(categoryOption).toBeVisible();
+        await categoryOption.click();
       }
 
       // Add tags
@@ -102,9 +101,7 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const nowPublished = publishedDoc.find((item) => item.title.includes('API Response'));
 
       // Look for published indicator
-      const publishedIndicator = libraryPage.page
-        .locator(`[data-testid="published-indicator-${nowPublished?.index}"]`)
-        .or(libraryPage.page.locator('.published-badge').nth(nowPublished?.index || 0));
+      const publishedIndicator = libraryPage.page.locator(`[data-testid="published-indicator-${nowPublished?.index}"]`);
 
       if (await publishedIndicator.isVisible()) {
         expect(await publishedIndicator.textContent()).toContain('Published');
@@ -363,17 +360,13 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       expect(publishedDoc).toBeDefined();
 
       // Look for unpublish option (might be in dropdown menu)
-      const unpublishButton = libraryPage.page
-        .locator(`[data-testid="unpublish-${publishedDoc?.index}"]`)
-        .or(libraryPage.page.locator('.unpublish-button').nth(publishedDoc?.index || 0));
+      const unpublishButton = libraryPage.page.locator(`[data-testid="unpublish-${publishedDoc?.index}"]`);
 
       if (await unpublishButton.isVisible()) {
         await unpublishButton.click();
       } else {
         // Try actions menu
-        const actionsButton = libraryPage.page
-          .locator(`[data-testid="actions-${publishedDoc?.index}"]`)
-          .or(libraryPage.page.locator('.actions-menu').nth(publishedDoc?.index || 0));
+        const actionsButton = libraryPage.page.locator(`[data-testid="actions-${publishedDoc?.index}"]`);
 
         if (await actionsButton.isVisible()) {
           await actionsButton.click();
@@ -382,9 +375,7 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       }
 
       // Confirm unpublish
-      const confirmUnpublish = libraryPage.page
-        .locator('[data-testid="confirm-unpublish"]')
-        .or(libraryPage.page.locator('button:has-text("Unpublish")'));
+      const confirmUnpublish = libraryPage.page.locator('[data-testid="confirm-unpublish"]');
 
       if (await confirmUnpublish.isVisible()) {
         await confirmUnpublish.click();
@@ -536,27 +527,21 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const publicDoc = items.find((item) => item.title.includes('Public Shared'));
 
       // Open document settings
-      const settingsButton = libraryPage.page
-        .locator(`[data-testid="settings-${publicDoc?.index}"]`)
-        .or(libraryPage.page.locator('.settings-button').nth(publicDoc?.index || 0));
-
+      const settingsButton = libraryPage.page.locator(`[data-testid="settings-${publicDoc?.index}"]`);
+      await expect(settingsButton).toBeVisible();
       await settingsButton.click();
 
       // Change visibility to private
       const visibilitySelect = libraryPage.page.locator('[data-testid="visibility-select"]');
-      if (await visibilitySelect.isVisible()) {
-        await visibilitySelect.click();
-        await libraryPage.page.locator('[data-value="private"]').click();
-      } else {
-        // Toggle switch for private
-        const privateToggle = libraryPage.page.locator('[data-testid="private-toggle"]');
-        if (await privateToggle.isVisible()) {
-          await privateToggle.click();
-        }
-      }
+      await expect(visibilitySelect).toBeVisible();
+      await visibilitySelect.click();
+      const privateOption = libraryPage.page.locator('[data-value="private"]');
+      await expect(privateOption).toBeVisible();
+      await privateOption.click();
 
       // Save visibility changes
       const saveVisibilityButton = libraryPage.page.locator('[data-testid="save-visibility"]');
+      await expect(saveVisibilityButton).toBeVisible();
       await saveVisibilityButton.click();
 
       await layoutPage.waitForNotification('Visibility updated');
@@ -585,10 +570,9 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       // Set to link-only visibility
       const visibilitySelect = libraryPage.page.locator('[data-testid="visibility-select"]');
       await visibilitySelect.click();
-      await libraryPage.page
-        .locator('[data-value="link-only"]')
-        .or(libraryPage.page.locator('text="Link Only"'))
-        .click();
+      const linkOnlyOption = libraryPage.page.locator('[data-value="link-only"]');
+      await expect(linkOnlyOption).toBeVisible();
+      await linkOnlyOption.click();
 
       // Save changes
       await libraryPage.page.locator('[data-testid="save-visibility"]').click();
@@ -718,9 +702,7 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       await layoutPage.goToProfile();
 
       // Look for analytics section
-      const analyticsSection = layoutPage.page
-        .locator('[data-testid="analytics-section"]')
-        .or(layoutPage.page.locator('.analytics-dashboard'));
+      const analyticsSection = layoutPage.page.locator('[data-testid="analytics-section"]');
 
       if (await analyticsSection.isVisible()) {
         await expect(analyticsSection).toBeVisible();
@@ -753,9 +735,7 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const analyticsDoc = items.find((item) => item.title.includes('Analytics Test'));
 
       // Click on analytics/stats button for the document
-      const analyticsButton = libraryPage.page
-        .locator(`[data-testid="analytics-${analyticsDoc?.index}"]`)
-        .or(libraryPage.page.locator('.analytics-button').nth(analyticsDoc?.index || 0));
+      const analyticsButton = libraryPage.page.locator(`[data-testid="analytics-${analyticsDoc?.index}"]`);
 
       if (await analyticsButton.isVisible()) {
         await analyticsButton.click();

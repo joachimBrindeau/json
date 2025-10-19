@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
+import { useApiData } from '@/hooks/use-api-data';
+import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-states';
 import {
   Select,
   SelectContent,
@@ -276,87 +279,69 @@ const SortableTableHead = memo(function SortableTableHead({
 function LibraryPageComponent() {
   const { data: session } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
-  const [documents, setDocuments] = useState<LibraryDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filters, setFilters] = useState<FilterState>({});
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const { loadFromShareId } = useAppStore();
 
-  // Load documents from API
-  const loadDocuments = useCallback(async () => {
-    if (!session) {
-      setDocuments([]);
-      setLoading(false);
-      return;
+  // Build API query params
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams({
+      page: currentPage.toString(),
+      limit: ITEMS_PER_PAGE.toString(),
+      sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' :
+            sortField === 'createdAt' && sortOrder === 'asc' ? 'recent' :
+            sortField === 'title' ? 'title' :
+            sortField === 'size' ? 'size' : 'recent',
+    });
+
+    if (searchQuery.trim()) {
+      params.set('search', searchQuery.trim());
     }
 
-    try {
-      setLoading(true);
-      setError(null);
+    return params.toString();
+  }, [currentPage, sortField, sortOrder, searchQuery]);
 
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: ITEMS_PER_PAGE.toString(),
-        sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' :
-              sortField === 'createdAt' && sortOrder === 'asc' ? 'recent' :
-              sortField === 'title' ? 'title' :
-              sortField === 'size' ? 'size' : 'recent',
-      });
+  // Use API data hook
+  interface SavedResponse {
+    documents?: LibraryDocument[];
+    pagination?: {
+      totalPages: number;
+      total: number;
+    };
+  }
 
-      if (searchQuery.trim()) {
-        params.set('search', searchQuery.trim());
-      }
+  const { data, loading, error, refetch } = useApiData<SavedResponse>({
+    endpoint: `/api/saved?${queryParams}`,
+    errorMessage: 'Failed to load your library',
+    enabled: !!session,
+  });
 
-      interface SavedResponse {
-        documents?: LibraryDocument[];
-        pagination?: {
-          totalPages: number;
-          total: number;
-        };
-      }
-
-      const data = await apiClient.get<SavedResponse>(`/api/saved?${params}`);
-      setDocuments(data.documents || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotalCount(data.pagination?.total || 0);
-    } catch (err) {
-      logger.error({ err, currentPage, sortField, sortOrder }, 'Failed to load documents');
-      setError('Failed to load your library');
-    } finally {
-      setLoading(false);
-    }
-  }, [session, currentPage, sortField, sortOrder, searchQuery]);
-
-  useEffect(() => {
-    loadDocuments();
-  }, [loadDocuments]);
+  const documents = data?.documents || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalCount = data?.pagination?.total || 0;
 
   // Register for library updates
   useEffect(() => {
-    setLibraryUpdateCallback(loadDocuments);
+    setLibraryUpdateCallback(refetch);
     return () => {
       setLibraryUpdateCallback(() => {});
     };
-  }, [loadDocuments, setLibraryUpdateCallback]);
+  }, [refetch, setLibraryUpdateCallback]);
 
   // Delete document handler
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/api/json/${id}`);
       // Refresh the library
-      loadDocuments();
+      refetch();
     } catch (err) {
       logger.error({ err, documentId: id }, 'Failed to delete document');
-      setError('Failed to delete document');
     }
-  }, [loadDocuments]);
+  }, [refetch]);
 
   // Load document into editor
   const handleLoad = useCallback(
@@ -441,53 +426,39 @@ function LibraryPageComponent() {
   }, [filters]);
 
   if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <Database className="h-16 w-16 mx-auto mb-4 text-muted-foreground animate-pulse" />
-          <p className="text-muted-foreground">Loading your shared JSONs...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState message="Loading your shared JSONs..." size="lg" />;
   }
 
   if (error) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <Card className="max-w-md w-full p-8">
-          <div className="text-center">
-            <div className="text-2xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Library</h3>
-            <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <Button onClick={loadDocuments} className="gap-2">
-              <Database className="h-4 w-4" />
-              Try Again
-            </Button>
-          </div>
-        </Card>
-      </div>
+      <EmptyState
+        icon={<Database className="h-12 w-12" />}
+        title="Error Loading Library"
+        description={typeof error === 'string' ? error : 'Failed to load your library'}
+        action={{
+          label: 'Try Again',
+          onClick: refetch,
+          variant: 'default',
+          icon: Database
+        }}
+      />
     );
   }
 
   if (documents.length === 0 && !loading && !error) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <Card className="max-w-md w-full p-8" data-testid="empty-state">
-          <div className="text-center">
-            <FileJson className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h2 className="text-xl font-semibold mb-2">No Shared JSONs Yet</h2>
-            <p className="text-muted-foreground mb-6">
-              Create and share your first JSON to see it appear in your library.
-            </p>
-            <Link href="/">
-              <Button className="gap-2" data-testid="create-new">
-                <Plus className="h-4 w-4" />
-                Create New JSON
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </div>
+      <EmptyState
+        icon={<FileJson className="h-16 w-16" />}
+        title="No Shared JSONs Yet"
+        description="Create and share your first JSON to see it appear in your library."
+        action={{
+          label: 'Create New JSON',
+          onClick: () => window.location.href = '/',
+          variant: 'default',
+          icon: Plus
+        }}
+        testId="empty-state"
+      />
     );
   }
 
@@ -690,7 +661,7 @@ function LibraryPageComponent() {
                     document={doc}
                     onDelete={handleDelete}
                     onLoad={handleLoad}
-                    onPublished={loadDocuments}
+                    onPublished={refetch}
                   />
                 ))}
               </TableBody>

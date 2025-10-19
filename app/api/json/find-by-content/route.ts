@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { success, badRequest, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
 export const runtime = 'nodejs';
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+export const POST = withAuth(async (request, session) => {
   let contentHash: string | undefined;
   let content: string | undefined;
 
@@ -90,4 +88,4 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
-}
+});

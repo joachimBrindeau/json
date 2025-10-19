@@ -9,9 +9,9 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: config.build.isCI,
+  forbidOnly: true,
   /* Retry on CI only */
-  retries: config.build.isCI ? 2 : 0,
+  retries: 0,
   /* Opt out of parallel tests on CI. */
   workers: config.build.isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -132,11 +132,11 @@ export default defineConfig({
   globalTeardown: require.resolve('../tests/utils/global-teardown.ts'),
 
   /* Test timeout */
-  timeout: 60_000,
+  timeout: 30_000,
 
   /* Expect timeout */
   expect: {
-    timeout: 10_000,
+    timeout: 5_000,
     /* Take screenshot on expect failure */
     toHaveScreenshot: { threshold: 0.2 },
   },

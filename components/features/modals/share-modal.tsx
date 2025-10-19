@@ -16,26 +16,13 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { FormInput, FormTextarea, FormSelect } from '@/components/shared/form-fields';
 import { Copy, Check, Globe, Lock, Users, Eye, CheckCircle2, Loader2 } from 'lucide-react';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
-import {
-  TwitterShareButton,
-  FacebookShareButton,
-  LinkedinShareButton,
-  WhatsappShareButton,
-  EmailShareButton,
-  TelegramShareButton,
-  TwitterIcon,
-  FacebookIcon,
-  LinkedinIcon,
-  WhatsappIcon,
-  EmailIcon,
-  TelegramIcon,
-} from 'react-share';
+import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import {
-  showCopySuccessToast,
   showValidationErrorToast,
   showInfoToast,
 } from '@/lib/utils/toast-helpers';
@@ -60,11 +47,16 @@ export function ShareModal({
   currentVisibility = 'private',
   onUpdated
 }: ShareModalProps) {
-  const [copied, setCopied] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
   const [isPublic, setIsPublic] = useState(currentVisibility === 'public');
+
+  // Use clipboard hook for copy functionality
+  const { copy, copied } = useClipboard({
+    successMessage: 'Copied!',
+    successDescription: 'Share link copied to clipboard',
+  });
 
   // Initialize form with react-hook-form + Zod validation
   const form = useValidatedForm(shareFormSchema, {
@@ -154,17 +146,9 @@ export function ShareModal({
   const shareTitle = 'Check out this JSON visualization';
   const shareDescription = 'Interactive JSON Sea visualization - explore JSON data in a beautiful graph format';
 
-  const copyToClipboard = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      showCopySuccessToast('Share link');
-    } catch (err) {
-      // Log only - clipboard errors are typically user-related, not API errors
-      logger.error({ err, shareUrl }, 'Failed to copy share link to clipboard');
-    }
-  }, [shareUrl]);
+  const copyToClipboard = useCallback(() => {
+    copy(shareUrl);
+  }, [copy, shareUrl]);
 
 
   // Setup mutations with centralized error handling
@@ -442,56 +426,11 @@ export function ShareModal({
           )}
 
           {/* Social Share Buttons - always visible */}
-          <div className="space-y-2">
-            <Label>Share on social media</Label>
-            <div className="flex flex-wrap gap-2">
-              <TwitterShareButton
-                url={shareUrl}
-                title={shareTitle}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <TwitterIcon size={32} round />
-              </TwitterShareButton>
-
-              <FacebookShareButton url={shareUrl} className="hover:opacity-80 transition-opacity">
-                <FacebookIcon size={32} round />
-              </FacebookShareButton>
-
-              <LinkedinShareButton
-                url={shareUrl}
-                title={shareTitle}
-                summary={shareDescription}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <LinkedinIcon size={32} round />
-              </LinkedinShareButton>
-
-              <WhatsappShareButton
-                url={shareUrl}
-                title={shareTitle}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <WhatsappIcon size={32} round />
-              </WhatsappShareButton>
-
-              <TelegramShareButton
-                url={shareUrl}
-                title={shareTitle}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <TelegramIcon size={32} round />
-              </TelegramShareButton>
-
-              <EmailShareButton
-                url={shareUrl}
-                subject={shareTitle}
-                body={`${shareDescription}\n\nView it here: ${shareUrl}`}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <EmailIcon size={32} round />
-              </EmailShareButton>
-            </div>
-          </div>
+          <SocialShareButtons
+            url={shareUrl}
+            title={shareTitle}
+            description={shareDescription}
+          />
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">

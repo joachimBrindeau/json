@@ -1,10 +1,10 @@
 /**
  * FlowStatsPanel - Statistics panel for React Flow
- * 
+ *
  * Displays:
  * - Total nodes count
  * - Max depth
- * - Node type counts (Root, Object, Array, Primitive)
+ * - Node type counts (Object, Array, Primitive)
  */
 
 'use client';
@@ -19,7 +19,6 @@ export function FlowStatsPanel() {
   const nodes = getNodes();
 
   const stats = useMemo(() => {
-    const rootCount = nodes.filter(n => n.type === NodeType.Root).length;
     const objectCount = nodes.filter(n => n.type === NodeType.Object).length;
     const arrayCount = nodes.filter(n => n.type === NodeType.Array).length;
     const primitiveCount = nodes.filter(n => n.type === NodeType.Primitive).length;
@@ -33,7 +32,6 @@ export function FlowStatsPanel() {
     return {
       total: nodes.length,
       maxDepth,
-      rootCount,
       objectCount,
       arrayCount,
       primitiveCount,
@@ -63,20 +61,15 @@ export function FlowStatsPanel() {
 
         <div className="pt-1 mt-1 border-t border-gray-200 dark:border-gray-800">
           <div className="flex justify-between">
-            <span className="text-blue-600">Root:</span>
-            <span className="font-semibold">{stats.rootCount}</span>
-          </div>
-          
-          <div className="flex justify-between">
             <span className="text-blue-500">Objects:</span>
             <span className="font-semibold">{stats.objectCount}</span>
           </div>
-          
+
           <div className="flex justify-between">
             <span className="text-purple-500">Arrays:</span>
             <span className="font-semibold">{stats.arrayCount}</span>
           </div>
-          
+
           <div className="flex justify-between">
             <span className="text-green-500">Primitives:</span>
             <span className="font-semibold">{stats.primitiveCount}</span>

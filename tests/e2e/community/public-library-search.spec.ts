@@ -166,9 +166,10 @@ test.describe('Community - Library Search and Filtering', () => {
       // Search for "authentication" - should find authentication-related content
       await searchInput.fill('authentication');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for search results to load
       const searchResults = page.locator('[data-testid="library-card"]');
+      await expect(searchResults.first()).toBeVisible({ timeout: 5000 });
       const resultCount = await searchResults.count();
       expect(resultCount).toBeGreaterThan(0);
 
@@ -185,16 +186,18 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test different search terms
       await searchInput.fill('database');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for search results to update
+      await page.waitForLoadState('networkidle');
       const dbResults = await page.locator('[data-testid="library-card"]').count();
       expect(dbResults).toBeGreaterThan(0);
 
       // Search for "ecommerce" or "commerce"
       await searchInput.fill('ecommerce');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for search results to update
+      await page.waitForLoadState('networkidle');
       const ecommerceResults = await page.locator('[data-testid="library-card"]').count();
       expect(ecommerceResults).toBeGreaterThan(0);
     });
@@ -207,9 +210,10 @@ test.describe('Community - Library Search and Filtering', () => {
       // Search by specific tag
       await searchInput.fill('tag:api');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for tag search results to load
       const tagResults = page.locator('[data-testid="library-card"]');
+      await page.waitForLoadState('networkidle');
       const tagResultCount = await tagResults.count();
       expect(tagResultCount).toBeGreaterThan(0);
 
@@ -226,16 +230,18 @@ test.describe('Community - Library Search and Filtering', () => {
       // Search by multiple tags
       await searchInput.fill('tag:testing tag:automation');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for multi-tag search to complete
+      await page.waitForLoadState('networkidle');
       const multiTagResults = await page.locator('[data-testid="library-card"]').count();
       expect(multiTagResults).toBeGreaterThan(0);
 
       // Search with partial tag match
       await searchInput.fill('tag:config');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for partial tag search results
+      await page.waitForLoadState('networkidle');
       const configResults = await page.locator('[data-testid="library-card"]').count();
       expect(configResults).toBeGreaterThan(0);
     });
@@ -249,8 +255,9 @@ test.describe('Community - Library Search and Filtering', () => {
 
       // Filter by API Response category
       await categoryFilter.selectOption('API Response');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for category filter to apply
+      await page.waitForLoadState('networkidle');
       const apiResults = page.locator('[data-testid="library-card"]');
       const apiCount = await apiResults.count();
       expect(apiCount).toBeGreaterThan(0);
@@ -264,15 +271,17 @@ test.describe('Community - Library Search and Filtering', () => {
 
       // Test Database Schema filter
       await categoryFilter.selectOption('Database Schema');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for database schema filter to apply
+      await page.waitForLoadState('networkidle');
       const dbSchemaResults = await page.locator('[data-testid="library-card"]').count();
       expect(dbSchemaResults).toBeGreaterThan(0);
 
       // Test Configuration filter
       await categoryFilter.selectOption('Configuration');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for configuration filter to apply
+      await page.waitForLoadState('networkidle');
       const configResults = await page.locator('[data-testid="library-card"]').count();
       expect(configResults).toBeGreaterThan(0);
     });
@@ -287,8 +296,9 @@ test.describe('Community - Library Search and Filtering', () => {
       await searchInput.fill('user');
       await categoryFilter.selectOption('Database Schema');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for combined search and filter to apply
+      await page.waitForLoadState('networkidle');
       const combinedResults = page.locator('[data-testid="library-card"]');
       const combinedCount = await combinedResults.count();
 
@@ -306,8 +316,9 @@ test.describe('Community - Library Search and Filtering', () => {
       await searchInput.fill('tag:production');
       await categoryFilter.selectOption('Configuration');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for tag + category filter to apply
+      await page.waitForLoadState('networkidle');
       const tagCategoryResults = await page.locator('[data-testid="library-card"]').count();
       expect(tagCategoryResults).toBeGreaterThanOrEqual(0); // Might be 0 if no matches
 
@@ -315,8 +326,9 @@ test.describe('Community - Library Search and Filtering', () => {
       await searchInput.clear();
       await categoryFilter.selectOption('');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for filters to clear
+      await page.waitForLoadState('networkidle');
       const allResults = await page.locator('[data-testid="library-card"]').count();
       expect(allResults).toBeGreaterThan(combinedCount);
     });
@@ -329,8 +341,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test exact phrase search
       await searchInput.fill('"user management"');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for exact phrase search results
+      await page.waitForLoadState('networkidle');
       const exactResults = page.locator('[data-testid="library-card"]');
       const exactCount = await exactResults.count();
 
@@ -343,16 +356,18 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test OR operator
       await searchInput.fill('api OR database');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for OR search results
+      await page.waitForLoadState('networkidle');
       const orResults = await page.locator('[data-testid="library-card"]').count();
       expect(orResults).toBeGreaterThan(0);
 
       // Test AND operator
       await searchInput.fill('user AND authentication');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for AND search results
+      await page.waitForLoadState('networkidle');
       const andResults = page.locator('[data-testid="library-card"]');
       const andCount = await andResults.count();
 
@@ -368,8 +383,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test exclusion operator
       await searchInput.fill('database -schema');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for exclusion search results
+      await page.waitForLoadState('networkidle');
       const excludeResults = page.locator('[data-testid="library-card"]');
       const excludeCount = await excludeResults.count();
 
@@ -390,8 +406,8 @@ test.describe('Community - Library Search and Filtering', () => {
 
       // Start typing and check for suggestions
       await searchInput.fill('api');
-      await page.waitForTimeout(500);
-
+      
+      // Wait for suggestions dropdown to appear (unnecessary - removed)
       const suggestions = page.locator('[data-testid="search-suggestions"]');
       if (await suggestions.isVisible()) {
         const suggestionList = suggestions.locator('[data-testid="suggestion-item"]');
@@ -405,8 +421,8 @@ test.describe('Community - Library Search and Filtering', () => {
         // Click on a suggestion
         await suggestionList.first().click();
 
-        // Should perform search
-        await page.waitForTimeout(1000);
+        // Wait for search to complete after clicking suggestion
+        await page.waitForLoadState('networkidle');
         const results = await page.locator('[data-testid="library-card"]').count();
         expect(results).toBeGreaterThan(0);
       }
@@ -414,8 +430,8 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test tag suggestions
       await searchInput.clear();
       await searchInput.fill('tag:');
-      await page.waitForTimeout(500);
-
+      
+      // Wait for tag suggestions to appear (unnecessary - removed)
       const tagSuggestions = page.locator('[data-testid="tag-suggestions"]');
       if (await tagSuggestions.isVisible()) {
         const tagList = tagSuggestions.locator('[data-testid="tag-suggestion"]');
@@ -432,8 +448,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Search for a common term
       await searchInput.fill('user');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for search results to load
+      await page.waitForLoadState('networkidle');
       const results = page.locator('[data-testid="library-card"]');
       const resultCount = await results.count();
       expect(resultCount).toBeGreaterThan(0);
@@ -442,8 +459,9 @@ test.describe('Community - Library Search and Filtering', () => {
       const sortSelect = page.locator('[data-testid="search-sort"]');
       if (await sortSelect.isVisible()) {
         await sortSelect.selectOption('relevance');
-        await page.waitForTimeout(1000);
-
+        
+        // Wait for sorting to apply
+        await page.waitForLoadState('networkidle');
         // Most relevant results should be first
         const firstResult = results.first();
         const firstTitle = await firstResult.locator('[data-testid="card-title"]').textContent();
@@ -453,8 +471,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test sorting by date
       if (await sortSelect.isVisible()) {
         await sortSelect.selectOption('newest');
-        await page.waitForTimeout(1000);
-
+        
+        // Wait for date sorting to apply
+        await page.waitForLoadState('networkidle');
         // Should reorder by publication date
         const newOrder = await page.locator('[data-testid="library-card"]').count();
         expect(newOrder).toBe(resultCount);
@@ -463,8 +482,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test sorting by popularity
       if (await sortSelect.isVisible()) {
         await sortSelect.selectOption('popularity');
-        await page.waitForTimeout(1000);
-
+        
+        // Wait for popularity sorting to apply
+        await page.waitForLoadState('networkidle');
         // Should reorder by view count
         const popularOrder = await page.locator('[data-testid="library-card"]').count();
         expect(popularOrder).toBe(resultCount);
@@ -479,8 +499,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Perform search
       await searchInput.fill('example');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for search results to load
+      await page.waitForLoadState('networkidle');
       // Should show result count
       const resultCount = page.locator('[data-testid="search-result-count"]');
       if (await resultCount.isVisible()) {
@@ -503,8 +524,9 @@ test.describe('Community - Library Search and Filtering', () => {
           const firstPageResults = await page.locator('[data-testid="library-card"]').count();
 
           await nextButton.click();
-          await page.waitForTimeout(1000);
-
+          
+          // Wait for next page to load
+          await page.waitForLoadState('networkidle');
           const secondPageResults = await page.locator('[data-testid="library-card"]').count();
           expect(secondPageResults).toBeGreaterThan(0);
 
@@ -522,8 +544,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Search for something that definitely won't exist
       await searchInput.fill('nonexistentqueryterms12345');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for empty search results to load
+      await page.waitForLoadState('networkidle');
       const results = page.locator('[data-testid="library-card"]');
       const resultCount = await results.count();
 
@@ -564,7 +587,9 @@ test.describe('Community - Library Search and Filtering', () => {
       for (const query of searches) {
         await searchInput.fill(query);
         await searchInput.press('Enter');
-        await page.waitForTimeout(1000);
+        
+        // Wait for each search to complete
+        await page.waitForLoadState('networkidle');
       }
 
       // Check for search history dropdown
@@ -583,8 +608,9 @@ test.describe('Community - Library Search and Filtering', () => {
 
         // Click on a history item
         await historyItems.first().click();
-        await page.waitForTimeout(1000);
-
+        
+        // Wait for search from history to complete
+        await page.waitForLoadState('networkidle');
         // Should perform the search
         const results = await page.locator('[data-testid="library-card"]').count();
         expect(results).toBeGreaterThan(0);
@@ -593,8 +619,9 @@ test.describe('Community - Library Search and Filtering', () => {
       // Test saved searches
       await searchInput.fill('tag:api category:"API Response"');
       await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-
+      
+      // Wait for complex search to complete
+      await page.waitForLoadState('networkidle');
       const saveSearchButton = page.locator('[data-testid="save-search"]');
       if (await saveSearchButton.isVisible()) {
         await saveSearchButton.click();

@@ -95,6 +95,54 @@ test.describe('Anonymous User - File Upload Functionality', () => {
       expect(stats.nodeCount).toBeGreaterThan(200);
     });
 
+    test('should upload realistic API response JSON', async ({ dataGenerator }) => {
+      // Generate realistic API response with pagination
+      const apiResponse = dataGenerator.generateRealisticAPIResponse();
+      const jsonContent = JSON.stringify(apiResponse, null, 2);
+      const testFilePath = join(testFilesDir, 'test-api-response.json');
+
+      // Create test file
+      writeFileSync(testFilePath, jsonContent);
+
+      // Upload file
+      await viewerPage.uploadJSONFile(testFilePath);
+
+      // Verify file was processed
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+
+      // Verify API response structure
+      const nodeCounts = await viewerPage.getNodeCounts();
+      expect(nodeCounts.objects).toBeGreaterThan(0);
+      expect(nodeCounts.arrays).toBeGreaterThan(0);
+
+      // Take screenshot
+      await viewerPage.takeScreenshot('realistic-api-response');
+    });
+
+    test('should upload realistic e-commerce products', async ({ dataGenerator }) => {
+      // Generate realistic products
+      const products = dataGenerator.generateRealisticProducts(10);
+      const jsonContent = JSON.stringify(products, null, 2);
+      const testFilePath = join(testFilesDir, 'test-products.json');
+
+      // Create test file
+      writeFileSync(testFilePath, jsonContent);
+
+      // Upload file
+      await viewerPage.uploadJSONFile(testFilePath);
+
+      // Verify file was processed
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+
+      // Verify products structure
+      const nodeCounts = await viewerPage.getNodeCounts();
+      expect(nodeCounts.arrays).toBeGreaterThan(0);
+      expect(nodeCounts.objects).toBeGreaterThan(10);
+
+      // Take screenshot
+      await viewerPage.takeScreenshot('realistic-products');
+    });
+
     test('should reject invalid JSON file with clear error message', async () => {
       const invalidJson = '{"incomplete": json';
       const testFilePath = join(testFilesDir, 'test-invalid.json');
@@ -172,8 +220,8 @@ test.describe('Anonymous User - File Upload Functionality', () => {
         await viewerPage.waitForJSONProcessed();
         expect(await viewerPage.hasJSONErrors()).toBe(false);
       } else {
-        // Skip this test if drag-drop area is not available
-        test.skip();
+        // Fail fast if drag-drop area not available
+        expect(await viewerPage.uploadArea.isVisible(), 'Drag-drop upload area must be available for this test').toBe(true);
       }
     });
 
@@ -275,7 +323,8 @@ test.describe('Anonymous User - File Upload Functionality', () => {
         expect(await viewerPage.uploadButton.isVisible()).toBe(true);
         expect(await viewerPage.hasJSONErrors()).toBe(false);
       } else {
-        test.skip();
+        // Fail fast if upload button not available
+        expect(await viewerPage.uploadButton.isVisible(), 'Upload button must be available for this test').toBe(true);
       }
     });
   });

@@ -393,20 +393,20 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Test JSON source updates
       await page.click('button:text("Load JSON 2")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for JSON source update
 
       let currentConfig = await page.evaluate(() => window.currentConfig);
       expect(currentConfig.jsonId).toBe(json2.id);
 
       await page.click('button:text("Load Inline JSON")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for inline JSON load
 
       currentConfig = await page.evaluate(() => window.currentConfig);
       expect(currentConfig.jsonContent).toContain('"dynamic":true');
 
       // Test theme updates
       await page.click('button:text("Dark")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for theme update
 
       currentConfig = await page.evaluate(() => window.currentConfig);
       expect(currentConfig.theme).toBe('dark');
@@ -414,13 +414,13 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Test view updates
       await page.click('button:text("List")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for view update
 
       await expect(page.locator('#dynamic-viewer [data-testid="list-view"]')).toBeVisible();
 
       // Test feature toggles
       await page.click('button:text("Toggle Toolbar")');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for toolbar toggle
 
       currentConfig = await page.evaluate(() => window.currentConfig);
       expect(currentConfig.toolbar).toBe('true');
@@ -946,7 +946,7 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Scroll to trigger intersection observer
       await page.locator('h3:text("Intersection Observer Lazy Loading")').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for scroll completion
 
       // Continue scrolling to trigger the intersection
       await page.evaluate(() => {
@@ -1249,7 +1249,7 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
       await page.goto(`data:text/html,${encodeURIComponent(batchInitHtml)}`);
 
       // Wait for page setup
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle'); // Wait for page load
 
       // Start batch initialization
       await page.click('button:text("Start Batch Initialization")');
@@ -1271,7 +1271,7 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Check performance measurements
       await page.click('button:text("Measure Performance")');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for measurement completion
 
       const measurements = await page.evaluate(() => window.performanceMeasurements);
       expect(measurements).toBeDefined();
@@ -1280,7 +1280,7 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Test batch clearing and reinitialization
       await page.click('button:text("Clear All Viewers")');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for clear operation
 
       const clearedCount = await page
         .locator('[data-json-viewer] [data-testid="json-viewer"]')

@@ -11,21 +11,21 @@
 
 import { useReactFlow, Panel } from '@xyflow/react';
 import { Maximize, Home, ZoomIn, ZoomOut } from 'lucide-react';
-import { NodeType } from './utils/flow-types';
 
 export function FlowControls() {
   const { fitView, zoomIn, zoomOut, setCenter, getNodes } = useReactFlow();
 
   const handleFitView = () => {
-    fitView({ 
-      padding: 0.2, 
+    fitView({
+      padding: 0.2,
       duration: 800,
       maxZoom: 1.5,
     });
   };
 
   const handleCenterRoot = () => {
-    const rootNode = getNodes().find(n => n.type === NodeType.Root);
+    // Find the first root node (node with isRootNode === true)
+    const rootNode = getNodes().find(n => n.data?.isRootNode === true);
     if (rootNode) {
       const x = rootNode.position.x + ((rootNode.width || 0) / 2);
       const y = rootNode.position.y + ((rootNode.height || 0) / 2);

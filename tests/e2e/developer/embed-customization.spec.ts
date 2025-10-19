@@ -380,7 +380,7 @@ test.describe('Developer - Embed Customization', () => {
 
       // Test zoom functionality
       await iframe.locator('[data-testid="zoom-in"]').click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for zoom animation
       const zoomedNode = iframe.locator('.flow-node').first();
       const nodeSize = await zoomedNode.boundingBox();
       expect(nodeSize?.width).toBeGreaterThan(100);

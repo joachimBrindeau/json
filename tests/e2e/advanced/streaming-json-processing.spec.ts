@@ -127,9 +127,8 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
           }
         }
       } catch (error) {
-        // Skip if streaming API is not available
-        console.log('Streaming API not available, skipping test');
-        test.skip();
+        // Fail fast if streaming API is not available
+        throw new Error('Streaming API must be available for this test: ' + error.message);
       }
     });
 
@@ -419,8 +418,8 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
           }
         }
       } catch (error) {
-        console.log('Streaming API not available, skipping test');
-        test.skip();
+        // Fail fast if streaming API is not available
+        throw new Error('Streaming API must be available for this test: ' + error.message);
       }
     });
 

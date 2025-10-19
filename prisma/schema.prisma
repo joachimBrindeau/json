@@ -92,7 +92,7 @@ model JsonDocument {
   accessedAt  DateTime        @default(now()) @map("accessed_at") @db.Timestamptz(6)
   analytics   JsonAnalytics[]
   chunks      JsonChunk[]
-  user        User?           @relation(fields: [userId], references: [id])
+  user        User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([size])
   @@index([complexity])

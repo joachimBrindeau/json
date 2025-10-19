@@ -5,31 +5,55 @@
  * This file consolidates all process.env usage across the application.
  */
 
+// Load environment variables from .env file
+// This is required for Playwright tests and other contexts where Next.js doesn't auto-load .env
+import 'dotenv/config';
+
 import { z } from 'zod';
 
 // Check if we're on the server
 const isServer = typeof window === 'undefined';
+
+// Check if we're in test mode
+const isTest = process.env.NODE_ENV === 'test';
 
 // Server-only environment schema
 const serverEnvSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // Database
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL URL'),
+  // Database (optional in test mode)
+  DATABASE_URL: isTest
+    ? z.string().optional().default('postgresql://test:test@localhost:5432/test')
+    : z.string().url('DATABASE_URL must be a valid PostgreSQL URL'),
 
-  // Redis
+  // Redis (optional in test mode)
   REDIS_URL: z.string().url('REDIS_URL must be a valid Redis URL').default('redis://localhost:6379'),
 
-  // NextAuth
-  NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL'),
-  NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
+  // NextAuth (optional in test mode)
+  NEXTAUTH_URL: isTest
+    ? z.string().optional().default('http://localhost:3456')
+    : z.string().url('NEXTAUTH_URL must be a valid URL'),
+  NEXTAUTH_SECRET: isTest
+    ? z.string().optional().default('test-secret-with-at-least-32-chars-for-testing-purposes')
+    : z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
 
-  // OAuth Providers
-  GITHUB_CLIENT_ID: z.string().min(1, 'GITHUB_CLIENT_ID is required'),
-  GITHUB_CLIENT_SECRET: z.string().min(1, 'GITHUB_CLIENT_SECRET is required'),
-  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+  // OAuth Providers (optional in test mode)
+  GITHUB_CLIENT_ID: isTest
+    ? z.string().optional().default('test-github-client-id')
+    : z.string().min(1, 'GITHUB_CLIENT_ID is required'),
+  GITHUB_CLIENT_SECRET: isTest
+    ? z.string().optional().default('test-github-client-secret')
+    : z.string().min(1, 'GITHUB_CLIENT_SECRET is required'),
+  GOOGLE_CLIENT_ID: isTest
+    ? z.string().optional().default('test-google-client-id')
+    : z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  GOOGLE_CLIENT_SECRET: isTest
+    ? z.string().optional().default('test-google-client-secret')
+    : z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+
+  // Admin
+  SUPERADMIN_EMAILS: z.string().optional().transform(val => val?.split(',').map(email => email.trim()) || []),
 
   // Public URLs (accessible in browser)
   NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
@@ -144,6 +168,9 @@ function validateEnv() {
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 
+      // Admin
+      SUPERADMIN_EMAILS: process.env.SUPERADMIN_EMAILS,
+
       // Public URLs
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
@@ -212,6 +239,7 @@ export const config = {
   auth: {
     url: env.NEXTAUTH_URL,
     secret: env.NEXTAUTH_SECRET,
+    superadminEmails: env.SUPERADMIN_EMAILS,
     providers: {
       github: {
         clientId: env.GITHUB_CLIENT_ID,
@@ -310,5 +338,5 @@ export const {
 } = env;
 
 // Type exports
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof serverEnvSchema>;
 export type Config = typeof config;

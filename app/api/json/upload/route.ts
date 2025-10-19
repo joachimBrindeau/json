@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import {
   analyzeJsonStream,
   chunkJsonData,
@@ -10,7 +8,7 @@ import {
   JsonCache,
 } from '@/lib/json';
 import { success } from '@/lib/api/responses';
-import { withDatabaseHandler } from '@/lib/api/middleware';
+import { withOptionalAuth } from '@/lib/api/utils';
 import { ValidationError, FileTooLargeError, InvalidJsonError } from '@/lib/utils/app-errors';
 import { config } from '@/lib/config';
 
@@ -19,11 +17,10 @@ export const maxDuration = 60; // 60 seconds for large file processing
 
 /**
  * POST upload and process JSON file
- * Now using withDatabaseHandler for automatic Prisma error handling
+ * Supports both authenticated and anonymous uploads
  */
-export const POST = withDatabaseHandler(async (request: NextRequest) => {
+export const POST = withOptionalAuth(async (request, session) => {
   const monitor = createPerformanceMonitor();
-  const session = await getServerSession(authOptions);
   const userId = session?.user?.id || null;
 
   const formData = await request.formData();

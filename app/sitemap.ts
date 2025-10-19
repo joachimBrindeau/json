@@ -115,7 +115,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             { visibility: 'public' },
             { visibility: 'unlisted' }
           ],
-          shareId: { not: null },
         },
         select: {
           shareId: true,

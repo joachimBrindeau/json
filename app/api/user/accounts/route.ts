@@ -1,20 +1,13 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { success } from '@/lib/api/responses';
-import { withDatabaseHandler } from '@/lib/api/middleware';
-import { AuthenticationError, ValidationError, NotFoundError } from '@/lib/utils/app-errors';
+import { withAuth } from '@/lib/api/utils';
+import { ValidationError, NotFoundError } from '@/lib/utils/app-errors';
 
 /**
  * GET linked accounts for the current user
- * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
-export const GET = withDatabaseHandler(async () => {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Not authenticated');
-  }
+export const GET = withAuth(async (_request: NextRequest, session) => {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -45,14 +38,8 @@ export const GET = withDatabaseHandler(async () => {
 
 /**
  * DELETE unlink an account
- * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
-export const DELETE = withDatabaseHandler(async (request: Request) => {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Not authenticated');
-  }
+export const DELETE = withAuth(async (request: NextRequest, session) => {
 
   const { accountId } = await request.json();
 

@@ -1,13 +1,11 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { validateTags } from '@/lib/tags/tag-utils';
 import { publishLimiter } from '@/lib/middleware/rate-limit';
 import { success } from '@/lib/api/responses';
-import { withValidationHandler, withDatabaseHandler } from '@/lib/api/middleware';
-import { AuthenticationError, ValidationError, RateLimitError } from '@/lib/utils/app-errors';
+import { withAuth } from '@/lib/api/utils';
+import { ValidationError, RateLimitError } from '@/lib/utils/app-errors';
 
 const publishSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(200),
@@ -25,13 +23,8 @@ const createSlug = (title: string, shareId: string): string =>
 
 /**
  * POST publish document to public library
- * Now using withValidationHandler for automatic Zod error handling
  */
-export const POST = withValidationHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Authentication required');
-  }
+export const POST = withAuth(async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
 
   // Apply rate limiting
   const rateLimitKey = session.user.id;
@@ -88,16 +81,12 @@ export const POST = withValidationHandler(async (request: NextRequest, { params 
 
 /**
  * DELETE unpublish document from public library
- * Now using withDatabaseHandler for automatic Prisma error handling
  */
-export const DELETE = withDatabaseHandler(async (
+export const DELETE = withAuth(async (
   request: NextRequest,
+  session,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Authentication required');
-  }
 
   const { id } = await params;
 

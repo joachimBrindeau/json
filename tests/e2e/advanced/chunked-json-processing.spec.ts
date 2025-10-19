@@ -483,7 +483,8 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
 
           // Navigate away to interrupt processing
           await viewerPage.navigateTo('/');
-          await viewerPage.page.waitForTimeout(2000);
+          // Wait for navigation to complete
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Navigate back to recovery
           await viewerPage.navigateToViewer();

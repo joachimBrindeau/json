@@ -6,10 +6,10 @@
  */
 
 import { Edge } from '@xyflow/react';
-import { ARRAY_ROOT_NODE_INDEX, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
+import { ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS } from './flow-constants';
 import { isArray, isObject, getJsonDataType, validateJsonDataType } from './flow-utils';
 import { JsonDataType, NodeType } from './flow-types';
-import type { RootSeaNode, ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
+import type { ArraySeaNode, ObjectSeaNode, PrimitiveSeaNode, SeaNode } from './flow-types';
 import { getXYPosition } from './flow-layout';
 import { createDefaultEdge, createChainEdge, type DefaultEdgeParams } from './flow-edge-factory';
 import { logger } from '@/lib/logger';
@@ -56,30 +56,7 @@ const addChainEdge = (context: ParserContext, source: string, target: string): v
   context.chainEdges.push(createChainEdge({ source, target }));
 };
 
-/**
- * Create a root node
- */
-const createRootNode = (
-  nodeId: string,
-  childType: 'object' | 'array',
-  childCount: number,
-  label: string = 'JSON Root'
-): RootSeaNode => {
-  return {
-    id: nodeId,
-    type: NodeType.Root,
-    position: getXYPosition(ROOT_NODE_DEPTH),
-    data: {
-      depth: ROOT_NODE_DEPTH,
-      dataType: childType === 'object' ? JsonDataType.Object : JsonDataType.Array,
-      stringifiedJson: label,
-      parentNodePathIds: ROOT_PARENT_NODE_PATH_IDS,
-      label,
-      childType,
-      childCount,
-    },
-  };
-};
+
 
 /**
  * Create an object node
@@ -190,7 +167,7 @@ const parseObject = (
   }
 
   const nodes: SeaNode[] = [];
-  const currentNodeId = formatNodeId(context.nodeSequence);
+  const currentNodeId = getNextNodeId(context);
 
   // Mark object as visited
   context.visitedObjects.add(obj);
@@ -238,87 +215,54 @@ const parseArray = (
   }
 
   const nodes: SeaNode[] = [];
+
+  // Create the array node first
+  const arrayNodeId = getNextNodeId(context);
+  nodes.push(createArrayNode(arrayNodeId, depth, 0, array, parentNodePathIds, false));
+
+  // Add edge from parent to array node
+  if (sourceNodeId) {
+    addDefaultEdge(context, { source: sourceNodeId, target: arrayNodeId, sourceHandle });
+  }
+
+  const nextDepth = depth + 1;
+  const nextParentNodePathIds = [...parentNodePathIds, arrayNodeId];
   let previousNodeId: string | undefined;
-  
+
+  // Parse each array item
   array.forEach((item, index) => {
     const itemType = validateJsonDataType(item);
     const nextNodeId = getNextNodeId(context);
-    
+
     // Add chain edge if not first item
     if (index > 0 && previousNodeId && array.length > 1) {
       addChainEdge(context, previousNodeId, nextNodeId);
     }
-    
+
     previousNodeId = nextNodeId;
-    
+
     if (itemType.isObjectData) {
       // Array item is an object
-      const childNodes = parseObject(context, item as object, depth, parentNodePathIds, index, false, sourceNodeId, sourceHandle);
+      const childNodes = parseObject(context, item as object, nextDepth, nextParentNodePathIds, index, false, arrayNodeId, String(index));
       nodes.push(...childNodes);
-      if (sourceNodeId) {
-        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
-      }
     } else if (itemType.isArrayData) {
       // Array item is another array
       const items = item as unknown[];
-      nodes.push(createArrayNode(nextNodeId, depth, index, items, parentNodePathIds, false));
-      if (sourceNodeId) {
-        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
-      }
-      
-      // Recursively parse nested array if not empty
-      if (items.length > 0) {
-        const childNodes = parseArray(context, items, depth, parentNodePathIds, sourceNodeId, sourceHandle);
-        nodes.push(...childNodes);
-      }
+      const childNodes = parseArray(context, items, nextDepth, nextParentNodePathIds, arrayNodeId, String(index));
+      nodes.push(...childNodes);
     } else if (itemType.isPrimitiveData) {
       // Array item is a primitive value
-      nodes.push(createPrimitiveNode(nextNodeId, depth, index, item as string | number | boolean | null, parentNodePathIds));
-      if (sourceNodeId) {
-        addDefaultEdge(context, { source: sourceNodeId, target: nextNodeId, sourceHandle });
-      }
+      nodes.push(createPrimitiveNode(nextNodeId, nextDepth, index, item as string | number | boolean | null, nextParentNodePathIds));
+      addDefaultEdge(context, { source: arrayNodeId, target: nextNodeId, sourceHandle: String(index) });
     }
   });
-  
+
   return nodes;
 };
 
 /**
- * Helper function to parse root data (object or array)
- * Follows DRY principle - eliminates duplicate logic for object/array handling
- */
-const parseRootData = (
-  context: ParserContext,
-  json: object | unknown[],
-  rootNodeId: string,
-  type: 'object' | 'array'
-): SeaNode[] => {
-  const childCount = type === 'object' ? Object.keys(json).length : (json as unknown[]).length;
-  const rootNode = createRootNode(rootNodeId, type, childCount);
-
-  const nextDepth = ROOT_NODE_DEPTH + 1;
-  const nextParentNodePathIds = [rootNodeId];
-
-  const childNodes = type === 'object'
-    ? parseObject(context, json as object, nextDepth, nextParentNodePathIds, null, false)
-    : parseArray(context, json as unknown[], nextDepth, nextParentNodePathIds, rootNodeId, undefined);
-
-  // Create edge from root to first child (only for objects)
-  if (type === 'object' && childNodes.length > 0) {
-    context.defaultEdges.push(createDefaultEdge({
-      sourceNodeId: rootNodeId,
-      targetNodeId: childNodes[0].id,
-      sourceHandleId: 'root-output',
-      targetHandleId: undefined,
-    }));
-  }
-
-  return [rootNode, ...childNodes];
-};
-
-/**
  * Main parser function - converts JSON to flow nodes and edges
- * Creates a root node for better UX, then parses the actual data
+ * Starts directly from the actual JSON data without an artificial root node
  */
 export const jsonParser = (
   json: object | unknown[]
@@ -333,12 +277,10 @@ export const jsonParser = (
     visitedObjects: new WeakSet(),
   };
 
-  const rootNodeId = formatNodeId(context.nodeSequence);
-  context.nodeSequence++;
-
+  // Parse directly from the actual JSON data at depth 0
   const flowNodes = isObject(json)
-    ? parseRootData(context, json, rootNodeId, 'object')
-    : parseRootData(context, json, rootNodeId, 'array');
+    ? parseObject(context, json as object, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, null, true)
+    : parseArray(context, json as unknown[], ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, undefined, undefined);
 
   return {
     flowNodes,

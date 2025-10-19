@@ -152,7 +152,7 @@ test.describe('Viewer Component Usage Verification', () => {
     if (await editor.isVisible()) {
       await editor.click();
       await editor.fill(JSON.stringify(testJson, null, 2));
-      await page.waitForTimeout(1000); // Wait for viewer to update
+      await page.waitForLoadState('networkidle'); // Wait for viewer to update
     }
     
     // Check which viewer rendered the data
@@ -187,7 +187,7 @@ test.describe('Viewer Component Usage Verification', () => {
     // Try switching to flow mode if available
     if (hasFlowMode) {
       await flowButton.click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for flow view rendering
       
       const flowViewRendered = await page.locator('[class*="flow"], [class*="react-flow"]').count();
       console.log('Flow view rendered:', flowViewRendered > 0);

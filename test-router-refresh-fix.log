@@ -1,0 +1,256 @@
+
+> json-share@1.0.1 test:e2e:smoke
+> ./node_modules/.bin/playwright test --grep "@smoke"
+
+🚀 Global setup started
+🐳 Checking Docker dependencies...
+  ✅ Docker daemon is running
+  ✅ config-postgres-1: Up 16 minutes (healthy)
+  ✅ config-redis-1: Up 16 minutes (healthy)
+  ✅ PostgreSQL is accessible
+  ✅ Redis is accessible
+📡 Using base URL: http://localhost:3456
+📡 Checking if server is available...
+✅ Server responded with status 200
+✅ Server is available
+🧹 Cleaning up existing test users...
+  ✅ Deleted 7 existing test users
+👤 Creating test users...
+  Creating user: testuser@jsonshare.test
+  ✅ Created user: testuser@jsonshare.test
+  Creating user: admin@jsonshare.test
+  ✅ Created user: admin@jsonshare.test
+  Creating user: dev@jsonshare.test
+  ✅ Created user: dev@jsonshare.test
+  Creating user: power@jsonshare.test
+  ✅ Created user: power@jsonshare.test
+  Creating user: community@jsonshare.test
+  ✅ Created user: community@jsonshare.test
+  Creating user: temp1@jsonshare.test
+  ✅ Created user: temp1@jsonshare.test
+  Creating user: temp2@jsonshare.test
+  ✅ Created user: temp2@jsonshare.test
+🔍 Verifying basic app functionality...
+✅ Main content area found
+🎯 Global setup completed successfully
+JSON Path Conversion Test Results
+==================================================
+✅ Test 1: Root element
+   Input:    "root"
+   Expected: "$"
+   Result:   "$"
+
+✅ Test 2: Simple property
+   Input:    "root.name"
+   Expected: "$.name"
+   Result:   "$.name"
+
+✅ Test 3: Nested properties
+   Input:    "root.user.profile"
+   Expected: "$.user.profile"
+   Result:   "$.user.profile"
+
+✅ Test 4: Array index at end
+   Input:    "root.users.0"
+   Expected: "$.users[0]"
+   Result:   "$.users[0]"
+
+✅ Test 5: Property after array index
+   Input:    "root.users.0.name"
+   Expected: "$.users[0].name"
+   Result:   "$.users[0].name"
+
+✅ Test 6: Multiple array indices
+   Input:    "root.data.0.items.1.value"
+   Expected: "$.data[0].items[1].value"
+   Result:   "$.data[0].items[1].value"
+
+✅ Test 7: Property with hyphen
+   Input:    "root.special-key"
+   Expected: "$['special-key']"
+   Result:   "$['special-key']"
+
+✅ Test 8: Property with space
+   Input:    "root.special key"
+   Expected: "$['special key']"
+   Result:   "$['special key']"
+
+✅ Test 9: Property with special character
+   Input:    "root.special@key"
+   Expected: "$['special@key']"
+   Result:   "$['special@key']"
+
+✅ Test 10: Property starting with number
+   Input:    "root.123key"
+   Expected: "$['123key']"
+   Result:   "$['123key']"
+
+✅ Test 11: Mixed special and array
+   Input:    "root.data.special-key.0.nested"
+   Expected: "$.data['special-key'][0].nested"
+   Result:   "$.data['special-key'][0].nested"
+
+✅ Test 12: Already has brackets
+   Input:    "root['already-bracketed']"
+   Expected: "$['already-bracketed']"
+   Result:   "$['already-bracketed']"
+
+✅ Test 13: Double quoted brackets
+   Input:    "root["double-quoted"]"
+   Expected: "$["double-quoted"]"
+   Result:   "$["double-quoted"]"
+
+✅ Test 14: Empty string
+   Input:    ""
+   Expected: "$"
+   Result:   "$"
+
+✅ Test 15: Trailing dot
+   Input:    "root."
+   Expected: "$."
+   Result:   "$."
+
+✅ Test 16: Deep nesting
+   Input:    "root.a.b.c.d.e.f.g"
+   Expected: "$.a.b.c.d.e.f.g"
+   Result:   "$.a.b.c.d.e.f.g"
+
+✅ Test 17: Multiple consecutive indices
+   Input:    "root.array.0.1.2.3"
+   Expected: "$.array[0][1][2][3]"
+   Result:   "$.array[0][1][2][3]"
+
+✅ Test 18: Complex mixed path
+   Input:    "root.user-data.items.0.sub-items.1.value"
+   Expected: "$['user-data'].items[0]['sub-items'][1].value"
+   Result:   "$['user-data'].items[0]['sub-items'][1].value"
+
+✅ Test 19: Multiple special properties
+   Input:    "root.data.user.profile-info.address.zip-code"
+   Expected: "$.data.user['profile-info'].address['zip-code']"
+   Result:   "$.data.user['profile-info'].address['zip-code']"
+
+==================================================
+Summary: 19 passed, 0 failed out of 19 tests
+🎉 All tests passed!
+
+Running 55 tests using 8 workers
+
+Uploading JSON via multipart form data
+✅ Upload successful: {
+  status: [33m200[39m,
+  result: {
+    success: [33mtrue[39m,
+    data: { document: [36m[Object][39m, analysis: [36m[Object][39m },
+    timestamp: [32m'2025-10-18T04:14:00.968Z'[39m
+  }
+}
+⏳ Inputting JSON (16 characters)
+⏳ Inputting JSON (257 characters)
+  ✓   3 [chromium] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (8.5s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Found editor with selector: [data-testid="json-textarea"]
+  ✓   6 [chromium] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (9.9s)
+✅ Successfully set JSON using Monaco API
+✅ Successfully set JSON using Monaco API
+  ✘   4 [chromium] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (12.0s)
+⏳ Waiting for JSON to be processed...
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Inputting JSON (158924 characters)
+⏳ Inputting JSON (1686 characters)
+  ✘   2 [chromium] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (17.1s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Successfully set JSON using Monaco API
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Successfully set JSON using Monaco API
+⏳ Inputting JSON (105 characters)
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+  ✘   5 [chromium] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (19.2s)
+⏳ Waiting for JSON to be processed...
+⏳ Waiting for JSON to be processed...
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Successfully set JSON using Monaco API
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✓  12 [firefox] › tests/e2e/smoke.spec.ts:10:7 › Smoke Tests @smoke › Application loads and basic navigation works (7.0s)
+Uploading JSON via multipart form data
+✅ Upload successful: {
+  status: [33m200[39m,
+  result: {
+    success: [33mtrue[39m,
+    data: { document: [36m[Object][39m, analysis: [36m[Object][39m },
+    timestamp: [32m'2025-10-18T04:14:24.429Z'[39m
+  }
+}
+⏳ Inputting JSON (257 characters)
+Public library appears to be empty, which is acceptable
+  ✓   1 [chromium] › tests/e2e/smoke.spec.ts:193:7 › Smoke Tests @smoke › Public library is accessible @smoke (28.1s)
+✅ Found JSON content with selector: main > div > div
+✅ Found JSON content with selector: main > div > div
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ JSON processing wait completed
+✅ JSON input completed
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Successfully set JSON using Monaco API
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+  ✘  15 [firefox] › tests/e2e/smoke.spec.ts:73:7 › Smoke Tests @smoke › Authentication flow works @smoke (10.9s)
+  ✘  14 [firefox] › tests/e2e/smoke.spec.ts:56:7 › Smoke Tests @smoke › API endpoints are responsive @smoke (15.2s)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+  ✓   8 [chromium] › tests/e2e/smoke.spec.ts:176:7 › Smoke Tests @smoke › Error handling works correctly @smoke (44.2s)
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+  ✓   7 [chromium] › tests/e2e/smoke.spec.ts:29:7 › Smoke Tests @smoke › JSON viewer accepts and displays JSON @smoke (46.2s)
+✅ Found JSON content with selector: main > div > div
+⏳ Inputting JSON (16 characters)
+✅ JSON processing wait completed
+✅ JSON input completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Successfully set JSON using Monaco API
+  ✓  19 [firefox] › tests/e2e/smoke.spec.ts:216:7 › Smoke Tests @smoke › Application is responsive @smoke (3.5s)
+✅ Found JSON content with selector: main > div > div
+⏳ Waiting for JSON to be processed...
+✅ Found JSON content with selector: main > div > div
+✅ JSON processing wait completed
+  ✓   9 [chromium] › tests/e2e/smoke.spec.ts:233:7 › Smoke Tests @smoke › Large JSON handling works @smoke (45.1s)
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ JSON processing wait completed
+  ✓  10 [chromium] › tests/e2e/smoke.spec.ts:289:7 › Smoke Tests @smoke › View modes switching works @smoke (44.4s)
+✅ Found JSON content with selector: main > div > div
+⏳ Inputting JSON (158984 characters)
+✅ JSON processing wait completed
+  ✓  11 [chromium] › tests/e2e/smoke.spec.ts:331:7 › Smoke Tests @smoke › Search functionality works @smoke (45.0s)
+✅ Found editor with selector: [data-testid="json-textarea"]
+✅ Successfully set JSON using Monaco API
+❌ Login failed for testuser@jsonshare.test: locator.waitFor: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="sign-in-button"]') to be visible[22m
+
+  ✘  16 [firefox] › tests/e2e/smoke.spec.ts:97:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (18.2s)

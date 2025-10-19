@@ -2,6 +2,7 @@ import { test, expect } from '../utils/base-test';
 import { JsonViewerPage } from '../page-objects/json-viewer-page';
 import { MainLayoutPage } from '../page-objects/main-layout-page';
 import { LibraryPage } from '../page-objects/library-page';
+import { faker } from '../utils/faker-config'; // Seeded faker for deterministic data
 
 // Smoke tests are critical path tests that must pass
 // They're designed to be fast and cover the most important functionality
@@ -10,18 +11,19 @@ test.describe('Smoke Tests @smoke', () => {
   test('Application loads and basic navigation works', async ({ page }) => {
     const layoutPage = new MainLayoutPage(page);
 
-    // Load home page
-    await page.goto('/');
+    // Load home page with domcontentloaded for better reliability
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await layoutPage.waitForLoad();
 
     // Verify core elements are present
     await expect(layoutPage.logo).toBeVisible();
     await expect(layoutPage.navigationMenu).toBeVisible();
 
-    // Test basic navigation
+    // Test basic navigation (viewer is now the homepage)
     if (await layoutPage.viewerLink.isVisible()) {
       await layoutPage.goToViewer();
-      expect(page.url()).toContain('/viewer');
+      // Viewer is now at root path
+      expect(page.url()).toBe('http://localhost:3456/');
     }
   });
 
@@ -53,35 +55,47 @@ test.describe('Smoke Tests @smoke', () => {
   });
 
   test('API endpoints are responsive @smoke', async ({ apiHelper }) => {
-    // Test critical API endpoints
+    // Test critical API endpoints with realistic faker data
 
     // Health check
     const health = await apiHelper.healthCheck();
     expect(health.status).toBe('ok');
 
-    // JSON upload
-    const testJson = { smoke: 'test', timestamp: Date.now() };
+    // JSON upload with realistic product data
+    const productName = faker.commerce.productName(); // Deterministic: "Intelligent Cotton Shoes"
+    const productId = faker.string.uuid(); // Deterministic UUID
+    const testJson = {
+      product: productName,
+      id: productId,
+      price: faker.commerce.price(),
+      category: faker.commerce.department(),
+      timestamp: faker.date.recent().toISOString()
+    };
+    
     const uploadResult = await apiHelper.uploadJSON(testJson);
     expect(uploadResult).toHaveProperty('id');
 
-    // JSON retrieval
+    // JSON retrieval with strict validation of faker data
     const retrievedJson = await apiHelper.getJSON(uploadResult.id);
-    expect(retrievedJson.smoke).toBe('test');
+    expect(retrievedJson.product).toBe(productName);
+    expect(retrievedJson.id).toBe(productId);
   });
 
   test('Authentication flow works @smoke', async ({ page, authHelper }) => {
     const layoutPage = new MainLayoutPage(page);
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+    // Wait for NextAuth session check to complete (loading skeleton disappears)
+    await page.waitForSelector('[data-testid="user-menu-loading"]', { state: 'hidden', timeout: 10000 }).catch(() => {
+      // Loading skeleton might not appear if session loads very fast
+    });
 
     // Verify login button is present for anonymous users
-    await expect(layoutPage.loginButton).toBeVisible();
+    await expect(layoutPage.loginButton).toBeVisible({ timeout: 10000 });
 
     // Test login
     await authHelper.login('regular');
-
-    // Wait for the page to fully update after login
-    await page.waitForTimeout(3000);
 
     // Verify user is logged in
     expect(await layoutPage.isLoggedIn()).toBe(true);
@@ -103,15 +117,27 @@ test.describe('Smoke Tests @smoke', () => {
     // Login
     await authHelper.login('regular');
 
-    // Create test JSON via browser upload (to ensure session consistency)
-    const testJson = JSON.stringify({ library: 'smoke test', id: Date.now() }, null, 2);
+    // Create test JSON via browser upload with realistic document data
+    const documentTitle = faker.commerce.productName(); // Deterministic document title
+    const documentId = faker.string.uuid(); // Deterministic UUID
+    const author = faker.person.fullName(); // Deterministic author name
     
+    const testJson = JSON.stringify({
+      title: documentTitle,
+      id: documentId,
+      author: author,
+      email: faker.internet.email(),
+      description: faker.lorem.sentence(),
+      category: faker.helpers.arrayElement(['api', 'config', 'data', 'schema']),
+      tags: faker.helpers.arrayElements(['json', 'api', 'test', 'data'], 2),
+      createdAt: faker.date.recent().toISOString()
+    }, null, 2);
+
     // Navigate to home page and paste JSON
-    await page.goto('/');
-    
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+
     // Wait for Monaco editor to load
     await page.waitForSelector('[data-testid="json-textarea"]', { timeout: 10000 });
-    await page.waitForTimeout(1000);
 
     // Input JSON content via Monaco API
     await page.evaluate((jsonContent) => {
@@ -128,14 +154,18 @@ test.describe('Smoke Tests @smoke', () => {
       }
     }, testJson);
 
-    // Wait for processing
-    await page.waitForTimeout(1000);
+    // Wait for processing - use loading spinner instead
+    await page.waitForSelector('[data-testid="loading"]', { state: 'hidden', timeout: 10000 }).catch(() => {
+      // Loading might complete before we check
+    });
 
     // Save the JSON (this should trigger save to library if user is logged in)
     const saveButton = page.locator('button:has-text("Save")');
     if (await saveButton.isVisible()) {
       await saveButton.click();
-      await page.waitForTimeout(2000);
+      // Wait for save to complete by checking button state or success message
+      await expect(saveButton).toBeDisabled({ timeout: 5000 }).catch(() => {});
+      await expect(saveButton).toBeEnabled({ timeout: 5000 }).catch(() => {});
     }
     
     console.log('✅ JSON uploaded via browser');
@@ -151,8 +181,13 @@ test.describe('Smoke Tests @smoke', () => {
     const currentUrl = await page.url();
     console.log('🔍 Current URL:', currentUrl);
     
-    // Wait a bit more for the library to load
-    await page.waitForTimeout(2000);
+    // Wait for library content or empty state to appear
+    await Promise.race([
+      page.waitForSelector('[data-testid="json-card"]', { timeout: 10000 }),
+      page.waitForSelector('text="No Shared JSONs"', { timeout: 10000 })
+    ]).catch(() => {
+      console.log('⚠️ Library content did not load in time');
+    });
 
     // Verify library shows content
     const isEmpty = await libraryPage.isEmpty();
@@ -167,9 +202,17 @@ test.describe('Smoke Tests @smoke', () => {
     
     expect(isEmpty).toBe(false);
 
-    // Verify items are displayed
+    // Verify items are displayed with strict assertion
     const items = await libraryPage.getAllJSONItems();
     expect(items.length).toBeGreaterThan(0);
+    
+    // Verify the saved document appears in library (strict faker data validation)
+    const pageContent = await page.textContent('body');
+    // At least verify one of our faker-generated fields is present
+    const hasDocumentContent = pageContent?.includes(documentTitle) ||
+                               pageContent?.includes(author) ||
+                               pageContent?.includes(documentId);
+    expect(hasDocumentContent).toBe(true);
   });
 
   test('Error handling works correctly @smoke', async ({ page }) => {
@@ -215,11 +258,12 @@ test.describe('Smoke Tests @smoke', () => {
   test('Application is responsive @smoke', async ({ page }) => {
     const layoutPage = new MainLayoutPage(page);
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
 
     // Test mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForTimeout(1000);
+    // Wait for layout to adjust by checking for main content
+    await page.locator('main').waitFor({ state: 'visible', timeout: 5000 });
 
     // Navigation should still be functional
     const responsiveResults = await layoutPage.testResponsiveLayout();
@@ -332,20 +376,43 @@ test.describe('Smoke Tests @smoke', () => {
 
     await viewerPage.navigateToViewer();
 
-    // Input searchable JSON
+    // Input searchable JSON with realistic user data (deterministic)
+    const user1 = {
+      id: faker.string.uuid(),
+      name: faker.person.fullName(), // Deterministic: "Miss Cecelia Bode"
+      email: faker.internet.email(),
+      role: faker.helpers.arrayElement(['admin', 'user', 'viewer'])
+    };
+    
+    const user2 = {
+      id: faker.string.uuid(),
+      name: faker.person.fullName(), // Different deterministic name
+      email: faker.internet.email(),
+      role: faker.helpers.arrayElement(['admin', 'user', 'viewer'])
+    };
+    
+    const user3 = {
+      id: faker.string.uuid(),
+      name: faker.person.fullName(), // Different deterministic name
+      email: faker.internet.email(),
+      role: faker.helpers.arrayElement(['admin', 'user', 'viewer'])
+    };
+    
     const searchableJson = {
-      users: [
-        { name: 'Alice', role: 'admin' },
-        { name: 'Bob', role: 'user' },
-        { name: 'Charlie', role: 'user' },
-      ],
+      users: [user1, user2, user3],
+      metadata: {
+        total: 3,
+        generatedAt: faker.date.recent().toISOString(),
+        version: faker.system.semver()
+      }
     };
 
-    await viewerPage.inputJSON(JSON.stringify(searchableJson));
+    await viewerPage.inputJSON(JSON.stringify(searchableJson, null, 2));
     await viewerPage.waitForJSONProcessed();
 
-    // Search for specific term
-    await viewerPage.searchInJSON('Alice');
+    // Search for specific deterministic user name (first user)
+    const searchTerm = user1.name.split(' ')[0]; // Search by first name
+    await viewerPage.searchInJSON(searchTerm);
 
     // Search should complete without errors
     // (Specific search result validation would be in detailed tests)

@@ -44,7 +44,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         await viewerPage.searchInJSON('user1');
 
         // Wait for search results to appear
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Verify search results are highlighted or filtered
         const searchResults = await viewerPage.page
@@ -55,7 +55,33 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         // Take screenshot of search results
         await viewerPage.takeScreenshot('search-results-highlight');
       } else {
-        test.skip('Search functionality not available');
+        // Fail fast if search functionality not available
+        expect(await viewerPage.searchInput.isVisible(), 'Search functionality must be available for this test').toBe(true);
+      }
+    });
+
+    test('should search for realistic email addresses', async ({ dataGenerator }) => {
+      const users = dataGenerator.generateRealisticUsers(5);
+      const jsonString = JSON.stringify(users, null, 2);
+
+      await viewerPage.inputJSON(jsonString);
+      await viewerPage.waitForJSONProcessed();
+
+      if (await viewerPage.searchInput.isVisible()) {
+        // Search for email pattern
+        await viewerPage.searchInJSON('@');
+
+        // Wait for search results
+        await viewerPage.page.waitForLoadState('networkidle');
+
+        // Should find email addresses
+        const searchResults = await viewerPage.page
+          .locator('.search-result, .highlight, .match, [data-search-match="true"]')
+          .count();
+        expect(searchResults).toBeGreaterThan(0);
+
+        // Take screenshot
+        await viewerPage.takeScreenshot('search-realistic-emails');
       }
     });
 
@@ -76,7 +102,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Search for a specific number
         await viewerPage.searchInJSON('25');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should find numeric matches
         const hasResults =
@@ -102,7 +128,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Search with different cases
         await viewerPage.searchInJSON('email');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should match both 'EMAIL' and 'Email'
         const searchResults = await viewerPage.page
@@ -113,7 +139,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         // Clear and search with uppercase
         await viewerPage.clearSearch();
         await viewerPage.searchInJSON('EMAIL');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should still find matches
         const upperCaseResults = await viewerPage.page
@@ -133,7 +159,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Search for deeply nested value
         await viewerPage.searchInJSON('alice@example.com');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should find the email in nested structure
         const searchResults = await viewerPage.page
@@ -144,7 +170,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         // Search for nested key name
         await viewerPage.clearSearch();
         await viewerPage.searchInJSON('contacts');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should find key names too
         const keyResults = await viewerPage.page
@@ -164,7 +190,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Search for a term that appears multiple times
         await viewerPage.searchInJSON('user');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Look for next/previous search navigation buttons
         const nextButton = viewerPage.page.locator(
@@ -176,8 +202,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         if (await nextButton.isVisible()) {
           await nextButton.click();
-          await viewerPage.page.waitForTimeout(500);
-
+          
           // Should navigate to next result
           const currentResult = await viewerPage.page
             .locator('.current-search-result, .active-match')
@@ -200,7 +225,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         // Apply filter search
         await viewerPage.searchInJSON('category_1');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // If filtering is supported, visible nodes should be reduced
         const filteredNodeCount = await viewerPage.jsonNodes.count();
@@ -221,7 +246,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Search for term that doesn't exist
         await viewerPage.searchInJSON('nonexistentterm12345');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should handle gracefully - no errors
         expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -244,12 +269,11 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Perform search
         await viewerPage.searchInJSON('user');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Clear search
         await viewerPage.clearSearch();
-        await viewerPage.page.waitForTimeout(500);
-
+        
         // All content should be visible again
         const clearedNodeCount = await viewerPage.jsonNodes.count();
         expect(clearedNodeCount).toBeGreaterThan(0);
@@ -287,7 +311,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
           // Search with email regex pattern
           await viewerPage.searchInJSON('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}');
-          await viewerPage.page.waitForTimeout(1000);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Should match email addresses
           const regexResults = await viewerPage.page
@@ -295,8 +319,8 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
             .count();
           expect(regexResults).toBeGreaterThan(0);
         } else {
-          // Skip if regex search is not available
-          test.skip('Regex search not available');
+          // Fail fast if regex search not available
+          expect(await regexToggle.isVisible(), 'Regex search functionality must be available for this test').toBe(true);
         }
       }
     });
@@ -328,11 +352,10 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         for (const mode of viewModes) {
           if (await mode.button.isVisible()) {
             await mode.switch();
-            await viewerPage.page.waitForTimeout(500);
-
+            
             // Perform search in this view mode
             await viewerPage.searchInJSON(searchTerm);
-            await viewerPage.page.waitForTimeout(1000);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Should work in any view mode
             expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -373,8 +396,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         for (const searchTerm of specialSearches) {
           await viewerPage.searchInJSON(searchTerm);
-          await viewerPage.page.waitForTimeout(500);
-
+          
           // Should handle special characters without errors
           expect(await viewerPage.hasJSONErrors()).toBe(false);
 
@@ -394,7 +416,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         // Measure search performance
         const startTime = Date.now();
         await viewerPage.searchInJSON('category_1');
-        await viewerPage.page.waitForTimeout(2000);
+        await viewerPage.page.waitForLoadState('networkidle');
         const endTime = Date.now();
 
         // Search should complete within reasonable time
@@ -415,7 +437,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
       if (await viewerPage.searchInput.isVisible()) {
         // Perform initial search
         await viewerPage.searchInJSON('John');
-        await viewerPage.page.waitForTimeout(1000);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Update JSON content
         const updatedJson = { ...initialJson, user: { ...initialJson.user, name: 'Jane Doe' } };

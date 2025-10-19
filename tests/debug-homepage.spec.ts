@@ -5,7 +5,7 @@ test('Debug homepage elements', async ({ page }) => {
 
   // Wait for page to load completely
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
+  await page.waitForLoadState('networkidle'); // Wait for homepage initialization
 
   // Take a screenshot to see what's actually rendered
   await page.screenshot({ path: 'debug-homepage.png', fullPage: true });
@@ -15,9 +15,7 @@ test('Debug homepage elements', async ({ page }) => {
 
   // Check sidebar elements
   const sidebar = await page
-    .locator('.sidebar')
-    .or(page.locator('[class*="sidebar"]'))
-    .or(page.locator('aside'))
+    .locator('aside')
     .first()
     .isVisible()
     .catch(() => false);

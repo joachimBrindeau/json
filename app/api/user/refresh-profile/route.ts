@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { api } from '@/lib/api/client';
-import { success, unauthorized, notFound, internalServerError } from '@/lib/api/responses';
+import { success, notFound, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, session) => {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return unauthorized('Unauthorized');
-    }
 
     // Get current user data from database
     const user = await prisma.user.findUnique({
@@ -63,18 +57,13 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    logger.error({ err: error, userId: (await getServerSession(authOptions))?.user?.id }, 'Profile refresh error');
+    logger.error({ err: error, userId: session?.user?.id }, 'Profile refresh error');
     return internalServerError('Failed to refresh profile');
   }
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, session) => {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return unauthorized('Unauthorized');
-    }
 
     // Get current user data from database
     const user = await prisma.user.findUnique({
@@ -105,7 +94,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error({ err: error, userId: (await getServerSession(authOptions))?.user?.id }, 'Get profile error');
+    logger.error({ err: error, userId: session?.user?.id }, 'Get profile error');
     return internalServerError('Failed to get profile');
   }
-}
+});

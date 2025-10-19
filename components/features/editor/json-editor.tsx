@@ -9,7 +9,7 @@ import { useBackendStore } from '@/lib/store/backend';
 import { validateJson } from '@/lib/json';
 import { Search, Zap, AlertTriangle } from 'lucide-react';
 import { ViewerActions } from '@/components/features/viewer';
-import dynamic from 'next/dynamic';
+import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
@@ -26,19 +26,6 @@ import {
   getDebounceDelay,
   shouldUseProgressiveLoad
 } from '@/lib/config/editor-config';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
-
-// Monaco editor with enhanced loading state
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-background border">
-      <div className="text-center">
-        <LoadingSpinner size="md" label="Loading Code Editor..." />
-      </div>
-    </div>
-  ),
-  ssr: false,
-});
 
 function JsonEditorComponent() {
   const { currentJson, setCurrentJson } = useBackendStore();
@@ -154,7 +141,7 @@ function JsonEditorComponent() {
 
   // Debounced change handler for better performance
   const debouncedSetCurrentJson = useMemo(
-    () => debounce(setCurrentJson, getDebounceDelay(currentJson.length)),
+    () => debounce(setCurrentJson as (...args: unknown[]) => unknown, getDebounceDelay(currentJson.length)) as (value: string) => void,
     [setCurrentJson, currentJson.length]
   );
 

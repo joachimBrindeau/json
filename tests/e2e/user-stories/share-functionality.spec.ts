@@ -68,7 +68,7 @@ test.describe('User Story: Share Functionality', () => {
     await shareHelper.viewerPage.inputJSON(jsonString);
     await shareHelper.viewerPage.waitForJSONProcessed();
     await shareHelper.viewerPage.switchToTreeView();
-    await shareHelper.page.waitForTimeout(1000);
+    await shareHelper.page.waitForLoadState('networkidle'); // Wait for tree view rendering
 
     // Create share link
     await shareHelper.clickShareButton();
@@ -114,7 +114,7 @@ test.describe('User Story: Share Functionality', () => {
     const embedOption = shareHelper.page.locator('[data-testid="embed-option"], button:has-text("Embed"), .embed-btn');
     if (await embedOption.isVisible({ timeout: 2000 })) {
       await embedOption.click();
-      await shareHelper.page.waitForTimeout(1000);
+      await shareHelper.page.waitForLoadState('networkidle'); // Wait for embed code generation
 
       const embedCode = shareHelper.page.locator('[data-testid="embed-code"], textarea, .embed-code');
       if (await embedCode.isVisible()) {

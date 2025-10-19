@@ -24,8 +24,8 @@ test.describe('Authenticated User - Document Management', () => {
   });
 
   test.describe('Edit Document Titles and Metadata', () => {
-    test.beforeEach(async ({ apiHelper }) => {
-      // Create test documents with metadata
+    test.beforeEach(async ({ apiHelper, dataGenerator }) => {
+      // Create test documents with metadata using realistic data
       const testDocuments = [
         {
           content: JSON_SAMPLES.simple.content,
@@ -38,6 +38,18 @@ test.describe('Authenticated User - Document Management', () => {
           title: 'Complex Nested Structure',
           description: 'Nested object structure example',
           tags: ['nested', 'complex', 'structure'],
+        },
+        {
+          content: dataGenerator.generateRealisticUser(),
+          title: 'Realistic User Profile',
+          description: 'User profile with realistic data',
+          tags: ['user', 'realistic', 'profile'],
+        },
+        {
+          content: dataGenerator.generateRealisticProducts(3),
+          title: 'E-commerce Product Catalog',
+          description: 'Product catalog with realistic data',
+          tags: ['products', 'ecommerce', 'realistic'],
         },
       ];
 
@@ -57,25 +69,19 @@ test.describe('Authenticated User - Document Management', () => {
       expect(targetItem).toBeDefined();
 
       // Find and click edit button for the item
-      const editButton = libraryPage.page
-        .locator(`[data-testid="edit-json-${targetItem?.index}"]`)
-        .or(libraryPage.editButtons.nth(targetItem?.index || 0));
-
+      const editButton = libraryPage.page.locator(`[data-testid="edit-json-${targetItem?.index}"]`);
+      await expect(editButton).toBeVisible();
       await editButton.click();
 
       // Fill in new title
-      const titleInput = libraryPage.page
-        .locator('[data-testid="edit-title"]')
-        .or(libraryPage.page.locator('input[name="title"]'));
-
+      const titleInput = libraryPage.page.locator('[data-testid="edit-title"]');
+      await expect(titleInput).toBeVisible();
       await titleInput.clear();
       await titleInput.fill('Updated Simple Document Title');
 
       // Save changes
-      const saveButton = libraryPage.page
-        .locator('[data-testid="save-title"]')
-        .or(libraryPage.page.locator('button:has-text("Save")'));
-
+      const saveButton = libraryPage.page.locator('[data-testid="save-title"]');
+      await expect(saveButton).toBeVisible();
       await saveButton.click();
 
       // Wait for update confirmation
@@ -102,9 +108,7 @@ test.describe('Authenticated User - Document Management', () => {
       await viewerPage.waitForJSONProcessed();
 
       // Open document settings or edit mode
-      const settingsButton = viewerPage.page
-        .locator('[data-testid="document-settings"]')
-        .or(viewerPage.settingsButton);
+      const settingsButton = viewerPage.page.locator('[data-testid="document-settings"]');
 
       if (await settingsButton.isVisible()) {
         await settingsButton.click();
@@ -147,9 +151,7 @@ test.describe('Authenticated User - Document Management', () => {
       await editButton.click();
 
       // Edit description
-      const descriptionInput = libraryPage.page
-        .locator('[data-testid="edit-description"]')
-        .or(libraryPage.page.locator('textarea[name="description"]'));
+      const descriptionInput = libraryPage.page.locator('[data-testid="edit-description"]');
 
       if (await descriptionInput.isVisible()) {
         await descriptionInput.clear();
@@ -159,9 +161,7 @@ test.describe('Authenticated User - Document Management', () => {
       }
 
       // Edit tags
-      const tagsInput = libraryPage.page
-        .locator('[data-testid="edit-tags"]')
-        .or(libraryPage.page.locator('input[name="tags"]'));
+      const tagsInput = libraryPage.page.locator('[data-testid="edit-tags"]');
 
       if (await tagsInput.isVisible()) {
         await tagsInput.clear();
@@ -169,10 +169,8 @@ test.describe('Authenticated User - Document Management', () => {
       }
 
       // Save changes
-      const saveButton = libraryPage.page
-        .locator('[data-testid="save-metadata"]')
-        .or(libraryPage.page.locator('button:has-text("Save")'));
-
+      const saveButton = libraryPage.page.locator('[data-testid="save-metadata"]');
+      await expect(saveButton).toBeVisible();
       await saveButton.click();
       await layoutPage.waitForNotification('Metadata updated');
 
@@ -201,9 +199,7 @@ test.describe('Authenticated User - Document Management', () => {
       await saveButton.click();
 
       // Should show validation error
-      const errorMessage = libraryPage.page
-        .locator('[data-testid="title-error"]')
-        .or(libraryPage.page.locator('.error:has-text("title")'));
+      const errorMessage = libraryPage.page.locator('[data-testid="title-error"]');
 
       if (await errorMessage.isVisible()) {
         expect(await errorMessage.textContent()).toContain('required');
@@ -268,9 +264,7 @@ test.describe('Authenticated User - Document Management', () => {
       await secondPage.locator('[data-testid="save-title"]').click();
 
       // Should handle conflict gracefully
-      const conflictMessage = secondPage
-        .locator('[data-testid="edit-conflict"]')
-        .or(secondPage.locator('.error:has-text("conflict")'));
+      const conflictMessage = secondPage.locator('[data-testid="edit-conflict"]');
 
       if (await conflictMessage.isVisible()) {
         // Conflict detected and handled
@@ -340,9 +334,7 @@ test.describe('Authenticated User - Document Management', () => {
       await deleteButton.click();
 
       // Should show confirmation dialog
-      const confirmDialog = libraryPage.page
-        .locator('[data-testid="delete-confirm-dialog"]')
-        .or(libraryPage.page.locator('[role="dialog"]:has-text("delete")'));
+      const confirmDialog = libraryPage.page.locator('[data-testid="delete-confirm-dialog"]');
 
       await expect(confirmDialog).toBeVisible();
 
@@ -352,10 +344,8 @@ test.describe('Authenticated User - Document Management', () => {
       expect(confirmText).toContain('Temporary Document 2');
 
       // Click cancel first
-      const cancelButton = libraryPage.page
-        .locator('[data-testid="cancel-delete"]')
-        .or(libraryPage.page.locator('button:has-text("Cancel")'));
-
+      const cancelButton = libraryPage.page.locator('[data-testid="cancel-delete"]');
+      await expect(cancelButton).toBeVisible();
       await cancelButton.click();
 
       // Document should still exist
@@ -601,9 +591,7 @@ test.describe('Authenticated User - Document Management', () => {
       await viewerPage.waitForJSONProcessed();
 
       // Check if edit mode is available
-      const editModeButton = viewerPage.page
-        .locator('[data-testid="edit-mode"]')
-        .or(viewerPage.page.locator('button:has-text("Edit")'));
+      const editModeButton = viewerPage.page.locator('[data-testid="edit-mode"]');
 
       if (await editModeButton.isVisible()) {
         await editModeButton.click();
@@ -696,9 +684,7 @@ test.describe('Authenticated User - Document Management', () => {
       await libraryPage.viewJSONItem(0);
 
       // Should handle error gracefully
-      const errorMessage = viewerPage.page
-        .locator('[data-testid="load-error"]')
-        .or(viewerPage.errorMessage);
+      const errorMessage = viewerPage.page.locator('[data-testid="load-error"]');
 
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
 
@@ -718,9 +704,7 @@ test.describe('Authenticated User - Document Management', () => {
       await viewerPage.waitForJSONProcessed();
 
       // Should have back to library navigation
-      const backButton = viewerPage.page
-        .locator('[data-testid="back-to-library"]')
-        .or(viewerPage.page.locator('button:has-text("Library")'));
+      const backButton = viewerPage.page.locator('[data-testid="back-to-library"]');
 
       if (await backButton.isVisible()) {
         await backButton.click();
@@ -754,9 +738,7 @@ test.describe('Authenticated User - Document Management', () => {
       await page.goto('/viewer/nonexistent');
 
       // Should show not found error
-      const notFoundError = page
-        .locator('[data-testid="document-not-found"]')
-        .or(page.locator(':has-text("not found")'));
+      const notFoundError = page.locator('[data-testid="document-not-found"]');
 
       await expect(notFoundError).toBeVisible({ timeout: 10000 });
     });
