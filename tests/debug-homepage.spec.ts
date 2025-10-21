@@ -26,12 +26,12 @@ test('Debug homepage elements', async ({ page }) => {
   console.log('Sidebar visible:', sidebar, 'w-64 element:', sidebarWidth);
 
   // Check for login button in sidebar
-  const loginButton = await page.locator('text=Sign in').isVisible();
+  const loginButton = await page.getByTestId('sign-in-button').isVisible();
   console.log('Login button visible:', loginButton);
 
   // Check for navigation links in sidebar
-  const publicLibraryLink = await page.locator('text=Library').isVisible();
-  const libraryLink = await page.locator('text=Library').isVisible();
+  const publicLibraryLink = await page.getByTestId('nav-library').isVisible();
+  const libraryLink = await page.getByRole('button', { name: /My Library/i }).isVisible();
   console.log('Library link visible:', publicLibraryLink);
   console.log('Library link visible:', libraryLink);
 
@@ -65,7 +65,7 @@ test('Debug homepage elements', async ({ page }) => {
   console.log('Flow tab visible:', flowTab);
 
   // Check header/breadcrumb
-  const jsonViewerTitle = await page.locator('text=JSON Viewer').isVisible();
+  const jsonViewerTitle = await page.getByRole('link', { name: 'JSON Viewer' }).isVisible();
   console.log('JSON Viewer title visible:', jsonViewerTitle);
 
   // Print page HTML structure for debugging

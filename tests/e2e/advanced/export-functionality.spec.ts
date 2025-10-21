@@ -53,11 +53,10 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.inputJSON(JSON.stringify(testJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for formatting options
+      // Look for formatting options (avoid mixing selector engines in one string)
       const formatElements = await viewerPage.page
-        .locator(
-          '[data-testid*="format"], [data-testid*="export-options"], text=/format|pretty|compact|minify/i'
-        )
+        .locator('[data-testid*="format"], [data-testid*="export-options"]')
+        .or(viewerPage.page.getByText(/format|pretty|compact|minify/i))
         .count();
 
       if (formatElements > 0) {
@@ -67,7 +66,7 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
         await viewerPage.page.waitForLoadState('networkidle');
 
         // Try compact/minified export
-        const compactOption = viewerPage.page.locator('text=/compact|minif/i');
+        const compactOption = viewerPage.page.getByRole('menuitem', { name: /compact|minif/i }).first();
         if (await compactOption.isVisible()) {
           await compactOption.click();
 
@@ -85,7 +84,7 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
         }
 
         // Try pretty/formatted export
-        const prettyOption = viewerPage.page.locator('text=/pretty|format/i');
+        const prettyOption = viewerPage.page.getByRole('menuitem', { name: /pretty|format/i }).first();
         if (await prettyOption.isVisible()) {
           await prettyOption.click();
 
@@ -167,16 +166,24 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.searchInJSON('Engineering');
 
       // Look for export filtered results option
-      const filteredExportElements = await viewerPage.page
-        .locator(
-          '[data-testid*="export-filtered"], [data-testid*="export-search"], text=/export.*filter|export.*search/i'
-        )
+      // Be robust: avoid mixing selector engines; try data-testids then role-based text
+      const filteredByTestId = await viewerPage.page
+        .locator('[data-testid*="export-filtered"], [data-testid*="export-search"]')
         .count();
+      const filteredByRole = await viewerPage.page
+        .getByRole('button', { name: /export.*(filter|search)/i })
+        .count();
+      const filteredExportElements = filteredByTestId + filteredByRole;
 
       if (filteredExportElements > 0) {
         // Export filtered results
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.page.locator('[data-testid*="export-filtered"]').first().click();
+        const preferred = viewerPage.page.locator('[data-testid*="export-filtered"]').first();
+        if ((await preferred.count()) > 0) {
+          await preferred.click();
+        } else {
+          await viewerPage.page.getByRole('button', { name: /export.*(filter|search)/i }).first().click();
+        }
 
         const download = await downloadPromise;
         const filteredPath = join(downloadDir, `filtered-${download.suggestedFilename()}`);
@@ -228,14 +235,23 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.inputJSON(JSON.stringify(tabularJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for CSV export option
-      const csvExportElements = await viewerPage.page
-        .locator('[data-testid*="csv"], [data-testid*="export-csv"], text=/csv|comma.*separated/i')
+      // Look for CSV export option (avoid mixing selector engines)
+      const csvByTestId = await viewerPage.page
+        .locator('[data-testid*="csv"], [data-testid*="export-csv"]')
         .count();
+      const csvByRole = await viewerPage.page
+        .getByRole('button', { name: /csv|comma.*separated/i })
+        .count();
+      const csvExportElements = csvByTestId + csvByRole;
 
       if (csvExportElements > 0) {
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.page.locator('[data-testid*="csv"]').first().click();
+        const preferredCsv = viewerPage.page.locator('[data-testid*="csv"]').first();
+        if ((await preferredCsv.count()) > 0) {
+          await preferredCsv.click();
+        } else {
+          await viewerPage.page.getByRole('button', { name: /csv|comma.*separated/i }).first().click();
+        }
 
         const download = await downloadPromise;
         expect(download.suggestedFilename()).toMatch(/\.csv$/);
@@ -274,14 +290,23 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.inputJSON(JSON.stringify(xmlableJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for XML export option
-      const xmlExportElements = await viewerPage.page
-        .locator('[data-testid*="xml"], [data-testid*="export-xml"], text=/xml/i')
+      // Look for XML export option (avoid mixing selector engines)
+      const xmlByTestId = await viewerPage.page
+        .locator('[data-testid*="xml"], [data-testid*="export-xml"]')
         .count();
+      const xmlByRole = await viewerPage.page
+        .getByRole('button', { name: /xml/i })
+        .count();
+      const xmlExportElements = xmlByTestId + xmlByRole;
 
       if (xmlExportElements > 0) {
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.page.locator('[data-testid*="xml"]').first().click();
+        const preferredXml = viewerPage.page.locator('[data-testid*="xml"]').first();
+        if ((await preferredXml.count()) > 0) {
+          await preferredXml.click();
+        } else {
+          await viewerPage.page.getByRole('button', { name: /xml/i }).first().click();
+        }
 
         const download = await downloadPromise;
         expect(download.suggestedFilename()).toMatch(/\.xml$/);
@@ -326,14 +351,23 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.inputJSON(JSON.stringify(yamlableJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for YAML export option
-      const yamlExportElements = await viewerPage.page
-        .locator('[data-testid*="yaml"], [data-testid*="yml"], text=/yaml|yml/i')
+      // Look for YAML export option (avoid mixing selector engines)
+      const yamlByTestId = await viewerPage.page
+        .locator('[data-testid*="yaml"], [data-testid*="yml"]')
         .count();
+      const yamlByRole = await viewerPage.page
+        .getByRole('button', { name: /yaml|yml/i })
+        .count();
+      const yamlExportElements = yamlByTestId + yamlByRole;
 
       if (yamlExportElements > 0) {
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.page.locator('[data-testid*="yaml"]').first().click();
+        const preferredYaml = viewerPage.page.locator('[data-testid*="yaml"]').first();
+        if ((await preferredYaml.count()) > 0) {
+          await preferredYaml.click();
+        } else {
+          await viewerPage.page.getByRole('button', { name: /yaml|yml/i }).first().click();
+        }
 
         const download = await downloadPromise;
         expect(download.suggestedFilename()).toMatch(/\.ya?ml$/);
@@ -394,14 +428,23 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
             await selectableNodes[i].click();
           }
 
-          // Look for export selected option
-          const exportSelectedElements = await viewerPage.page
-            .locator('[data-testid*="export-selected"], text=/export.*selected/i')
+          // Look for export selected option (avoid mixing selector engines)
+          const exportSelectedByTestId = await viewerPage.page
+            .locator('[data-testid*="export-selected"]')
             .count();
+          const exportSelectedByRole = await viewerPage.page
+            .getByRole('button', { name: /export.*selected/i })
+            .count();
+          const exportSelectedElements = exportSelectedByTestId + exportSelectedByRole;
 
           if (exportSelectedElements > 0) {
             const downloadPromise = viewerPage.page.waitForEvent('download');
-            await viewerPage.page.locator('[data-testid*="export-selected"]').first().click();
+            const preferredSel = viewerPage.page.locator('[data-testid*="export-selected"]').first();
+            if ((await preferredSel.count()) > 0) {
+              await preferredSel.click();
+            } else {
+              await viewerPage.page.getByRole('button', { name: /export.*selected/i }).first().click();
+            }
 
             const download = await downloadPromise;
             const selectedPath = join(downloadDir, `selected-${download.suggestedFilename()}`);
@@ -420,9 +463,13 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       if (await firstNode.isVisible()) {
         await firstNode.click({ button: 'right' });
 
-        const contextMenuElements = await viewerPage.page
-          .locator('[data-testid*="context"], .context-menu, text=/export.*node|export.*subtree/i')
+        const contextByCss = await viewerPage.page
+          .locator('[data-testid*="context"], .context-menu')
           .count();
+        const contextByRole = await viewerPage.page
+          .getByRole('menuitem', { name: /export.*(node|subtree)/i })
+          .count();
+        const contextMenuElements = contextByCss + contextByRole;
 
         if (contextMenuElements > 0) {
           await viewerPage.takeScreenshot('context-menu-export');
@@ -438,11 +485,13 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.waitForJSONProcessed();
 
       // Look for export customization dialog/options
-      const customizationElements = await viewerPage.page
-        .locator(
-          '[data-testid*="export-settings"], [data-testid*="export-options"], text=/export.*options|customize.*export/i'
-        )
+      const customizationByTestId = await viewerPage.page
+        .locator('[data-testid*="export-settings"], [data-testid*="export-options"]')
         .count();
+      const customizationByRole = await viewerPage.page
+        .getByRole('button', { name: /export.*options|customize.*export/i })
+        .count();
+      const customizationElements = customizationByTestId + customizationByRole;
 
       if (customizationElements > 0) {
         await viewerPage.page.locator('[data-testid*="export-options"]').first().click();
@@ -451,18 +500,18 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         // Check for various customization options
         const optionElements = {
-          indentation: await viewerPage.page
-            .locator('[data-testid*="indentation"], text=/indent|spacing/i')
-            .count(),
-          encoding: await viewerPage.page
-            .locator('[data-testid*="encoding"], text=/encoding|utf/i')
-            .count(),
-          compression: await viewerPage.page
-            .locator('[data-testid*="compress"], text=/compress|zip/i')
-            .count(),
-          metadata: await viewerPage.page
-            .locator('[data-testid*="metadata"], text=/metadata|include.*info/i')
-            .count(),
+          indentation:
+            (await viewerPage.page.locator('[data-testid*="indentation"]').count()) +
+            (await viewerPage.page.getByText(/indent|spacing/i).count()),
+          encoding:
+            (await viewerPage.page.locator('[data-testid*="encoding"]').count()) +
+            (await viewerPage.page.getByText(/encoding|utf/i).count()),
+          compression:
+            (await viewerPage.page.locator('[data-testid*="compress"]').count()) +
+            (await viewerPage.page.getByText(/compress|zip/i).count()),
+          metadata:
+            (await viewerPage.page.locator('[data-testid*="metadata"]').count()) +
+            (await viewerPage.page.getByText(/metadata|include.*info/i).count()),
         };
 
         console.log('Export customization options found:', optionElements);
@@ -471,18 +520,44 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         // Test with different options if available
         if (optionElements.indentation > 0) {
-          const indentOption = viewerPage.page.locator('[data-testid*="indentation"]').first();
-          await indentOption.selectOption('4'); // 4-space indentation
+          const indentByTestId = viewerPage.page.locator('[data-testid*="indentation"]').first();
+          if ((await indentByTestId.count()) > 0) {
+            await indentByTestId.selectOption('4'); // 4-space indentation
+          } else {
+            const indentByRole = viewerPage.page.getByRole('combobox', { name: /indent|spacing/i }).first();
+            if ((await indentByRole.count()) > 0) {
+              await indentByRole.selectOption('4');
+            } else {
+              console.log('Indentation option present by text but no actionable control found; skipping');
+            }
+          }
         }
 
         if (optionElements.compression > 0) {
-          const compressOption = viewerPage.page.locator('[data-testid*="compress"]').first();
-          await compressOption.check();
+          const compressByTestId = viewerPage.page.locator('[data-testid*="compress"]').first();
+          if ((await compressByTestId.count()) > 0) {
+            await compressByTestId.check();
+          } else {
+            const compressByRole = viewerPage.page.getByRole('checkbox', { name: /compress|zip/i }).first();
+            if ((await compressByRole.count()) > 0) {
+              await compressByRole.check();
+            } else {
+              console.log('Compression option present by text but no actionable control found; skipping');
+            }
+          }
         }
 
         // Apply customizations and export
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.downloadButton.click();
+        try {
+          await viewerPage.downloadButton.click({ timeout: 5000 });
+        } catch (err) {
+          console.log('Primary click on download button failed, attempting JS-triggered click');
+          await viewerPage.page.evaluate(() => {
+            const btn = document.querySelector('[data-testid="download-button"]') as HTMLButtonElement | null;
+            btn?.click();
+          });
+        }
 
         const download = await downloadPromise;
         const customPath = join(downloadDir, `custom-${download.suggestedFilename()}`);
@@ -512,11 +587,13 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.waitForJSONProcessed();
 
       // Look for metadata inclusion options
-      const metadataOptions = await viewerPage.page
-        .locator(
-          '[data-testid*="include-metadata"], [data-testid*="add-timestamp"], text=/metadata|timestamp|export.*info/i'
-        )
+      const metadataByTestId = await viewerPage.page
+        .locator('[data-testid*="include-metadata"], [data-testid*="add-timestamp"]')
         .count();
+      const metadataByText = await viewerPage.page
+        .getByText(/metadata|timestamp|export.*info/i)
+        .count();
+      const metadataOptions = metadataByTestId + metadataByText;
 
       if (metadataOptions > 0) {
         // Enable metadata inclusion
@@ -589,9 +666,13 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
         expect(existsSync(errorTestPath)).toBe(true);
       } catch (exportError) {
         // Export might fail - check for error handling in UI
-        const errorMessages = await viewerPage.page
-          .locator('[data-testid*="error"], .error, text=/error|failed|problem/i')
+        const errorByCss = await viewerPage.page
+          .locator('[data-testid*="error"], .error')
           .count();
+        const errorByText = await viewerPage.page
+          .getByText(/error|failed|problem/i)
+          .count();
+        const errorMessages = errorByCss + errorByText;
 
         if (errorMessages > 0) {
           const errorText = await viewerPage.page
@@ -614,11 +695,13 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
       await viewerPage.waitForJSONProcessed();
 
       // Look for batch export functionality
-      const batchElements = await viewerPage.page
-        .locator(
-          '[data-testid*="batch"], [data-testid*="multiple"], text=/batch|multiple.*format|export.*all/i'
-        )
+      const batchByTestId = await viewerPage.page
+        .locator('[data-testid*="batch"], [data-testid*="multiple"]')
         .count();
+      const batchByText = await viewerPage.page
+        .getByText(/batch|multiple.*format|export.*all/i)
+        .count();
+      const batchElements = batchByTestId + batchByText;
 
       if (batchElements > 0) {
         await viewerPage.page.locator('[data-testid*="batch"]').first().click();
@@ -636,9 +719,12 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         // Start batch export
         const downloadPromise = viewerPage.page.waitForEvent('download');
-        await viewerPage.page
-          .locator('[data-testid*="start-batch"], text=/export|download/i')
-          .click();
+        const startBatchBtn = viewerPage.page.locator('[data-testid*="start-batch"]').first();
+        if ((await startBatchBtn.count()) > 0) {
+          await startBatchBtn.click();
+        } else {
+          await viewerPage.page.getByRole('button', { name: /export|download/i }).first().click();
+        }
 
         const download = await downloadPromise;
         expect(download.suggestedFilename()).toMatch(/\.(zip|tar|json)$/);

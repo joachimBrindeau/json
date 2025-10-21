@@ -6,8 +6,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { SearchBar } from '@/components/shared/search-bar';
+import { VARIANTS, HIGHLIGHT_ANIMATIONS, TRANSITIONS } from '@/components/animations';
 
 interface ViewerListProps {
   data: any;
@@ -110,32 +111,32 @@ export const ViewerList = ({
     );
   }, [flatItems, searchTerm]);
 
+  const isItemHighlighted = (item: FlatItem) => {
+    if (!searchTerm) return false;
+    const term = searchTerm.toLowerCase();
+    return (
+      item.path.toLowerCase().includes(term) ||
+      String(item.value).toLowerCase().includes(term)
+    );
+  };
+
   return (
     <div className="flex flex-col h-full">
-      {/* Search bar */}
-      <div className="p-2 border-b bg-gray-50">
-        <div className="flex items-center gap-2">
-          <SearchBar
-            value={searchTerm}
-            onChange={(value) => onSearchChange?.(value)}
-            placeholder="Search keys or values..."
-          />
-          <Badge variant="secondary" className="whitespace-nowrap">
-            {filteredItems.length} / {flatItems.length}
-          </Badge>
-        </div>
-      </div>
-
       {/* List */}
-      <div
-        className="flex-1 overflow-auto"
-        style={{ height: `${height - 100}px` }}
-      >
-        <div className="divide-y">
+      <div className="flex-1 overflow-auto">
+        <motion.div
+          className="divide-y"
+          variants={VARIANTS.staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {filteredItems.map((item, index) => (
-            <div
+            <motion.div
               key={`${item.path}-${index}`}
               className="p-3 hover:bg-gray-50 transition-colors"
+              variants={VARIANTS.slideUp}
+              animate={isItemHighlighted(item) ? HIGHLIGHT_ANIMATIONS.flash : {}}
+              transition={TRANSITIONS.smooth}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -150,9 +151,9 @@ export const ViewerList = ({
                   {item.type}
                 </Badge>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {filteredItems.length === 0 && (
           <div className="p-8 text-center text-gray-500">

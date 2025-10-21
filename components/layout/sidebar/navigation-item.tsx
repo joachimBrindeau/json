@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { memo } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
@@ -133,10 +134,17 @@ function NavigationItemComponent({
         className={cn(
           NAV_ITEM_BASE_CLASSES,
           current
-            ? 'bg-secondary text-secondary-foreground border border-border/50'
-            : 'hover:bg-accent hover:text-accent-foreground'
+            ? 'bg-secondary text-secondary-foreground border border-border/50 relative'
+            : 'hover:bg-accent hover:text-accent-foreground relative'
         )}
       >
+        {current && (
+          <motion.div
+            layoutId="activeNavIndicator"
+            className="absolute inset-0 bg-secondary rounded-md border border-border/50 -z-10"
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          />
+        )}
         <NavigationItemContent
           icon={icon}
           name={name}

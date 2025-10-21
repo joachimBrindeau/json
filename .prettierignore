@@ -1,0 +1,20 @@
+# Ignore heavy test artifacts and reports to prevent Prettier OOM and unnecessary formatting
+node_modules/
+.next/
+coverage/
+playwright-report/
+playwright/.cache/
+.test-results/
+test-results/
+
+# Large JSON fixtures and generated downloads
+tests/test-files/
+tests/downloads/
+
+# E2E screenshots/videos
+**/screenshots/
+**/videos/
+
+# Misc caches
+**/.cache/
+

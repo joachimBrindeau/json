@@ -5,6 +5,7 @@ import { HeaderNav } from './header-nav';
 import { Sidebar } from './sidebar';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { usePathname } from 'next/navigation';
+import { PageTransition } from '@/components/animations';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -45,8 +46,10 @@ function MainLayoutComponent({ children }: MainLayoutProps) {
           <HeaderNav onMobileMenuToggle={() => setMobileMenuOpen(true)} />
         </ErrorBoundary>
 
-        <main className="flex-1 overflow-hidden">
-          <ErrorBoundary>{children}</ErrorBoundary>
+        <main className="flex-1 min-h-0 overflow-hidden">
+          <ErrorBoundary>
+            <PageTransition>{children}</PageTransition>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

@@ -64,7 +64,7 @@ export function EditorPane({
   );
 
   return (
-    <div className={`flex-1 flex flex-col bg-card ${className}`}>
+    <div className={`flex-1 flex flex-col bg-card h-full ${className}`}>
       {/* Action bar */}
       <div className="flex items-center gap-1 p-2 border-b bg-muted/50 flex-shrink-0">
         {/* Left actions (primary) */}
@@ -106,7 +106,7 @@ export function EditorPane({
       </div>
 
       {/* Monaco editor */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden h-full">
         <MonacoEditor
           height="100%"
           language={language}

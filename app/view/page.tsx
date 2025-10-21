@@ -32,6 +32,7 @@ export default function ViewerPage() {
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             enableViewModeSwitch={false}
+            enableFormatActions={false}
           />
         </div>
       </div>

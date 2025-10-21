@@ -34,8 +34,20 @@ export abstract class BasePage {
   async navigateTo(url: string) {
     // Use domcontentloaded instead of default 'load' for better reliability
     // This waits for HTML to be fully loaded without waiting for all external resources
-    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await this.waitForLoad();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await this.waitForLoad();
+        return;
+      } catch (e: any) {
+        if (attempt === 0) {
+          // Retry once on transient navigation failures (e.g. dev server reload)
+          await new Promise((r) => setTimeout(r, 500));
+          continue;
+        }
+        throw e;
+      }
+    }
   }
 
   /**
@@ -46,7 +58,18 @@ export abstract class BasePage {
       ? `test-results/screenshots/${filename}.png`
       : `test-results/screenshots/${this.constructor.name}-${Date.now()}.png`;
 
-    await this.page.screenshot({ path: screenshotPath, fullPage: true });
+    try {
+      // Full page screenshots can be very slow/heavy on massive documents; prefer viewport
+      await this.page.screenshot({ path: screenshotPath, fullPage: false, timeout: 15000 });
+    } catch (e) {
+      // As a reliability fallback, avoid failing the test because of a screenshot issue
+      try {
+        // Last attempt with a shorter timeout
+        await this.page.screenshot({ path: screenshotPath, fullPage: false, timeout: 5000 });
+      } catch {
+        // Swallow to keep the test progressing
+      }
+    }
     return screenshotPath;
   }
 

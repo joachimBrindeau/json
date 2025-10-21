@@ -28,12 +28,15 @@ interface ViewerActionsProps {
   onChange?: (value: string) => void;
   /** Additional custom actions to show in magic dropdown */
   customMagicActions?: DropdownAction[];
+  /** Whether to show format actions (brush button) */
+  enableFormatActions?: boolean;
 }
 
 export function ViewerActions({
   value = '',
   onChange,
   customMagicActions = [],
+  enableFormatActions = true,
 }: ViewerActionsProps = {}) {
   const { data: session } = useSession();
   const { openModal } = useLoginModal();
@@ -54,6 +57,7 @@ export function ViewerActions({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [shareType, setShareType] = useState<'public' | 'private'>('public');
+  const [exportFormat, setExportFormat] = useState<'default' | 'compact' | 'pretty'>('default');
 
   // Format handler
   const handleFormat = useCallback(() => {
@@ -132,35 +136,51 @@ export function ViewerActions({
   }, [currentJson, currentDocument, saveJson, session, openModal]);
 
   const handleCopyJson = useCallback(() => {
-    if (!currentJson) {
+    const source = value?.trim() ? value : currentJson;
+    if (!source) {
       toastPatterns.validation.noJson('copy');
       return;
     }
-    copyJsonToClipboard(currentJson, (title, desc, variant) => {
+    copyJsonToClipboard(source, (title, desc, variant) => {
       if (variant === 'destructive') {
         showErrorToast(desc || 'Failed to copy', title);
       } else {
         showSuccessToast(title, { description: desc });
       }
     });
-  }, [currentJson]);
+  }, [value, currentJson]);
 
   const handleExport = useCallback(() => {
-    if (!currentJson) {
+    const source = value?.trim() ? value : currentJson;
+    if (!source) {
       toastPatterns.validation.noJson('export');
       return;
     }
     const filename = currentDocument?.title
       ? `${currentDocument.title.replace(/[^a-z0-9]/gi, '_')}.json`
       : `json-${shareId || Date.now()}.json`;
-    downloadJson(currentJson, filename, (title, desc, variant) => {
+
+    // Apply export formatting if requested
+    let contentToExport = source;
+    try {
+      const parsed = JSON.parse(source);
+      if (exportFormat === 'compact') {
+        contentToExport = JSON.stringify(parsed);
+      } else if (exportFormat === 'pretty') {
+        contentToExport = JSON.stringify(parsed, null, 2);
+      }
+    } catch {
+      // If JSON is invalid, fall back to raw source content
+    }
+
+    downloadJson(contentToExport, filename, (title, desc, variant) => {
       if (variant === 'destructive') {
         showErrorToast(desc || 'Failed to export', title);
       } else {
         showSuccessToast(title, { description: desc });
       }
     });
-  }, [currentJson, currentDocument?.title, shareId]);
+  }, [value, currentJson, currentDocument?.title, shareId, exportFormat]);
 
   const handleShare = useCallback(async (type: 'public' | 'private' = 'public') => {
     if (!currentJson) {
@@ -300,8 +320,8 @@ export function ViewerActions({
 
   return (
     <>
-      {/* Desktop view - show all buttons */}
-      <div className="hidden sm:flex items-center gap-1">
+      {/* Toolbar - visible on all breakpoints */}
+      <div className="flex items-center gap-1">
         {session && (
           <Button
             variant="green"
@@ -333,12 +353,12 @@ export function ViewerActions({
         )}
 
         {/* Icon-only buttons for Copy, Export, Magic, and Share */}
-        {magicActions.length > 0 && (
+        {enableFormatActions && magicActions.length > 0 && (
           <IconDropdown
             icon={PaintbrushIcon}
             tooltip="Format Actions"
             actions={magicActions}
-            disabled={!currentJson}
+            disabled={!currentJson || !canUseFormatMinify}
             width="w-40"
           />
         )}
@@ -347,7 +367,7 @@ export function ViewerActions({
           variant="outline"
           size="icon"
           onClick={handleCopyJson}
-          disabled={!currentJson}
+          disabled={!(value?.trim() || currentJson)}
           title="Copy JSON"
           className="h-7 w-7"
         >
@@ -358,12 +378,38 @@ export function ViewerActions({
           variant="outline"
           size="icon"
           onClick={handleExport}
-          disabled={!currentJson}
-          title="Export JSON"
+          disabled={!(value?.trim() || currentJson)}
+          title="Download"
           className="h-7 w-7"
+          data-testid="download-button"
         >
           <Download className="h-3 w-3" />
         </Button>
+
+        {/* Export formatting options */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              title="Export Options"
+              className="h-7 w-7"
+              data-testid="export-options"
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={() => setExportFormat('compact')}>
+              <Minimize2 className="h-3 w-3 mr-2" />
+              Compact (minified)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setExportFormat('pretty')}>
+              <Code className="h-3 w-3 mr-2" />
+              Pretty (indented)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <IconDropdown
           icon={Share2}
@@ -373,8 +419,8 @@ export function ViewerActions({
         />
       </div>
 
-      {/* Mobile view - dropdown menu */}
-      <div className="sm:hidden">
+      {/* Mobile view dropdown disabled (toolbar available on mobile) */}
+      <div className="hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

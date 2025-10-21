@@ -271,11 +271,9 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
       await viewerPage.inputJSON(JSON.stringify(typedDataJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for type-based filtering UI
+      // Look for type-based filtering UI (avoid invalid mixed selector syntax)
       const typeFilterElements = await viewerPage.page
-        .locator(
-          '[data-testid*="filter"], [data-testid*="type"], text=/filter.*type|type.*filter/i'
-        )
+        .locator('[data-testid*="filter"], [data-testid*="type"]')
         .count();
 
       if (typeFilterElements > 0) {
@@ -342,7 +340,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for path-based filtering capabilities
       const pathFilterElements = await viewerPage.page
-        .locator('[data-testid*="path"], [data-path], text=/path|\.|\//')
+        .locator('[data-testid*="path"], [data-path]')
         .count();
 
       if (pathFilterElements > 0) {
@@ -509,9 +507,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for pagination controls
       const paginationElements = await viewerPage.page
-        .locator(
-          '[data-testid*="pagination"], .pagination, text=/page|next|previous|\d+.*of.*\d+/i'
-        )
+        .locator('[data-testid*="pagination"], .pagination')
         .count();
 
       if (paginationElements > 0) {
@@ -651,9 +647,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for navigation controls
       const navElements = await viewerPage.page
-        .locator(
-          '[data-testid*="search-nav"], [data-testid*="result-nav"], text=/\d+.*of.*\d+|previous|next/i'
-        )
+        .locator('[data-testid*="search-nav"], [data-testid*="result-nav"]')
         .count();
 
       if (navElements > 0) {

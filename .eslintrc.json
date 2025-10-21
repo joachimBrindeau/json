@@ -1,6 +1,17 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript", "plugin:jsx-a11y/recommended", "plugin:ssr-friendly/recommended", "prettier"],
   "plugins": ["jsx-a11y", "ssr-friendly"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "coverage/",
+    "playwright-report/",
+    "playwright/.cache/",
+    "test-results/",
+    "tests/test-files/",
+    "tests/downloads/"
+  ],
+
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off",

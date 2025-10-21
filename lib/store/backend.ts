@@ -681,19 +681,27 @@ export const useBackendStore = create<BackendAppState>()(
       setCurrentJson: (json: string) => {
         set({ currentJson: json, isDirty: true });
 
-        // Track complex JSONs for anonymous users
+        // Track complex JSONs for anonymous users (avoid heavy parsing on large payloads)
         try {
-          const parsed = JSON.parse(json);
           const size = new Blob([json]).size;
-          const nodeCount = JSON.stringify(parsed).length;
+          // Heuristic: only attempt parse for small payloads (< 1MB)
+          let nodeCount = 0;
+          if (size < 1_000_000) {
+            try {
+              const parsed = JSON.parse(json);
+              nodeCount = JSON.stringify(parsed).length;
+            } catch {
+              // ignore
+            }
+          }
 
-          // Track if JSON is complex enough (>1KB or >100 nodes)
+          // Track if JSON is complex enough (>1KB or >100 nodes) by size alone for large inputs
           if (size > 1024 || nodeCount > 100) {
             const jsonId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             get().trackAnonymousJson(jsonId);
           }
-        } catch (error) {
-          // Invalid JSON, don't track
+        } catch {
+          // ignore
         }
       },
 

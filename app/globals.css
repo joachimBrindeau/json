@@ -106,5 +106,18 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    
+    /* Ensure Monaco editor takes full height */
+    .monaco-editor {
+      height: 100% !important;
+    }
+    
+    .monaco-editor .overflow-guard {
+      height: 100% !important;
+    }
+    
+    .monaco-editor .monaco-scrollable-element {
+      height: 100% !important;
+    }
   }
 }

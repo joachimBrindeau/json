@@ -18,7 +18,7 @@ interface FormatSelectorProps {
 export function FormatSelector({ value, onValueChange, options, className = '' }: FormatSelectorProps) {
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={`h-6 w-24 text-xs ${className}`}>
+      <SelectTrigger className={`h-6 w-32 text-xs ${className}`}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

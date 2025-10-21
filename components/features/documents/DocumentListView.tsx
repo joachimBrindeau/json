@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DocumentCard, DocumentSkeleton, BaseDocument } from '@/components/features/documents';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { BulkOperations, BulkableItem } from '@/components/ui/bulk-operations';
+import { VARIANTS, TRANSITIONS } from '@/components/animations';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -116,14 +117,19 @@ export function DocumentListView<T extends BaseDocument>({
 
       {/* Document Grid */}
       <AnimatePresence mode="popLayout">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          variants={VARIANTS.staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {safeDocuments.map((doc, index) => (
             <motion.div
               key={doc.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              variants={VARIANTS.slideUp}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={TRANSITIONS.smooth}
+              whileHover={{ y: -4, transition: TRANSITIONS.smoothFast }}
             >
               <DocumentCard
                 document={doc}
@@ -144,7 +150,7 @@ export function DocumentListView<T extends BaseDocument>({
               />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </AnimatePresence>
 
       {/* Load More Trigger */}

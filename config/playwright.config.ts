@@ -14,6 +14,8 @@ export default defineConfig({
   forbidOnly: true,
   /* Retry on CI only */
   retries: 0,
+  /* Fail fast after first failure to surface breakages early */
+  maxFailures: 1,
   /* Opt out of parallel tests on CI. */
   workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */

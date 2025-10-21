@@ -243,7 +243,7 @@ function JsonEditorComponent() {
   const editorActions: EditorAction[] = useMemo(() => [], []);
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background" style={{ height: '100%' }}>
       {/* Loading progress for large files */}
       {loadingProgress > 0 && (
         <div className="px-2 py-1 bg-blue-50 dark:bg-blue-950 border-b">
@@ -261,7 +261,7 @@ function JsonEditorComponent() {
       )}
 
       {/* Full-height Monaco editor with EditorPane */}
-      <div className="flex-1 min-h-0 overflow-hidden" data-testid="json-textarea">
+      <div className="flex-1 min-h-0 overflow-hidden h-full" data-testid="json-textarea">
         <ErrorBoundary
           level="component"
           fallback={

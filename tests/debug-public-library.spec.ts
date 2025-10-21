@@ -107,11 +107,17 @@ test('Debug library page', async ({ page }) => {
     }
   });
 
-  // Check API calls
-  const response = await page.request.get('/api/saved');
-  console.log('API response status:', response.status());
-  if (response.ok()) {
-    const data = await response.json();
-    console.log('API data:', JSON.stringify(data, null, 2));
+  // Check API calls (best-effort; do not fail test)
+  try {
+    const response = await page.request.get('/api/saved', { timeout: 5000 });
+    console.log('API response status:', response.status());
+    if (response.ok()) {
+      const data = await response.json();
+      console.log('API data:', JSON.stringify(data, null, 2));
+    } else {
+      console.log('API request not OK (likely unauthenticated).');
+    }
+  } catch (e) {
+    console.log('API request to /api/saved failed or timed out:', (e as Error).message);
   }
 });

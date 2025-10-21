@@ -327,21 +327,28 @@ export function ViewerCompare({
 
   if (activeView === 'input') {
     return (
-      <div className={`h-full flex flex-col ${className}`}>
-        {/* Editors container with more padding - responsive */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          <EditorPane
-            title="JSON 1 (Original)"
-            value={json1}
-            onChange={(value) => {
-              const newValue = value || '';
-              setJson1(newValue);
-              setCurrentJson(newValue);
-            }}
-            actions={json1Actions}
-            customActions={<ViewerActions value={json1} onChange={setJson1} />}
-            showSearch={false}
-            validationBadge={
+      <div className={`h-full flex flex-col md:flex-row overflow-hidden ${className}`}>
+        <EditorPane
+          title="JSON 1 (Original)"
+          value={json1}
+          onChange={(value) => {
+            const newValue = value || '';
+            setJson1(newValue);
+            setCurrentJson(newValue);
+          }}
+          actions={json1Actions}
+          customActions={<ViewerActions value={json1} onChange={setJson1} />}
+          validationBadge={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSyncScroll(!syncScroll)}
+                className={`h-6 text-xs ${syncScroll ? 'bg-blue-50 border-blue-300' : ''}`}
+              >
+                {syncScroll ? <Link className="h-3 w-3 mr-1" /> : <Unlink className="h-3 w-3 mr-1" />}
+                Sync Scroll
+              </Button>
               <Button
                 variant="green"
                 size="sm"
@@ -352,61 +359,27 @@ export function ViewerCompare({
                 <GitCompare className="h-3 w-3 mr-1" />
                 Compare JSON
               </Button>
-            }
-            theme={editor1.theme}
-            onMount={handleEditor1Mount}
-            beforeMount={(monaco) => defineMonacoThemes(monaco)}
-            options={editor1.editorOptions}
-            className="border-r"
-          />
+            </div>
+          }
+          theme={editor1.theme}
+          onMount={handleEditor1Mount}
+          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          options={editor1.editorOptions}
+          className="border-r"
+        />
 
-          <EditorPane
-            title="JSON 2 (Modified)"
-            value={json2}
-            onChange={(value) => setJson2(value || '')}
-            actions={json2Actions}
-            customActions={<ViewerActions value={json2} onChange={setJson2} />}
-            showSearch={false}
-            validationBadge={null}
-            theme={editor2.theme}
-            onMount={handleEditor2Mount}
-            beforeMount={(monaco) => defineMonacoThemes(monaco)}
-            options={editor2.editorOptions}
-          />
-        </div>
-
-        {/* Action buttons bar below editors */}
-        <div className="flex-none px-2 sm:px-3 py-2 bg-muted border-t">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSyncScroll(!syncScroll)}
-              className={`h-7 px-3 text-xs ${syncScroll ? 'bg-blue-50 border-blue-300' : ''}`}
-            >
-              {syncScroll ? <Link className="h-3 w-3 mr-1" /> : <Unlink className="h-3 w-3 mr-1" />}
-              Sync Scroll
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="h-7 px-3 text-xs"
-            >
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Reset
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleCompare}
-              disabled={!canCompare}
-              className="h-7 px-4 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <GitCompare className="h-3 w-3 mr-1" />
-              Compare
-            </Button>
-          </div>
-        </div>
+        <EditorPane
+          title="JSON 2 (Modified)"
+          value={json2}
+          onChange={(value) => setJson2(value || '')}
+          actions={json2Actions}
+          customActions={<ViewerActions value={json2} onChange={setJson2} />}
+          validationBadge={null}
+          theme={editor2.theme}
+          onMount={handleEditor2Mount}
+          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          options={editor2.editorOptions}
+        />
       </div>
     );
   }

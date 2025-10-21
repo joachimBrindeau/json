@@ -32,10 +32,15 @@ async function globalSetup(config: FullConfig) {
   const page = await context.newPage();
 
   try {
-    // Wait for server to be ready with retries
-    console.log('📡 Checking if server is available...');
-    await waitForServer(page, baseURL);
-    console.log('✅ Server is available');
+    // Optionally skip server readiness check (useful when dev server is already running and slow to warm up)
+    const skipServerCheck = process.env.SKIP_SERVER_CHECK === '1' || process.env.SKIP_SERVER_CHECK === 'true';
+    if (!skipServerCheck) {
+      console.log('📡 Checking if server is available...');
+      await waitForServer(page, baseURL);
+      console.log('✅ Server is available');
+    } else {
+      console.log('⏭️  SKIP_SERVER_CHECK=1 detected — skipping server availability check');
+    }
 
     // Clean up existing test users before creating new ones
     console.log('🧹 Cleaning up existing test users...');
@@ -224,6 +229,11 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
  * This prevents test failures due to missing database connections
  */
 async function ensureDockerDependencies() {
+  // Allow skipping Docker checks for front-end only E2E runs
+  if (process.env.SKIP_DOCKER_CHECK === '1') {
+    console.log('🔧 SKIP_DOCKER_CHECK=1 detected — skipping Docker dependency checks');
+    return;
+  }
   try {
     // Check if Docker daemon is running
     try {

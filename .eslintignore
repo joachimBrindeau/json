@@ -1,0 +1,15 @@
+node_modules/
+.next/
+coverage/
+playwright-report/
+playwright/.cache/
+test-results/
+.tests/
+
+# Large test fixtures and generated files
+tests/test-files/
+tests/downloads/
+
+# Build artifacts
+out/
+

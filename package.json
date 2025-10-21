@@ -7,7 +7,7 @@
     "dev:next": "next dev -p 3456",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx app components hooks lib tests types config",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "reset": "./scripts/reset.sh",
@@ -33,6 +33,12 @@
     "test:codegen": "./node_modules/.bin/playwright codegen localhost:3456",
     "lint:tests": "eslint 'tests/**/*.{ts,js}' --config eslint.config.tests.mjs",
     "test:quality-check": "bash scripts/pre-commit-test-check.sh",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest watch",
+    "test:unit:ui": "vitest --ui",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:auth": "vitest run --reporter=verbose",
+    "test:all": "npm run test:unit && npm run test:e2e",
     "prepare": "husky install || true"
   },
   "dependencies": {
@@ -126,6 +132,8 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.21",
     "chance": "^1.1.13",
     "eslint": "^9",
@@ -141,7 +149,8 @@
     "prettier": "^3.6.2",
     "puppeteer": "^24.17.1",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "zod": "^4.1.12"

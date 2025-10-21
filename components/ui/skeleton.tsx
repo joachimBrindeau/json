@@ -1,21 +1,41 @@
 'use client';
 
 import { memo } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { LOADING_ANIMATIONS } from '@/components/animations';
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
+  /**
+   * Use framer-motion for smoother animation
+   * Default: true
+   */
+  animated?: boolean;
 }
 
-export const Skeleton = memo<SkeletonProps>(({ className, ...props }) => (
-  <div
-    className={cn(
-      'animate-pulse rounded-md bg-muted',
-      className
-    )}
-    {...props}
-  />
-));
+export const Skeleton = memo<SkeletonProps>(({ className, animated = true, ...props }) => {
+  if (animated) {
+    return (
+      <motion.div
+        className={cn('rounded-md bg-muted', className)}
+        animate={LOADING_ANIMATIONS.skeleton}
+        style={props.style}
+        id={props.id}
+        role={props.role}
+        aria-label={props['aria-label']}
+        aria-hidden={props['aria-hidden']}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn('animate-pulse rounded-md bg-muted', className)}
+      {...props}
+    />
+  );
+});
 
 Skeleton.displayName = 'Skeleton';
 

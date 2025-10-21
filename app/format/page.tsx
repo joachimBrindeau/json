@@ -119,7 +119,7 @@ export default function FormatPage() {
 
   return (
     <MainLayout>
-      <div className="h-full flex flex-col lg:flex-row overflow-hidden">
+      <div className="h-full min-h-0 flex flex-col lg:flex-row overflow-hidden">
         <EditorPane
           title="Input JSON"
           value={input}

@@ -19,11 +19,13 @@ export class PerformanceTestGenerator {
         result.push({
           id: i,
           name: `Item ${i}`,
+          slug: `item_${i}`,
+          category: `category_${i % 10}`,
           description: `This is item number ${i} in the array`.repeat(10),
           metadata: {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-            tags: [`tag${i % 10}`, `category${i % 5}`, `type${i % 3}`],
+            tags: [`tag${i % 10}`, `category_${i % 10}`, `type${i % 3}`],
             nested: {
               level1: {
                 level2: {
@@ -38,6 +40,8 @@ export class PerformanceTestGenerator {
         // Simple objects for most items
         result.push({
           id: i,
+          slug: `item_${i}`,
+          category: `category_${i % 10}`,
           value: Math.random() * 1000,
           active: i % 2 === 0,
           timestamp: Date.now() + i,

@@ -32,7 +32,8 @@ export function useLibraryStats(): LibraryStats {
       totalJsons: rawData.total || 0,
       totalSize: rawData.totalSize || 0,
     }),
-    dependencies: [session],
+    // Don't pass session as dependency - it changes on every render
+    // The enabled flag is sufficient to control when to fetch
   });
 
   // Use a ref to store the latest refetch function
