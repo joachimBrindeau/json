@@ -24,11 +24,11 @@ interface SidebarProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-function SidebarComponent({ 
-  className, 
-  isMobile = false, 
-  isOpen = false, 
-  onOpenChange 
+function SidebarComponent({
+  className,
+  isMobile = false,
+  isOpen = false,
+  onOpenChange,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -59,18 +59,21 @@ function SidebarComponent({
   }, [sidebarScrollPosition]);
 
   // Save scroll position on scroll
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
-    // Debounce scroll updates to avoid excessive store updates
-    interface WindowWithSidebarTimeout extends Window {
-      __sidebarScrollTimeout?: NodeJS.Timeout;
-    }
-    const win = window as WindowWithSidebarTimeout;
-    clearTimeout(win.__sidebarScrollTimeout);
-    win.__sidebarScrollTimeout = setTimeout(() => {
-      setSidebarScrollPosition(scrollTop);
-    }, 150);
-  }, [setSidebarScrollPosition]);
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const scrollTop = e.currentTarget.scrollTop;
+      // Debounce scroll updates to avoid excessive store updates
+      interface WindowWithSidebarTimeout extends Window {
+        __sidebarScrollTimeout?: NodeJS.Timeout;
+      }
+      const win = window as WindowWithSidebarTimeout;
+      clearTimeout(win.__sidebarScrollTimeout);
+      win.__sidebarScrollTimeout = setTimeout(() => {
+        setSidebarScrollPosition(scrollTop);
+      }, 150);
+    },
+    [setSidebarScrollPosition]
+  );
 
   const handleNewDraftClick = useCallback(() => {
     if (isDirty) {
@@ -118,10 +121,14 @@ function SidebarComponent({
   );
 
   // Determine current state for each navigation item
-  const isItemCurrent = useCallback((item: typeof NAVIGATION_ITEMS[0]) => {
-    if (item.id === 'viewer') return pathname === '/view';
-    return pathname.startsWith(item.href);
-  }, [pathname]);
+  const isItemCurrent = useCallback(
+    (item: (typeof NAVIGATION_ITEMS)[0]) => {
+      const p = pathname || '';
+      if (item.id === 'viewer') return p === '/view';
+      return p.startsWith(item.href);
+    },
+    [pathname]
+  );
 
   // Handle navigation click (close mobile menu)
   const handleNavClick = useCallback(() => {
@@ -131,7 +138,12 @@ function SidebarComponent({
   }, [isMobile, onOpenChange]);
 
   const sidebarContent = (
-    <div className={cn('flex h-full w-64 flex-col border-r bg-background transition-all duration-200 ease-in-out', className)}>
+    <div
+      className={cn(
+        'flex h-full w-64 flex-col border-r bg-background transition-all duration-200 ease-in-out',
+        className
+      )}
+    >
       {/* Header */}
       <SidebarHeader
         isMobile={isMobile}
@@ -139,11 +151,7 @@ function SidebarComponent({
       />
 
       {/* Navigation */}
-      <div
-        ref={scrollAreaRef}
-        className="flex-1 px-4 overflow-auto"
-        onScroll={handleScroll}
-      >
+      <div ref={scrollAreaRef} className="flex-1 px-4 overflow-auto" onScroll={handleScroll}>
         <div className="flex flex-col gap-2 py-4">
           {NAVIGATION_ITEMS.map((item) => {
             const requiresAuth = item.id === 'saved' || Boolean(item.requiresAuth);

@@ -17,20 +17,24 @@ VIEWPORTS.forEach((viewport) => {
       await page.waitForLoadState('networkidle');
 
       // Test with sample JSON
-      const sampleJson = JSON.stringify({
-        name: "Test User",
-        age: 30,
-        skills: ["JavaScript", "TypeScript", "React"],
-        address: { city: "New York", country: "USA" }
-      }, null, 2);
+      const sampleJson = JSON.stringify(
+        {
+          name: 'Test User',
+          age: 30,
+          skills: ['JavaScript', 'TypeScript', 'React'],
+          address: { city: 'New York', country: 'USA' },
+        },
+        null,
+        2
+      );
 
       // Find and fill JSON input
       const jsonInput = page.locator('textarea, .monaco-editor').first();
-      if (await jsonInput.count() > 0) {
+      if ((await jsonInput.count()) > 0) {
         await jsonInput.click();
         await jsonInput.clear();
         await jsonInput.fill(sampleJson);
-        
+
         // Check that the input doesn't overflow
         const inputBox = await jsonInput.boundingBox();
         if (inputBox) {
@@ -40,7 +44,7 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check tabs are responsive
       const tabs = page.locator('[role="tablist"], [data-testid*="tab"]');
-      if (await tabs.count() > 0) {
+      if ((await tabs.count()) > 0) {
         const tabsBox = await tabs.first().boundingBox();
         if (tabsBox) {
           expect(tabsBox.width).toBeLessThanOrEqual(viewport.width);
@@ -49,12 +53,12 @@ VIEWPORTS.forEach((viewport) => {
         // On mobile, check if tabs scroll or stack properly
         if (viewport.name === 'mobile') {
           const tabButtons = tabs.locator('button, [role="tab"]');
-          if (await tabButtons.count() > 0) {
+          if ((await tabButtons.count()) > 0) {
             // Each tab should be accessible
             for (let i = 0; i < Math.min(4, await tabButtons.count()); i++) {
               const tab = tabButtons.nth(i);
               await expect(tab).toBeVisible();
-              
+
               const tabBox = await tab.boundingBox();
               if (tabBox) {
                 expect(tabBox.height).toBeGreaterThanOrEqual(44);
@@ -71,16 +75,16 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check format action buttons
       const actionButtons = page.locator('button').filter({ hasText: /format|minify|validate/i });
-      
-      if (await actionButtons.count() > 0) {
+
+      if ((await actionButtons.count()) > 0) {
         for (let i = 0; i < Math.min(5, await actionButtons.count()); i++) {
           const button = actionButtons.nth(i);
           const buttonBox = await button.boundingBox();
-          
+
           if (buttonBox) {
             expect(buttonBox.width).toBeLessThanOrEqual(viewport.width);
             expect(buttonBox.width).toBeGreaterThan(0);
-            
+
             // Mobile touch targets should be at least 44px
             if (viewport.name === 'mobile') {
               expect(buttonBox.height).toBeGreaterThanOrEqual(44);
@@ -97,21 +101,21 @@ VIEWPORTS.forEach((viewport) => {
 
       // Try to open a modal (if any exist)
       const modalTriggers = page.locator('button').filter({ hasText: /share|export|settings/i });
-      
-      if (await modalTriggers.count() > 0) {
+
+      if ((await modalTriggers.count()) > 0) {
         await modalTriggers.first().click();
         await page.waitForLoadState('networkidle'); // Wait for modal rendering
 
         // Check if modal appears
         const modal = page.locator('[role="dialog"], .modal, [data-testid*="modal"]');
-        if (await modal.count() > 0) {
+        if ((await modal.count()) > 0) {
           const modalBox = await modal.first().boundingBox();
-          
+
           if (modalBox) {
             // Modal should fit within viewport with some padding
             expect(modalBox.width).toBeLessThanOrEqual(viewport.width - 32);
             expect(modalBox.height).toBeLessThanOrEqual(viewport.height - 64);
-            
+
             // On mobile, modal should use most of the screen
             if (viewport.name === 'mobile') {
               expect(modalBox.width).toBeGreaterThanOrEqual(viewport.width * 0.8);
@@ -119,10 +123,12 @@ VIEWPORTS.forEach((viewport) => {
           }
 
           // Check close button is accessible
-          const closeButton = modal.locator('[aria-label*="close"], button').filter({ hasText: /×|close/i });
-          if (await closeButton.count() > 0) {
+          const closeButton = modal
+            .locator('[aria-label*="close"], button')
+            .filter({ hasText: /×|close/i });
+          if ((await closeButton.count()) > 0) {
             await expect(closeButton.first()).toBeVisible();
-            
+
             if (viewport.name === 'mobile') {
               const closeBox = await closeButton.first().boundingBox();
               if (closeBox) {
@@ -140,15 +146,15 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check textarea inputs
       const textareas = page.locator('textarea');
-      
+
       for (let i = 0; i < Math.min(3, await textareas.count()); i++) {
         const textarea = textareas.nth(i);
         const textareaBox = await textarea.boundingBox();
-        
+
         if (textareaBox) {
           expect(textareaBox.width).toBeLessThanOrEqual(viewport.width);
           expect(textareaBox.width).toBeGreaterThan(100); // Should have minimum width
-          
+
           // On mobile, should use most available width
           if (viewport.name === 'mobile') {
             expect(textareaBox.width).toBeGreaterThanOrEqual(viewport.width * 0.7);
@@ -175,17 +181,19 @@ VIEWPORTS.forEach((viewport) => {
 
       if (viewport.name === 'mobile') {
         // Check mobile navigation
-        const mobileMenuButton = page.locator('[aria-label*="menu"], button').filter({ hasText: /menu/i });
-        if (await mobileMenuButton.count() > 0) {
+        const mobileMenuButton = page
+          .locator('[aria-label*="menu"], button')
+          .filter({ hasText: /menu/i });
+        if ((await mobileMenuButton.count()) > 0) {
           await expect(mobileMenuButton.first()).toBeVisible();
-          
+
           // Click to open menu
           await mobileMenuButton.first().click();
           await page.waitForLoadState('networkidle'); // Wait for menu expansion
-          
+
           // Check menu items are accessible
           const menuItems = page.locator('nav a, [role="menuitem"]');
-          if (await menuItems.count() > 0) {
+          if ((await menuItems.count()) > 0) {
             for (let i = 0; i < Math.min(5, await menuItems.count()); i++) {
               const item = menuItems.nth(i);
               if (await item.isVisible()) {
@@ -200,7 +208,7 @@ VIEWPORTS.forEach((viewport) => {
       } else {
         // Check desktop navigation
         const navItems = page.locator('nav a, [data-testid*="nav"]');
-        if (await navItems.count() > 0) {
+        if ((await navItems.count()) > 0) {
           for (let i = 0; i < Math.min(5, await navItems.count()); i++) {
             const navItem = navItems.nth(i);
             if (await navItem.isVisible()) {
@@ -220,28 +228,28 @@ VIEWPORTS.forEach((viewport) => {
 
       // Find card containers
       const cardContainers = page.locator('.grid, [class*="grid-cols"], .flex.flex-wrap');
-      
+
       for (let i = 0; i < Math.min(3, await cardContainers.count()); i++) {
         const container = cardContainers.nth(i);
         const containerBox = await container.boundingBox();
-        
+
         if (containerBox) {
           expect(containerBox.width).toBeLessThanOrEqual(viewport.width);
-          
+
           // Check individual cards
           const cards = container.locator('> div, > article, > section');
-          if (await cards.count() > 0) {
+          if ((await cards.count()) > 0) {
             for (let j = 0; j < Math.min(3, await cards.count()); j++) {
               const card = cards.nth(j);
               const cardBox = await card.boundingBox();
-              
+
               if (cardBox) {
                 expect(cardBox.width).toBeLessThanOrEqual(viewport.width);
                 expect(cardBox.width).toBeGreaterThan(0);
-                
+
                 // Check card content doesn't overflow
                 const cardContent = card.locator('h3, h4, p').first();
-                if (await cardContent.count() > 0) {
+                if ((await cardContent.count()) > 0) {
                   const contentBox = await cardContent.boundingBox();
                   if (contentBox) {
                     expect(contentBox.width).toBeLessThanOrEqual(cardBox.width);
@@ -260,14 +268,14 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check headings don't overflow
       const headings = page.locator('h1, h2, h3, h4, h5, h6');
-      
+
       for (let i = 0; i < Math.min(5, await headings.count()); i++) {
         const heading = headings.nth(i);
         if (await heading.isVisible()) {
           const headingBox = await heading.boundingBox();
           if (headingBox) {
             expect(headingBox.width).toBeLessThanOrEqual(viewport.width);
-            
+
             // Check text doesn't get cut off (minimum height)
             expect(headingBox.height).toBeGreaterThan(0);
           }
@@ -293,7 +301,7 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check images don't overflow
       const images = page.locator('img, [role="img"]');
-      
+
       for (let i = 0; i < Math.min(3, await images.count()); i++) {
         const image = images.nth(i);
         if (await image.isVisible()) {

@@ -38,9 +38,7 @@ test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
 
       // Validate embed code structure
       expect(embedCode).toContain('<iframe');
-      expect(embedCode).toContain(
-        `src="${config.testing.baseUrl}/embed/${jsonId}`
-      );
+      expect(embedCode).toContain(`src="${config.testing.baseUrl}/embed/${jsonId}`);
       expect(embedCode).toContain('width="800"');
       expect(embedCode).toContain('height="600"');
       expect(embedCode).toContain('theme=dark');

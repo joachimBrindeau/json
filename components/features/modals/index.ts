@@ -24,4 +24,3 @@ export { PublishModal } from './publish-modal';
 // Compatibility exports
 export { GlobalLoginModal } from './global-login-modal';
 export { ShareModal as UnifiedShareModal } from './share-modal';
-

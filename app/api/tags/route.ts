@@ -5,6 +5,13 @@ import { tagSuggestLimiter } from '@/lib/middleware/rate-limit';
 import { logger } from '@/lib/logger';
 import { success, internalServerError, error as errorResponse } from '@/lib/api/responses';
 
+// Simple in-memory cache for popular tags by category
+const TAGS_CACHE = new Map<
+  string,
+  { data: Array<{ tag: string; count: number }>; timestamp: number }
+>();
+const TAGS_CACHE_TTL = 60_000; // 60s
+
 export async function GET(request: NextRequest) {
   // Apply rate limiting for tag suggestions
   const identifier =
@@ -20,49 +27,55 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
 
-    // Fetch all unique tags from published documents
-    const documents = await prisma.jsonDocument.findMany({
-      where: {
-        visibility: 'public',
-        ...(category && { category }),
-      },
-      select: {
-        tags: true,
-      },
-    });
+    // Cache key per category (or 'all') for popular tags baseline
+    const cacheKey = `popular:${category || 'all'}`;
+    const now = Date.now();
+    let baseline: Array<{ tag: string; count: number }> | undefined;
 
-    // Extract and count unique tags
-    const tagCounts = new Map<string, number>();
-
-    documents.forEach((doc) => {
-      doc.tags.forEach((tag) => {
-        const count = tagCounts.get(tag) || 0;
-        tagCounts.set(tag, count + 1);
-      });
-    });
-
-    // Convert to array and sort by count
-    let allTags = Array.from(tagCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([tag]) => tag);
-
-    // If there's a query, filter and suggest tags
-    if (query && query.length >= 2) {
-      allTags = suggestTags(query, allTags, limit);
+    // Check cache
+    const cached = TAGS_CACHE.get(cacheKey);
+    if (cached && now - cached.timestamp < TAGS_CACHE_TTL) {
+      baseline = cached.data;
     } else {
-      // Return most popular tags
-      allTags = allTags.slice(0, limit);
+      // DB-side aggregation: unnest tags and count
+      // Limit the baseline set to keep memory and CPU predictable
+      const maxBaseline = 500; // upper bound of baseline rows to keep
+
+      const rows: Array<{ tag: string; count: bigint }> = category
+        ? await prisma.$queryRaw`select tag, count(*)::bigint as count
+                                  from json_documents jd, unnest(jd.tags) as tag
+                                  where jd.visibility = 'public' and jd.category = ${category}
+                                  group by tag
+                                  order by count(*) desc
+                                  limit ${maxBaseline}`
+        : await prisma.$queryRaw`select tag, count(*)::bigint as count
+                                  from json_documents jd, unnest(jd.tags) as tag
+                                  where jd.visibility = 'public'
+                                  group by tag
+                                  order by count(*) desc
+                                  limit ${maxBaseline}`;
+
+      baseline = rows.map((r) => ({ tag: r.tag, count: Number(r.count) }));
+      TAGS_CACHE.set(cacheKey, { data: baseline, timestamp: now });
     }
 
-    // Get tag statistics
-    const tagStats = allTags.map((tag) => ({
-      tag,
-      count: tagCounts.get(tag) || 0,
-    }));
+    // From baseline, build final list depending on query
+    const popularTags = baseline;
+    const allTagNames = popularTags.map((r) => r.tag);
+
+    let selected: string[];
+    if (query && query.length >= 2) {
+      selected = suggestTags(query, allTagNames, limit);
+    } else {
+      selected = allTagNames.slice(0, limit);
+    }
+
+    const tagIndex = new Map(popularTags.map((r) => [r.tag, r.count] as const));
+    const tagStats = selected.map((tag) => ({ tag, count: tagIndex.get(tag) || 0 }));
 
     return success({
       tags: tagStats,
-      total: tagCounts.size,
+      total: popularTags.length,
     });
   } catch (error) {
     logger.error({ err: error, query: request.url }, 'Tags API error');

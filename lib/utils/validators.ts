@@ -268,7 +268,7 @@ export function isValidFileSize(bytes: number, maxMB: number): boolean {
  */
 export function isValidFileType(filename: string, allowedExtensions: string[]): boolean {
   const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-  return allowedExtensions.map(e => e.toLowerCase()).includes(ext);
+  return allowedExtensions.map((e) => e.toLowerCase()).includes(ext);
 }
 
 /**
@@ -288,8 +288,6 @@ export function isValidUsername(
   const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 
   return (
-    username.length >= minLength &&
-    username.length <= maxLength &&
-    usernameRegex.test(username)
+    username.length >= minLength && username.length <= maxLength && usernameRegex.test(username)
   );
 }

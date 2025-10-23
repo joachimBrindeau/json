@@ -3,14 +3,14 @@
  * Runs before all tests to configure the test environment
  */
 
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
 import { config } from 'dotenv';
 
 // Load test environment variables
 config({ path: '.env.test' });
 
 // Mock Next.js environment
-process.env.NODE_ENV = 'test';
+(process as any).env.NODE_ENV = 'test';
 process.env.NEXTAUTH_URL = 'http://localhost:3456';
 process.env.NEXTAUTH_SECRET = 'test-secret-key-for-testing-only';
 
@@ -48,4 +48,3 @@ afterEach(() => {
   // Cleanup after each test
   vi.restoreAllMocks();
 });
-

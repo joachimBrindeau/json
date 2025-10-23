@@ -5,38 +5,37 @@ import { JsonViewerSkeleton, LibrarySkeleton, Skeleton } from '@/components/ui/s
 
 // Lazy load heavy components
 export const LazyViewer = lazy(() =>
-  import('@/components/features/viewer')
-    .then(module => ({ default: module.Viewer }))
+  import('@/components/features/viewer').then((module) => ({ default: module.Viewer }))
 );
 
 // Backwards compatibility
 export const LazyUltraJsonViewer = LazyViewer;
 
-export const LazyMonacoEditor = lazy(() => 
-  import('@monaco-editor/react').then(module => ({ default: module.default }))
+export const LazyMonacoEditor = lazy(() =>
+  import('@monaco-editor/react').then((module) => ({ default: module.default }))
 );
 
 export const LazyReactFlow = lazy(() =>
-  import('@xyflow/react').then(module => ({
-    default: module.ReactFlow
+  import('@xyflow/react').then((module) => ({
+    default: module.ReactFlow,
   }))
 );
 
-export const LazyPublishModal = lazy(() => 
-  import('@/components/features/modals/publish-modal').then(module => ({ 
-    default: module.PublishModal 
+export const LazyPublishModal = lazy(() =>
+  import('@/components/features/modals/publish-modal').then((module) => ({
+    default: module.PublishModal,
   }))
 );
 
-export const LazyEmbedModal = lazy(() => 
-  import('@/components/features/modals/embed-modal').then(module => ({ 
-    default: module.EmbedModal 
+export const LazyEmbedModal = lazy(() =>
+  import('@/components/features/modals/embed-modal').then((module) => ({
+    default: module.EmbedModal,
   }))
 );
 
 export const LazyShareModal = lazy(() =>
-  import('@/components/features/modals/share-modal').then(module => ({
-    default: module.ShareModal
+  import('@/components/features/modals/share-modal').then((module) => ({
+    default: module.ShareModal,
   }))
 );
 
@@ -115,7 +114,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   fallback: React.ReactNode = <Skeleton className="h-32 w-full" />
 ) {
   const LazyComponent = lazy(importFn);
-  
+
   return function LazyComponentWithFallback(props: any) {
     return (
       <Suspense fallback={fallback}>

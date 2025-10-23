@@ -5,7 +5,14 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
-import { FileJson, FileCode, FileSpreadsheet, FileText, Search, ArrowRightLeft } from 'lucide-react';
+import {
+  FileJson,
+  FileCode,
+  FileSpreadsheet,
+  FileText,
+  Search,
+  ArrowRightLeft,
+} from 'lucide-react';
 import { FormatSelector } from '@/components/ui/format-selector';
 import { ViewerActions } from '@/components/features/viewer';
 import { EditorPane } from '@/components/features/editor/EditorPane';
@@ -17,9 +24,22 @@ import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toa
 import { useClipboard } from '@/hooks/use-clipboard';
 import { useDownload } from '@/hooks/use-download';
 import type { EditorAction } from '@/types/editor-actions';
-import { createResetAction, createConvertAction, createUndoAction, createRedoAction } from '@/lib/editor/action-factories';
+import {
+  createResetAction,
+  createConvertAction,
+  createUndoAction,
+  createRedoAction,
+} from '@/lib/editor/action-factories';
 
-type ConversionFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'typescript' | 'javascript';
+type ConversionFormat =
+  | 'json'
+  | 'yaml'
+  | 'xml'
+  | 'csv'
+  | 'toml'
+  | 'properties'
+  | 'typescript'
+  | 'javascript';
 type InputFormat = 'autodetect' | ConversionFormat;
 
 interface ConversionOption {
@@ -38,7 +58,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileJson className="h-4 w-4" />,
     description: 'JSON format',
     fileExtension: 'json',
-    mimeType: 'application/json'
+    mimeType: 'application/json',
   },
   {
     id: 'yaml',
@@ -46,7 +66,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileCode className="h-4 w-4" />,
     description: 'Convert to YAML format',
     fileExtension: 'yml',
-    mimeType: 'text/yaml'
+    mimeType: 'text/yaml',
   },
   {
     id: 'xml',
@@ -54,7 +74,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileCode className="h-4 w-4" />,
     description: 'Convert to XML format',
     fileExtension: 'xml',
-    mimeType: 'application/xml'
+    mimeType: 'application/xml',
   },
   {
     id: 'csv',
@@ -62,7 +82,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileSpreadsheet className="h-4 w-4" />,
     description: 'Convert to CSV format (flattened)',
     fileExtension: 'csv',
-    mimeType: 'text/csv'
+    mimeType: 'text/csv',
   },
   {
     id: 'toml',
@@ -70,7 +90,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileText className="h-4 w-4" />,
     description: 'Convert to TOML format',
     fileExtension: 'toml',
-    mimeType: 'text/plain'
+    mimeType: 'text/plain',
   },
   {
     id: 'properties',
@@ -78,7 +98,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileText className="h-4 w-4" />,
     description: 'Convert to Java Properties format',
     fileExtension: 'properties',
-    mimeType: 'text/plain'
+    mimeType: 'text/plain',
   },
   {
     id: 'typescript',
@@ -86,7 +106,7 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileCode className="h-4 w-4" />,
     description: 'Generate TypeScript interface',
     fileExtension: 'ts',
-    mimeType: 'text/plain'
+    mimeType: 'text/plain',
   },
   {
     id: 'javascript',
@@ -94,8 +114,8 @@ const conversionOptions: ConversionOption[] = [
     icon: <FileCode className="h-4 w-4" />,
     description: 'Convert to JavaScript object',
     fileExtension: 'js',
-    mimeType: 'text/javascript'
-  }
+    mimeType: 'text/javascript',
+  },
 ];
 
 interface InputFormatOption {
@@ -110,14 +130,14 @@ const inputFormatOptions: InputFormatOption[] = [
     id: 'autodetect',
     label: 'Autodetect',
     icon: <Search className="h-4 w-4" />,
-    description: 'Automatically detect input format'
+    description: 'Automatically detect input format',
   },
-  ...conversionOptions.map(option => ({
+  ...conversionOptions.map((option) => ({
     id: option.id,
     label: option.label,
     icon: option.icon,
-    description: option.description
-  }))
+    description: option.description,
+  })),
 ];
 
 export default function ConvertPage() {
@@ -153,7 +173,7 @@ export default function ConvertPage() {
   // Auto-detect input format
   const detectInputFormat = (content: string): ConversionFormat => {
     if (!content.trim()) return 'json';
-    
+
     try {
       // Try JSON first
       JSON.parse(content);
@@ -163,47 +183,54 @@ export default function ConvertPage() {
       if (content.includes('---') || /^\s*\w+:\s*\S/m.test(content)) {
         return 'yaml';
       }
-      
+
       // Check for XML patterns
       if (content.trim().startsWith('<?xml') || /<\w+[^>]*>/.test(content)) {
         return 'xml';
       }
-      
+
       // Check for CSV patterns
-      if (content.split('\n').some(line => line.includes(',') && line.split(',').length > 1)) {
+      if (content.split('\n').some((line) => line.includes(',') && line.split(',').length > 1)) {
         return 'csv';
       }
-      
+
       // Check for TOML patterns
       if (/^\s*\[\w+\]/m.test(content) || /^\s*\w+\s*=\s*.+/m.test(content)) {
         return 'toml';
       }
-      
+
       // Check for properties patterns
       if (/^\s*\w+[\w.]*\s*=\s*.*/m.test(content)) {
         return 'properties';
       }
-      
+
       // Check for TypeScript/JavaScript patterns
-      if (content.includes('interface ') || content.includes('type ') || content.includes('export ')) {
+      if (
+        content.includes('interface ') ||
+        content.includes('type ') ||
+        content.includes('export ')
+      ) {
         return content.includes('interface ') ? 'typescript' : 'javascript';
       }
-      
+
       // Default to JSON
       return 'json';
     }
   };
 
-  const hasValidInput = inputFormat === 'autodetect' ? 
-    detectInputFormat(input) !== 'json' || validateJson(input) :
-    inputFormat === 'json' ? validateJson(input) : !!input.trim();
+  const hasValidInput =
+    inputFormat === 'autodetect'
+      ? detectInputFormat(input) !== 'json' || validateJson(input)
+      : inputFormat === 'json'
+        ? validateJson(input)
+        : !!input.trim();
 
   // Parse input based on format
   const parseInput = (content: string, format: InputFormat): any => {
     if (!content.trim()) return null;
-    
+
     const actualFormat = format === 'autodetect' ? detectInputFormat(content) : format;
-    
+
     try {
       switch (actualFormat) {
         case 'json':
@@ -235,15 +262,15 @@ export default function ConvertPage() {
   // Simple parsers for different formats
   const parseSimpleYaml = (content: string): any => {
     // Basic YAML parsing - this is simplified
-    const lines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'));
+    const lines = content.split('\n').filter((line) => line.trim() && !line.trim().startsWith('#'));
     const result: any = {};
-    
+
     for (const line of lines) {
       if (line.includes(':')) {
         const [key, ...valueParts] = line.split(':');
         const value = valueParts.join(':').trim();
         const cleanKey = key.trim().replace(/^-\s*/, '');
-        
+
         if (value) {
           // Try to parse as JSON value
           try {
@@ -256,7 +283,7 @@ export default function ConvertPage() {
         }
       }
     }
-    
+
     return result;
   };
 
@@ -281,30 +308,30 @@ export default function ConvertPage() {
   const parseCsv = (content: string): any => {
     const lines = content.trim().split('\n');
     if (lines.length < 2) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    const data = lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+    const data = lines.slice(1).map((line) => {
+      const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
       const obj: any = {};
       headers.forEach((header, index) => {
         obj[header] = values[index] || '';
       });
       return obj;
     });
-    
+
     return data;
   };
 
   const parseSimpleToml = (content: string): any => {
     const result: any = {};
-    const lines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'));
-    
+    const lines = content.split('\n').filter((line) => line.trim() && !line.trim().startsWith('#'));
+
     for (const line of lines) {
       if (line.includes('=')) {
         const [key, ...valueParts] = line.split('=');
         const value = valueParts.join('=').trim();
         const cleanKey = key.trim();
-        
+
         try {
           result[cleanKey] = JSON.parse(value);
         } catch {
@@ -312,35 +339,35 @@ export default function ConvertPage() {
         }
       }
     }
-    
+
     return result;
   };
 
   const parseProperties = (content: string): any => {
     const result: any = {};
-    const lines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'));
-    
+    const lines = content.split('\n').filter((line) => line.trim() && !line.trim().startsWith('#'));
+
     for (const line of lines) {
       if (line.includes('=')) {
         const [key, ...valueParts] = line.split('=');
         const value = valueParts.join('=').trim();
         const cleanKey = key.trim();
-        
+
         // Handle nested properties
         const keyParts = cleanKey.split('.');
         let current = result;
-        
+
         for (let i = 0; i < keyParts.length - 1; i++) {
           if (!current[keyParts[i]]) {
             current[keyParts[i]] = {};
           }
           current = current[keyParts[i]];
         }
-        
+
         current[keyParts[keyParts.length - 1]] = value;
       }
     }
-    
+
     return result;
   };
 
@@ -366,7 +393,7 @@ export default function ConvertPage() {
   const convertToYaml = (obj: any): string => {
     const yamlify = (value: any, indent = 0): string => {
       const spaces = '  '.repeat(indent);
-      
+
       if (value === null) return 'null';
       if (typeof value === 'boolean') return value.toString();
       if (typeof value === 'number') return value.toString();
@@ -377,12 +404,14 @@ export default function ConvertPage() {
         }
         return value;
       }
-      
+
       if (Array.isArray(value)) {
         if (value.length === 0) return '[]';
-        return value.map(item => `${spaces}- ${yamlify(item, indent + 1).replace(/^\s+/, '')}`).join('\n');
+        return value
+          .map((item) => `${spaces}- ${yamlify(item, indent + 1).replace(/^\s+/, '')}`)
+          .join('\n');
       }
-      
+
       if (typeof value === 'object') {
         if (Object.keys(value).length === 0) return '{}';
         return Object.entries(value)
@@ -398,10 +427,10 @@ export default function ConvertPage() {
           })
           .join('\n');
       }
-      
+
       return String(value);
     };
-    
+
     return yamlify(obj);
   };
 
@@ -416,7 +445,7 @@ export default function ConvertPage() {
         return `<${key}>${escaped}</${key}>`;
       }
       if (Array.isArray(value)) {
-        return value.map(item => xmlify(item, key)).join('\n');
+        return value.map((item) => xmlify(item, key)).join('\n');
       }
       if (typeof value === 'object') {
         const content = Object.entries(value)
@@ -426,18 +455,18 @@ export default function ConvertPage() {
       }
       return `<${key}>${value}</${key}>`;
     };
-    
+
     return `<?xml version="1.0" encoding="UTF-8"?>\n${xmlify(obj, rootName)}`;
   };
 
   const convertToCsv = (obj: any): string => {
     const flatten = (data: any, prefix = ''): Record<string, any> => {
       const result: Record<string, any> = {};
-      
+
       for (const key in data) {
         const value = data[key];
         const newKey = prefix ? `${prefix}.${key}` : key;
-        
+
         if (value === null || value === undefined) {
           result[newKey] = '';
         } else if (Array.isArray(value)) {
@@ -454,34 +483,34 @@ export default function ConvertPage() {
           result[newKey] = value;
         }
       }
-      
+
       return result;
     };
-    
+
     if (Array.isArray(obj)) {
       const allKeys = new Set<string>();
-      const flattened = obj.map(item => {
+      const flattened = obj.map((item) => {
         const flat = flatten(item);
-        Object.keys(flat).forEach(key => allKeys.add(key));
+        Object.keys(flat).forEach((key) => allKeys.add(key));
         return flat;
       });
-      
+
       const headers = Array.from(allKeys).sort();
       const csvRows = [headers.join(',')];
-      
-      flattened.forEach(row => {
-        const values = headers.map(header => {
+
+      flattened.forEach((row) => {
+        const values = headers.map((header) => {
           const value = row[header] ?? '';
           return `"${String(value).replace(/"/g, '""')}"`;
         });
         csvRows.push(values.join(','));
       });
-      
+
       return csvRows.join('\n');
     } else {
       const flattened = flatten(obj);
       const headers = Object.keys(flattened);
-      const values = headers.map(header => `"${String(flattened[header]).replace(/"/g, '""')}"`);
+      const values = headers.map((header) => `"${String(flattened[header]).replace(/"/g, '""')}"`);
       return `${headers.join(',')}\n${values.join(',')}`;
     }
   };
@@ -498,21 +527,21 @@ export default function ConvertPage() {
         return '""';
       }
       if (Array.isArray(value)) {
-        const items = value.map(item => tomlify(item)).join(', ');
+        const items = value.map((item) => tomlify(item)).join(', ');
         return `[${items}]`;
       }
       if (typeof value === 'object') {
         const entries = Object.entries(value);
         const simpleEntries = entries.filter(([, v]) => typeof v !== 'object' || v === null);
         const complexEntries = entries.filter(([, v]) => typeof v === 'object' && v !== null);
-        
+
         let result = '';
-        
+
         // Simple key-value pairs
         simpleEntries.forEach(([k, v]) => {
           result += `${k} = ${tomlify(v)}\n`;
         });
-        
+
         // Complex objects as tables
         complexEntries.forEach(([k, v]) => {
           if (result && !result.endsWith('\n\n')) result += '\n';
@@ -520,18 +549,18 @@ export default function ConvertPage() {
           result += `[${tableName}]\n`;
           result += tomlify(v, tableName);
         });
-        
+
         return result;
       }
       return String(value);
     };
-    
+
     return tomlify(obj);
   };
 
   const convertToProperties = (obj: any, prefix = ''): string => {
     const lines: string[] = [];
-    
+
     const propertify = (value: any, key: string) => {
       if (value === null || value === undefined) {
         lines.push(`${key}=`);
@@ -544,15 +573,18 @@ export default function ConvertPage() {
           propertify(item, `${key}[${index}]`);
         });
       } else {
-        const escapedValue = String(value).replace(/\\/g, '\\\\').replace(/=/g, '\\=').replace(/:/g, '\\:');
+        const escapedValue = String(value)
+          .replace(/\\/g, '\\\\')
+          .replace(/=/g, '\\=')
+          .replace(/:/g, '\\:');
         lines.push(`${key}=${escapedValue}`);
       }
     };
-    
+
     Object.entries(obj).forEach(([key, value]) => {
       propertify(value, prefix ? `${prefix}.${key}` : key);
     });
-    
+
     return lines.join('\n');
   };
 
@@ -572,7 +604,7 @@ export default function ConvertPage() {
       }
       return typeof value;
     };
-    
+
     const interfaceType = getType(obj);
     return `interface ${interfaceName} ${interfaceType}`;
   };
@@ -587,72 +619,70 @@ export default data;`;
     return JSON.stringify(obj, null, 2);
   };
 
-  const performConversion = useCallback((format?: ConversionFormat) => {
-    const targetFormat = format || selectedFormat;
-
-    if (!input.trim()) {
-      toastPatterns.validation.noData('convert');
-      return;
+  // DRY: centralized conversion dispatcher used by manual and auto conversion flows
+  const convertUsingFormat = (parsed: any, fmt: ConversionFormat): string => {
+    switch (fmt) {
+      case 'json':
+        return convertToJson(parsed);
+      case 'yaml':
+        return convertToYaml(parsed);
+      case 'xml':
+        return convertToXml(parsed);
+      case 'csv':
+        return convertToCsv(parsed);
+      case 'toml':
+        return convertToToml(parsed);
+      case 'properties':
+        return convertToProperties(parsed);
+      case 'typescript':
+        return convertToTypeScript(parsed);
+      case 'javascript':
+        return convertToJavaScript(parsed);
+      default:
+        throw new Error('Unsupported format');
     }
+  };
 
-    if (!hasValidInput) {
-      const detectedFormat = inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
-      toastPatterns.validation.invalid(detectedFormat.toUpperCase(), 'to convert');
-      return;
-    }
+  const performConversion = useCallback(
+    (format?: ConversionFormat) => {
+      const targetFormat = format || selectedFormat;
 
-    try {
-      const parsed = parseInput(input, inputFormat);
-      if (!parsed) {
-        throw new Error('Failed to parse input');
+      if (!input.trim()) {
+        toastPatterns.validation.noData('convert');
+        return;
       }
-      
-      let converted = '';
-      
-      switch (targetFormat) {
-        case 'json':
-          converted = convertToJson(parsed);
-          break;
-        case 'yaml':
-          converted = convertToYaml(parsed);
-          break;
-        case 'xml':
-          converted = convertToXml(parsed);
-          break;
-        case 'csv':
-          converted = convertToCsv(parsed);
-          break;
-        case 'toml':
-          converted = convertToToml(parsed);
-          break;
-        case 'properties':
-          converted = convertToProperties(parsed);
-          break;
-        case 'typescript':
-          converted = convertToTypeScript(parsed);
-          break;
-        case 'javascript':
-          converted = convertToJavaScript(parsed);
-          break;
-        default:
-          throw new Error('Unsupported format');
+
+      if (!hasValidInput) {
+        const detectedFormat =
+          inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
+        toastPatterns.validation.invalid(detectedFormat.toUpperCase(), 'to convert');
+        return;
       }
-      
-      setOutput(converted);
-      if (format) {
-        // Only show toast for manual conversion, not automatic
-        const detectedFormat = inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
-        showSuccessToast('Converted!', {
-          description: `${detectedFormat.toUpperCase()} successfully converted to ${targetFormat.toUpperCase()}`,
-        });
+
+      try {
+        const parsed = parseInput(input, inputFormat);
+        if (!parsed) {
+          throw new Error('Failed to parse input');
+        }
+        const converted = convertUsingFormat(parsed, targetFormat);
+        setOutput(converted);
+        if (format) {
+          // Only show toast for manual conversion, not automatic
+          const detectedFormat =
+            inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat;
+          showSuccessToast('Converted!', {
+            description: `${detectedFormat.toUpperCase()} successfully converted to ${targetFormat.toUpperCase()}`,
+          });
+        }
+      } catch (e) {
+        if (format) {
+          // Only show error toast for manual conversion
+          showErrorToast(e, 'Conversion failed');
+        }
       }
-    } catch (e) {
-      if (format) {
-        // Only show error toast for manual conversion
-        showErrorToast(e, 'Conversion failed');
-      }
-    }
-  }, [input, selectedFormat, hasValidInput, inputFormat, detectInputFormat]);
+    },
+    [input, selectedFormat, hasValidInput, inputFormat, detectInputFormat]
+  );
 
   // Auto-convert when format changes and valid input exists
   useEffect(() => {
@@ -663,38 +693,7 @@ export default data;`;
           setOutput('');
           return;
         }
-        
-        let converted = '';
-        
-        switch (selectedFormat) {
-          case 'json':
-            converted = convertToJson(parsed);
-            break;
-          case 'yaml':
-            converted = convertToYaml(parsed);
-            break;
-          case 'xml':
-            converted = convertToXml(parsed);
-            break;
-          case 'csv':
-            converted = convertToCsv(parsed);
-            break;
-          case 'toml':
-            converted = convertToToml(parsed);
-            break;
-          case 'properties':
-            converted = convertToProperties(parsed);
-            break;
-          case 'typescript':
-            converted = convertToTypeScript(parsed);
-            break;
-          case 'javascript':
-            converted = convertToJavaScript(parsed);
-            break;
-          default:
-            converted = '';
-        }
-        
+        const converted = convertUsingFormat(parsed, selectedFormat);
         setOutput(converted);
       } catch {
         setOutput('');
@@ -715,61 +714,79 @@ export default data;`;
 
   const getOutputLanguage = () => {
     switch (selectedFormat) {
-      case 'json': return 'json';
-      case 'yaml': return 'yaml';
-      case 'xml': return 'xml';
-      case 'typescript': return 'typescript';
-      case 'javascript': return 'javascript';
-      case 'csv': return 'csv';
-      default: return 'plaintext';
+      case 'json':
+        return 'json';
+      case 'yaml':
+        return 'yaml';
+      case 'xml':
+        return 'xml';
+      case 'typescript':
+        return 'typescript';
+      case 'javascript':
+        return 'javascript';
+      case 'csv':
+        return 'csv';
+      default:
+        return 'plaintext';
     }
   };
 
   const getFormatLabel = (format: ConversionFormat | InputFormat) => {
     if (format === 'autodetect') return 'JSON';
-    return conversionOptions.find(opt => opt.id === format)?.label || format.toUpperCase();
+    return conversionOptions.find((opt) => opt.id === format)?.label || format.toUpperCase();
   };
 
   // Custom magic action for Convert
-  const convertMagicAction = useMemo(() => [{
-    id: 'convert',
-    label: 'Convert',
-    icon: ArrowRightLeft,
-    onClick: () => performConversion(),
-    disabled: !input || !hasValidInput,
-  }], [input, hasValidInput]);
+  const convertMagicAction = useMemo(
+    () => [
+      {
+        id: 'convert',
+        label: 'Convert',
+        icon: ArrowRightLeft,
+        onClick: () => performConversion(),
+        disabled: !input || !hasValidInput,
+      },
+    ],
+    [input, hasValidInput]
+  );
 
   // Define input pane actions - Undo, Redo, Clear (Copy/Download/Share/Format/Minify/Convert provided by ViewerActions)
-  const inputActions: EditorAction[] = useMemo(() => [
-    createUndoAction({
-      editor: inputEditor.editorRef,
-      position: 'right',
-    }),
-    createRedoAction({
-      editor: inputEditor.editorRef,
-      position: 'right',
-    }),
-    createResetAction({
-      onReset: () => setInput(''),
-      hasData: !!input,
-      id: 'reset-input',
-      position: 'right',
-      showText: false,
-      tooltip: 'Clear input',
-    }),
-  ], [input, inputEditor.editorRef]);
+  const inputActions: EditorAction[] = useMemo(
+    () => [
+      createUndoAction({
+        editor: inputEditor.editorRef,
+        position: 'right',
+      }),
+      createRedoAction({
+        editor: inputEditor.editorRef,
+        position: 'right',
+      }),
+      createResetAction({
+        onReset: () => setInput(''),
+        hasData: !!input,
+        id: 'reset-input',
+        position: 'right',
+        showText: false,
+        tooltip: 'Clear input',
+      }),
+    ],
+    [input, inputEditor.editorRef]
+  );
 
   // Define output pane actions - only Reset (Copy/Download/Share provided by ViewerActions)
-  const outputActions: EditorAction[] = useMemo(() => [
-    createResetAction({
-      onReset: () => setOutput(''),
-      hasData: !!output,
-      id: 'reset-output',
-      position: 'right',
-      showText: false,
-      tooltip: 'Clear output',
-    }),
-  ], [output]);
+  const outputActions: EditorAction[] = useMemo(
+    () => [
+      createResetAction({
+        onReset: () => setOutput(''),
+        hasData: !!output,
+        id: 'reset-output',
+        position: 'right',
+        showText: false,
+        tooltip: 'Clear output',
+      }),
+    ],
+    [output]
+  );
 
   return (
     <MainLayout>
@@ -826,12 +843,7 @@ export default data;`;
           language={getOutputLanguage()}
           readOnly
           actions={outputActions}
-          customActions={
-            <ViewerActions
-              value={output}
-              onChange={setOutput}
-            />
-          }
+          customActions={<ViewerActions value={output} onChange={setOutput} />}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           headerContent={

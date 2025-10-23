@@ -25,7 +25,7 @@ export const TRANSITIONS = {
     stiffness: 200,
     damping: 35,
   },
-  
+
   // Smooth easing - polished, professional
   smooth: {
     duration: 0.3,
@@ -39,7 +39,7 @@ export const TRANSITIONS = {
     duration: 0.5,
     ease: 'easeInOut' as const,
   },
-  
+
   // Instant - for layout shifts
   instant: {
     duration: 0,
@@ -59,7 +59,7 @@ export const VARIANTS = {
     visible: { opacity: 1 },
     hidden: { opacity: 0 },
   },
-  
+
   // Slide animations
   slideUp: {
     hidden: { opacity: 0, y: 20 },
@@ -77,7 +77,7 @@ export const VARIANTS = {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0 },
   },
-  
+
   // Scale animations
   scale: {
     hidden: { opacity: 0, scale: 0.95 },
@@ -87,19 +87,19 @@ export const VARIANTS = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1 },
   },
-  
+
   // Combined animations
   slideUpScale: {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1 },
   },
-  
+
   // Collapse/Expand
   collapse: {
     open: { height: 'auto', opacity: 1 },
     closed: { height: 0, opacity: 0 },
   },
-  
+
   // Stagger container
   staggerContainer: {
     hidden: { opacity: 0 },
@@ -189,9 +189,9 @@ export const MODAL_ANIMATIONS = {
   },
   contentSpring: {
     initial: { opacity: 0, scale: 0.9, y: 30 },
-    animate: { 
-      opacity: 1, 
-      scale: 1, 
+    animate: {
+      opacity: 1,
+      scale: 1,
       y: 0,
       transition: {
         type: 'spring',
@@ -199,9 +199,9 @@ export const MODAL_ANIMATIONS = {
         stiffness: 300,
       },
     },
-    exit: { 
-      opacity: 0, 
-      scale: 0.95, 
+    exit: {
+      opacity: 0,
+      scale: 0.95,
       y: 20,
       transition: {
         duration: 0.2,
@@ -216,9 +216,9 @@ export const MODAL_ANIMATIONS = {
 export const TOAST_ANIMATIONS = {
   slideIn: {
     initial: { opacity: 0, y: -50, scale: 0.3 },
-    animate: { 
-      opacity: 1, 
-      y: 0, 
+    animate: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       transition: {
         type: 'spring',
@@ -226,8 +226,8 @@ export const TOAST_ANIMATIONS = {
         stiffness: 300,
       },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       scale: 0.5,
       transition: {
         duration: 0.2,
@@ -302,4 +302,3 @@ export const HIGHLIGHT_ANIMATIONS = {
     },
   },
 };
-

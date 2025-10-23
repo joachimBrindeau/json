@@ -115,9 +115,12 @@ export function TagManagementSection({
           {tagManager.tagValidation.errors.length > 0 && (
             <div className="text-xs text-red-500 mt-1">{tagManager.tagValidation.errors[0]}</div>
           )}
-          {tagManager.tagValidation.warnings.length > 0 && tagManager.tagValidation.errors.length === 0 && (
-            <div className="text-xs text-yellow-600 mt-1">{tagManager.tagValidation.warnings[0]}</div>
-          )}
+          {tagManager.tagValidation.warnings.length > 0 &&
+            tagManager.tagValidation.errors.length === 0 && (
+              <div className="text-xs text-yellow-600 mt-1">
+                {tagManager.tagValidation.warnings[0]}
+              </div>
+            )}
 
           {/* Tag suggestions dropdown */}
           {tagManager.showSuggestions && tagManager.suggestedTags.length > 0 && (
@@ -141,9 +144,7 @@ export function TagManagementSection({
         {/* Common tags for quick selection */}
         {showCommonTags && category && selectedTags.length < maxTags && (
           <div className="space-y-1">
-            <div className="text-xs text-gray-500">
-              Popular tags for {category}:
-            </div>
+            <div className="text-xs text-gray-500">Popular tags for {category}:</div>
             <div className="flex flex-wrap gap-1">
               {getCommonTagsForCategory(category)
                 .filter((tag) => !selectedTags.map((t) => normalizeTag(t)).includes(tag))

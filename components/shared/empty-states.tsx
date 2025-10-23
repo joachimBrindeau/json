@@ -13,7 +13,7 @@ import {
   Upload,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
@@ -38,15 +38,11 @@ export const EmptyState = ({
   action,
   className = '',
   compact = false,
-  withCard = true
+  withCard = true,
 }: EmptyStateProps) => {
   const content = (
     <div className={`text-center text-muted-foreground ${compact ? 'max-w-sm' : 'max-w-md'}`}>
-      {icon && (
-        <div className="flex justify-center mb-4">
-          {icon}
-        </div>
-      )}
+      {icon && <div className="flex justify-center mb-4">{icon}</div>}
       <h3 className={`font-medium mb-2 ${compact ? 'text-base' : 'text-lg'}`}>{title}</h3>
       {typeof description === 'string' ? (
         <p className={compact ? 'text-sm' : ''}>{description}</p>
@@ -69,14 +65,20 @@ export const EmptyState = ({
 
   if (withCard) {
     return (
-      <Card className={`h-full flex items-center justify-center ${className}`}>
+      <Card
+        className={`h-full flex items-center justify-center ${className}`}
+        data-testid="empty-state"
+      >
         {content}
       </Card>
     );
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center text-center p-8 ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center text-center p-8 ${className}`}
+      data-testid="empty-state"
+    >
       {content}
     </div>
   );
@@ -130,11 +132,11 @@ export const ListEmptyState = ({ compact = false }: { compact?: boolean }) => (
 );
 
 // Search and filter empty states
-export const SearchEmptyState = ({ 
-  searchTerm, 
-  onClearSearch, 
-  compact = false 
-}: { 
+export const SearchEmptyState = ({
+  searchTerm,
+  onClearSearch,
+  compact = false,
+}: {
   searchTerm: string;
   onClearSearch?: () => void;
   compact?: boolean;
@@ -152,19 +154,23 @@ export const SearchEmptyState = ({
         </p>
       </div>
     }
-    action={onClearSearch ? {
-      label: 'Clear Search',
-      onClick: onClearSearch,
-      variant: 'outline'
-    } : undefined}
+    action={
+      onClearSearch
+        ? {
+            label: 'Clear Search',
+            onClick: onClearSearch,
+            variant: 'outline',
+          }
+        : undefined
+    }
     compact={compact}
   />
 );
 
-export const FilterEmptyState = ({ 
-  onClearFilters, 
-  compact = false 
-}: { 
+export const FilterEmptyState = ({
+  onClearFilters,
+  compact = false,
+}: {
   onClearFilters?: () => void;
   compact?: boolean;
 }) => (
@@ -172,20 +178,24 @@ export const FilterEmptyState = ({
     icon={<Filter className={`mx-auto opacity-50 ${compact ? 'h-12 w-12' : 'h-16 w-16'}`} />}
     title="No Filtered Results"
     description="No items match the current filter criteria"
-    action={onClearFilters ? {
-      label: 'Clear Filters',
-      onClick: onClearFilters,
-      variant: 'outline'
-    } : undefined}
+    action={
+      onClearFilters
+        ? {
+            label: 'Clear Filters',
+            onClick: onClearFilters,
+            variant: 'outline',
+          }
+        : undefined
+    }
     compact={compact}
   />
 );
 
 // Upload/import empty states
-export const UploadEmptyState = ({ 
-  onUpload, 
-  compact = false 
-}: { 
+export const UploadEmptyState = ({
+  onUpload,
+  compact = false,
+}: {
   onUpload?: () => void;
   compact?: boolean;
 }) => (
@@ -193,11 +203,15 @@ export const UploadEmptyState = ({
     icon={<Upload className={`mx-auto opacity-50 ${compact ? 'h-12 w-12' : 'h-16 w-16'}`} />}
     title="Upload JSON File"
     description="Drag and drop a JSON file here or click to browse"
-    action={onUpload ? {
-      label: 'Choose File',
-      onClick: onUpload,
-      variant: 'default'
-    } : undefined}
+    action={
+      onUpload
+        ? {
+            label: 'Choose File',
+            onClick: onUpload,
+            variant: 'default',
+          }
+        : undefined
+    }
     compact={compact}
   />
 );
@@ -210,15 +224,17 @@ interface ErrorStateProps {
   className?: string;
 }
 
-export const JsonErrorState = ({ 
-  error, 
-  onRetry, 
-  compact = false, 
-  className = '' 
+export const JsonErrorState = ({
+  error,
+  onRetry,
+  compact = false,
+  className = '',
 }: ErrorStateProps) => (
   <Card className={`h-full flex items-center justify-center ${className}`}>
     <div className={`text-center ${compact ? 'max-w-sm' : 'max-w-md'}`}>
-      <AlertTriangle className={`mx-auto mb-4 text-destructive ${compact ? 'h-12 w-12' : 'h-16 w-16'}`} />
+      <AlertTriangle
+        className={`mx-auto mb-4 text-destructive ${compact ? 'h-12 w-12' : 'h-16 w-16'}`}
+      />
       <h3 className={`font-medium mb-2 text-destructive ${compact ? 'text-base' : 'text-lg'}`}>
         JSON Parse Error
       </h3>
@@ -235,20 +251,24 @@ export const JsonErrorState = ({
   </Card>
 );
 
-export const LoadingErrorState = ({ 
-  error, 
-  onRetry, 
-  compact = false 
-}: ErrorStateProps) => (
+export const LoadingErrorState = ({ error, onRetry, compact = false }: ErrorStateProps) => (
   <EmptyState
-    icon={<AlertTriangle className={`mx-auto text-destructive ${compact ? 'h-12 w-12' : 'h-16 w-16'}`} />}
+    icon={
+      <AlertTriangle
+        className={`mx-auto text-destructive ${compact ? 'h-12 w-12' : 'h-16 w-16'}`}
+      />
+    }
     title="Failed to Load"
     description={error}
-    action={onRetry ? {
-      label: 'Retry',
-      onClick: onRetry,
-      variant: 'outline'
-    } : undefined}
+    action={
+      onRetry
+        ? {
+            label: 'Retry',
+            onClick: onRetry,
+            variant: 'outline',
+          }
+        : undefined
+    }
     compact={compact}
   />
 );
@@ -256,7 +276,7 @@ export const LoadingErrorState = ({
 // Loading states
 export const LoadingState = ({
   message = 'Loading...',
-  compact = false
+  compact = false,
 }: {
   message?: string;
   compact?: boolean;
@@ -269,18 +289,20 @@ export const LoadingState = ({
 );
 
 // Performance warning state
-export const PerformanceWarningState = ({ 
-  onContinue, 
-  onOptimize, 
-  compact = false 
-}: { 
+export const PerformanceWarningState = ({
+  onContinue,
+  onOptimize,
+  compact = false,
+}: {
   onContinue?: () => void;
   onOptimize?: () => void;
   compact?: boolean;
 }) => (
   <Card className="h-full flex items-center justify-center">
     <div className={`text-center ${compact ? 'max-w-sm' : 'max-w-md'}`}>
-      <AlertTriangle className={`mx-auto mb-4 text-yellow-500 ${compact ? 'h-12 w-12' : 'h-16 w-16'}`} />
+      <AlertTriangle
+        className={`mx-auto mb-4 text-yellow-500 ${compact ? 'h-12 w-12' : 'h-16 w-16'}`}
+      />
       <h3 className={`font-medium mb-2 text-yellow-600 ${compact ? 'text-base' : 'text-lg'}`}>
         Large JSON Detected
       </h3>

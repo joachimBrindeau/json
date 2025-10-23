@@ -82,7 +82,9 @@ export function parseJson(text: string): JsonValue {
     }
     return parsed;
   } catch (error) {
-    throw new Error(`Failed to parse JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 

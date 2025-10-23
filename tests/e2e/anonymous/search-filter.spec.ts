@@ -56,7 +56,10 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         await viewerPage.takeScreenshot('search-results-highlight');
       } else {
         // Fail fast if search functionality not available
-        expect(await viewerPage.searchInput.isVisible(), 'Search functionality must be available for this test').toBe(true);
+        expect(
+          await viewerPage.searchInput.isVisible(),
+          'Search functionality must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -202,7 +205,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         if (await nextButton.isVisible()) {
           await nextButton.click();
-          
+
           // Should navigate to next result
           const currentResult = await viewerPage.page
             .locator('.current-search-result, .active-match')
@@ -273,7 +276,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         // Clear search
         await viewerPage.clearSearch();
-        
+
         // All content should be visible again
         const clearedNodeCount = await viewerPage.jsonNodes.count();
         expect(clearedNodeCount).toBeGreaterThan(0);
@@ -320,7 +323,10 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
           expect(regexResults).toBeGreaterThan(0);
         } else {
           // Fail fast if regex search not available
-          expect(await regexToggle.isVisible(), 'Regex search functionality must be available for this test').toBe(true);
+          expect(
+            await regexToggle.isVisible(),
+            'Regex search functionality must be available for this test'
+          ).toBe(true);
         }
       }
     });
@@ -352,7 +358,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
         for (const mode of viewModes) {
           if (await mode.button.isVisible()) {
             await mode.switch();
-            
+
             // Perform search in this view mode
             await viewerPage.searchInJSON(searchTerm);
             await viewerPage.page.waitForLoadState('networkidle');
@@ -396,7 +402,7 @@ test.describe('Anonymous User - Search & Filter Functionality', () => {
 
         for (const searchTerm of specialSearches) {
           await viewerPage.searchInJSON(searchTerm);
-          
+
           // Should handle special characters without errors
           expect(await viewerPage.hasJSONErrors()).toBe(false);
 

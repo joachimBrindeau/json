@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { AlertTriangle, Info, CheckCircle2, XCircle } from 'lucide-react';
@@ -26,9 +26,9 @@ interface ConfirmPopoverProps {
   /** Custom className for the popover content */
   className?: string;
   /** Alignment of the popover */
-  align?: "start" | "center" | "end";
+  align?: 'start' | 'center' | 'end';
   /** Side of the trigger to show the popover */
-  side?: "top" | "right" | "bottom" | "left";
+  side?: 'top' | 'right' | 'bottom' | 'left';
   /** Whether to show the icon */
   showIcon?: boolean;
 }
@@ -59,7 +59,7 @@ const variantConfig = {
 /**
  * ConfirmPopover - A minimalist confirmation popover that appears near the trigger
  * Perfect for confirming destructive actions like delete
- * 
+ *
  * @example
  * <ConfirmPopover
  *   trigger={<Button icon={Trash2} iconOnly variant="outline" />}
@@ -71,7 +71,7 @@ const variantConfig = {
  */
 export function ConfirmPopover({
   trigger,
-  title = "Are you sure?",
+  title = 'Are you sure?',
   description,
   variant = 'default',
   confirmText = 'Confirm',
@@ -79,8 +79,8 @@ export function ConfirmPopover({
   onConfirm,
   onCancel,
   className,
-  align = "center",
-  side = "bottom",
+  align = 'center',
+  side = 'bottom',
   showIcon = true,
 }: ConfirmPopoverProps) {
   const [open, setOpen] = useState(false);
@@ -113,26 +113,22 @@ export function ConfirmPopover({
 
   return (
     <CursorPopover open={open} onOpenChange={setOpen}>
-      <CursorPopoverTrigger>
-        {trigger}
-      </CursorPopoverTrigger>
-      <CursorPopoverContent 
-        align={align} 
+      <CursorPopoverTrigger>{trigger}</CursorPopoverTrigger>
+      <CursorPopoverContent
+        align={align}
         side={side}
-        className={cn("p-3 min-w-[260px] max-w-[320px]", className)}
+        className={cn('p-3 min-w-[260px] max-w-[320px]', className)}
       >
         <div className="space-y-3">
           {/* Header with icon and title */}
           <div className="flex items-start gap-3">
             {showIcon && (
-              <Icon className={cn("h-5 w-5 flex-shrink-0 mt-0.5", config.iconClassName)} />
+              <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconClassName)} />
             )}
             <div className="flex-1 space-y-1">
               <h4 className="text-sm font-semibold leading-none">{title}</h4>
               {description && (
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {description}
-                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
               )}
             </div>
           </div>
@@ -166,4 +162,3 @@ export function ConfirmPopover({
     </CursorPopover>
   );
 }
-

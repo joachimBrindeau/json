@@ -19,16 +19,56 @@ export function WebVitals() {
 
       const { onCLS, onFCP, onINP, onLCP, onTTFB } = await import('web-vitals');
 
+      const sendToInternal = (metric: Metric) => {
+        // Only send key metrics to internal endpoint
+        if (!['CLS', 'LCP', 'TTFB'].includes(metric.name)) return;
+        const body = {
+          name: metric.name,
+          value: metric.value,
+          id: metric.id,
+          delta: metric.delta,
+          rating: metric.rating,
+          url: typeof window !== 'undefined' ? window.location.href : undefined,
+          route: typeof window !== 'undefined' ? window.location.pathname : undefined,
+          navigationType:
+            performance && 'navigation' in performance
+              ? (performance as any).navigation?.type
+              : undefined,
+          timestamp: Date.now(),
+        };
+        try {
+          // Prefer sendBeacon; fallback to fetch with keepalive
+          const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
+          const ok = navigator.sendBeacon?.('/api/analytics/web-vitals', blob);
+          if (!ok) {
+            fetch('/api/analytics/web-vitals', {
+              method: 'POST',
+              body: JSON.stringify(body),
+              headers: { 'Content-Type': 'application/json', 'x-sample-rate': '1' },
+              keepalive: true,
+            }).catch(() => {});
+          }
+        } catch {
+          // ignore
+        }
+      };
+
       // Log metrics and send to analytics in production
       const logMetric = (metric: Metric) => {
         // Log web vitals metrics with structured logging
-        logger.info({
-          name: metric.name,
-          value: Math.round(metric.value),
-          id: metric.id,
-          delta: metric.delta,
-          rating: metric.rating
-        }, 'Web vitals metric');
+        logger.info(
+          {
+            name: metric.name,
+            value: Math.round(metric.value),
+            id: metric.id,
+            delta: metric.delta,
+            rating: metric.rating,
+          },
+          'Web vitals metric'
+        );
+
+        // Internal endpoint
+        sendToInternal(metric);
 
         // Example: Send to Google Analytics
         if (typeof window !== 'undefined' && window.gtag) {

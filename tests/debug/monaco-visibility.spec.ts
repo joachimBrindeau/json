@@ -32,13 +32,19 @@ test('Monaco editor shows JSON and is visible in screenshot', async ({ page }) =
 
   // Save screenshots
   await firstEditor.screenshot({ path: 'test-results/screenshots/monaco-visibility-editor.png' });
-  await page.screenshot({ path: 'test-results/screenshots/monaco-visibility-full.png', fullPage: true });
+  await page.screenshot({
+    path: 'test-results/screenshots/monaco-visibility-full.png',
+    fullPage: true,
+  });
 
   // Basic assertions: height and text presence
   expect(bbox && bbox.height).toBeGreaterThan(300);
 
   // Monaco renders text in .view-lines; check content includes our unique key
-  const visibleText = await page.locator('.monaco-editor .view-lines').first().innerText().catch(() => '');
+  const visibleText = await page
+    .locator('.monaco-editor .view-lines')
+    .first()
+    .innerText()
+    .catch(() => '');
   expect(visibleText).toContain('MONACO_VIS_TEST_123');
 });
-

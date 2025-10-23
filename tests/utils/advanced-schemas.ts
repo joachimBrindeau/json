@@ -210,7 +210,10 @@ export const advancedSchemas = {
     properties: {
       deviceId: { type: 'string', faker: 'string.uuid' },
       deviceName: { type: 'string', faker: 'commerce.productName' },
-      deviceType: { type: 'string', enum: ['temperature', 'humidity', 'pressure', 'motion', 'light'] },
+      deviceType: {
+        type: 'string',
+        enum: ['temperature', 'humidity', 'pressure', 'motion', 'light'],
+      },
       location: {
         type: 'object',
         properties: {
@@ -334,4 +337,3 @@ export const advancedSchemas = {
 };
 
 export default advancedSchemas;
-

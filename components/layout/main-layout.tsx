@@ -32,11 +32,7 @@ function MainLayoutComponent({ children }: MainLayoutProps) {
       {/* Mobile Sidebar - always available on mobile */}
       <div className="lg:hidden">
         <ErrorBoundary fallback={<div>Sidebar Error</div>}>
-          <Sidebar
-            isMobile={true}
-            isOpen={mobileMenuOpen}
-            onOpenChange={setMobileMenuOpen}
-          />
+          <Sidebar isMobile={true} isOpen={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
         </ErrorBoundary>
       </div>
 

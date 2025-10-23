@@ -44,11 +44,16 @@ const TYPE_ICONS = {
 };
 
 const TYPE_COLORS = {
-  object: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-  array: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  string: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
-  number: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
-  boolean: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
+  object:
+    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+  array:
+    'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+  string:
+    'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
+  number:
+    'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
+  boolean:
+    'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
   null: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 };
 
@@ -75,24 +80,27 @@ const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModa
     // Check for special detected types first
     if (detections.length > 0) {
       const primaryDetection = detections[0];
-      
+
       if (primaryDetection.type === 'url' && typeof node.value === 'string') {
         return <UrlRenderer value={node.value} detection={primaryDetection as any} />;
       }
-      
+
       if (primaryDetection.type === 'color' && typeof node.value === 'string') {
         return <ColorRenderer value={node.value} detection={primaryDetection as any} />;
       }
-      
+
       if (primaryDetection.type === 'date' && typeof node.value === 'string') {
         return <DateRenderer value={node.value} detection={primaryDetection as any} />;
       }
-      
+
       if (primaryDetection.type === 'coordinates') {
         return <GeoRenderer value={node.value as any} detection={primaryDetection as any} />;
       }
-      
-      if (['image', 'video', 'audio'].includes(primaryDetection.type) && typeof node.value === 'string') {
+
+      if (
+        ['image', 'video', 'audio'].includes(primaryDetection.type) &&
+        typeof node.value === 'string'
+      ) {
         return <MediaRenderer value={node.value} detection={primaryDetection as any} />;
       }
     }
@@ -100,17 +108,39 @@ const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModa
     // Fall back to basic type renderers
     switch (node.type) {
       case 'string':
-        return <StringRenderer value={node.value as string} detections={detections} nodeDetails={node} />;
+        return (
+          <StringRenderer value={node.value as string} detections={detections} nodeDetails={node} />
+        );
       case 'number':
-        return <NumberRenderer value={node.value as number} detections={detections} nodeDetails={node} />;
+        return (
+          <NumberRenderer value={node.value as number} detections={detections} nodeDetails={node} />
+        );
       case 'boolean':
-        return <BooleanRenderer value={node.value as boolean} detections={detections} nodeDetails={node} />;
+        return (
+          <BooleanRenderer
+            value={node.value as boolean}
+            detections={detections}
+            nodeDetails={node}
+          />
+        );
       case 'null':
         return <NullRenderer />;
       case 'array':
-        return <ArrayRenderer value={node.value as unknown[]} detections={detections} nodeDetails={node} />;
+        return (
+          <ArrayRenderer
+            value={node.value as unknown[]}
+            detections={detections}
+            nodeDetails={node}
+          />
+        );
       case 'object':
-        return <ObjectRenderer value={node.value as Record<string, unknown>} detections={detections} nodeDetails={node} />;
+        return (
+          <ObjectRenderer
+            value={node.value as Record<string, unknown>}
+            detections={detections}
+            nodeDetails={node}
+          />
+        );
       default:
         return <div className="text-sm text-muted-foreground">Unknown type</div>;
     }
@@ -124,9 +154,7 @@ const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModa
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <div className="flex items-center gap-2">
             <TypeIcon className="h-5 w-5" />
-            <DialogTitle className="text-lg font-semibold">
-              {node.key || 'Root'}
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{node.key || 'Root'}</DialogTitle>
             <Badge variant="outline" className={typeColorClass}>
               {node.type}
             </Badge>
@@ -175,4 +203,3 @@ const NodeDetailsModalComponent = ({ open, onOpenChange, node }: NodeDetailsModa
 
 export const NodeDetailsModal = memo(NodeDetailsModalComponent);
 NodeDetailsModal.displayName = 'NodeDetailsModal';
-

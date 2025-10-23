@@ -1,7 +1,13 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search, Filter, SortAsc, Eye, Lock, Globe, Clock, Calendar } from 'lucide-react';
 import { DocumentListFilters } from '@/hooks/use-document-list';
 import { AdvancedSearch } from '@/components/ui/advanced-search';
@@ -9,7 +15,9 @@ import { getCategoryIcon } from '@/components/features/documents';
 
 interface DocumentFiltersProps {
   filters: DocumentListFilters;
-  onFiltersChange: (filters: DocumentListFilters | ((prev: DocumentListFilters) => DocumentListFilters)) => void;
+  onFiltersChange: (
+    filters: DocumentListFilters | ((prev: DocumentListFilters) => DocumentListFilters)
+  ) => void;
   showAdvancedSearch?: boolean;
   showCategoryFilter?: boolean;
   showVisibilityFilter?: boolean;
@@ -83,7 +91,9 @@ export function DocumentFilters({
       {showCategoryFilter && (
         <Select
           value={filters.category || 'all'}
-          onValueChange={(value) => onFiltersChange({ ...filters, category: value === 'all' ? '' : value })}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, category: value === 'all' ? '' : value })
+          }
           data-testid={`${testId}-category`}
         >
           <SelectTrigger className="w-full sm:w-[180px] h-10">
@@ -136,7 +146,9 @@ export function DocumentFilters({
       {showVisibilityFilter && (
         <Select
           value={filters.visibility || 'all'}
-          onValueChange={(value) => onFiltersChange({ ...filters, visibility: value === 'all' ? '' : value })}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, visibility: value === 'all' ? '' : value })
+          }
           data-testid={`${testId}-visibility`}
         >
           <SelectTrigger className="w-full sm:w-[140px] h-10">

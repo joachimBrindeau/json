@@ -18,19 +18,19 @@ import {
   Copy,
   AlertTriangle,
   Link,
-  Unlink
+  Unlink,
 } from 'lucide-react';
 import {
   compareJson,
   DiffResult,
   DiffOperation,
   generateDiffSummary,
-  formatDiffOperation
-} from '@/lib/json';
+  formatDiffOperation,
+} from '@/lib/json/json-diff';
 import { useBackendStore } from '@/lib/store/backend';
 import { EditorPane } from '@/components/features/editor/EditorPane';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
-import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json';
+import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
@@ -50,9 +50,9 @@ export function ViewerCompare({
   initialJson2 = '',
   className = '',
   activeView = 'input',
-  onViewChange
+  onViewChange,
 }: JsonCompareProps) {
-  const { setCurrentJson } = useBackendStore();
+  const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
   const [json1, setJson1] = useState(initialJson1);
   const [json2, setJson2] = useState(initialJson2);
   const [syncScroll, setSyncScroll] = useState(true);
@@ -125,8 +125,6 @@ export function ViewerCompare({
     }
   }, [onViewChange]);
 
-
-
   const handleCopyJson1 = useCallback(() => {
     if (!json1) {
       toastPatterns.validation.noJson('copy');
@@ -161,15 +159,17 @@ export function ViewerCompare({
     const diffReport = {
       timestamp: new Date().toISOString(),
       summary: generateDiffSummary(diffResult),
-      operations: diffResult.operations.map(op => ({
+      operations: diffResult.operations.map((op) => ({
         operation: op.op,
         path: op.path,
         oldValue: op.oldValue,
-        newValue: op.value
-      }))
+        newValue: op.value,
+      })),
     };
 
-    downloadJson(JSON.stringify(diffReport, null, 2), 'json-diff-report.json',
+    downloadJson(
+      JSON.stringify(diffReport, null, 2),
+      'json-diff-report.json',
       (title, desc, variant) => {
         if (variant === 'destructive') {
           showErrorToast(desc || 'Failed to download', title);
@@ -181,84 +181,94 @@ export function ViewerCompare({
   }, [diffResult]);
 
   // Handle synchronized scrolling - improved sync logic
-  const handleEditor1Mount = useCallback((editorInstance: any, monaco?: any) => {
-    // Call the base mount handler from the hook
-    editor1.handleEditorDidMount(editorInstance, monaco);
+  const handleEditor1Mount = useCallback(
+    (editorInstance: any, monaco?: any) => {
+      // Call the base mount handler from the hook
+      editor1.handleEditorDidMount(editorInstance, monaco);
 
-    // Set up scroll synchronization
-    const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
-      if (editor2.editorRef.current && syncScroll) {
-        // Prevent infinite loops by checking if this scroll was triggered by sync
-        if (!(editorInstance as any)._syncingScroll) {
-          (editor2.editorRef.current as any)._syncingScroll = true;
-          editor2.editorRef.current.setScrollPosition({
-            scrollTop: e.scrollTop,
-            scrollLeft: e.scrollLeft
-          });
-          // Reset sync flag after a brief delay
-          setTimeout(() => {
-            if (editor2.editorRef.current) {
-              (editor2.editorRef.current as any)._syncingScroll = false;
-            }
-          }, 10);
+      // Set up scroll synchronization
+      const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
+        if (editor2.editorRef.current && syncScroll) {
+          // Prevent infinite loops by checking if this scroll was triggered by sync
+          if (!(editorInstance as any)._syncingScroll) {
+            (editor2.editorRef.current as any)._syncingScroll = true;
+            editor2.editorRef.current.setScrollPosition({
+              scrollTop: e.scrollTop,
+              scrollLeft: e.scrollLeft,
+            });
+            // Reset sync flag after a brief delay
+            setTimeout(() => {
+              if (editor2.editorRef.current) {
+                (editor2.editorRef.current as any)._syncingScroll = false;
+              }
+            }, 10);
+          }
         }
-      }
-    });
+      });
 
-    return scrollDisposable;
-  }, [syncScroll, editor1, editor2]);
+      return scrollDisposable;
+    },
+    [syncScroll, editor1, editor2]
+  );
 
-  const handleEditor2Mount = useCallback((editorInstance: any, monaco?: any) => {
-    // Call the base mount handler from the hook
-    editor2.handleEditorDidMount(editorInstance, monaco);
+  const handleEditor2Mount = useCallback(
+    (editorInstance: any, monaco?: any) => {
+      // Call the base mount handler from the hook
+      editor2.handleEditorDidMount(editorInstance, monaco);
 
-    // Set up scroll synchronization
-    const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
-      if (editor1.editorRef.current && syncScroll) {
-        // Prevent infinite loops by checking if this scroll was triggered by sync
-        if (!(editorInstance as any)._syncingScroll) {
-          (editor1.editorRef.current as any)._syncingScroll = true;
-          editor1.editorRef.current.setScrollPosition({
-            scrollTop: e.scrollTop,
-            scrollLeft: e.scrollLeft
-          });
-          // Reset sync flag after a brief delay
-          setTimeout(() => {
-            if (editor1.editorRef.current) {
-              (editor1.editorRef.current as any)._syncingScroll = false;
-            }
-          }, 10);
+      // Set up scroll synchronization
+      const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
+        if (editor1.editorRef.current && syncScroll) {
+          // Prevent infinite loops by checking if this scroll was triggered by sync
+          if (!(editorInstance as any)._syncingScroll) {
+            (editor1.editorRef.current as any)._syncingScroll = true;
+            editor1.editorRef.current.setScrollPosition({
+              scrollTop: e.scrollTop,
+              scrollLeft: e.scrollLeft,
+            });
+            // Reset sync flag after a brief delay
+            setTimeout(() => {
+              if (editor1.editorRef.current) {
+                (editor1.editorRef.current as any)._syncingScroll = false;
+              }
+            }, 10);
+          }
         }
-      }
-    });
+      });
 
-    return scrollDisposable;
-  }, [syncScroll, editor1, editor2]);
+      return scrollDisposable;
+    },
+    [syncScroll, editor1, editor2]
+  );
 
   const renderDiffOperation = (op: DiffOperation, index: number) => {
     const typeColors: Record<'add' | 'remove' | 'modify', string> = {
       add: 'border-green-300 bg-green-50',
       remove: 'border-red-300 bg-red-50',
-      modify: 'border-amber-300 bg-amber-50'
+      modify: 'border-amber-300 bg-amber-50',
     };
 
     const typeIcons: Record<'add' | 'remove' | 'modify', React.ReactNode> = {
       add: <Plus className="h-5 w-5 text-green-600" />,
       remove: <Minus className="h-5 w-5 text-red-600" />,
-      modify: <Edit className="h-5 w-5 text-amber-600" />
+      modify: <Edit className="h-5 w-5 text-amber-600" />,
     };
 
     const typeLabels: Record<'add' | 'remove' | 'modify', string> = {
       add: 'Added',
       remove: 'Removed',
-      modify: 'Modified'
+      modify: 'Modified',
     };
 
     // Map operation type to display type
     const displayType: 'add' | 'remove' | 'modify' =
-      op.op === 'replace' ? 'modify' :
-      op.op === 'add' ? 'add' :
-      op.op === 'remove' ? 'remove' : 'modify';
+      op.op === 'replace'
+        ? 'modify'
+        : op.op === 'add'
+          ? 'add'
+          : op.op === 'remove'
+            ? 'remove'
+            : 'modify';
 
     return (
       <div key={index} className={`p-4 mb-3 rounded-lg border-2 ${typeColors[displayType]}`}>
@@ -271,13 +281,15 @@ export function ViewerCompare({
                 {op.path || '/'}
               </code>
               <Badge
-                variant={op.op === 'add' ? 'default' : op.op === 'remove' ? 'destructive' : 'secondary'}
+                variant={
+                  op.op === 'add' ? 'default' : op.op === 'remove' ? 'destructive' : 'secondary'
+                }
                 className="text-xs"
               >
                 {typeLabels[displayType]}
               </Badge>
             </div>
-            
+
             {/* Value display */}
             <div className="space-y-2">
               {op.op === 'remove' && (
@@ -288,7 +300,7 @@ export function ViewerCompare({
                   </pre>
                 </div>
               )}
-              
+
               {op.op === 'add' && (
                 <div className="bg-background rounded-md p-3 border border-green-200 dark:border-green-900">
                   <div className="text-xs font-medium text-green-700 mb-1">Added value:</div>
@@ -297,7 +309,7 @@ export function ViewerCompare({
                   </pre>
                 </div>
               )}
-              
+
               {op.op === 'replace' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                   <div className="bg-background rounded-md p-3 border border-red-200 dark:border-red-900">
@@ -346,7 +358,11 @@ export function ViewerCompare({
                 onClick={() => setSyncScroll(!syncScroll)}
                 className={`h-6 text-xs ${syncScroll ? 'bg-blue-50 border-blue-300' : ''}`}
               >
-                {syncScroll ? <Link className="h-3 w-3 mr-1" /> : <Unlink className="h-3 w-3 mr-1" />}
+                {syncScroll ? (
+                  <Link className="h-3 w-3 mr-1" />
+                ) : (
+                  <Unlink className="h-3 w-3 mr-1" />
+                )}
                 Sync Scroll
               </Button>
               <Button
@@ -394,13 +410,13 @@ export function ViewerCompare({
             {diffResult && (
               <>
                 <Badge variant="default" className="text-xs">
-                  {diffResult.operations.filter(op => op.op === 'add').length} Added
+                  {diffResult.operations.filter((op) => op.op === 'add').length} Added
                 </Badge>
                 <Badge variant="destructive" className="text-xs">
-                  {diffResult.operations.filter(op => op.op === 'remove').length} Removed
+                  {diffResult.operations.filter((op) => op.op === 'remove').length} Removed
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
-                  {diffResult.operations.filter(op => op.op === 'replace').length} Modified
+                  {diffResult.operations.filter((op) => op.op === 'replace').length} Modified
                 </Badge>
               </>
             )}
@@ -440,35 +456,36 @@ export function ViewerCompare({
         }
         enableRetry
       >
-      <div className="flex-1 overflow-hidden p-4">
-        {!diffResult ? (
-          <Alert className="max-w-2xl mx-auto">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              No comparison results available. Please provide valid JSON in both inputs and click Compare.
-            </AlertDescription>
-          </Alert>
-        ) : diffResult.operations.length === 0 ? (
-          <Alert className="max-w-2xl mx-auto">
-            <AlertDescription>
-              The JSON documents are identical. No differences found.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <ScrollArea className="h-full">
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">Comparison Results</h3>
-                <p className="text-sm text-muted-foreground">{generateDiffSummary(diffResult)}</p>
+        <div className="flex-1 overflow-hidden p-4">
+          {!diffResult ? (
+            <Alert className="max-w-2xl mx-auto">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                No comparison results available. Please provide valid JSON in both inputs and click
+                Compare.
+              </AlertDescription>
+            </Alert>
+          ) : diffResult.operations.length === 0 ? (
+            <Alert className="max-w-2xl mx-auto">
+              <AlertDescription>
+                The JSON documents are identical. No differences found.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <ScrollArea className="h-full">
+              <div className="max-w-4xl mx-auto">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mb-2">Comparison Results</h3>
+                  <p className="text-sm text-muted-foreground">{generateDiffSummary(diffResult)}</p>
+                </div>
+
+                <div className="space-y-2">
+                  {diffResult.operations.map((op, idx) => renderDiffOperation(op, idx))}
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                {diffResult.operations.map((op, idx) => renderDiffOperation(op, idx))}
-              </div>
-            </div>
-          </ScrollArea>
-        )}
-      </div>
+            </ScrollArea>
+          )}
+        </div>
       </ErrorBoundary>
     </div>
   );

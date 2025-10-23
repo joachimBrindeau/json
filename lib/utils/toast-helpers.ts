@@ -28,6 +28,22 @@ export function parseErrorMessage(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
+// Shared options for toast helpers
+export type ToastOptions = { description?: string; action?: ToastActionElement; duration?: number };
+
+/**
+ * Internal helper to emit a standard toast
+ */
+function emitToast(title: string, options?: ToastOptions, variant?: 'destructive' | 'default') {
+  return toastFn({
+    title,
+    description: options?.description,
+    action: options?.action,
+    duration: options?.duration,
+    ...(variant ? { variant } : {}),
+  });
+}
+
 /**
  * Show a success toast notification
  *
@@ -40,20 +56,8 @@ export function parseErrorMessage(error: unknown): string {
  *   action: <Button>View</Button>
  * });
  */
-export function showSuccessToast(
-  message: string,
-  options?: {
-    description?: string;
-    action?: ToastActionElement;
-    duration?: number;
-  }
-) {
-  return toastFn({
-    title: message,
-    description: options?.description,
-    action: options?.action,
-    duration: options?.duration,
-  });
+export function showSuccessToast(message: string, options?: ToastOptions) {
+  return emitToast(message, options);
 }
 
 /**
@@ -98,20 +102,8 @@ export function showErrorToast(
  *   action: <Button>Save</Button>
  * });
  */
-export function showWarningToast(
-  message: string,
-  options?: {
-    description?: string;
-    action?: ToastActionElement;
-    duration?: number;
-  }
-) {
-  return toastFn({
-    title: message,
-    description: options?.description,
-    action: options?.action,
-    duration: options?.duration,
-  });
+export function showWarningToast(message: string, options?: ToastOptions) {
+  return emitToast(message, options);
 }
 
 /**
@@ -126,20 +118,8 @@ export function showWarningToast(
  *   action: <Button>Learn More</Button>
  * });
  */
-export function showInfoToast(
-  message: string,
-  options?: {
-    description?: string;
-    action?: ToastActionElement;
-    duration?: number;
-  }
-) {
-  return toastFn({
-    title: message,
-    description: options?.description,
-    action: options?.action,
-    duration: options?.duration,
-  });
+export function showInfoToast(message: string, options?: ToastOptions) {
+  return emitToast(message, options);
 }
 
 /**
@@ -223,10 +203,7 @@ export function showApiErrorToast(
  * @example
  * showValidationErrorToast('Invalid input', 'Please enter a valid email address');
  */
-export function showValidationErrorToast(
-  title: string = 'Validation error',
-  description?: string
-) {
+export function showValidationErrorToast(title: string = 'Validation error', description?: string) {
   return toastFn({
     title,
     description: description || 'Please check your input and try again',
@@ -248,37 +225,34 @@ export const toastPatterns = {
     deleted: (itemName: string = 'Item') =>
       showSuccessToast('Deleted', { description: `${itemName} deleted successfully` }),
     published: (itemName: string = 'Content') =>
-      showSuccessToast('Published successfully!', { description: `Your ${itemName} is now discoverable in the public library` }),
-    copied: (itemName: string = 'Content') =>
-      showCopySuccessToast(itemName),
+      showSuccessToast('Published successfully!', {
+        description: `Your ${itemName} is now discoverable in the public library`,
+      }),
+    copied: (itemName: string = 'Content') => showCopySuccessToast(itemName),
     updated: (itemName: string = 'Settings') =>
       showSuccessToast('Updated', { description: `${itemName} updated successfully` }),
     uploaded: (itemName: string = 'File') =>
       showSuccessToast('Success', { description: `${itemName} uploaded successfully` }),
     formatted: (itemName: string = 'JSON') =>
-      showSuccessToast(`${itemName} formatted successfully`, { description: `Your ${itemName} has been properly formatted.` }),
+      showSuccessToast(`${itemName} formatted successfully`, {
+        description: `Your ${itemName} has been properly formatted.`,
+      }),
   },
   error: {
     save: (error: unknown, itemName: string = 'changes') =>
       showErrorToast(error, `Failed to save ${itemName}`),
     delete: (error: unknown, itemName: string = 'item') =>
       showErrorToast(error, `Failed to delete ${itemName}`),
-    publish: (error: unknown) =>
-      showErrorToast(error, 'Failed to publish'),
+    publish: (error: unknown) => showErrorToast(error, 'Failed to publish'),
     load: (error: unknown, itemName: string = 'data') =>
       showErrorToast(error, `Failed to load ${itemName}`),
-    upload: (error: unknown) =>
-      showErrorToast(error, 'Upload failed'),
-    format: () =>
-      showErrorToast('Cannot format invalid JSON', 'Format failed'),
-    export: (error: unknown) =>
-      showErrorToast(error, 'Export failed'),
-    copy: () =>
-      showErrorToast('Failed to copy to clipboard', 'Copy failed'),
+    upload: (error: unknown) => showErrorToast(error, 'Upload failed'),
+    format: () => showErrorToast('Cannot format invalid JSON', 'Format failed'),
+    export: (error: unknown) => showErrorToast(error, 'Export failed'),
+    copy: () => showErrorToast('Failed to copy to clipboard', 'Copy failed'),
   },
   validation: {
-    required: (fieldName: string = 'field') =>
-      showValidationErrorToast(`${fieldName} is required`),
+    required: (fieldName: string = 'field') => showValidationErrorToast(`${fieldName} is required`),
     invalid: (fieldName: string = 'Input', details?: string) =>
       showValidationErrorToast(`Invalid ${fieldName}`, details),
     noData: (action: string = 'perform this action') =>
@@ -287,9 +261,7 @@ export const toastPatterns = {
       showValidationErrorToast('No JSON', `Please enter some JSON to ${action}`),
   },
   info: {
-    loading: (message: string = 'Loading...') =>
-      showLoadingToast(message),
-    processing: (action: string = 'your request') =>
-      showLoadingToast(`Processing ${action}...`),
-  }
+    loading: (message: string = 'Loading...') => showLoadingToast(message),
+    processing: (action: string = 'your request') => showLoadingToast(`Processing ${action}...`),
+  },
 } as const;

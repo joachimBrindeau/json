@@ -6,10 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/setup/vitest.setup.ts'],
-    include: [
-      '**/__tests__/**/*.test.{ts,tsx}',
-      '**/*.test.{ts,tsx}',
-    ],
+    include: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -32,12 +29,7 @@ export default defineConfig({
         'dist/',
         'coverage/',
       ],
-      include: [
-        'lib/**/*.ts',
-        'app/api/**/*.ts',
-        'components/**/*.tsx',
-        'hooks/**/*.ts',
-      ],
+      include: ['lib/**/*.ts', 'app/api/**/*.ts', 'components/**/*.tsx', 'hooks/**/*.ts'],
     },
     testTimeout: 10000,
     hookTimeout: 10000,
@@ -49,4 +41,3 @@ export default defineConfig({
     },
   },
 });
-

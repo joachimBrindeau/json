@@ -1,6 +1,6 @@
 /**
  * useNodeDetailsModal - Hook for managing node details modal state
- * 
+ *
  * Single Responsibility: Modal state management
  */
 
@@ -39,4 +39,3 @@ export const useNodeDetailsModal = (): NodeDetailsModalState => {
     closeModal,
   };
 };
-

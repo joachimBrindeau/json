@@ -12,7 +12,7 @@ interface LoadingStateProps {
 export function LoadingState({
   message = 'Loading...',
   size = 'md',
-  className
+  className,
 }: LoadingStateProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -33,23 +33,11 @@ export function LoadingState({
   };
 
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center',
-      spacingClasses[size],
-      className
-    )}>
-      <Loader2
-        className={cn(
-          'animate-spin text-primary mb-3',
-          sizeClasses[size]
-        )}
-      />
-      <p className={cn(
-        'text-muted-foreground',
-        textSizeClasses[size]
-      )}>
-        {message}
-      </p>
+    <div
+      className={cn('flex flex-col items-center justify-center', spacingClasses[size], className)}
+    >
+      <Loader2 className={cn('animate-spin text-primary mb-3', sizeClasses[size])} />
+      <p className={cn('text-muted-foreground', textSizeClasses[size])}>{message}</p>
     </div>
   );
 }

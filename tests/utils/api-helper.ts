@@ -17,16 +17,16 @@ export class APIHelper {
     }
   ) {
     const jsonContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
-    
+
     try {
       // Use multipart form data (as expected by the upload API)
       console.log('Uploading JSON via multipart form data');
-      
+
       const formData = new FormData();
       const blob = new Blob([jsonContent], { type: 'application/json' });
       const fileName = (options?.title?.replace(/\s+/g, '-') || 'test-json') + '.json';
       formData.append('file', blob, fileName);
-      
+
       if (options?.title) {
         formData.append('title', options.title);
       }
@@ -46,7 +46,6 @@ export class APIHelper {
         console.error('❌ Upload failed:', { status: formResponse.status(), error: errorText });
         throw new Error(`Upload failed with status ${formResponse.status()}: ${errorText}`);
       }
-      
     } catch (error) {
       console.error('JSON upload failed:', error);
       throw error;
@@ -57,7 +56,7 @@ export class APIHelper {
    * Get JSON content by ID
    */
   async getJSON(id: string) {
-    const response = await this.request.get(`/api/json/${id}/content`);
+    const response = await this.request.get(`/api/json/${id}/content`, { timeout: 60000 });
 
     if (!response.ok()) {
       throw new Error(`Failed to get JSON ${id}: ${response.status()}`);
@@ -111,12 +110,15 @@ export class APIHelper {
   /**
    * Publish JSON to public library
    */
-  async publishJSON(id: string, options?: {
-    title?: string;
-    description?: string;
-    tags?: string[];
-    category?: string;
-  }) {
+  async publishJSON(
+    id: string,
+    options?: {
+      title?: string;
+      description?: string;
+      tags?: string[];
+      category?: string;
+    }
+  ) {
     const response = await this.request.post(`/api/json/${id}/publish`, {
       data: {
         title: options?.title || 'Test JSON Document',
@@ -181,17 +183,18 @@ export class APIHelper {
    */
   async healthCheck() {
     const response = await this.request.get('/api/health');
-    
+
     if (!response.ok()) {
       throw new Error(`Health check failed: ${response.status()}`);
     }
-    
-    const health = await response.json();
-    
-    if (health.status !== 'ok') {
-      throw new Error(`Health check status is not ok: ${health.status}`);
+
+    const raw = await response.json();
+    const health = raw && typeof raw === 'object' && 'success' in raw ? (raw as any).data : raw;
+
+    if (!health || health.status !== 'ok') {
+      throw new Error(`Health check status is not ok: ${health?.status}`);
     }
-    
+
     return health;
   }
 
@@ -203,7 +206,7 @@ export class APIHelper {
       // Try NextAuth credentials provider endpoint
       const csrfResponse = await this.request.get('/api/auth/csrf');
       let csrfToken = '';
-      
+
       if (csrfResponse.ok()) {
         const csrfData = await csrfResponse.json();
         csrfToken = csrfData.csrfToken || '';
@@ -257,7 +260,7 @@ export class APIHelper {
       const errorText = await response.text().catch(() => 'Unknown error');
       throw new Error(`User creation failed: ${response.status()} - ${errorText}`);
     }
-    
+
     return await response.json();
   }
 

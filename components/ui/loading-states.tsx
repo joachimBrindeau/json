@@ -17,13 +17,7 @@ export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) 
   };
 
   return (
-    <Loader2 
-      className={cn(
-        'animate-spin text-muted-foreground', 
-        sizeClasses[size], 
-        className
-      )} 
-    />
+    <Loader2 className={cn('animate-spin text-muted-foreground', sizeClasses[size], className)} />
   );
 }
 
@@ -45,7 +39,7 @@ export function JsonLoading({ message = 'Loading...', progress, className }: Jso
         {progress !== undefined && (
           <div className="flex items-center space-x-2">
             <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
@@ -74,27 +68,36 @@ export function ProcessingLoading({ steps, className }: ProcessingLoadingProps) 
         <Activity className="h-5 w-5 text-blue-500 animate-spin" />
         <h3 className="text-lg font-semibold">Processing...</h3>
       </div>
-      
+
       <div className="space-y-3">
         {steps.map((step, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className={cn(
               'flex items-center space-x-3 p-3 rounded-lg transition-all duration-300',
-              step.completed && 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800',
-              step.current && !step.completed && 'bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800',
+              step.completed &&
+                'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800',
+              step.current &&
+                !step.completed &&
+                'bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800',
               !step.completed && !step.current && 'bg-muted/50'
             )}
           >
-            <div className={cn(
-              'w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300',
-              step.completed && 'bg-green-500',
-              step.current && !step.completed && 'bg-blue-500',
-              !step.completed && !step.current && 'bg-muted-foreground'
-            )}>
+            <div
+              className={cn(
+                'w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300',
+                step.completed && 'bg-green-500',
+                step.current && !step.completed && 'bg-blue-500',
+                !step.completed && !step.current && 'bg-muted-foreground'
+              )}
+            >
               {step.completed ? (
                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               ) : step.current ? (
                 <Loader2 className="w-3 h-3 text-white animate-spin" />
@@ -102,12 +105,14 @@ export function ProcessingLoading({ steps, className }: ProcessingLoadingProps) 
                 <span className="w-2 h-2 bg-white rounded-full" />
               )}
             </div>
-            <span className={cn(
-              'text-sm font-medium transition-colors duration-300',
-              step.completed && 'text-green-700 dark:text-green-300',
-              step.current && !step.completed && 'text-blue-700 dark:text-blue-300',
-              !step.completed && !step.current && 'text-muted-foreground'
-            )}>
+            <span
+              className={cn(
+                'text-sm font-medium transition-colors duration-300',
+                step.completed && 'text-green-700 dark:text-green-300',
+                step.current && !step.completed && 'text-blue-700 dark:text-blue-300',
+                !step.completed && !step.current && 'text-muted-foreground'
+              )}
+            >
               {step.label}
             </span>
           </div>
@@ -148,7 +153,7 @@ export function JsonViewerSkeleton({ className }: { className?: string }) {
           <Skeleton className="h-8 w-20" />
         </div>
       </div>
-      
+
       <div className="border rounded-lg p-4 space-y-3">
         <div className="flex items-center space-x-2">
           <Skeleton className="h-4 w-4" />

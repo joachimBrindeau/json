@@ -16,12 +16,8 @@ interface ToolbarButtonProps {
 
 export const ToolbarButton = ({ onClick, title, icon: Icon }: ToolbarButtonProps) => (
   <TooltipWrapper content={title}>
-    <button
-      onClick={onClick}
-      className={FLOW_STYLES.toolbarButton}
-    >
+    <button onClick={onClick} className={FLOW_STYLES.toolbarButton}>
       <Icon className="h-3.5 w-3.5" />
     </button>
   </TooltipWrapper>
 );
-

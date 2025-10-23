@@ -1,0 +1,66 @@
+[ ] NAME:Current Task List DESCRIPTION:Root task for conversation **NEW_AGENT** -[/] NAME:Establish baseline & quality gates DESCRIPTION:Run fast, safe checks and capture baseline: Typecheck (tsc), ESLint, Prettier check, Vitest unit (with coverage), Playwright smoke, duplication scan (jscpd), dependency check (depcheck). Publish reports.
+--[/] NAME:Create fix tasks immediately for any baseline failures (ongoing) DESCRIPTION:Ongoing: creating concrete fix tasks for each baseline finding and adding them under related area and Refactoring Fixes Backlog.
+--[ ] NAME:Dependencies: depcheck & heavy deps DESCRIPTION:List unused deps and heavy deps (monaco, leaflet, tiptap) for perf follow-up.
+--[ ] NAME:Publish baseline reports DESCRIPTION:Commit reports to docs/refactoring and attach to CI artifacts. -[ ] NAME:Architecture & boundaries review DESCRIPTION:Assess app router structure, module layering in lib/_, components/_ conventions, server vs client boundaries, API route design, ensure no circular deps, improve naming and co-location.
+--[ ] NAME:Create fix tasks immediately (architecture) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered. -[ ] NAME:Performance & bundle audit DESCRIPTION:Analyze bundle size and code splitting (Monaco, Leaflet, Tiptap), dynamic import/SSR boundaries, render hotspots, caching and revalidation, Prisma query patterns, Redis usage, rate limits.
+--[ ] NAME:Create fix tasks immediately (performance) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Prisma query performance & indexes DESCRIPTION:Spot N+1, missing indexes, pagination patterns; propose fixes.
+--[ ] NAME:Redis usage & rate limits DESCRIPTION:Evaluate Redis patterns and rate limit coverage and configuration.
+--[ ] NAME:Web vitals profiling DESCRIPTION:Measure key routes for TTFB, LCP, INP; capture regressions risk. -[ ] NAME:State management & data flow audit DESCRIPTION:Audit Zustand stores, derived state, hydration, form state flows. For any issues discovered, immediately create fix tasks under the related area and also in the "Refactoring Fixes Backlog".
+--[ ] NAME:Create fix tasks immediately (state) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Zustand stores audit DESCRIPTION:Scope, selector composition, SSR safety, and serialization.
+--[ ] NAME:Derived state & memoization DESCRIPTION:Ensure computed state is memoized and colocated; avoid duplication.
+--[ ] NAME:Form flows: RHF + zod alignment DESCRIPTION:Single source of truth for validation; consistent error mapping.
+--[ ] NAME:Hydration minimization DESCRIPTION:Reduce client state at hydration; initialize on demand.
+--[ ] NAME:Eliminate duplicated hook logic DESCRIPTION:Converge common patterns into shared hooks/utilities. -[ ] NAME:Components & UI consistency audit DESCRIPTION:Standardize component APIs, ensure accessibility with Radix, enforce dual-pane per-pane action bars and tooltips. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (components/UI) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Standardize component APIs DESCRIPTION:Buttons, Inputs, Dialogs, Toasts: consistent props and behavior.
+--[ ] NAME:Radix a11y & focus management DESCRIPTION:Ensure keyboard/focus behavior and ARIA patterns are correct.
+--[ ] NAME:Dual-pane per-pane action bars DESCRIPTION:For format/convert/compare: separate action bars per pane with tooltips.
+--[ ] NAME:Tailwind/CVA conventions & theming DESCRIPTION:Align class-variance-authority usage and theme/dark mode.
+--[ ] NAME:Reduce component bundle bloat DESCRIPTION:Split heavy features and lazy-load where feasible. -[ ] NAME:Error handling, logging, observability audit DESCRIPTION:Evaluate error boundaries, toast strategy, pino logger usage, structured logs, and observability. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (error/logging) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Error boundaries coverage DESCRIPTION:Place boundaries where user flows can fail; user-friendly fallbacks.
+--[ ] NAME:Toast strategy consistency DESCRIPTION:Severity mapping, dedupe, and non-blocking UX patterns.
+--[ ] NAME:Pino logging & PII sanitization DESCRIPTION:Define contexts, log levels, and scrub sensitive data.
+--[ ] NAME:API error response shapes DESCRIPTION:Standardize error envelopes and status codes.
+--[ ] NAME:Observability/tracing hooks DESCRIPTION:Add/verify tracing where helpful to debug production issues. -[ ] NAME:Security audit (API and app) DESCRIPTION:Review next-auth, protected routes, input validation, rate limits, headers/CSP, secrets management. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (security) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:next-auth config & protected routes DESCRIPTION:Session config, role-based access, and route-level protections.
+--[ ] NAME:Rate limiting & Socket.io auth DESCRIPTION:Ensure coverage and correct scope; test limits. -[ ] NAME:Database & migrations audit DESCRIPTION:Review prisma schema/migrations, indexes, query patterns, transactions, seed quality. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (DB/migrations) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered. -[ ] NAME:Testing strategy hardening DESCRIPTION:Strengthen unit/E2E strategy, stabilize flakes, define coverage targets and thresholds. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (testing) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Unit tests for high-risk modules DESCRIPTION:Target lib/\* and core hooks/components identified as risky.
+--[ ] NAME:Playwright stability DESCRIPTION:Use stable selectors, fix flakes, improve fixtures.
+--[ ] NAME:Golden flow E2E suite DESCRIPTION:Define and implement the end-to-end happy paths.
+--[ ] NAME:Test data management DESCRIPTION:Isolated data setup/teardown for deterministic tests.
+--[ ] NAME:Coverage thresholds in CI DESCRIPTION:Set minimum coverage and fail builds when regressing.
+--[/] NAME:Run full E2E suite (all tests) and fix any failures DESCRIPTION:Run Playwright with dev config on tests/e2e without tag filters; investigate and fix any failing specs; stabilize selectors and timing if needed. -[ ] NAME:Developer experience & CI/CD DESCRIPTION:Improve scripts, pre-commit hooks, CI caching and stages, report publishing, local dev ergonomics. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (DX/CI) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Scripts review & cross-platform DESCRIPTION:Make scripts work on macOS/Linux/CI uniformly.
+--[ ] NAME:Pre-commit gate DESCRIPTION:Fast path for format/lint/type/unit pre-commit.
+--[ ] NAME:CI caching & job matrix DESCRIPTION:Optimize install/cache; split and parallelize jobs.
+--[ ] NAME:Publish reports as artifacts DESCRIPTION:Attach coverage/lint/jscpd reports to CI runs.
+--[ ] NAME:Local dev ergonomics DESCRIPTION:Improve seed/reset/dev scripts and onboarding time. -[ ] NAME:Dead code & duplication cleanup DESCRIPTION:Identify and remove unused code, deduplicate hooks/utils, and plan codemods. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (dead code) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Remove unused code DESCRIPTION:Identify and delete unused exports/components/hooks.
+--[ ] NAME:Deduplicate utils/hooks DESCRIPTION:Converge duplicates into canonical implementations.
+--[ ] NAME:Codemod plan DESCRIPTION:Plan/execute codemods for renames and moves.
+--[ ] NAME:Remove deprecated flags/paths DESCRIPTION:Delete dead feature flags and legacy code paths. -[ ] NAME:Documentation & knowledge base updates DESCRIPTION:Update architecture, component guidelines, accessibility checklist, testing handbook, troubleshooting guide. Create fix tasks as issues are found.
+--[ ] NAME:Create fix tasks immediately (docs) DESCRIPTION:Log findings and create fix tasks in the related area and Backlog as soon as discovered.
+--[ ] NAME:Architecture map & boundaries DESCRIPTION:Document module layering and allowed imports.
+--[ ] NAME:Component guidelines & tokens DESCRIPTION:Usage patterns and design tokens for consistency.
+--[ ] NAME:Accessibility checklist DESCRIPTION:Document a11y standards and testing steps.
+--[ ] NAME:Testing handbook & troubleshooting DESCRIPTION:How we test, common failures, and fixes.
+--[ ] NAME:Onboarding guide updates DESCRIPTION:Make onboarding steps clear and fast. -[ ] NAME:Refactoring Fixes Backlog DESCRIPTION:Central parent for concrete refactoring fix tasks created during the audit (P0/P1 prioritized). Each area should add its fixes here and link back to the originating finding.
+--[ ] NAME:Backlog triage cadence DESCRIPTION:Weekly triage of newly created fix tasks and prioritization.
+--[ ] NAME:P0/P1 assignment & tracking DESCRIPTION:Assign owners and due dates for critical fixes.
+--[ ] NAME:P0: Fix Next.js 15 route handler signatures across app/api DESCRIPTION:Update all route handlers to the new signature `(request: Request)` without `context` param; migrate params access via `request.url` or Next.js helper; update tests and mocks. Acceptance: tsc clean for affected files; related integration tests pass.
+--[ ] NAME:P0: Zod v4 error handling migration DESCRIPTION:Replace usages of `ZodError.errors` with `error.issues` and update mapping code; adjust error response shapes/tests accordingly.
+--[ ] NAME:P1: Next-Auth types hardening DESCRIPTION:Fix session/JWT callback signatures and types; align `next-auth` types with adapters; update `types/next-auth.d.ts` as needed; tsc clean.
+--[ ] NAME:P1: Playwright test API/types fixes DESCRIPTION:Update assertions to current signatures (e.g., `toHaveCount(number)`), fix test fixtures and page objects; ensure smoke suite green.
+--[ ] NAME:P1: Implement missing test helper methods DESCRIPTION:Add or correct missing methods used by tests (page objects, data generators) to satisfy type checks and runtime expectations.
+--[ ] NAME:P2: Clean up implicit any and stale ts-expect-error DESCRIPTION:Remove or justify any implicit any; delete obsolete `@ts-expect-error` comments; `tsc --noEmit` clean.
+--[ ] NAME:P1: Prettier auto-format repo DESCRIPTION:Run `npm run format` and commit changes; ensure `.prettierignore` excludes heavy artefacts; verify no functional changes.
+--[ ] NAME:P1: Export customization options apply formatting (indentation/compression/encoding) DESCRIPTION:Fix export pipeline so that user-selected options (indentation, compression, encoding, metadata) affect the generated content. Reproduce via tests/e2e/advanced/export-functionality.spec.ts @ 'should provide export customization options'. Update implementation and tests as needed.
+--[x] NAME:P0: Investigate why Save flow does not trigger /api/json/upload (library remains empty) DESCRIPTION:Reproduce failing smoke test 'Library functionality works for authenticated users @smoke'; capture browser console and server logs; trace ShareModal -> ViewerActions.onUpdated -> store.saveJson -> store.uploadJson -> apiClient.post('/api/json/upload'); identify where the flow breaks and fix.

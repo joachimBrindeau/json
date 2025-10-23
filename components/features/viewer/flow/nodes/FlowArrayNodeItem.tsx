@@ -9,21 +9,16 @@ type Props = {
   totalItems: number;
 };
 
-const ArrayNodeItemComponent = ({
-  nodeId,
-  itemIndex,
-  childNodeId,
-  totalItems
-}: Props) => {
+const ArrayNodeItemComponent = ({ nodeId, itemIndex, childNodeId, totalItems }: Props) => {
   const isLastItem = itemIndex === totalItems - 1;
 
   return (
     <div
       className={cn(
-        "relative flex items-center justify-between px-3 py-2.5 transition-colors",
-        "hover:bg-blue-50 dark:hover:bg-blue-950/30",
-        "border-b border-blue-100 dark:border-blue-900/50",
-        isLastItem && "border-b-0"
+        'relative flex items-center justify-between px-3 py-2.5 transition-colors',
+        'hover:bg-blue-50 dark:hover:bg-blue-950/30',
+        'border-b border-blue-100 dark:border-blue-900/50',
+        isLastItem && 'border-b-0'
       )}
     >
       <div className="flex items-center gap-3 flex-1">
@@ -34,12 +29,7 @@ const ArrayNodeItemComponent = ({
         </div>
 
         <div className="flex items-center gap-2 text-gray-400 dark:text-gray-600">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -61,4 +51,3 @@ const ArrayNodeItemComponent = ({
 };
 
 export const FlowArrayNodeItem = memo(ArrayNodeItemComponent);
-

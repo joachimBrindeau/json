@@ -8,8 +8,17 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useBackendStore } from '@/lib/store/backend';
 
 export default function ComparePage() {
-  const { currentJson, lastActiveTab, setLastActiveTab } = useBackendStore();
-  const [activeTab, setActiveTab] = useState(lastActiveTab === 'editor' || lastActiveTab === 'flow' || lastActiveTab === 'tree' || lastActiveTab === 'list' ? 'input' : lastActiveTab || 'input');
+  const currentJson = useBackendStore((s) => s.currentJson);
+  const lastActiveTab = useBackendStore((s) => s.lastActiveTab);
+  const setLastActiveTab = useBackendStore((s) => s.setLastActiveTab);
+  const [activeTab, setActiveTab] = useState(
+    lastActiveTab === 'editor' ||
+      lastActiveTab === 'flow' ||
+      lastActiveTab === 'tree' ||
+      lastActiveTab === 'list'
+      ? 'input'
+      : lastActiveTab || 'input'
+  );
 
   return (
     <MainLayout>

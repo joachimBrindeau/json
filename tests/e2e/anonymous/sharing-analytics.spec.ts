@@ -36,7 +36,10 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
         await viewerPage.page.keyboard.press('Escape');
       } else {
         // Fail fast if share functionality not available
-        expect(await viewerPage.shareButton.isVisible(), 'Share functionality must be available for this test').toBe(true);
+        expect(
+          await viewerPage.shareButton.isVisible(),
+          'Share functionality must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -319,7 +322,10 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
         await viewerPage.takeScreenshot('theme-reverted');
       } else {
         // Fail fast if theme toggle not available
-        expect(await layoutPage.themeToggle.isVisible(), 'Theme toggle must be available for this test').toBe(true);
+        expect(
+          await layoutPage.themeToggle.isVisible(),
+          'Theme toggle must be available for this test'
+        ).toBe(true);
       }
     });
 

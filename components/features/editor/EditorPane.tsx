@@ -8,7 +8,7 @@ import type { EditorPaneProps } from '@/types/editor-actions';
 
 /**
  * Flexible editor pane component with configurable actions
- * 
+ *
  * Features:
  * - Monaco editor integration
  * - Configurable action buttons (left and right positions)
@@ -16,7 +16,7 @@ import type { EditorPaneProps } from '@/types/editor-actions';
  * - Optional validation badge
  * - Optional header content (e.g., format selectors)
  * - Automatic responsive layout
- * 
+ *
  * @example
  * ```tsx
  * <EditorPane
@@ -53,13 +53,10 @@ export function EditorPane({
   options,
 }: EditorPaneProps) {
   // Separate actions by position
-  const leftActions = useMemo(
-    () => actions.filter(a => a.position === 'left'),
-    [actions]
-  );
-  
+  const leftActions = useMemo(() => actions.filter((a) => a.position === 'left'), [actions]);
+
   const rightActions = useMemo(
-    () => actions.filter(a => a.position === 'right' || !a.position),
+    () => actions.filter((a) => a.position === 'right' || !a.position),
     [actions]
   );
 
@@ -70,7 +67,7 @@ export function EditorPane({
         {/* Left actions (primary) */}
         {leftActions.length > 0 && (
           <div className="flex items-center gap-1 flex-shrink-0">
-            {leftActions.map(action => (
+            {leftActions.map((action) => (
               <ActionButton key={action.id} action={action} />
             ))}
           </div>
@@ -89,7 +86,7 @@ export function EditorPane({
 
         {/* Right actions (utilities) - all grouped together */}
         <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-          {rightActions.map(action => (
+          {rightActions.map((action) => (
             <ActionButton key={action.id} action={action} />
           ))}
           {customActions}
@@ -124,4 +121,3 @@ export function EditorPane({
     </div>
   );
 }
-

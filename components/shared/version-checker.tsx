@@ -11,24 +11,30 @@ export function VersionChecker() {
     }
 
     const APP_VERSION = '1.0.1';
-    
+
     const checkVersion = () => {
       try {
         const storedVersion = localStorage.getItem('app-version');
-        
+
         if (storedVersion && storedVersion !== APP_VERSION) {
-          logger.info({ oldVersion: storedVersion, newVersion: APP_VERSION }, 'Version update detected');
+          logger.info(
+            { oldVersion: storedVersion, newVersion: APP_VERSION },
+            'Version update detected'
+          );
 
           // Clear caches if available
           if ('caches' in window) {
-            caches.keys().then(names => {
-              Promise.all(names.map(name => caches.delete(name)));
-            }).catch(err => logger.error({ err }, 'Cache clear error'));
+            caches
+              .keys()
+              .then((names) => {
+                Promise.all(names.map((name) => caches.delete(name)));
+              })
+              .catch((err) => logger.error({ err }, 'Cache clear error'));
           }
-          
+
           // Update stored version
           localStorage.setItem('app-version', APP_VERSION);
-          
+
           // Reload page to get fresh content
           setTimeout(() => {
             window.location.reload();
@@ -44,20 +50,20 @@ export function VersionChecker() {
 
     // Run check
     checkVersion();
-    
+
     // Check on visibility change
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         checkVersion();
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
-  
+
   return null;
 }

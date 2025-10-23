@@ -21,7 +21,7 @@ import {
   HelpCircle,
   Moon,
   Sun,
-  Shield
+  Shield,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLoginModal } from '@/hooks/use-login-modal';
@@ -51,7 +51,7 @@ export function UserMenu() {
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
-    
+
     if (newMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -117,13 +117,11 @@ export function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{session.user?.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {session.user?.email}
-            </p>
+            <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {/* Navigation items */}
         <DropdownMenuItem onClick={() => router.push('/private')}>
           <Database className="mr-2 h-4 w-4" />
@@ -133,7 +131,7 @@ export function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           Profile & Settings
         </DropdownMenuItem>
-        
+
         {/* Superadmin only */}
         {isSuperAdmin && (
           <>
@@ -144,9 +142,9 @@ export function UserMenu() {
             </DropdownMenuItem>
           </>
         )}
-        
+
         <DropdownMenuSeparator />
-        
+
         {/* Theme toggle */}
         <DropdownMenuItem onClick={toggleDarkMode}>
           {darkMode ? (
@@ -161,15 +159,15 @@ export function UserMenu() {
             </>
           )}
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem onClick={() => router.push('/blog')}>
           <HelpCircle className="mr-2 h-4 w-4" />
           Help & Docs
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           onClick={() => signOut({ callbackUrl: '/' })}
           className="text-red-600 dark:text-red-400"
         >

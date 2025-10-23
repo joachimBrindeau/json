@@ -38,7 +38,11 @@ interface UsersStatsResponse {
 }
 
 export function useAdminStats() {
-  const { data: stats, loading, error } = useApiData<AdminStats>({
+  const {
+    data: stats,
+    loading,
+    error,
+  } = useApiData<AdminStats>({
     endpoint: '/api/admin/system/stats',
     errorMessage: 'Failed to fetch admin stats',
     refreshInterval: 30000,
@@ -53,7 +57,11 @@ export function useAdminStats() {
         activeToday: usersData.activeToday || 0,
         database: systemData.database || { status: 'unknown', responseTime: 0 },
         redis: systemData.redis || { status: 'unknown', memoryUsed: 0, memoryMax: 0 },
-        application: systemData.application || { uptime: 0, version: '1.0.0', environment: 'unknown' }
+        application: systemData.application || {
+          uptime: 0,
+          version: '1.0.0',
+          environment: 'unknown',
+        },
       };
     },
   });
@@ -61,6 +69,6 @@ export function useAdminStats() {
   return {
     stats,
     loading,
-    error: error?.message || null
+    error: error?.message || null,
   };
 }

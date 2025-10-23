@@ -101,7 +101,9 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const nowPublished = publishedDoc.find((item) => item.title.includes('API Response'));
 
       // Look for published indicator
-      const publishedIndicator = libraryPage.page.locator(`[data-testid="published-indicator-${nowPublished?.index}"]`);
+      const publishedIndicator = libraryPage.page.locator(
+        `[data-testid="published-indicator-${nowPublished?.index}"]`
+      );
 
       if (await publishedIndicator.isVisible()) {
         expect(await publishedIndicator.textContent()).toContain('Published');
@@ -360,13 +362,17 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       expect(publishedDoc).toBeDefined();
 
       // Look for unpublish option (might be in dropdown menu)
-      const unpublishButton = libraryPage.page.locator(`[data-testid="unpublish-${publishedDoc?.index}"]`);
+      const unpublishButton = libraryPage.page.locator(
+        `[data-testid="unpublish-${publishedDoc?.index}"]`
+      );
 
       if (await unpublishButton.isVisible()) {
         await unpublishButton.click();
       } else {
         // Try actions menu
-        const actionsButton = libraryPage.page.locator(`[data-testid="actions-${publishedDoc?.index}"]`);
+        const actionsButton = libraryPage.page.locator(
+          `[data-testid="actions-${publishedDoc?.index}"]`
+        );
 
         if (await actionsButton.isVisible()) {
           await actionsButton.click();
@@ -527,7 +533,9 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const publicDoc = items.find((item) => item.title.includes('Public Shared'));
 
       // Open document settings
-      const settingsButton = libraryPage.page.locator(`[data-testid="settings-${publicDoc?.index}"]`);
+      const settingsButton = libraryPage.page.locator(
+        `[data-testid="settings-${publicDoc?.index}"]`
+      );
       await expect(settingsButton).toBeVisible();
       await settingsButton.click();
 
@@ -735,7 +743,9 @@ test.describe('Authenticated User - Publishing and Analytics', () => {
       const analyticsDoc = items.find((item) => item.title.includes('Analytics Test'));
 
       // Click on analytics/stats button for the document
-      const analyticsButton = libraryPage.page.locator(`[data-testid="analytics-${analyticsDoc?.index}"]`);
+      const analyticsButton = libraryPage.page.locator(
+        `[data-testid="analytics-${analyticsDoc?.index}"]`
+      );
 
       if (await analyticsButton.isVisible()) {
         await analyticsButton.click();

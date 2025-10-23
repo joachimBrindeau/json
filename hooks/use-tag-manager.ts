@@ -51,19 +51,13 @@ export function useTagManager({
         if (category) params.set('category', category);
         params.set('limit', '10');
 
-        const data = await apiClient.get<{ tags: { tag: string }[] }>(
-          `/api/tags?${params}`
-        );
+        const data = await apiClient.get<{ tags: { tag: string }[] }>(`/api/tags?${params}`);
         return data.tags.map((t) => t.tag);
       } catch (error) {
-        logger.error(
-          { err: error, query, category },
-          'Failed to fetch tags for suggestions'
-        );
+        logger.error({ err: error, query, category }, 'Failed to fetch tags for suggestions');
         toast({
           title: 'Failed to load tag suggestions',
-          description:
-            error instanceof Error ? error.message : 'Please try again',
+          description: error instanceof Error ? error.message : 'Please try again',
           variant: 'destructive',
         });
       } finally {

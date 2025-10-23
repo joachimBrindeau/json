@@ -254,7 +254,9 @@ test.describe('Anonymous User - JSON Formatting & Syntax Highlighting', () => {
 
       if (await settingsButton.isVisible()) {
         await settingsButton.click();
-        await expect(viewerPage.page.locator('text="indent", text="tab", text="space"').first()).toBeVisible();
+        await expect(
+          viewerPage.page.locator('text="indent", text="tab", text="space"').first()
+        ).toBeVisible();
 
         // Look for indentation options
         const indentationOptions = await viewerPage.page

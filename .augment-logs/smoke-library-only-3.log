@@ -1,0 +1,25 @@
+[WebServer]    [1m[38;2;173;127;168m▲ Next.js 15.4.2[39m[22m (Turbopack)
+[WebServer]    - Environments: .env
+[WebServer] 
+[WebServer]  [37m[1m [22m[39m Creating an optimized production build ...
+[WebServer]  [32m[1m✓[22m[39m Compiled successfully in 8.0s
+[WebServer]  [37m[1m [22m[39m Linting and checking validity of types ...
+[WebServer] 
+[WebServer] [36m./components/features/modals/share-modal.tsx[39m
+[WebServer] [33m222[39m:[33m13[39m  [33m[1mWarning[22m[39m: Unused eslint-disable directive (no problems were reported from 'no-console').
+[WebServer] 
+[WebServer] [36m./components/features/viewer/ViewerActions.tsx[39m
+[WebServer] [33m562[39m:[33m19[39m  [33m[1mWarning[22m[39m: Unused eslint-disable directive (no problems were reported from 'no-console').
+[WebServer] 
+[WebServer] [36m./lib/store/backend.ts[39m
+[WebServer] [33m418[39m:[33m15[39m  [33m[1mWarning[22m[39m: Unused eslint-disable directive (no problems were reported from 'no-console').
+[WebServer] 
+[WebServer] [36minfo[39m  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+[WebServer]  [37m[1m [22m[39m Collecting page data ...
+[WebServer]  [37m[1m [22m[39m Generating static pages (0/42) ...
+
+Error: Process from config.webServer was not able to start. Exit code: 1
+::error ::Error: Process from config.webServer was not able to start. Exit code: 1
+
+
+::notice title=🎭 Playwright Run Summary::

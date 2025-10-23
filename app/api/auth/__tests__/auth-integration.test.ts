@@ -21,11 +21,13 @@ vi.mock('@/lib/db', () => ({
       findMany: vi.fn(),
       updateMany: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback({
-      jsonDocument: {
-        updateMany: vi.fn(),
-      },
-    })),
+    $transaction: vi.fn((callback) =>
+      callback({
+        jsonDocument: {
+          updateMany: vi.fn(),
+        },
+      })
+    ),
   },
 }));
 
@@ -39,9 +41,7 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/auth/password', () => ({
   hashPassword: vi.fn((password) => Promise.resolve(`hashed_${password}`)),
-  verifyPassword: vi.fn((password, hash) => 
-    Promise.resolve(hash === `hashed_${password}`)
-  ),
+  verifyPassword: vi.fn((password, hash) => Promise.resolve(hash === `hashed_${password}`)),
 }));
 
 import { prisma } from '@/lib/db';
@@ -202,7 +202,7 @@ describe('Authentication Integration Tests', () => {
         method: 'DELETE',
       });
 
-      const response = await deleteAccountDELETE(request, { params: Promise.resolve({}) });
+      const response = await deleteAccountDELETE(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -219,7 +219,7 @@ describe('Authentication Integration Tests', () => {
         method: 'DELETE',
       });
 
-      const response = await deleteAccountDELETE(request, null as any);
+      const response = await deleteAccountDELETE(request);
 
       expect(response.status).toBe(401);
     });
@@ -232,7 +232,7 @@ describe('Authentication Integration Tests', () => {
         method: 'DELETE',
       });
 
-      const response = await deleteAccountDELETE(request, { params: Promise.resolve({}) });
+      const response = await deleteAccountDELETE(request);
 
       expect(response.status).toBe(401);
     });
@@ -254,13 +254,55 @@ describe('Authentication Integration Tests', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Anonymous Doc 1',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
         {
           id: 'doc-2',
           shareId: 'share-2',
           title: 'Anonymous Doc 2',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(200),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ];
 
@@ -275,7 +317,7 @@ describe('Authentication Integration Tests', () => {
         }),
       });
 
-      const response = await migrateAnonymousPOST(request, { params: Promise.resolve({}) });
+      const response = await migrateAnonymousPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -294,7 +336,7 @@ describe('Authentication Integration Tests', () => {
         }),
       });
 
-      const response = await migrateAnonymousPOST(request, { params: Promise.resolve({}) });
+      const response = await migrateAnonymousPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -339,7 +381,28 @@ describe('Authentication Integration Tests', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Anonymous Doc',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ]);
       vi.mocked(prisma.$transaction).mockResolvedValue({ count: 1 });
@@ -351,7 +414,7 @@ describe('Authentication Integration Tests', () => {
         }),
       });
 
-      const migrateResponse = await migrateAnonymousPOST(migrateRequest, mockSession);
+      const migrateResponse = await migrateAnonymousPOST(migrateRequest);
       expect(migrateResponse.status).toBe(200);
 
       // Step 3: Delete account
@@ -362,9 +425,8 @@ describe('Authentication Integration Tests', () => {
         method: 'DELETE',
       });
 
-      const deleteResponse = await deleteAccountDELETE(deleteRequest, mockSession);
+      const deleteResponse = await deleteAccountDELETE(deleteRequest);
       expect(deleteResponse.status).toBe(200);
     });
   });
 });
-

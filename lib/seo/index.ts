@@ -12,7 +12,8 @@ export const DEFAULT_SEO_CONFIG = {
   siteLocale: 'en_US',
   defaultTitle: 'JSON Viewer - Free Online JSON Formatter, Editor & Validator',
   titleTemplate: '%s | JSON Viewer',
-  defaultDescription: 'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool.',
+  defaultDescription:
+    'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool.',
   keywords: [
     'json viewer',
     'json formatter',
@@ -25,12 +26,12 @@ export const DEFAULT_SEO_CONFIG = {
     'json parser',
     'json syntax highlighting',
     'share json',
-    'json collaboration'
+    'json collaboration',
   ],
   ogImage: '/og-image.png',
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  twitterHandle: '@jsonviewer'
+  twitterHandle: '@jsonviewer',
 };
 
 interface SEOProps {
@@ -58,9 +59,11 @@ export function generateSEOMetadata({
   canonicalUrl,
   noIndex = false,
   publishedAt,
-  author
+  author,
 }: SEOProps = {}): Metadata {
-  const fullTitle = title ? `${title} | ${DEFAULT_SEO_CONFIG.siteName}` : DEFAULT_SEO_CONFIG.defaultTitle;
+  const fullTitle = title
+    ? `${title} | ${DEFAULT_SEO_CONFIG.siteName}`
+    : DEFAULT_SEO_CONFIG.defaultTitle;
   const fullDescription = description || DEFAULT_SEO_CONFIG.defaultDescription;
   const fullKeywords = [...DEFAULT_SEO_CONFIG.keywords, ...keywords];
   const fullCanonicalUrl = canonicalUrl || DEFAULT_SEO_CONFIG.siteUrl;
@@ -123,7 +126,7 @@ export function generateSEOMetadata({
         'theme-color': '#ffffff',
         'msapplication-TileColor': '#ffffff',
         'application-name': DEFAULT_SEO_CONFIG.siteName,
-        'rating': 'general',
+        rating: 'general',
         'revisit-after': '7 days',
       },
       // LinkedIn specific
@@ -162,7 +165,7 @@ export function generateArticleStructuredData({
   url,
   publishedAt,
   author,
-  richContent
+  richContent,
 }: {
   title: string;
   description?: string;
@@ -178,26 +181,28 @@ export function generateArticleStructuredData({
     description: description || DEFAULT_SEO_CONFIG.defaultDescription,
     url,
     datePublished: publishedAt,
-    author: author ? {
-      '@type': 'Person',
-      name: author
-    } : {
-      '@type': 'Organization', 
-      name: DEFAULT_SEO_CONFIG.siteName
-    },
+    author: author
+      ? {
+          '@type': 'Person',
+          name: author,
+        }
+      : {
+          '@type': 'Organization',
+          name: DEFAULT_SEO_CONFIG.siteName,
+        },
     publisher: {
       '@type': 'Organization',
       name: DEFAULT_SEO_CONFIG.siteName,
       logo: {
         '@type': 'ImageObject',
-        url: `${DEFAULT_SEO_CONFIG.siteUrl}/icon.svg`
-      }
+        url: `${DEFAULT_SEO_CONFIG.siteUrl}/icon.svg`,
+      },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': url
+      '@id': url,
     },
-    ...(richContent && { articleBody: richContent })
+    ...(richContent && { articleBody: richContent }),
   };
 }
 
@@ -220,7 +225,7 @@ export function generateWebApplicationStructuredData() {
     },
     featureList: [
       'JSON Formatting and Beautification',
-      'JSON Validation and Error Detection', 
+      'JSON Validation and Error Detection',
       'Interactive Tree View Navigation',
       'Syntax Highlighting',
       'Real-time Collaboration',
@@ -228,12 +233,12 @@ export function generateWebApplicationStructuredData() {
       'Multiple Export Formats',
       'API Integration',
       'Large File Processing',
-      'Mobile-Responsive Interface'
+      'Mobile-Responsive Interface',
     ],
     creator: {
       '@type': 'Organization',
-      name: DEFAULT_SEO_CONFIG.siteName
-    }
+      name: DEFAULT_SEO_CONFIG.siteName,
+    },
   };
 }
 
@@ -260,10 +265,7 @@ export const STRUCTURED_DATA_TEMPLATES = {
     name: DEFAULT_SEO_CONFIG.siteName,
     url: DEFAULT_SEO_CONFIG.siteUrl,
     logo: `${DEFAULT_SEO_CONFIG.siteUrl}/logo.png`,
-    sameAs: [
-      'https://twitter.com/jsonviewer',
-      'https://github.com/jsonviewer'
-    ],
+    sameAs: ['https://twitter.com/jsonviewer', 'https://github.com/jsonviewer'],
   },
 
   /**
@@ -303,73 +305,152 @@ export const STRUCTURED_DATA_TEMPLATES = {
 export const PAGE_SEO = {
   home: {
     title: 'JSON Viewer - Free Online JSON Formatter, Editor & Validator',
-    description: 'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool. No installation required. Process large files, real-time collaboration.',
+    description:
+      'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool. No installation required. Process large files, real-time collaboration.',
     keywords: [
       // Primary keywords
-      'json viewer', 'json formatter', 'json editor', 'json validator', 'json beautifier',
+      'json viewer',
+      'json formatter',
+      'json editor',
+      'json validator',
+      'json beautifier',
       // Long-tail keywords
-      'free json viewer online', 'json formatter online free', 'json tree viewer', 'validate json online',
-      'json syntax checker', 'prettify json online', 'json visualizer tool', 'format json code',
+      'free json viewer online',
+      'json formatter online free',
+      'json tree viewer',
+      'validate json online',
+      'json syntax checker',
+      'prettify json online',
+      'json visualizer tool',
+      'format json code',
       // Use case keywords
-      'api response viewer', 'json debugging tool', 'json file viewer', 'parse json online',
-      'json minifier', 'json compare tool', 'json diff viewer', 'json schema validator',
+      'api response viewer',
+      'json debugging tool',
+      'json file viewer',
+      'parse json online',
+      'json minifier',
+      'json compare tool',
+      'json diff viewer',
+      'json schema validator',
       // Technical keywords
-      'json pretty print', 'json lint', 'json parser online', 'json syntax highlighting',
-      'json data visualization', 'rest api testing', 'json mock data', 'json templates'
+      'json pretty print',
+      'json lint',
+      'json parser online',
+      'json syntax highlighting',
+      'json data visualization',
+      'rest api testing',
+      'json mock data',
+      'json templates',
     ],
-    ogImage: '/og-image.png'
+    ogImage: '/og-image.png',
   },
   library: {
     title: 'Public JSON Library - Browse Shared JSON Examples & Templates',
-    description: 'Discover and explore thousands of shared JSON examples from the community. Find real-world JSON structures, API responses, configurations, database schemas, and templates for every use case.',
-    keywords: ['json examples', 'json templates', 'shared json', 'json library', 'api examples', 'json schemas', 'json samples', 'community json', 'open source json'],
-    ogImage: '/og-library.png'
+    description:
+      'Discover and explore thousands of shared JSON examples from the community. Find real-world JSON structures, API responses, configurations, database schemas, and templates for every use case.',
+    keywords: [
+      'json examples',
+      'json templates',
+      'shared json',
+      'json library',
+      'api examples',
+      'json schemas',
+      'json samples',
+      'community json',
+      'open source json',
+    ],
+    ogImage: '/og-library.png',
   },
   edit: {
     title: 'JSON Editor - Create, Edit & Validate JSON Online',
-    description: 'Professional online JSON editor with real-time syntax highlighting, auto-completion, validation, and error detection. Create, edit, and format JSON documents with powerful features.',
-    keywords: ['json editor', 'json creator', 'online json editor', 'json maker', 'json validation', 'json syntax highlighting', 'json auto-complete'],
-    ogImage: '/og-editor.png'
+    description:
+      'Professional online JSON editor with real-time syntax highlighting, auto-completion, validation, and error detection. Create, edit, and format JSON documents with powerful features.',
+    keywords: [
+      'json editor',
+      'json creator',
+      'online json editor',
+      'json maker',
+      'json validation',
+      'json syntax highlighting',
+      'json auto-complete',
+    ],
+    ogImage: '/og-editor.png',
   },
   format: {
     title: 'JSON Formatter - Beautify, Minify & Pretty Print JSON',
-    description: 'Format and beautify JSON online with our free tool. Minify JSON for production, prettify for readability, or validate syntax. Supports large files and complex structures.',
-    keywords: ['json formatter', 'json beautifier', 'json minifier', 'prettify json', 'json pretty print', 'format json online', 'json validator'],
-    ogImage: '/og-formatter.png'
+    description:
+      'Format and beautify JSON online with our free tool. Minify JSON for production, prettify for readability, or validate syntax. Supports large files and complex structures.',
+    keywords: [
+      'json formatter',
+      'json beautifier',
+      'json minifier',
+      'prettify json',
+      'json pretty print',
+      'format json online',
+      'json validator',
+    ],
+    ogImage: '/og-formatter.png',
   },
   compare: {
     title: 'JSON Compare - Diff, Compare & Merge JSON Files',
-    description: 'Compare two JSON files and see differences highlighted with our advanced diff tool. Perfect for debugging API changes, configuration comparisons, and data validation.',
-    keywords: ['json compare', 'json diff', 'compare json files', 'json difference', 'json merge', 'api diff', 'json debugging'],
-    ogImage: '/og-compare.png'
+    description:
+      'Compare two JSON files and see differences highlighted with our advanced diff tool. Perfect for debugging API changes, configuration comparisons, and data validation.',
+    keywords: [
+      'json compare',
+      'json diff',
+      'compare json files',
+      'json difference',
+      'json merge',
+      'api diff',
+      'json debugging',
+    ],
+    ogImage: '/og-compare.png',
   },
   saved: {
     title: 'My JSON Library - Manage Private & Public Documents',
-    description: 'Access and manage all your saved JSON documents. Edit metadata, share publicly, publish to community library, or keep private. Full control over your JSON collection.',
-    keywords: ['saved json', 'my json documents', 'json management', 'private json library', 'json collection'],
+    description:
+      'Access and manage all your saved JSON documents. Edit metadata, share publicly, publish to community library, or keep private. Full control over your JSON collection.',
+    keywords: [
+      'saved json',
+      'my json documents',
+      'json management',
+      'private json library',
+      'json collection',
+    ],
     ogImage: '/og-saved.png',
-    noIndex: true
+    noIndex: true,
   },
   viewer: {
     title: 'JSON Document Viewer - Interactive JSON Explorer',
-    description: 'View shared JSON documents with interactive tree navigation, syntax highlighting, and powerful search. Explore complex JSON structures with ease.',
+    description:
+      'View shared JSON documents with interactive tree navigation, syntax highlighting, and powerful search. Explore complex JSON structures with ease.',
     keywords: ['json viewer', 'shared json', 'json explorer', 'json document', 'interactive json'],
-    ogImage: '/og-viewer.png'
+    ogImage: '/og-viewer.png',
   },
   embed: {
     title: 'Embedded JSON Viewer - Integrate JSON Viewing',
-    description: 'Embeddable JSON viewer component for your website or application. Clean, fast, and feature-rich JSON visualization.',
+    description:
+      'Embeddable JSON viewer component for your website or application. Clean, fast, and feature-rich JSON visualization.',
     keywords: ['embedded json viewer', 'json widget', 'json component', 'json embed'],
-    ogImage: '/og-embed.png'
+    ogImage: '/og-embed.png',
   },
   blog: {
     title: 'JSON Guides & Tutorials - Learn JSON Best Practices',
-    description: 'Comprehensive guides, tutorials, and best practices for working with JSON. Learn JSON formatting, validation, API integration, and advanced techniques for developers.',
+    description:
+      'Comprehensive guides, tutorials, and best practices for working with JSON. Learn JSON formatting, validation, API integration, and advanced techniques for developers.',
     keywords: [
-      'json tutorial', 'json guide', 'json best practices', 'json learning',
-      'json documentation', 'api tutorial', 'json for beginners', 'json advanced',
-      'rest api guide', 'json schema tutorial', 'json validation guide'
+      'json tutorial',
+      'json guide',
+      'json best practices',
+      'json learning',
+      'json documentation',
+      'api tutorial',
+      'json for beginners',
+      'json advanced',
+      'rest api guide',
+      'json schema tutorial',
+      'json validation guide',
     ],
-    ogImage: '/og-blog.png'
-  }
+    ogImage: '/og-blog.png',
+  },
 } as const;

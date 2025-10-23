@@ -55,9 +55,7 @@ interface DocumentListPageProps<T extends BaseDocument> {
  * Unified document list page component
  * Combines all common document listing patterns into a single reusable component
  */
-export function DocumentListPage<T extends BaseDocument>({
-  config,
-}: DocumentListPageProps<T>) {
+export function DocumentListPage<T extends BaseDocument>({ config }: DocumentListPageProps<T>) {
   const {
     endpoint,
     enabled = true,
@@ -112,7 +110,9 @@ export function DocumentListPage<T extends BaseDocument>({
             await deleteDocument(id);
           } catch (error) {
             const doc = safeDocuments.find((d) => d.id === id);
-            errors.push(`${doc?.title || id}: ${error instanceof Error ? error.message : 'Failed to delete'}`);
+            errors.push(
+              `${doc?.title || id}: ${error instanceof Error ? error.message : 'Failed to delete'}`
+            );
           }
         }
 
@@ -180,7 +180,9 @@ export function DocumentListPage<T extends BaseDocument>({
               <p className="text-muted-foreground">{description}</p>
               {showTotalCount && totalCount > 0 && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  <span className="font-semibold text-foreground">{totalCount.toLocaleString()}</span>{' '}
+                  <span className="font-semibold text-foreground">
+                    {totalCount.toLocaleString()}
+                  </span>{' '}
                   {totalCount === 1 ? 'document' : 'documents'} available
                 </p>
               )}

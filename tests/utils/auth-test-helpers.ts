@@ -20,7 +20,6 @@ export const createMockUser = (overrides?: Partial<User>): User => ({
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
   lastLoginAt: new Date('2024-01-01'),
-  isAdmin: false,
   ...overrides,
 });
 
@@ -41,7 +40,7 @@ export const createMockSession = (overrides?: Partial<Session>): Session => ({
 /**
  * Mock admin session
  */
-export const createMockAdminSession = (): Session => 
+export const createMockAdminSession = (): Session =>
   createMockSession({
     user: {
       id: 'admin-user-id',
@@ -115,12 +114,14 @@ export const mockGetServerSession = (session: Session | null = null) => {
 /**
  * Create a mock NextRequest for testing
  */
-export const createMockRequest = (options: {
-  method?: string;
-  url?: string;
-  body?: any;
-  headers?: Record<string, string>;
-} = {}) => {
+export const createMockRequest = (
+  options: {
+    method?: string;
+    url?: string;
+    body?: any;
+    headers?: Record<string, string>;
+  } = {}
+) => {
   const {
     method = 'GET',
     url = 'http://localhost:3000/api/test',
@@ -148,15 +149,10 @@ export const getResponseJson = async (response: Response) => {
 /**
  * Assert response status and get JSON
  */
-export const expectResponseStatus = async (
-  response: Response,
-  expectedStatus: number
-) => {
+export const expectResponseStatus = async (response: Response, expectedStatus: number) => {
   if (response.status !== expectedStatus) {
     const body = await response.text();
-    throw new Error(
-      `Expected status ${expectedStatus} but got ${response.status}. Body: ${body}`
-    );
+    throw new Error(`Expected status ${expectedStatus} but got ${response.status}. Body: ${body}`);
   }
   return response.json();
 };
@@ -209,17 +205,14 @@ export const OAUTH_TEST_DATA = {
 /**
  * Wait for async operations in tests
  */
-export const waitFor = (ms: number) => 
-  new Promise(resolve => setTimeout(resolve, ms));
+export const waitFor = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Mock password utilities
  */
 export const mockPasswordUtils = () => ({
-  hashPassword: vi.fn((password: string) => 
-    Promise.resolve(`hashed_${password}`)
-  ),
-  verifyPassword: vi.fn((password: string, hash: string) => 
+  hashPassword: vi.fn((password: string) => Promise.resolve(`hashed_${password}`)),
+  verifyPassword: vi.fn((password: string, hash: string) =>
     Promise.resolve(hash === `hashed_${password}`)
   ),
   validatePasswordStrength: vi.fn((password: string) => ({
@@ -238,17 +231,15 @@ export const expectErrorResponse = async (
   expectedMessage?: string
 ) => {
   const data = await response.json();
-  
+
   if (response.status !== expectedStatus) {
-    throw new Error(
-      `Expected status ${expectedStatus} but got ${response.status}`
-    );
+    throw new Error(`Expected status ${expectedStatus} but got ${response.status}`);
   }
-  
+
   if (!data.error && !data.message) {
     throw new Error('Response does not contain error or message field');
   }
-  
+
   if (expectedMessage) {
     const actualMessage = data.error || data.message || data.data?.message;
     if (!actualMessage?.includes(expectedMessage)) {
@@ -257,29 +248,26 @@ export const expectErrorResponse = async (
       );
     }
   }
-  
+
   return data;
 };
 
 /**
  * Assert success response structure
  */
-export const expectSuccessResponse = async (
-  response: Response,
-  expectedStatus: number = 200
-) => {
+export const expectSuccessResponse = async (response: Response, expectedStatus: number = 200) => {
   const data = await response.json();
-  
+
   if (response.status !== expectedStatus) {
     throw new Error(
       `Expected status ${expectedStatus} but got ${response.status}. Body: ${JSON.stringify(data)}`
     );
   }
-  
+
   if (!data.success && data.success !== undefined) {
     throw new Error('Response does not indicate success');
   }
-  
+
   return data;
 };
 
@@ -301,4 +289,3 @@ export const createMockAccount = (overrides?: any) => ({
   session_state: null,
   ...overrides,
 });
-

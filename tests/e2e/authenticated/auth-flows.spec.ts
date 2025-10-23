@@ -96,7 +96,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
 
     test('should sign up using Google OAuth', async ({ page, context }) => {
       // Fail fast if OAuth not configured
-      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(
+        true
+      );
 
       await page.goto('/');
       await page.locator('[data-testid="signup-button"]').click();
@@ -122,7 +124,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
 
     test('should sign up using GitHub OAuth', async ({ page }) => {
       // Fail fast if OAuth not configured
-      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(true);
+      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(
+        true
+      );
 
       await page.goto('/');
       await page.locator('[data-testid="signup-button"]').click();
@@ -187,7 +191,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
 
     test('should sign in using Google OAuth', async ({ page }) => {
       // Fail fast if OAuth not configured
-      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(
+        true
+      );
 
       await page.goto('/');
       await layoutPage.openLoginModal();
@@ -205,7 +211,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
 
     test('should sign in using GitHub OAuth', async ({ page }) => {
       // Fail fast if OAuth not configured
-      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(true);
+      expect(OAUTH_PROVIDERS.github.enabled, 'GitHub OAuth must be configured for this test').toBe(
+        true
+      );
 
       await page.goto('/');
       await layoutPage.openLoginModal();
@@ -391,7 +399,9 @@ test.describe('Authenticated User - Authentication Flows', () => {
 
     test('should handle OAuth errors gracefully', async ({ page }) => {
       // Fail fast if OAuth not configured
-      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(true);
+      expect(OAUTH_PROVIDERS.google.enabled, 'Google OAuth must be configured for this test').toBe(
+        true
+      );
 
       await page.goto('/');
       await layoutPage.openLoginModal();

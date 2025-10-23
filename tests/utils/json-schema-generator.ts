@@ -1,6 +1,6 @@
 /**
  * JSON Schema Faker Generator
- * 
+ *
  * Generates realistic fake JSON data using JSON Schema definitions.
  * Perfect for testing the JSON Viewer with varied, complex structures.
  */
@@ -329,4 +329,3 @@ const jsonSchemaGenerator = {
 };
 
 export default jsonSchemaGenerator;
-

@@ -93,7 +93,7 @@ export function encodeHTMLEntities(str: string): string {
     '"': '&quot;',
     "'": '&#39;',
   };
-  
+
   return str.replace(/[&<>"']/g, (char) => entities[char] || char);
 }
 
@@ -105,7 +105,7 @@ export function decodeHTMLEntities(str: string): string {
     '&quot;': '"',
     '&#39;': "'",
   };
-  
+
   return str.replace(/&[^;]+;/g, (entity) => entities[entity] || entity);
 }
 
@@ -118,13 +118,13 @@ export async function hashMD5(str: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(str);
     const hashBuffer = await window.crypto.subtle.digest('MD5', data).catch(() => null);
-    
+
     if (hashBuffer) {
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
     }
   }
-  
+
   // Fallback: simple hash (not cryptographically secure)
   return simpleHash(str);
 }
@@ -137,7 +137,7 @@ export async function hashSHA256(str: string): Promise<string> {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
-  
+
   // Fallback: simple hash (not cryptographically secure)
   return simpleHash(str);
 }
@@ -161,7 +161,7 @@ export function jsonToYAML(obj: unknown): string {
   // For production, use js-yaml library
   const convert = (value: unknown, indent: number = 0): string => {
     const spaces = '  '.repeat(indent);
-    
+
     if (value === null) return 'null';
     if (typeof value === 'undefined') return 'undefined';
     if (typeof value === 'boolean') return value.toString();
@@ -173,27 +173,32 @@ export function jsonToYAML(obj: unknown): string {
       }
       return value;
     }
-    
+
     if (Array.isArray(value)) {
       if (value.length === 0) return '[]';
       return '\n' + value.map((item) => `${spaces}- ${convert(item, indent + 1)}`).join('\n');
     }
-    
+
     if (typeof value === 'object') {
       const entries = Object.entries(value as Record<string, unknown>);
       if (entries.length === 0) return '{}';
-      return '\n' + entries.map(([key, val]) => {
-        const convertedVal = convert(val, indent + 1);
-        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-          return `${spaces}${key}:${convertedVal}`;
-        }
-        return `${spaces}${key}: ${convertedVal}`;
-      }).join('\n');
+      return (
+        '\n' +
+        entries
+          .map(([key, val]) => {
+            const convertedVal = convert(val, indent + 1);
+            if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+              return `${spaces}${key}:${convertedVal}`;
+            }
+            return `${spaces}${key}: ${convertedVal}`;
+          })
+          .join('\n')
+      );
     }
-    
+
     return String(value);
   };
-  
+
   return convert(obj).trim();
 }
 
@@ -213,20 +218,20 @@ export function jsonToXML(obj: unknown, rootName: string = 'root'): string {
         .replace(/'/g, '&apos;');
       return `<${key}>${escaped}</${key}>`;
     }
-    
+
     if (Array.isArray(value)) {
       return value.map((item, index) => convert(item, `item`)).join('\n');
     }
-    
+
     if (typeof value === 'object') {
       const entries = Object.entries(value as Record<string, unknown>);
       const children = entries.map(([k, v]) => convert(v, k)).join('\n');
       return `<${key}>\n${children}\n</${key}>`;
     }
-    
+
     return '';
   };
-  
+
   return `<?xml version="1.0" encoding="UTF-8"?>\n${convert(obj, rootName)}`;
 }
 
@@ -234,27 +239,25 @@ export function jsonToCSV(data: unknown): string {
   if (!Array.isArray(data)) {
     throw new Error('CSV conversion requires an array');
   }
-  
+
   if (data.length === 0) return '';
-  
+
   // Get all unique keys
   const keys = Array.from(
     new Set(
-      data.flatMap((item) =>
-        typeof item === 'object' && item !== null ? Object.keys(item) : []
-      )
+      data.flatMap((item) => (typeof item === 'object' && item !== null ? Object.keys(item) : []))
     )
   );
-  
+
   // Create header
   const header = keys.join(',');
-  
+
   // Create rows
   const rows = data.map((item) => {
     if (typeof item !== 'object' || item === null) {
       return String(item);
     }
-    
+
     return keys
       .map((key) => {
         const value = (item as Record<string, unknown>)[key];
@@ -270,7 +273,6 @@ export function jsonToCSV(data: unknown): string {
       })
       .join(',');
   });
-  
+
   return [header, ...rows].join('\n');
 }
-

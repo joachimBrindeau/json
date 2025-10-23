@@ -13,20 +13,22 @@ export class TestFactories {
   /**
    * Create a test user with unique credentials
    */
-  static createTestUser(overrides: Partial<{
-    email: string;
-    password: string;
-    name: string;
-    role: string;
-    firstName: string;
-    lastName: string;
-  }> = {}) {
+  static createTestUser(
+    overrides: Partial<{
+      email: string;
+      password: string;
+      name: string;
+      role: string;
+      firstName: string;
+      lastName: string;
+    }> = {}
+  ) {
     const id = ++this.userCounter;
     const timestamp = Date.now();
-    
+
     const firstName = overrides.firstName || `TestUser`;
     const lastName = overrides.lastName || `${id}`;
-    
+
     return {
       id: `test-user-${id}`,
       email: overrides.email || `testuser${id}.${timestamp}@jsonshare.test`,
@@ -43,8 +45,11 @@ export class TestFactories {
   /**
    * Create multiple test users for batch operations
    */
-  static createTestUsers(count: number, baseOverrides: Parameters<typeof TestFactories.createTestUser>[0] = {}) {
-    return Array.from({ length: count }, (_, i) => 
+  static createTestUsers(
+    count: number,
+    baseOverrides: Parameters<typeof TestFactories.createTestUser>[0] = {}
+  ) {
+    return Array.from({ length: count }, (_, i) =>
       this.createTestUser({
         ...baseOverrides,
         email: baseOverrides.email ? `${i}.${baseOverrides.email}` : undefined,
@@ -69,19 +74,21 @@ export class TestFactories {
   /**
    * Create a test JSON document with metadata
    */
-  static createTestDocument(overrides: Partial<{
-    title: string;
-    content: string | object;
-    description: string;
-    category: string;
-    tags: string[];
-    isPublic: boolean;
-    userId: string;
-    size: 'small' | 'medium' | 'large' | 'xlarge';
-  }> = {}) {
+  static createTestDocument(
+    overrides: Partial<{
+      title: string;
+      content: string | object;
+      description: string;
+      category: string;
+      tags: string[];
+      isPublic: boolean;
+      userId: string;
+      size: 'small' | 'medium' | 'large' | 'xlarge';
+    }> = {}
+  ) {
     const id = ++this.documentCounter;
     const timestamp = Date.now();
-    
+
     // Generate content based on size
     let content = overrides.content;
     if (!content) {
@@ -122,8 +129,11 @@ export class TestFactories {
   /**
    * Create multiple test documents
    */
-  static createTestDocuments(count: number, baseOverrides: Parameters<typeof TestFactories.createTestDocument>[0] = {}) {
-    return Array.from({ length: count }, (_, i) => 
+  static createTestDocuments(
+    count: number,
+    baseOverrides: Parameters<typeof TestFactories.createTestDocument>[0] = {}
+  ) {
+    return Array.from({ length: count }, (_, i) =>
       this.createTestDocument({
         ...baseOverrides,
         title: baseOverrides.title ? `${baseOverrides.title} ${i + 1}` : undefined,
@@ -134,13 +144,15 @@ export class TestFactories {
   /**
    * Create a test session with mock data
    */
-  static createTestSession(overrides: Partial<{
-    sessionId: string;
-    userId: string;
-    anonymous: boolean;
-    documents: any[];
-    preferences: object;
-  }> = {}) {
+  static createTestSession(
+    overrides: Partial<{
+      sessionId: string;
+      userId: string;
+      anonymous: boolean;
+      documents: any[];
+      preferences: object;
+    }> = {}
+  ) {
     const id = ++this.sessionCounter;
     const timestamp = Date.now();
 
@@ -166,13 +178,15 @@ export class TestFactories {
   /**
    * Create large test data for performance testing
    */
-  static createLargeTestData(options: {
-    objectCount?: number;
-    arraySize?: number;
-    nestingDepth?: number;
-    includeStrings?: boolean;
-    includeLargeStrings?: boolean;
-  } = {}) {
+  static createLargeTestData(
+    options: {
+      objectCount?: number;
+      arraySize?: number;
+      nestingDepth?: number;
+      includeStrings?: boolean;
+      includeLargeStrings?: boolean;
+    } = {}
+  ) {
     const {
       objectCount = 1000,
       arraySize = 100,
@@ -234,7 +248,10 @@ export class TestFactories {
   /**
    * Create test data for specific scenarios
    */
-  static createScenarioData(scenario: 'upload' | 'sharing' | 'library' | 'embedding' | 'api', options: any = {}) {
+  static createScenarioData(
+    scenario: 'upload' | 'sharing' | 'library' | 'embedding' | 'api',
+    options: any = {}
+  ) {
     switch (scenario) {
       case 'upload':
         return {

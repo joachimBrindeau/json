@@ -4,30 +4,27 @@ import { useEffect, useState, useCallback, useRef, memo, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns } from '@/lib/utils/toast-helpers';
 import { useBackendStore } from '@/lib/store/backend';
-import { validateJson } from '@/lib/json';
+import { validateJson } from '@/lib/json/json-utils';
 import { AlertTriangle } from 'lucide-react';
 import { ViewerActions } from '@/components/features/viewer';
 import { EditorPane } from '@/components/features/editor/EditorPane';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
-import { defineMonacoThemes } from '@/lib/editor/themes';
-import {
-  formatJsonWithWorker,
-  loadJsonProgressive,
-  debounce
-} from '@/lib/editor/optimizations';
+
+import { formatJsonWithWorker, loadJsonProgressive, debounce } from '@/lib/editor/optimizations';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { useSearch } from '@/hooks/use-search';
 import {
   isLargeFile,
   getDebounceDelay,
-  shouldUseProgressiveLoad
+  shouldUseProgressiveLoad,
 } from '@/lib/config/editor-config';
 import type { EditorAction } from '@/types/editor-actions';
 
 function JsonEditorComponent() {
-  const { currentJson, setCurrentJson } = useBackendStore();
+  const currentJson = useBackendStore((s) => s.currentJson);
+  const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
   const [localContent, setLocalContent] = useState('');
   const { searchTerm, setSearchTerm } = useSearch();
   const [isLoading, setIsLoading] = useState(false);
@@ -36,14 +33,8 @@ function JsonEditorComponent() {
   const isLargeFileFlag = isLargeFile(currentJson.length);
 
   // Use Monaco editor hook
-  const {
-    editorRef,
-    monacoRef,
-    handleEditorDidMount,
-    editorOptions,
-    theme,
-    editorError
-  } = useMonacoEditor(localContent.length);
+  const { editorRef, monacoRef, handleEditorDidMount, editorOptions, theme, editorError } =
+    useMonacoEditor(localContent.length);
 
   // Initialize local content on mount
   useEffect(() => {
@@ -85,7 +76,7 @@ function JsonEditorComponent() {
         } else {
           editorRef.current.setValue(formatted);
         }
-        
+
         setLocalContent(formatted);
         setCurrentJson(formatted);
         setLoadingProgress(0);
@@ -100,47 +91,53 @@ function JsonEditorComponent() {
   }, [setCurrentJson]);
 
   // Custom editor mount handler to add commands and validation
-  const handleCustomEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    setIsLoading(false);
+  const handleCustomEditorMount = useCallback(
+    (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+      setIsLoading(false);
 
-    // Call the base mount handler from the hook
-    handleEditorDidMount(editor, monaco);
+      // Call the base mount handler from the hook
+      handleEditorDidMount(editor, monaco);
 
-    // Add format command
-    editor.addAction({
-      id: 'format-json',
-      label: 'Format JSON',
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
-      run: formatJson,
-    });
-
-    // Add search command
-    editor.addAction({
-      id: 'search-json',
-      label: 'Search JSON',
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF],
-      run: () => {
-        editor.getAction('actions.find')?.run();
-      },
-    });
-
-    // Add validation on model change
-    const model = editor.getModel();
-    if (model) {
-      model.onDidChangeContent(() => {
-        const content = model.getValue();
-        updateValidationDecorations(editor, monaco, content);
+      // Add format command
+      editor.addAction({
+        id: 'format-json',
+        label: 'Format JSON',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
+        run: formatJson,
       });
 
-      // Initial validation
-      updateValidationDecorations(editor, monaco, model.getValue());
-    }
-  }, [formatJson, handleEditorDidMount]);
+      // Add search command
+      editor.addAction({
+        id: 'search-json',
+        label: 'Search JSON',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF],
+        run: () => {
+          editor.getAction('actions.find')?.run();
+        },
+      });
 
+      // Add validation on model change
+      const model = editor.getModel();
+      if (model) {
+        model.onDidChangeContent(() => {
+          const content = model.getValue();
+          updateValidationDecorations(editor, monaco, content);
+        });
+
+        // Initial validation
+        updateValidationDecorations(editor, monaco, model.getValue());
+      }
+    },
+    [formatJson, handleEditorDidMount]
+  );
 
   // Debounced change handler for better performance
   const debouncedSetCurrentJson = useMemo(
-    () => debounce(setCurrentJson as (...args: unknown[]) => unknown, getDebounceDelay(currentJson.length)) as (value: string) => void,
+    () =>
+      debounce(
+        setCurrentJson as (...args: unknown[]) => unknown,
+        getDebounceDelay(currentJson.length)
+      ) as (value: string) => void,
     [setCurrentJson, currentJson.length]
   );
 
@@ -161,35 +158,28 @@ function JsonEditorComponent() {
   // Search functionality
   const handleSearch = useCallback((term: string) => {
     if (!editorRef.current || !monacoRef.current) return;
-    
+
     const editor = editorRef.current;
     const monaco = monacoRef.current;
-    
+
     if (term) {
       const model = editor.getModel();
       if (model) {
-        const matches = model.findMatches(
-          term,
-          false,
-          false,
-          false,
-          null,
-          false
-        );
-        
+        const matches = model.findMatches(term, false, false, false, null, false);
+
         if (matches.length > 0) {
           editor.setSelection(matches[0].range);
           editor.revealRangeInCenter(matches[0].range);
-          
+
           // Highlight all matches
-          const newDecorations = matches.map(match => ({
+          const newDecorations = matches.map((match) => ({
             range: match.range,
             options: {
               className: 'monaco-find-match',
               backgroundColor: 'rgba(255, 255, 0, 0.3)',
-            }
+            },
           }));
-          
+
           decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
         }
       }
@@ -200,43 +190,53 @@ function JsonEditorComponent() {
   }, []);
 
   // Validation decorations
-  const updateValidationDecorations = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco, content: string) => {
-    const model = editor.getModel();
-    if (!model) return;
+  const updateValidationDecorations = useCallback(
+    (editor: editor.IStandaloneCodeEditor, monaco: Monaco, content: string) => {
+      const model = editor.getModel();
+      if (!model) return;
 
-    try {
-      JSON.parse(content);
-      // Clear error markers
-      monaco.editor.setModelMarkers(model, 'json', []);
-    } catch (error) {
-      if (content.trim() && error instanceof Error) {
-        // Add error marker
-        const lines = content.split('\n');
-        let line = 1;
-        let column = 1;
-        
-        // Try to extract line/column from error message
-        const match = error.message.match(/at line (\d+) column (\d+)/);
-        if (match) {
-          line = parseInt(match[1]);
-          column = parseInt(match[2]);
+      try {
+        JSON.parse(content);
+        // Clear error markers
+        monaco.editor.setModelMarkers(model, 'json', []);
+      } catch (error) {
+        if (content.trim() && error instanceof Error) {
+          // Add error marker
+          const lines = content.split('\n');
+          let line = 1;
+          let column = 1;
+
+          // Try to extract line/column from error message
+          const match = error.message.match(/at line (\d+) column (\d+)/);
+          if (match) {
+            line = parseInt(match[1]);
+            column = parseInt(match[2]);
+          }
+
+          monaco.editor.setModelMarkers(model, 'json', [
+            {
+              severity: monaco.MarkerSeverity.Error,
+              message: error.message,
+              startLineNumber: line,
+              startColumn: column,
+              endLineNumber: line,
+              endColumn: column + 1,
+            },
+          ]);
         }
-        
-        monaco.editor.setModelMarkers(model, 'json', [{
-          severity: monaco.MarkerSeverity.Error,
-          message: error.message,
-          startLineNumber: line,
-          startColumn: column,
-          endLineNumber: line,
-          endColumn: column + 1
-        }]);
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   const isValid = localContent ? validateJson(localContent) : false;
   const charCount = localContent ? localContent.length : 0;
-  const wordCount = localContent ? localContent.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
+  const wordCount = localContent
+    ? localContent
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length
+    : 0;
   const lineCount = localContent ? localContent.split('\n').length : 1;
 
   // Define actions - empty array, all actions provided by ViewerActions
@@ -261,7 +261,7 @@ function JsonEditorComponent() {
       )}
 
       {/* Full-height Monaco editor with EditorPane */}
-      <div className="flex-1 min-h-0 overflow-hidden h-full" data-testid="json-textarea">
+      <div className="flex-1 min-h-0 overflow-hidden h-full" data-testid="json-editor">
         <ErrorBoundary
           level="component"
           fallback={
@@ -285,7 +285,6 @@ function JsonEditorComponent() {
             }}
             theme={theme}
             onMount={handleCustomEditorMount}
-            beforeMount={(monaco) => defineMonacoThemes(monaco)}
             options={editorOptions}
           />
         </ErrorBoundary>
@@ -298,7 +297,7 @@ function JsonEditorComponent() {
           <span>Characters: {charCount.toLocaleString()}</span>
           <span>Words: {wordCount.toLocaleString()}</span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {editorError && (
             <Badge variant="destructive" className="text-xs">
@@ -309,6 +308,7 @@ function JsonEditorComponent() {
           <Badge
             variant={isValid ? 'default' : charCount > 0 ? 'destructive' : 'secondary'}
             className="text-xs"
+            data-testid={!isValid && charCount > 0 ? 'error-message' : undefined}
           >
             {isValid ? '✓ Valid JSON' : charCount > 0 ? '✗ Invalid JSON' : 'Enter JSON...'}
           </Badge>

@@ -71,9 +71,7 @@ function NavigationItemContent({
       <div className="flex flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <span className="font-medium">{name}</span>
-          {showBadge && badgeCount && badgeCount > 0 && (
-            <NavigationItemBadge count={badgeCount} />
-          )}
+          {showBadge && badgeCount && badgeCount > 0 && <NavigationItemBadge count={badgeCount} />}
         </div>
         {isLocked ? (
           <span className="text-xs text-red-800 hover:text-red-900 bg-red-50 px-2 py-1 rounded-[3px]">
@@ -104,11 +102,7 @@ function NavigationItemComponent({
   if (isLocked) {
     return (
       <div>
-        <Button
-          variant="ghost"
-          className={LOCKED_BUTTON_CLASSES}
-          onClick={onLockedClick}
-        >
+        <Button variant="ghost" className={LOCKED_BUTTON_CLASSES} onClick={onLockedClick}>
           <NavigationItemContent
             icon={icon}
             name={name}
@@ -160,4 +154,3 @@ function NavigationItemComponent({
 }
 
 export const NavigationItem = memo(NavigationItemComponent);
-

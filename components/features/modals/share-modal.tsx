@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useBackendStore } from '@/lib/store/backend';
 import { Controller } from 'react-hook-form';
 import {
   Dialog,
@@ -22,10 +23,7 @@ import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
-import {
-  showValidationErrorToast,
-  showInfoToast,
-} from '@/lib/utils/toast-helpers';
+import { showValidationErrorToast, showInfoToast } from '@/lib/utils/toast-helpers';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { shareFormSchema, type ShareFormData } from '@/lib/validation/schemas';
@@ -45,12 +43,25 @@ export function ShareModal({
   shareId,
   currentTitle,
   currentVisibility = 'private',
-  onUpdated
+  onUpdated,
 }: ShareModalProps) {
+  // Use shareId from props only; do not infer from store to avoid anonymous uploads masking unsaved state
+  const effectiveShareId = shareId;
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
   const [isPublic, setIsPublic] = useState(currentVisibility === 'public');
+  // Local success flag to reflect immediate save completion while props propagate
+  const [didSave, setDidSave] = useState(false);
+
+  // Reset transient state each time the modal opens to avoid stale success UI
+  useEffect(() => {
+    if (open) {
+      setDidSave(false);
+      setIsSaving(false);
+      setIsUpdating(false);
+    }
+  }, [open]);
 
   // Use clipboard hook for copy functionality
   const { copy, copied } = useClipboard({
@@ -74,11 +85,10 @@ export function ShareModal({
   const category = form.watch('category');
   const title = form.watch('title');
 
-
   // Load existing metadata when modal opens for published documents
   useEffect(() => {
     const loadPublishedMetadata = async () => {
-      if (!open || !shareId) {
+      if (!open || !effectiveShareId) {
         return;
       }
 
@@ -90,17 +100,20 @@ export function ShareModal({
 
       try {
         setIsLoadingMetadata(true);
+        setDidSave(false);
 
         // Fetch published document metadata
-        const response = await apiClient.get<{ document: {
-          shareId: string;
-          title: string;
-          description?: string | null;
-          category?: string | null;
-          tags?: string[] | null;
-          visibility: string;
-          publishedAt?: string | null;
-        } }>(`/api/json/${shareId}`);
+        const response = await apiClient.get<{
+          document: {
+            shareId: string;
+            title: string;
+            description?: string | null;
+            category?: string | null;
+            tags?: string[] | null;
+            visibility: string;
+            publishedAt?: string | null;
+          };
+        }>(`/api/json/${effectiveShareId}`);
 
         // Pre-populate form with existing metadata
         form.reset({
@@ -115,10 +128,12 @@ export function ShareModal({
         // Keep the visibility state from currentVisibility prop (user's button choice)
         // Don't override with API response
         setIsPublic(currentVisibility === 'public');
-
       } catch (error) {
         // If error, fall back to current title (document might not exist yet)
-        logger.debug({ err: error, shareId }, 'Could not load metadata - document may not exist yet');
+        logger.debug(
+          { err: error, shareId: effectiveShareId },
+          'Could not load metadata - document may not exist yet'
+        );
         form.reset({
           title: currentTitle || '',
           description: '',
@@ -132,32 +147,53 @@ export function ShareModal({
     };
 
     loadPublishedMetadata();
-  }, [open, shareId, currentTitle, currentVisibility, form]);
+  }, [open, effectiveShareId, currentTitle, currentVisibility, form]);
 
   // Stop saving state when shareId becomes available
   useEffect(() => {
-    if (shareId && isSaving) {
+    if (effectiveShareId && isSaving) {
       setIsSaving(false);
+      setDidSave(true);
     }
-  }, [shareId, isSaving]);
+  }, [effectiveShareId, isSaving]);
+  // Debug: log relevant state on each render in dev
+  useEffect(() => {
+    try {
+      console.log('[DEBUG] ShareModal: render', {
+        open,
+        effectiveShareId,
+        title,
+        didSave,
+        isSaving,
+        isUpdating,
+      });
+    } catch {}
+  });
+  useEffect(() => {
+    try {
+      console.log('[DEBUG] ShareModal: title changed', title);
+    } catch {}
+  }, [title]);
 
   const shareUrl = useMemo(() => {
-    if (!shareId) return 'Creating share link...';
-    return typeof window !== 'undefined' ? `${window.location.origin}/library/${shareId}` : '';
-  }, [shareId]);
+    if (!effectiveShareId) return 'Creating share link...';
+    return typeof window !== 'undefined'
+      ? `${window.location.origin}/library/${effectiveShareId}`
+      : '';
+  }, [effectiveShareId]);
 
   const shareTitle = 'Check out this JSON visualization';
-  const shareDescription = 'Interactive JSON Sea visualization - explore JSON data in a beautiful graph format';
+  const shareDescription =
+    'Interactive JSON Sea visualization - explore JSON data in a beautiful graph format';
 
   const copyToClipboard = useCallback(() => {
     copy(shareUrl);
   }, [copy, shareUrl]);
 
-
   // Setup mutations with centralized error handling
   const publishMutation = useApiMutation(
     async (data: Omit<ShareFormData, 'visibility'>) =>
-      apiClient.post(`/api/json/${shareId}/publish`, data),
+      apiClient.post(`/api/json/${effectiveShareId}/publish`, data),
     {
       successMessage: 'Published successfully!',
       onSuccess: () => {
@@ -168,7 +204,7 @@ export function ShareModal({
   );
 
   const unpublishMutation = useApiMutation(
-    async () => apiClient.delete(`/api/json/${shareId}/publish`),
+    async () => apiClient.delete(`/api/json/${effectiveShareId}/publish`),
     {
       successMessage: 'Made private',
       onSuccess: () => {
@@ -179,8 +215,18 @@ export function ShareModal({
   );
 
   const handleSave = useCallback(async () => {
+    try {
+      console.log('[DEBUG] ShareModal: handleSave start', {
+        open,
+        eff: effectiveShareId,
+        title: (form.getValues().title || '').trim(),
+      });
+    } catch {}
     // Validate form before submission
     const isValid = await form.trigger();
+    try {
+      console.log('[DEBUG] ShareModal: validation result', isValid);
+    } catch {}
     if (!isValid) {
       showValidationErrorToast('Validation failed', 'Please fix the errors before saving');
       return;
@@ -196,7 +242,7 @@ export function ShareModal({
     setIsUpdating(true);
     try {
       // If we don't have a shareId yet, we need to save/create the JSON first
-      if (!shareId) {
+      if (!effectiveShareId) {
         // For new documents without a shareId, we need to save with title first
         if (!formData.title.trim()) {
           showValidationErrorToast('Title required', 'Please enter a title to save your JSON');
@@ -208,9 +254,30 @@ export function ShareModal({
           description: 'Creating your document and share link...',
         });
 
-        // Signal the parent to save the JSON with the provided title
-        // Don't close the modal - let the parent update the shareId and refresh this modal
-        onUpdated?.(formData.title.trim());
+        // Save directly via store to ensure upload happens even if parent wiring changes
+        try {
+          // eslint-disable-next-line no-console
+          console.log('[DEBUG] ShareModal: handleSave invoked with title', formData.title.trim());
+        } catch {}
+        try {
+          const { useBackendStore } = await import('@/lib/store/backend');
+          const storeState = useBackendStore.getState() as any;
+          const { uploadJson, currentJson } = storeState;
+          // eslint-disable-next-line no-console
+          console.log('[DEBUG] ShareModal: currentJson length', (currentJson || '').length);
+          const blob = new Blob([currentJson || ''], { type: 'application/json' });
+          const file = new File([blob], 'untitled.json', { type: 'application/json' });
+          await uploadJson(file, formData.title.trim());
+          setIsSaving(false);
+          setDidSave(true);
+          // Parent may still want to react (e.g., refresh library)
+          onUpdated?.(formData.title.trim());
+        } catch (e) {
+          setIsSaving(false);
+          // eslint-disable-next-line no-console
+          console.log('[DEBUG] ShareModal: save failed', e);
+          showValidationErrorToast('Save failed', e instanceof Error ? e.message : 'Unknown error');
+        }
         return;
       }
 
@@ -225,7 +292,7 @@ export function ShareModal({
     } finally {
       setIsUpdating(false);
     }
-  }, [isPublic, shareId, form, publishMutation, unpublishMutation]);
+  }, [isPublic, effectiveShareId, form, publishMutation, unpublishMutation]);
 
   // Allow modal to open even without shareId - it can handle creating one
 
@@ -242,11 +309,23 @@ export function ShareModal({
             Share your JSON
           </DialogTitle>
           <DialogDescription>
-            {isPublic 
-              ? 'Make your JSON discoverable in the public library' 
+            {isPublic
+              ? 'Make your JSON discoverable in the public library'
               : 'Share a private link to your JSON'}
+            {(didSave || (effectiveShareId && !isSaving)) && (
+              <span className="ml-2 text-green-700" data-testid="share-success-inline">
+                Your JSON is saved and ready to share!
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
+
+        {(didSave || (effectiveShareId && !isSaving)) && (
+          <div className="flex items-center gap-2 p-2 mb-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Your JSON is saved and ready to share!</span>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Loading indicator */}
@@ -258,7 +337,7 @@ export function ShareModal({
           )}
 
           {/* Already published indicator */}
-          {shareId && !isLoadingMetadata && currentVisibility === 'public' && (
+          {effectiveShareId && !isLoadingMetadata && currentVisibility === 'public' && (
             <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
               <CheckCircle2 className="h-4 w-4" />
               <span>This document is already published - you can update its metadata below</span>
@@ -287,9 +366,7 @@ export function ShareModal({
                 ) : (
                   <Lock className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="font-medium">
-                  {isPublic ? 'Public' : 'Private'}
-                </span>
+                <span className="font-medium">{isPublic ? 'Public' : 'Private'}</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 {isPublic
@@ -301,11 +378,14 @@ export function ShareModal({
               checked={isPublic}
               onCheckedChange={setIsPublic}
               disabled={isLoadingMetadata}
+              aria-label="Toggle public/private visibility"
             />
           </div>
 
           {/* Info box explaining the current mode */}
-          <div className={`p-3 rounded-lg border ${isPublic ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+          <div
+            className={`p-3 rounded-lg border ${isPublic ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}
+          >
             <div className="flex items-start gap-2">
               {isPublic ? (
                 <>
@@ -324,8 +404,9 @@ export function ShareModal({
                   <div className="text-sm text-gray-900">
                     <p className="font-medium mb-1">Private Link</p>
                     <p className="text-gray-700">
-                      Your JSON will not appear in the public library. Only people with the direct link can access it.
-                      Perfect for sharing sensitive data or work-in-progress documents.
+                      Your JSON will not appear in the public library. Only people with the direct
+                      link can access it. Perfect for sharing sensitive data or work-in-progress
+                      documents.
                     </p>
                   </div>
                 </>
@@ -337,19 +418,20 @@ export function ShareModal({
           <div className="space-y-2">
             <Label htmlFor="link">Share link</Label>
             <div className="flex items-center space-x-2">
-              <Input 
-                id="link" 
-                value={isSaving ? 'Creating your share link...' : shareUrl} 
-                readOnly 
-                className="font-mono text-sm" 
+              <Input
+                id="link"
+                value={isSaving ? 'Creating your share link...' : shareUrl}
+                readOnly
+                className="font-mono text-sm"
                 disabled={isSaving}
               />
-              <Button 
-                type="button" 
-                size="icon" 
-                variant="outline" 
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
                 onClick={copyToClipboard}
-                disabled={isSaving || !shareId}
+                disabled={isSaving || !effectiveShareId}
+                title="Copy share link"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -366,8 +448,11 @@ export function ShareModal({
                 <span>Saving your JSON and generating share link...</span>
               </div>
             )}
-            {shareId && !isSaving && (
-              <div className="flex items-center gap-2 text-sm text-green-600">
+            {(didSave || (effectiveShareId && !isSaving)) && (
+              <div
+                className="flex items-center gap-2 text-sm text-green-600"
+                data-testid="share-success"
+              >
                 <CheckCircle2 className="h-4 w-4" />
                 <span>Your JSON is saved and ready to share!</span>
               </div>
@@ -384,7 +469,7 @@ export function ShareModal({
               <p className="text-sm text-blue-700 -mt-2">
                 Help others discover your JSON by adding details below
               </p>
-{/* Description */}
+              {/* Description */}
               <FormTextarea
                 id="description"
                 label="Description"
@@ -406,7 +491,7 @@ export function ShareModal({
                     placeholder="Select a category"
                     value={field.value}
                     onValueChange={field.onChange}
-                    options={DOCUMENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                    options={DOCUMENT_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
                     disabled={isLoadingMetadata}
                     error={form.formState.errors.category?.message as string}
                   />
@@ -428,7 +513,9 @@ export function ShareModal({
                 )}
               />
               {form.formState.errors.tags && (
-                <p className="text-sm text-red-500">{form.formState.errors.tags.message as string}</p>
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.tags.message as string}
+                </p>
               )}
 
               {/* Preview */}
@@ -443,14 +530,23 @@ export function ShareModal({
                     <div className="text-gray-600 mt-1 text-xs">{form.watch('description')}</div>
                   )}
                   <div className="flex items-center gap-1 mt-2">
-                    {category && <Badge variant="outline" className="text-xs">{category}</Badge>}
-                    {form.watch('tags').slice(0, 3).map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        #{tag}
+                    {category && (
+                      <Badge variant="outline" className="text-xs">
+                        {category}
                       </Badge>
-                    ))}
+                    )}
+                    {form
+                      .watch('tags')
+                      .slice(0, 3)
+                      .map((tag: string) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
                     {form.watch('tags').length > 3 && (
-                      <span className="text-xs text-muted-foreground">+{form.watch('tags').length - 3} more</span>
+                      <span className="text-xs text-muted-foreground">
+                        +{form.watch('tags').length - 3} more
+                      </span>
                     )}
                   </div>
                 </div>
@@ -459,33 +555,38 @@ export function ShareModal({
           )}
 
           {/* Social Share Buttons - always visible */}
-          <SocialShareButtons
-            url={shareUrl}
-            title={shareTitle}
-            description={shareDescription}
-          />
+          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
               disabled={isUpdating}
               className="order-2 sm:order-1"
+              data-testid="share-cancel-button"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleSave}
-              disabled={isUpdating || isSaving || isLoadingMetadata || !title?.trim()}
+              type="button"
+              onClick={() => {
+                try {
+                  console.log('[DEBUG] ShareModal: save button clicked');
+                } catch {}
+                void handleSave();
+              }}
+              disabled={isUpdating || isSaving || isLoadingMetadata}
               className="order-1 sm:order-2"
+              data-testid="share-save-button"
             >
-              {(isUpdating || isSaving) ? (
+              {isUpdating || isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {isSaving ? 'Saving...' : 'Updating...'}
                 </>
-              ) : !shareId ? (
+              ) : !effectiveShareId ? (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Save & Generate Link

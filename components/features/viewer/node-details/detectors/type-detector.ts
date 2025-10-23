@@ -40,7 +40,7 @@ const PATTERNS = {
 
 export function detectURL(value: string): DetectionResult | null {
   if (!PATTERNS.url.test(value)) return null;
-  
+
   try {
     const url = new URL(value);
     return {
@@ -62,9 +62,9 @@ export function detectURL(value: string): DetectionResult | null {
 
 export function detectEmail(value: string): DetectionResult | null {
   if (!PATTERNS.email.test(value)) return null;
-  
+
   const [username, domain] = value.split('@');
-  
+
   return {
     type: 'email',
     confidence: 1.0,
@@ -88,7 +88,7 @@ export function detectColor(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   // RGB color
   const rgbMatch = value.match(PATTERNS.rgbColor);
   if (rgbMatch) {
@@ -105,7 +105,7 @@ export function detectColor(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   // RGBA color
   const rgbaMatch = value.match(PATTERNS.rgbaColor);
   if (rgbaMatch) {
@@ -123,7 +123,7 @@ export function detectColor(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   // HSL color
   const hslMatch = value.match(PATTERNS.hslColor);
   if (hslMatch) {
@@ -140,7 +140,7 @@ export function detectColor(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   return null;
 }
 
@@ -160,12 +160,12 @@ export function detectDate(value: string): DetectionResult | null {
       };
     }
   }
-  
+
   // Unix timestamp
   if (PATTERNS.unixTimestamp.test(value)) {
     const timestamp = parseInt(value);
     const date = new Date(timestamp > 9999999999 ? timestamp : timestamp * 1000);
-    
+
     // Check if date is reasonable (between 1970 and 2100)
     if (date.getFullYear() >= 1970 && date.getFullYear() <= 2100) {
       return {
@@ -179,7 +179,7 @@ export function detectDate(value: string): DetectionResult | null {
       };
     }
   }
-  
+
   return null;
 }
 
@@ -189,7 +189,7 @@ export function detectCoordinates(value: string | Record<string, unknown>): Dete
     const obj = value as Record<string, unknown>;
     const lat = obj.lat ?? obj.latitude ?? obj.Lat ?? obj.Latitude;
     const lng = obj.lng ?? obj.lon ?? obj.longitude ?? obj.Lng ?? obj.Lon ?? obj.Longitude;
-    
+
     if (typeof lat === 'number' && typeof lng === 'number') {
       if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
         return {
@@ -204,14 +204,14 @@ export function detectCoordinates(value: string | Record<string, unknown>): Dete
       }
     }
   }
-  
+
   // Comma-separated string
   if (typeof value === 'string') {
-    const parts = value.split(',').map(s => s.trim());
+    const parts = value.split(',').map((s) => s.trim());
     if (parts.length === 2) {
       const lat = parseFloat(parts[0]);
       const lng = parseFloat(parts[1]);
-      
+
       if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
         return {
           type: 'coordinates',
@@ -225,13 +225,13 @@ export function detectCoordinates(value: string | Record<string, unknown>): Dete
       }
     }
   }
-  
+
   return null;
 }
 
 export function detectPhone(value: string): DetectionResult | null {
   if (!PATTERNS.phone.test(value)) return null;
-  
+
   return {
     type: 'phone',
     confidence: 0.7,
@@ -252,7 +252,7 @@ export function detectIP(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   if (PATTERNS.ipv6.test(value)) {
     return {
       type: 'ip',
@@ -263,15 +263,15 @@ export function detectIP(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   return null;
 }
 
 export function detectUUID(value: string): DetectionResult | null {
   if (!PATTERNS.uuid.test(value)) return null;
-  
+
   const version = parseInt(value[14], 16);
-  
+
   return {
     type: 'uuid',
     confidence: 1.0,
@@ -294,7 +294,7 @@ export function detectBase64(value: string): DetectionResult | null {
       },
     };
   }
-  
+
   return null;
 }
 
@@ -309,14 +309,14 @@ export function detectTypes(value: unknown): DetectionResult[] {
     if (coordDetection) return [coordDetection];
     return [];
   }
-  
+
   const detections: DetectionResult[] = [];
-  
+
   // Run all detectors
   const urlDetection = detectURL(value);
   if (urlDetection) {
     detections.push(urlDetection);
-    
+
     // Check if URL is media
     if (PATTERNS.imageUrl.test(value)) {
       detections.push({ type: 'image', confidence: 1.0, metadata: { url: value } });
@@ -326,31 +326,30 @@ export function detectTypes(value: unknown): DetectionResult[] {
       detections.push({ type: 'audio', confidence: 1.0, metadata: { url: value } });
     }
   }
-  
+
   const emailDetection = detectEmail(value);
   if (emailDetection) detections.push(emailDetection);
-  
+
   const colorDetection = detectColor(value);
   if (colorDetection) detections.push(colorDetection);
-  
+
   const dateDetection = detectDate(value);
   if (dateDetection) detections.push(dateDetection);
-  
+
   const coordDetection = detectCoordinates(value);
   if (coordDetection) detections.push(coordDetection);
-  
+
   const phoneDetection = detectPhone(value);
   if (phoneDetection) detections.push(phoneDetection);
-  
+
   const ipDetection = detectIP(value);
   if (ipDetection) detections.push(ipDetection);
-  
+
   const uuidDetection = detectUUID(value);
   if (uuidDetection) detections.push(uuidDetection);
-  
+
   const base64Detection = detectBase64(value);
   if (base64Detection) detections.push(base64Detection);
-  
+
   return detections;
 }
-

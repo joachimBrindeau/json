@@ -5,7 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Hash } from 'lucide-react';
 import type { NumberRendererProps } from '../types';
-import { formatBinary, formatHex, formatOctal, formatScientific, formatCompactNumber } from '../utils/formatters';
+import {
+  formatBinary,
+  formatHex,
+  formatOctal,
+  formatScientific,
+  formatCompactNumber,
+} from '../utils/formatters';
 
 export const NumberRenderer = memo(({ value }: NumberRendererProps) => {
   const isInteger = Number.isInteger(value);
@@ -39,31 +45,31 @@ export const NumberRenderer = memo(({ value }: NumberRendererProps) => {
               <div className="text-xs text-muted-foreground">Decimal</div>
               <code className="text-sm font-mono block">{value}</code>
             </div>
-            
+
             {isInteger && (
               <>
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">Hexadecimal</div>
                   <code className="text-sm font-mono block">{formatHex(absValue)}</code>
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">Binary</div>
                   <code className="text-sm font-mono block">{formatBinary(absValue)}</code>
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">Octal</div>
                   <code className="text-sm font-mono block">{formatOctal(absValue)}</code>
                 </div>
               </>
             )}
-            
+
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Scientific</div>
               <code className="text-sm font-mono block">{formatScientific(value)}</code>
             </div>
-            
+
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Compact</div>
               <code className="text-sm font-mono block">{formatCompactNumber(value)}</code>
@@ -83,9 +89,7 @@ export const NumberRenderer = memo(({ value }: NumberRendererProps) => {
             {isNegative && <Badge variant="outline">Negative</Badge>}
             {value === 0 && <Badge variant="outline">Zero</Badge>}
             {value > 0 && <Badge variant="outline">Positive</Badge>}
-            {isInteger && value > 1 && isPrime(value) && (
-              <Badge variant="secondary">Prime</Badge>
-            )}
+            {isInteger && value > 1 && isPrime(value) && <Badge variant="secondary">Prime</Badge>}
           </div>
         </CardContent>
       </Card>
@@ -100,11 +104,10 @@ function isPrime(num: number): boolean {
   if (num <= 1) return false;
   if (num <= 3) return true;
   if (num % 2 === 0 || num % 3 === 0) return false;
-  
+
   for (let i = 5; i * i <= num; i += 6) {
     if (num % i === 0 || num % (i + 2) === 0) return false;
   }
-  
+
   return true;
 }
-

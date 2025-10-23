@@ -21,7 +21,9 @@ export const DateRenderer = memo(({ value, detection }: DateRendererProps) => {
         <Calendar className="h-4 w-4 text-blue-500" />
         <div className="flex-1">
           <div className="text-sm font-semibold">{format(date, 'PPP')}</div>
-          <div className="text-xs text-muted-foreground">{formatDistanceToNow(date, { addSuffix: true })}</div>
+          <div className="text-xs text-muted-foreground">
+            {formatDistanceToNow(date, { addSuffix: true })}
+          </div>
         </div>
       </div>
 
@@ -41,4 +43,3 @@ export const DateRenderer = memo(({ value, detection }: DateRendererProps) => {
 });
 
 DateRenderer.displayName = 'DateRenderer';
-

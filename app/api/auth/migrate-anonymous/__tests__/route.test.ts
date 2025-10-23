@@ -14,11 +14,13 @@ vi.mock('@/lib/db', () => ({
       findMany: vi.fn(),
       updateMany: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback({
-      jsonDocument: {
-        updateMany: vi.fn(),
-      },
-    })),
+    $transaction: vi.fn((callback) =>
+      callback({
+        jsonDocument: {
+          updateMany: vi.fn(),
+        },
+      })
+    ),
   },
 }));
 
@@ -64,7 +66,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         body: JSON.stringify({ anonymousJsonIds: [] }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -80,7 +82,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         body: JSON.stringify({ anonymousJsonIds: [] }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(200);
     });
@@ -99,7 +101,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         body: JSON.stringify({ anonymousJsonIds: [] }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -116,7 +118,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(200);
     });
@@ -132,7 +134,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(200);
     });
@@ -145,7 +147,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(400);
     });
@@ -156,7 +158,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         body: JSON.stringify({}),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(200);
     });
@@ -173,13 +175,55 @@ describe('POST /api/auth/migrate-anonymous', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Test Doc 1',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
         {
           id: 'doc-2',
           shareId: 'share-2',
           title: 'Test Doc 2',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(200),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ];
 
@@ -193,7 +237,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -207,7 +251,28 @@ describe('POST /api/auth/migrate-anonymous', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Test Doc 1',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ];
 
@@ -221,7 +286,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -238,7 +303,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -267,7 +332,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -281,7 +346,28 @@ describe('POST /api/auth/migrate-anonymous', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Test Doc 1',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ];
 
@@ -295,7 +381,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      await POST(request, { params: Promise.resolve({}) });
+      await POST(request);
 
       expect(prisma.$transaction).toHaveBeenCalled();
     });
@@ -318,7 +404,7 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(400);
     });
@@ -329,12 +415,31 @@ describe('POST /api/auth/migrate-anonymous', () => {
           id: 'doc-1',
           shareId: 'share-1',
           title: 'Test Doc 1',
+          description: null,
+          publishedAt: null,
+          richContent: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+          content: '{}',
+          metadata: null,
           size: BigInt(100),
+          nodeCount: 0,
+          maxDepth: 0,
+          complexity: 'Low',
+          version: 1,
+          checksum: null,
+          isAnonymous: true,
+          visibility: 'private',
+          category: null,
+          viewCount: 0,
+          slug: null,
+          tags: [],
+          expiresAt: null,
+          accessedAt: new Date(),
         },
       ]);
-      vi.mocked(prisma.$transaction).mockRejectedValue(
-        new Error('Transaction failed')
-      );
+      vi.mocked(prisma.$transaction).mockRejectedValue(new Error('Transaction failed'));
 
       const request = new NextRequest('http://localhost:3456/api/auth/migrate-anonymous', {
         method: 'POST',
@@ -343,10 +448,9 @@ describe('POST /api/auth/migrate-anonymous', () => {
         }),
       });
 
-      const response = await POST(request, { params: Promise.resolve({}) });
+      const response = await POST(request);
 
       expect(response.status).toBe(400);
     });
   });
 });
-

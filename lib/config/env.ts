@@ -17,18 +17,65 @@ const isServer = typeof window === 'undefined';
 // Check if we're in test mode
 const isTest = process.env.NODE_ENV === 'test';
 
-// Server-only environment schema
-const serverEnvSchema = z.object({
+// Shared environment schema for fields common to both server and client
+const sharedEnvSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
+  // Public URLs (accessible in browser)
+  NEXT_PUBLIC_APP_URL: z
+    .string()
+    .url('NEXT_PUBLIC_APP_URL must be a valid URL')
+    .default('https://json-viewer.io'),
+  NEXT_PUBLIC_WEBSOCKET_URL: z
+    .string()
+    .url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL')
+    .optional(),
+  NEXT_PUBLIC_BUILD_ID: z.string().optional(),
+
+  // Performance Settings
+  MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
+  JSON_STREAMING_CHUNK_SIZE: z
+    .string()
+    .regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number')
+    .default('1048576'),
+
+  // Analytics & Tracking (optional)
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+  NEXT_PUBLIC_FB_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_HOTJAR_ID: z.string().optional(),
+
+  // SEO Verification (optional)
+  GOOGLE_SITE_VERIFICATION: z.string().optional(),
+  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
+  YANDEX_VERIFICATION: z.string().optional(),
+  BING_VERIFICATION: z.string().optional(),
+  FACEBOOK_APP_ID: z.string().optional(),
+
+  // Build & CI
+  BUILD_ID: z.string().optional(),
+  CI: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true' || val === '1'),
+
+  // Playwright Testing
+  PLAYWRIGHT_BASE_URL: z.string().url().optional(),
+  BASE_URL: z.string().url().optional(),
+});
+
+// Server-only environment schema (extends shared)
+const serverEnvSchema = sharedEnvSchema.extend({
   // Database (optional in test mode)
   DATABASE_URL: isTest
     ? z.string().optional().default('postgresql://test:test@localhost:5432/test')
     : z.string().url('DATABASE_URL must be a valid PostgreSQL URL'),
 
   // Redis (optional in test mode)
-  REDIS_URL: z.string().url('REDIS_URL must be a valid Redis URL').default('redis://localhost:6379'),
+  REDIS_URL: z
+    .string()
+    .url('REDIS_URL must be a valid Redis URL')
+    .default('redis://localhost:6379'),
 
   // NextAuth (optional in test mode)
   NEXTAUTH_URL: isTest
@@ -53,71 +100,14 @@ const serverEnvSchema = z.object({
     : z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
 
   // Admin
-  SUPERADMIN_EMAILS: z.string().optional().transform(val => val?.split(',').map(email => email.trim()) || []),
-
-  // Public URLs (accessible in browser)
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
-  NEXT_PUBLIC_WEBSOCKET_URL: z.string().url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL').optional(),
-  NEXT_PUBLIC_BUILD_ID: z.string().optional(),
-
-  // Performance Settings
-  MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
-  JSON_STREAMING_CHUNK_SIZE: z.string().regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number').default('1048576'),
-
-  // Analytics & Tracking (optional)
-  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
-  NEXT_PUBLIC_FB_PIXEL_ID: z.string().optional(),
-  NEXT_PUBLIC_HOTJAR_ID: z.string().optional(),
-
-  // SEO Verification (optional)
-  GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  YANDEX_VERIFICATION: z.string().optional(),
-  BING_VERIFICATION: z.string().optional(),
-  FACEBOOK_APP_ID: z.string().optional(),
-
-  // Build & CI
-  BUILD_ID: z.string().optional(),
-  CI: z.string().optional().transform(val => val === 'true' || val === '1'),
-
-  // Playwright Testing
-  PLAYWRIGHT_BASE_URL: z.string().url().optional(),
-  BASE_URL: z.string().url().optional(),
+  SUPERADMIN_EMAILS: z
+    .string()
+    .optional()
+    .transform((val) => val?.split(',').map((email) => email.trim()) || []),
 });
 
-// Client-safe environment schema (only NEXT_PUBLIC_ variables)
-const clientEnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-
-  // Public URLs (accessible in browser)
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
-  NEXT_PUBLIC_WEBSOCKET_URL: z.string().url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL').optional(),
-  NEXT_PUBLIC_BUILD_ID: z.string().optional(),
-
-  // Performance Settings
-  MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
-  JSON_STREAMING_CHUNK_SIZE: z.string().regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number').default('1048576'),
-
-  // Analytics & Tracking (optional)
-  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
-  NEXT_PUBLIC_FB_PIXEL_ID: z.string().optional(),
-  NEXT_PUBLIC_HOTJAR_ID: z.string().optional(),
-
-  // SEO Verification (optional)
-  GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  YANDEX_VERIFICATION: z.string().optional(),
-  BING_VERIFICATION: z.string().optional(),
-  FACEBOOK_APP_ID: z.string().optional(),
-
-  // Build & CI
-  BUILD_ID: z.string().optional(),
-  CI: z.string().optional().transform(val => val === 'true' || val === '1'),
-
-  // Playwright Testing
-  PLAYWRIGHT_BASE_URL: z.string().url().optional(),
-  BASE_URL: z.string().url().optional(),
-});
+// Client-safe environment schema (only shared/public variables)
+const clientEnvSchema = sharedEnvSchema;
 
 /**
  * Build environment object from process.env

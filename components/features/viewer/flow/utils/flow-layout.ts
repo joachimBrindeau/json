@@ -50,9 +50,9 @@ export const getLayoutedSeaNodes = (flowNodes: SeaNode[], edges: Edge[]): SeaNod
   // Configure graph layout
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({
-    rankdir: 'LR',           // Left-to-Right layout
-    nodesep: sizes.nodeGap,  // Horizontal spacing between nodes
-    ranksep: sizes.nodeGap,  // Vertical spacing between ranks
+    rankdir: 'LR', // Left-to-Right layout
+    nodesep: sizes.nodeGap, // Horizontal spacing between nodes
+    ranksep: sizes.nodeGap, // Vertical spacing between ranks
   });
 
   // Add all nodes to dagre graph with their dimensions

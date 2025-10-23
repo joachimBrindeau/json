@@ -2,7 +2,8 @@ import { generateSEOMetadata, DEFAULT_SEO_CONFIG } from '@/lib/seo';
 
 export const metadata = generateSEOMetadata({
   title: 'JSON Converter - Convert JSON to YAML, XML, CSV, TOML & More',
-  description: 'Free online JSON converter tool. Convert JSON to YAML, XML, CSV, TOML, Properties, TypeScript, and JavaScript formats. Fast, secure, and easy to use with syntax highlighting.',
+  description:
+    'Free online JSON converter tool. Convert JSON to YAML, XML, CSV, TOML, Properties, TypeScript, and JavaScript formats. Fast, secure, and easy to use with syntax highlighting.',
   keywords: [
     'json converter',
     'json to yaml',
@@ -16,7 +17,7 @@ export const metadata = generateSEOMetadata({
     'format converter',
     'data conversion',
     'online converter',
-    'free json tools'
+    'free json tools',
   ],
   ogImage: '/og-convert.png',
   canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/convert`,

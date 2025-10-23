@@ -92,6 +92,3 @@ export function isPrimitiveNodeData(data: unknown): data is PrimitiveNodeData {
     typeof d.arrayIndex === 'number'
   );
 }
-
-
-

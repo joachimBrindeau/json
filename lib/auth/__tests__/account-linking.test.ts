@@ -51,4 +51,3 @@ describe('linkOAuthAccount', () => {
     expect(true).toBe(true);
   });
 });
-

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { getAllSEOSettings, upsertSEOSettings } from '@/lib/seo/database';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
@@ -28,16 +29,13 @@ export async function GET() {
     return success({
       settings,
       message: `Found ${settings.length} SEO settings`,
-      databaseAvailable: !!config.database.url
+      databaseAvailable: !!config.database.url,
     });
   } catch (error) {
     logger.error({ err: error, databaseAvailable: !!config.database.url }, 'API Error');
-    return success({
-      success: false,
-      error: 'Failed to fetch SEO settings',
+    return internalServerError('Failed to fetch SEO settings', {
       details: error instanceof Error ? error.message : 'Unknown error',
-      settings: [],
-      databaseAvailable: !!config.database.url
+      metadata: { databaseAvailable: !!config.database.url },
     });
   }
 }
@@ -61,6 +59,9 @@ export const POST = withAuth(async (request, session) => {
       isActive: data.isActive,
       priority: data.priority,
     });
+
+    // Invalidate cached SEO settings for pages that use unstable_cache with this tag
+    revalidateTag('seo-settings');
 
     return success({ settings });
   } catch (error) {

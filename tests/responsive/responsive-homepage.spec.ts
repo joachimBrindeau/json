@@ -51,14 +51,14 @@ VIEWPORTS.forEach((viewport) => {
 
         // Check main content area is visible
         const mainContent = page.locator('main, [role="main"], .container').first();
-        if (await mainContent.count() > 0) {
+        if ((await mainContent.count()) > 0) {
           await expect(mainContent).toBeVisible();
         }
 
         // Take screenshot for visual comparison
-        await page.screenshot({ 
+        await page.screenshot({
           path: `test-results/responsive-${route.name.toLowerCase()}-${viewport.name}.png`,
-          fullPage: true 
+          fullPage: true,
         });
       });
     });
@@ -76,11 +76,13 @@ VIEWPORTS.forEach((viewport) => {
       expect(heroTitleBox?.width).toBeLessThanOrEqual(viewport.width);
 
       // Check hero buttons are visible and clickable
-      const ctaButtons = page.locator('main button, main a[href*="/edit"], main a[href*="/format"]');
-      if (await ctaButtons.count() > 0) {
+      const ctaButtons = page.locator(
+        'main button, main a[href*="/edit"], main a[href*="/format"]'
+      );
+      if ((await ctaButtons.count()) > 0) {
         const visibleButton = ctaButtons.first();
         await expect(visibleButton).toBeVisible();
-        
+
         // On mobile, buttons should be touch-friendly
         if (viewport.name === 'mobile') {
           const buttonBox = await visibleButton.boundingBox();
@@ -91,8 +93,10 @@ VIEWPORTS.forEach((viewport) => {
       }
 
       // Check that feature cards are properly laid out
-      const featureCards = page.locator('[data-testid*="feature"], .grid > div, .flex > div').first();
-      if (await featureCards.count() > 0) {
+      const featureCards = page
+        .locator('[data-testid*="feature"], .grid > div, .flex > div')
+        .first();
+      if ((await featureCards.count()) > 0) {
         const cardBox = await featureCards.boundingBox();
         expect(cardBox?.width).toBeLessThanOrEqual(viewport.width);
       }
@@ -104,8 +108,8 @@ VIEWPORTS.forEach((viewport) => {
 
       // Find the JSON Education section
       const jsonSection = page.locator('section').filter({ hasText: 'What is JSON?' });
-      
-      if (await jsonSection.count() > 0) {
+
+      if ((await jsonSection.count()) > 0) {
         await expect(jsonSection).toBeVisible();
 
         // Check that content doesn't overflow
@@ -114,7 +118,7 @@ VIEWPORTS.forEach((viewport) => {
 
         // Check that cards are properly responsive
         const cards = jsonSection.locator('.grid > div, [class*="card"]');
-        if (await cards.count() > 0) {
+        if ((await cards.count()) > 0) {
           for (let i = 0; i < Math.min(3, await cards.count()); i++) {
             const card = cards.nth(i);
             const cardBox = await card.boundingBox();
@@ -130,7 +134,7 @@ VIEWPORTS.forEach((viewport) => {
           const badges = jsonSection.locator('[class*="badge"], .flex.gap-2');
           for (let i = 0; i < Math.min(3, await badges.count()); i++) {
             const badge = badges.nth(i);
-            if (await badge.count() > 0) {
+            if ((await badge.count()) > 0) {
               const badgeBox = await badge.boundingBox();
               if (badgeBox) {
                 expect(badgeBox.width).toBeLessThanOrEqual(viewport.width);
@@ -146,8 +150,10 @@ VIEWPORTS.forEach((viewport) => {
       await page.waitForLoadState('networkidle');
 
       // Check that the editor doesn't cause horizontal scroll
-      const editorContainer = page.locator('.monaco-editor, [data-testid*="editor"], textarea').first();
-      if (await editorContainer.count() > 0) {
+      const editorContainer = page
+        .locator('.monaco-editor, [data-testid*="editor"], textarea')
+        .first();
+      if ((await editorContainer.count()) > 0) {
         const editorBox = await editorContainer.boundingBox();
         if (editorBox) {
           expect(editorBox.width).toBeLessThanOrEqual(viewport.width);
@@ -156,7 +162,7 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check toolbar is responsive
       const toolbar = page.locator('[data-testid*="toolbar"], .flex.gap-2, .space-x-2').first();
-      if (await toolbar.count() > 0) {
+      if ((await toolbar.count()) > 0) {
         const toolbarBox = await toolbar.boundingBox();
         if (toolbarBox) {
           expect(toolbarBox.width).toBeLessThanOrEqual(viewport.width);
@@ -166,10 +172,12 @@ VIEWPORTS.forEach((viewport) => {
       // On mobile, check if controls are accessible
       if (viewport.name === 'mobile') {
         // Look for visible buttons in the main content area
-        const visibleButtons = page.locator('main button:visible, [data-testid*="tab"]:visible').first();
-        if (await visibleButtons.count() > 0) {
+        const visibleButtons = page
+          .locator('main button:visible, [data-testid*="tab"]:visible')
+          .first();
+        if ((await visibleButtons.count()) > 0) {
           await expect(visibleButtons).toBeVisible();
-          
+
           // Check button is large enough for touch
           const buttonBox = await visibleButtons.boundingBox();
           if (buttonBox) {
@@ -185,12 +193,12 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check action buttons are properly spaced
       const actionButtons = page.locator('button, .btn');
-      if (await actionButtons.count() > 0) {
+      if ((await actionButtons.count()) > 0) {
         const firstButton = actionButtons.first();
         const buttonBox = await firstButton.boundingBox();
         if (buttonBox) {
           expect(buttonBox.width).toBeLessThanOrEqual(viewport.width);
-          
+
           if (viewport.name === 'mobile') {
             expect(buttonBox.height).toBeGreaterThanOrEqual(44);
           }
@@ -214,7 +222,7 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check grid layout is responsive
       const gridContainer = page.locator('.grid, [class*="grid-cols"]').first();
-      if (await gridContainer.count() > 0) {
+      if ((await gridContainer.count()) > 0) {
         const gridBox = await gridContainer.boundingBox();
         if (gridBox) {
           expect(gridBox.width).toBeLessThanOrEqual(viewport.width);
@@ -222,12 +230,12 @@ VIEWPORTS.forEach((viewport) => {
 
         // Check individual grid items
         const gridItems = gridContainer.locator('> div, > article, > section');
-        if (await gridItems.count() > 0) {
+        if ((await gridItems.count()) > 0) {
           const firstItem = gridItems.first();
           const itemBox = await firstItem.boundingBox();
           if (itemBox) {
             expect(itemBox.width).toBeLessThanOrEqual(viewport.width);
-            
+
             // On mobile, items should be closer to full width
             if (viewport.name === 'mobile') {
               expect(itemBox.width).toBeGreaterThanOrEqual(viewport.width * 0.8);
@@ -243,7 +251,7 @@ VIEWPORTS.forEach((viewport) => {
 
       // Check footer if it exists
       const footer = page.locator('footer');
-      if (await footer.count() > 0) {
+      if ((await footer.count()) > 0) {
         const footerBox = await footer.boundingBox();
         if (footerBox) {
           expect(footerBox.width).toBeLessThanOrEqual(viewport.width);
@@ -251,10 +259,10 @@ VIEWPORTS.forEach((viewport) => {
 
         // Check footer links are accessible
         const footerLinks = footer.locator('a');
-        if (await footerLinks.count() > 0) {
+        if ((await footerLinks.count()) > 0) {
           const firstLink = footerLinks.first();
           await expect(firstLink).toBeVisible();
-          
+
           if (viewport.name === 'mobile') {
             const linkBox = await firstLink.boundingBox();
             if (linkBox) {

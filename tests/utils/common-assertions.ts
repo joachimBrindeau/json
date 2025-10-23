@@ -10,30 +10,35 @@ export class CommonAssertions {
   /**
    * Assert that JSON is visible and properly displayed in the viewer
    */
-  async assertJsonVisible(options: {
-    expectedNodeCount?: number;
-    expectedObjectCount?: number;
-    expectedArrayCount?: number;
-    checkForErrors?: boolean;
-    viewMode?: 'tree' | 'raw' | 'formatted';
-  } = {}) {
-    const { 
+  async assertJsonVisible(
+    options: {
+      expectedNodeCount?: number;
+      expectedObjectCount?: number;
+      expectedArrayCount?: number;
+      checkForErrors?: boolean;
+      viewMode?: 'tree' | 'raw' | 'formatted';
+    } = {}
+  ) {
+    const {
       expectedNodeCount,
       expectedObjectCount,
       expectedArrayCount,
       checkForErrors = true,
-      viewMode = 'tree'
+      viewMode = 'tree',
     } = options;
 
     // Wait for JSON to be processed and displayed
-    await this.page.waitForSelector('[data-testid="json-viewer"], .json-viewer, .monaco-editor', { 
-      timeout: 10000 
+    await this.page.waitForSelector('[data-testid="json-viewer"], .json-viewer, .monaco-editor', {
+      timeout: 10000,
     });
 
     // Check for processing completion
-    await this.page.waitForFunction(() => {
-      return !document.querySelector('[data-testid="loading"], .loading, .processing');
-    }, { timeout: 15000 });
+    await this.page.waitForFunction(
+      () => {
+        return !document.querySelector('[data-testid="loading"], .loading, .processing');
+      },
+      { timeout: 15000 }
+    );
 
     // Verify no errors if requested
     if (checkForErrors) {
@@ -44,9 +49,11 @@ export class CommonAssertions {
     // Check specific view mode elements
     switch (viewMode) {
       case 'tree':
-        const treeNodes = this.page.locator('[data-testid="tree-node"], .tree-node, .json-tree-node');
+        const treeNodes = this.page.locator(
+          '[data-testid="tree-node"], .tree-node, .json-tree-node'
+        );
         await expect(treeNodes.first()).toBeVisible();
-        
+
         if (expectedNodeCount) {
           await expect(treeNodes).toHaveCount(expectedNodeCount);
         }
@@ -58,7 +65,9 @@ export class CommonAssertions {
         break;
 
       case 'formatted':
-        const formattedContent = this.page.locator('[data-testid="formatted-json"], .formatted-json');
+        const formattedContent = this.page.locator(
+          '[data-testid="formatted-json"], .formatted-json'
+        );
         await expect(formattedContent).toBeVisible();
         break;
     }
@@ -66,13 +75,13 @@ export class CommonAssertions {
     // Verify node counts if specified
     if (expectedObjectCount || expectedArrayCount) {
       const statsElement = this.page.locator('[data-testid="json-stats"], .json-stats');
-      if (await statsElement.count() > 0) {
+      if ((await statsElement.count()) > 0) {
         const statsText = await statsElement.textContent();
-        
+
         if (expectedObjectCount && statsText) {
           expect(statsText).toContain(`${expectedObjectCount} object`);
         }
-        
+
         if (expectedArrayCount && statsText) {
           expect(statsText).toContain(`${expectedArrayCount} array`);
         }
@@ -85,12 +94,14 @@ export class CommonAssertions {
   /**
    * Assert that user is properly authenticated
    */
-  async assertAuthenticated(options: {
-    expectedEmail?: string;
-    expectedName?: string;
-    expectedRole?: string;
-    checkUserMenu?: boolean;
-  } = {}) {
+  async assertAuthenticated(
+    options: {
+      expectedEmail?: string;
+      expectedName?: string;
+      expectedRole?: string;
+      checkUserMenu?: boolean;
+    } = {}
+  ) {
     const { expectedEmail, expectedName, expectedRole, checkUserMenu = true } = options;
 
     // Check for authenticated state indicators
@@ -100,17 +111,21 @@ export class CommonAssertions {
     );
 
     // Verify sign-in button is NOT present
-    const signInButton = this.page.locator('button:has-text("Sign in"), button:has-text("Sign In")');
+    const signInButton = this.page.locator(
+      'button:has-text("Sign in"), button:has-text("Sign In")'
+    );
     await expect(signInButton).toHaveCount(0);
 
     if (checkUserMenu) {
       // Click user menu to verify user info
-      const userMenuButton = this.page.locator(
-        '[data-testid="user-menu"] button, .user-menu button, div[class*="border-t p-4"] button:not(:has-text("Sign in"))'
-      ).first();
-      
+      const userMenuButton = this.page
+        .locator(
+          '[data-testid="user-menu"] button, .user-menu button, div[class*="border-t p-4"] button:not(:has-text("Sign in"))'
+        )
+        .first();
+
       await userMenuButton.click();
-      
+
       // Wait for dropdown menu to be visible
       const dropdownMenu = this.page.locator('[role="menu"]');
       await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
@@ -134,7 +149,7 @@ export class CommonAssertions {
 
       // Close the dropdown
       await this.page.keyboard.press('Escape');
-      
+
       // Wait for dropdown to close
       await expect(dropdownMenu).not.toBeVisible({ timeout: 2000 });
     }
@@ -147,7 +162,9 @@ export class CommonAssertions {
    */
   async assertAnonymous() {
     // Check for sign-in button presence
-    const signInButton = this.page.locator('button:has-text("Sign in"), button:has-text("Sign In")');
+    const signInButton = this.page.locator(
+      'button:has-text("Sign in"), button:has-text("Sign In")'
+    );
     await expect(signInButton).toBeVisible();
 
     // Verify no user menu is present
@@ -158,8 +175,8 @@ export class CommonAssertions {
     const anonymousIndicators = this.page.locator(
       '[data-testid="anonymous-banner"], .anonymous-notice, .guest-mode'
     );
-    
-    if (await anonymousIndicators.count() > 0) {
+
+    if ((await anonymousIndicators.count()) > 0) {
       await expect(anonymousIndicators.first()).toBeVisible();
     }
 
@@ -169,12 +186,14 @@ export class CommonAssertions {
   /**
    * Assert that a document has been saved successfully
    */
-  async assertDocumentSaved(options: {
-    expectedTitle?: string;
-    expectedId?: string;
-    checkInLibrary?: boolean;
-    expectedUrl?: string;
-  } = {}) {
+  async assertDocumentSaved(
+    options: {
+      expectedTitle?: string;
+      expectedId?: string;
+      checkInLibrary?: boolean;
+      expectedUrl?: string;
+    } = {}
+  ) {
     const { expectedTitle, expectedId, checkInLibrary = false, expectedUrl } = options;
 
     // Wait for save confirmation
@@ -189,7 +208,7 @@ export class CommonAssertions {
     let saveConfirmed = false;
     for (const indicator of saveIndicators) {
       const element = this.page.locator(indicator);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         await expect(element).toBeVisible();
         saveConfirmed = true;
         break;
@@ -219,7 +238,7 @@ export class CommonAssertions {
       let titleFound = false;
       for (const titleSelector of titleElements) {
         const titleElement = this.page.locator(titleSelector);
-        if (await titleElement.count() > 0) {
+        if ((await titleElement.count()) > 0) {
           await expect(titleElement).toBeVisible();
           titleFound = true;
           break;
@@ -237,10 +256,10 @@ export class CommonAssertions {
     if (checkInLibrary && expectedTitle) {
       await this.page.goto('/saved');
       await this.page.waitForLoadState('networkidle');
-      
+
       const libraryItem = this.page.locator(`text="${expectedTitle}"`);
       await expect(libraryItem).toBeVisible();
-      
+
       await this.page.goBack();
     }
 
@@ -250,21 +269,29 @@ export class CommonAssertions {
   /**
    * Assert that a share link works properly
    */
-  async assertShareLinkWorks(shareUrl: string, options: {
-    checkAnonymousAccess?: boolean;
-    expectedTitle?: string;
-    expectedContent?: string;
-    checkEmbedding?: boolean;
-  } = {}) {
-    const { checkAnonymousAccess = true, expectedTitle, expectedContent, checkEmbedding = false } = options;
+  async assertShareLinkWorks(
+    shareUrl: string,
+    options: {
+      checkAnonymousAccess?: boolean;
+      expectedTitle?: string;
+      expectedContent?: string;
+      checkEmbedding?: boolean;
+    } = {}
+  ) {
+    const {
+      checkAnonymousAccess = true,
+      expectedTitle,
+      expectedContent,
+      checkEmbedding = false,
+    } = options;
 
     // Open share link in new tab/context if checking anonymous access
     if (checkAnonymousAccess) {
       const newContext = await this.page.context().browser()?.newContext();
       if (!newContext) throw new Error('Could not create new context for anonymous test');
-      
+
       const newPage = await newContext.newPage();
-      
+
       try {
         // Navigate to share URL
         await newPage.goto(shareUrl);
@@ -294,23 +321,22 @@ export class CommonAssertions {
           await newPage.waitForLoadState('networkidle');
           await this.assertJsonVisibleOnPage(newPage);
         }
-
       } finally {
         await newContext.close();
       }
     } else {
       // Test in current context
       const currentUrl = this.page.url();
-      
+
       await this.page.goto(shareUrl);
       await this.page.waitForLoadState('networkidle');
-      
+
       if (expectedTitle || expectedContent) {
         if (expectedTitle) {
           const titleElement = this.page.locator(`text="${expectedTitle}"`);
           await expect(titleElement).toBeVisible();
         }
-        
+
         if (expectedContent) {
           const contentElement = this.page.locator(`text="${expectedContent}"`);
           await expect(contentElement).toBeVisible();
@@ -318,7 +344,7 @@ export class CommonAssertions {
       }
 
       await this.assertJsonVisible();
-      
+
       // Return to original URL
       await this.page.goto(currentUrl);
     }
@@ -329,16 +355,19 @@ export class CommonAssertions {
   /**
    * Assert that library contains expected documents
    */
-  async assertLibraryContains(documents: Array<{
-    title: string;
-    isPublic?: boolean;
-    tags?: string[];
-    category?: string;
-  }>, options: {
-    exactMatch?: boolean;
-    checkOrder?: boolean;
-    libraryType?: 'user' | 'public';
-  } = {}) {
+  async assertLibraryContains(
+    documents: Array<{
+      title: string;
+      isPublic?: boolean;
+      tags?: string[];
+      category?: string;
+    }>,
+    options: {
+      exactMatch?: boolean;
+      checkOrder?: boolean;
+      libraryType?: 'user' | 'public';
+    } = {}
+  ) {
     const { exactMatch = false, checkOrder = false, libraryType = 'user' } = options;
 
     // Navigate to appropriate library
@@ -359,10 +388,10 @@ export class CommonAssertions {
 
       // Check order if requested
       if (checkOrder) {
-        const allTitles = await this.page.locator(
-          '[data-testid="document-title"], .document-title, .library-item-title'
-        ).allTextContents();
-        
+        const allTitles = await this.page
+          .locator('[data-testid="document-title"], .document-title, .library-item-title')
+          .allTextContents();
+
         expect(allTitles[index]).toBe(doc.title);
       }
 
@@ -370,7 +399,7 @@ export class CommonAssertions {
       if (doc.tags) {
         for (const tag of doc.tags) {
           const tagElement = this.page.locator(`[data-tag="${tag}"], .tag:has-text("${tag}")`);
-          if (await tagElement.count() > 0) {
+          if ((await tagElement.count()) > 0) {
             await expect(tagElement).toBeVisible();
           }
         }
@@ -378,12 +407,12 @@ export class CommonAssertions {
 
       // Check public/private status
       if (doc.isPublic !== undefined) {
-        const visibilityIndicator = doc.isPublic 
+        const visibilityIndicator = doc.isPublic
           ? '[data-testid="public-indicator"], .public-badge'
           : '[data-testid="private-indicator"], .private-badge';
-        
+
         const indicator = this.page.locator(visibilityIndicator);
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           await expect(indicator).toBeVisible();
         }
       }
@@ -391,10 +420,10 @@ export class CommonAssertions {
 
     // Check exact match if requested
     if (exactMatch) {
-      const allDocuments = await this.page.locator(
-        '[data-testid="document-title"], .document-title, .library-item-title'
-      ).count();
-      
+      const allDocuments = await this.page
+        .locator('[data-testid="document-title"], .document-title, .library-item-title')
+        .count();
+
       expect(allDocuments).toBe(documents.length);
     }
 
@@ -404,20 +433,24 @@ export class CommonAssertions {
   /**
    * Assert that search/filter functionality works
    */
-  async assertSearchWorks(searchTerm: string, expectedResults: string[], options: {
-    searchType?: 'content' | 'title' | 'tags';
-    exactMatch?: boolean;
-  } = {}) {
+  async assertSearchWorks(
+    searchTerm: string,
+    expectedResults: string[],
+    options: {
+      searchType?: 'content' | 'title' | 'tags';
+      exactMatch?: boolean;
+    } = {}
+  ) {
     const { searchType = 'content', exactMatch = false } = options;
 
     // Find and use search input
-    const searchInput = this.page.locator(
-      '[data-testid="search-input"], input[placeholder*="Search"], input[type="search"]'
-    ).first();
-    
+    const searchInput = this.page
+      .locator('[data-testid="search-input"], input[placeholder*="Search"], input[type="search"]')
+      .first();
+
     await searchInput.fill(searchTerm);
     await this.page.keyboard.press('Enter');
-    
+
     // Wait for search results to load
     await this.page.waitForLoadState('networkidle', { timeout: 5000 });
 
@@ -429,10 +462,10 @@ export class CommonAssertions {
 
     // Check exact match if requested
     if (exactMatch) {
-      const allResults = await this.page.locator(
-        '[data-testid="search-result"], .search-result, .library-item'
-      ).count();
-      
+      const allResults = await this.page
+        .locator('[data-testid="search-result"], .search-result, .library-item')
+        .count();
+
       expect(allResults).toBe(expectedResults.length);
     }
 
@@ -442,18 +475,19 @@ export class CommonAssertions {
   /**
    * Assert modal or dialog behavior
    */
-  async assertModalOpen(modalType: string, options: {
-    expectedTitle?: string;
-    expectedContent?: string;
-    checkCloseButton?: boolean;
-  } = {}) {
+  async assertModalOpen(
+    modalType: string,
+    options: {
+      expectedTitle?: string;
+      expectedContent?: string;
+      checkCloseButton?: boolean;
+    } = {}
+  ) {
     const { expectedTitle, expectedContent, checkCloseButton = true } = options;
 
     // Wait for modal to appear
-    const modal = this.page.locator(
-      `[data-testid="${modalType}-modal"], [role="dialog"], .modal`
-    );
-    
+    const modal = this.page.locator(`[data-testid="${modalType}-modal"], [role="dialog"], .modal`);
+
     await expect(modal).toBeVisible();
 
     // Check modal content
@@ -471,8 +505,8 @@ export class CommonAssertions {
       const closeButton = modal.locator(
         '[data-testid="close-modal"], .close-button, button:has-text("Close"), button:has-text("×")'
       );
-      
-      if (await closeButton.count() > 0) {
+
+      if ((await closeButton.count()) > 0) {
         await closeButton.click();
         await expect(modal).toHaveCount(0);
       }
@@ -484,10 +518,13 @@ export class CommonAssertions {
   /**
    * Assert error states and error handling
    */
-  async assertErrorDisplayed(errorType: string, options: {
-    expectedMessage?: string;
-    dismissible?: boolean;
-  } = {}) {
+  async assertErrorDisplayed(
+    errorType: string,
+    options: {
+      expectedMessage?: string;
+      dismissible?: boolean;
+    } = {}
+  ) {
     const { expectedMessage, dismissible = false } = options;
 
     // Look for error indicators
@@ -506,8 +543,8 @@ export class CommonAssertions {
       const dismissButton = errorElement.locator(
         'button:has-text("×"), button:has-text("Dismiss"), .close-button'
       );
-      
-      if (await dismissButton.count() > 0) {
+
+      if ((await dismissButton.count()) > 0) {
         await dismissButton.click();
         await expect(errorElement).toHaveCount(0);
       }
@@ -523,11 +560,10 @@ export class CommonAssertions {
   }
 
   private async assertJsonVisibleOnPage(page: Page) {
-    await page.waitForSelector(
-      '[data-testid="json-viewer"], .json-viewer, .monaco-editor',
-      { timeout: 10000 }
-    );
-    
+    await page.waitForSelector('[data-testid="json-viewer"], .json-viewer, .monaco-editor', {
+      timeout: 10000,
+    });
+
     const jsonViewer = page.locator('[data-testid="json-viewer"], .json-viewer, .monaco-editor');
     await expect(jsonViewer).toBeVisible();
   }
@@ -538,7 +574,7 @@ export class CommonAssertions {
  */
 export async function assertPageLoaded(page: Page, expectedUrl?: string) {
   await page.waitForLoadState('networkidle');
-  
+
   if (expectedUrl) {
     expect(page.url()).toContain(expectedUrl);
   }
@@ -546,7 +582,7 @@ export async function assertPageLoaded(page: Page, expectedUrl?: string) {
   // Check for basic page structure
   const body = page.locator('body');
   await expect(body).toBeVisible();
-  
+
   // Check that page isn't showing a loading state
   const loadingElements = page.locator('[data-testid="page-loading"], .page-loading');
   await expect(loadingElements).toHaveCount(0);
@@ -563,9 +599,9 @@ export async function assertResponseTime(page: Page, maxResponseTime: number) {
   const startTime = Date.now();
   await page.waitForLoadState('networkidle');
   const endTime = Date.now();
-  
+
   const responseTime = endTime - startTime;
   expect(responseTime).toBeLessThan(maxResponseTime);
-  
+
   console.log(`✅ Page loaded in ${responseTime}ms (under ${maxResponseTime}ms limit)`);
 }

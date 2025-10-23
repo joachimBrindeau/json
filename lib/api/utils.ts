@@ -72,10 +72,7 @@ export function withAuth<T extends any[]>(
       const session = await getServerSession(authOptions);
 
       if (!session?.user?.id) {
-        return createApiResponse(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
+        return createApiResponse({ error: 'Authentication required' }, { status: 401 });
       }
 
       return await handler(req, session as Session, ...args);
@@ -114,7 +111,9 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     return createApiResponse(
       {
         error: 'Validation failed',
-        details: (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', '),
+        details: error.issues
+          .map((e) => `${e.path.join('.')}: ${e.message}`)
+          .join(', '),
       },
       { status: 400 }
     );
@@ -123,45 +122,27 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
   // Handle Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
     const prismaError = error as { code: string; message: string };
-    
+
     switch (prismaError.code) {
       case 'P2002':
-        return createApiResponse(
-          { error: 'Resource already exists' },
-          { status: 409 }
-        );
+        return createApiResponse({ error: 'Resource already exists' }, { status: 409 });
       case 'P2025':
-        return createApiResponse(
-          { error: 'Resource not found' },
-          { status: 404 }
-        );
+        return createApiResponse({ error: 'Resource not found' }, { status: 404 });
       case 'P1001':
-        return createApiResponse(
-          { error: 'Database connection failed' },
-          { status: 503 }
-        );
+        return createApiResponse({ error: 'Database connection failed' }, { status: 503 });
       case 'P2024':
-        return createApiResponse(
-          { error: 'Request timeout' },
-          { status: 408 }
-        );
+        return createApiResponse({ error: 'Request timeout' }, { status: 408 });
     }
   }
 
   // Handle standard Error objects
   if (error instanceof Error) {
     if (error.message.includes('timeout')) {
-      return createApiResponse(
-        { error: 'Request timeout' },
-        { status: 408 }
-      );
+      return createApiResponse({ error: 'Request timeout' }, { status: 408 });
     }
 
     if (error.message.includes('not found')) {
-      return createApiResponse(
-        { error: 'Resource not found' },
-        { status: 404 }
-      );
+      return createApiResponse({ error: 'Resource not found' }, { status: 404 });
     }
   }
 
@@ -169,9 +150,12 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
   return createApiResponse(
     {
       error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' 
-        ? (error instanceof Error ? error.message : String(error))
-        : undefined,
+      details:
+        process.env.NODE_ENV === 'development'
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : undefined,
     },
     { status: 500 }
   );
@@ -211,7 +195,7 @@ export async function validateRequest<T>(
     }
 
     const result = schema.safeParse(data);
-    
+
     if (result.success) {
       return { success: true, data: result.data };
     } else {
@@ -220,11 +204,13 @@ export async function validateRequest<T>(
   } catch (error) {
     return {
       success: false,
-      error: new ZodError([{
-        code: 'custom',
-        message: error instanceof Error ? error.message : 'Validation failed',
-        path: [],
-      }])
+      error: new ZodError([
+        {
+          code: 'custom',
+          message: error instanceof Error ? error.message : 'Validation failed',
+          path: [],
+        },
+      ]),
     };
   }
 }
@@ -270,10 +256,7 @@ export function withRateLimit(
   } = {}
 ) {
   return async (req: NextRequest): Promise<NextResponse> => {
-    const {
-      keyGenerator = defaultKeyGenerator,
-      skipCondition = () => false,
-    } = options;
+    const { keyGenerator = defaultKeyGenerator, skipCondition = () => false } = options;
 
     if (skipCondition(req)) {
       return handler(req);
@@ -315,7 +298,7 @@ function defaultKeyGenerator(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
   const ip = forwarded?.split(',')[0] || realIp || 'anonymous';
-  
+
   // Hash the IP for privacy
   return createHash('sha256').update(ip).digest('hex');
 }
@@ -350,7 +333,7 @@ export function withCors(
     }
 
     const response = await handler(req);
-    
+
     // Add CORS headers to the response
     const corsHeaders = getCorsHeaders(origin, methods, headers, credentials);
     Object.entries(corsHeaders).forEach(([key, value]) => {
@@ -466,11 +449,11 @@ export function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
   const remoteAddress = req.headers.get('remote-addr');
-  
+
   if (forwarded) {
     return forwarded.split(',')[0].trim();
   }
-  
+
   return realIp || remoteAddress || 'unknown';
 }
 
@@ -486,13 +469,14 @@ export function hashSensitiveData(data: string): string {
  * Allows chaining multiple middleware functions
  */
 export function composeMiddleware(
-  ...middlewares: Array<(handler: (req: NextRequest) => Promise<NextResponse>) => (req: NextRequest) => Promise<NextResponse>>
+  ...middlewares: Array<
+    (
+      handler: (req: NextRequest) => Promise<NextResponse>
+    ) => (req: NextRequest) => Promise<NextResponse>
+  >
 ) {
   return (handler: (req: NextRequest) => Promise<NextResponse>) => {
-    return middlewares.reduceRight(
-      (acc, middleware) => middleware(acc),
-      handler
-    );
+    return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
   };
 }
 

@@ -221,7 +221,10 @@ test.describe('Anonymous User - File Upload Functionality', () => {
         expect(await viewerPage.hasJSONErrors()).toBe(false);
       } else {
         // Fail fast if drag-drop area not available
-        expect(await viewerPage.uploadArea.isVisible(), 'Drag-drop upload area must be available for this test').toBe(true);
+        expect(
+          await viewerPage.uploadArea.isVisible(),
+          'Drag-drop upload area must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -324,7 +327,10 @@ test.describe('Anonymous User - File Upload Functionality', () => {
         expect(await viewerPage.hasJSONErrors()).toBe(false);
       } else {
         // Fail fast if upload button not available
-        expect(await viewerPage.uploadButton.isVisible(), 'Upload button must be available for this test').toBe(true);
+        expect(
+          await viewerPage.uploadButton.isVisible(),
+          'Upload button must be available for this test'
+        ).toBe(true);
       }
     });
   });

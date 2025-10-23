@@ -28,15 +28,15 @@ export interface DiffResult {
  */
 export function deepEqual(a: JsonValue, b: JsonValue): boolean {
   if (a === b) return true;
-  
+
   if (a == null || b == null) return a === b;
-  
+
   if (typeof a !== typeof b) return false;
-  
+
   if (typeof a !== 'object') return a === b;
-  
+
   if (Array.isArray(a) !== Array.isArray(b)) return false;
-  
+
   if (Array.isArray(a)) {
     if (a.length !== (b as any).length) return false;
     for (let i = 0; i < a.length; i++) {
@@ -44,17 +44,17 @@ export function deepEqual(a: JsonValue, b: JsonValue): boolean {
     }
     return true;
   }
-  
+
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
-  
+
   if (keysA.length !== keysB.length) return false;
-  
+
   for (const key of keysA) {
     if (!keysB.includes(key)) return false;
     if (!deepEqual((a as any)[key], (b as any)[key])) return false;
   }
-  
+
   return true;
 }
 
@@ -79,7 +79,7 @@ function escapePathComponent(component: string): string {
  */
 function createPath(segments: (string | number)[]): string {
   if (segments.length === 0) return '';
-  return '/' + segments.map(segment => escapePathComponent(String(segment))).join('/');
+  return '/' + segments.map((segment) => escapePathComponent(String(segment))).join('/');
 }
 
 /**
@@ -121,7 +121,7 @@ export function compareJson(oldJson: JsonValue, newJson: JsonValue): DiffResult 
     // Handle arrays
     if (Array.isArray(oldVal) && Array.isArray(newVal)) {
       const maxLength = Math.max(oldVal.length, newVal.length);
-      
+
       for (let i = 0; i < maxLength; i++) {
         if (i >= oldVal.length) {
           // Item added
@@ -204,9 +204,13 @@ export function applyDiff(json: JsonValue, operations: DiffOperation[]): JsonVal
   const result = JSON.parse(JSON.stringify(json)); // Deep clone
 
   for (const op of operations) {
-    const pathSegments = op.path === '' ? [] : op.path.slice(1).split('/').map(segment => 
-      segment.replace(/~1/g, '/').replace(/~0/g, '~')
-    );
+    const pathSegments =
+      op.path === ''
+        ? []
+        : op.path
+            .slice(1)
+            .split('/')
+            .map((segment) => segment.replace(/~1/g, '/').replace(/~0/g, '~'));
 
     switch (op.op) {
       case 'add':
@@ -289,22 +293,22 @@ export function generateDiffSummary(diff: DiffResult): string {
   }
 
   const parts: string[] = [];
-  
+
   if (diff.summary.added > 0) {
     parts.push(`${diff.summary.added} addition${diff.summary.added === 1 ? '' : 's'}`);
   }
-  
+
   if (diff.summary.removed > 0) {
     parts.push(`${diff.summary.removed} deletion${diff.summary.removed === 1 ? '' : 's'}`);
   }
-  
+
   if (diff.summary.changed > 0) {
     parts.push(`${diff.summary.changed} modification${diff.summary.changed === 1 ? '' : 's'}`);
   }
 
   const totalChanges = diff.summary.added + diff.summary.removed + diff.summary.changed;
   const totalItems = totalChanges + diff.summary.unchanged;
-  
+
   const summary = parts.join(', ');
   return `Found ${summary} out of ${totalItems} total item${totalItems === 1 ? '' : 's'}.`;
 }
@@ -314,17 +318,17 @@ export function generateDiffSummary(diff: DiffResult): string {
  */
 export function formatDiffOperation(op: DiffOperation): string {
   const path = op.path || '(root)';
-  
+
   switch (op.op) {
     case 'add':
       return `Added: ${path} = ${JSON.stringify(op.value)}`;
-    
+
     case 'remove':
       return `Removed: ${path} (was ${JSON.stringify(op.oldValue)})`;
-    
+
     case 'replace':
       return `Changed: ${path} from ${JSON.stringify(op.oldValue)} to ${JSON.stringify(op.value)}`;
-    
+
     default:
       return `${op.op}: ${path}`;
   }

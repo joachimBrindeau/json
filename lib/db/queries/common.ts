@@ -66,10 +66,7 @@ export function buildWhereClause(
 
   // Exclude expired documents
   if (filters.excludeExpired) {
-    where.OR = [
-      { expiresAt: null },
-      { expiresAt: { gt: new Date() } }
-    ];
+    where.OR = [{ expiresAt: null }, { expiresAt: { gt: new Date() } }];
   }
 
   // Date range filters
@@ -90,7 +87,7 @@ export function buildWhereClause(
       where.OR = [
         { title: { contains: searchTerm, mode: 'insensitive' } },
         { description: { contains: searchTerm, mode: 'insensitive' } },
-        { tags: { hasSome: [searchTerm] } }
+        { tags: { hasSome: [searchTerm] } },
       ];
     }
 
@@ -123,7 +120,7 @@ export function buildPagination(params: PaginationParams = {}): {
     skip,
     take: limit,
     page,
-    limit
+    limit,
   };
 }
 
@@ -145,7 +142,7 @@ export function buildPaginationResult(
     total,
     totalPages,
     hasNext,
-    hasPrev
+    hasPrev,
   };
 }
 
@@ -166,10 +163,46 @@ export function buildOrderBy(
     published: { publishedAt: sortOrder },
     complexity: { complexity: sortOrder },
     nodeCount: { nodeCount: sortOrder },
-    depth: { maxDepth: sortOrder }
+    depth: { maxDepth: sortOrder },
   };
 
   return orderByMap[sortBy] || orderByMap.recent;
+}
+
+/**
+ * Shared select fragments
+ */
+function selectAnalytics(include: boolean) {
+  if (!include) return {};
+  return {
+    analytics: {
+      select: {
+        id: true,
+        viewCount: true,
+        shareCount: true,
+        lastViewed: true,
+        parseTime: true,
+        renderTime: true,
+        memoryUsage: true,
+      },
+    },
+  } as const;
+}
+
+function selectChunks(include: boolean) {
+  if (!include) return {};
+  return {
+    chunks: {
+      select: {
+        id: true,
+        chunkIndex: true,
+        size: true,
+        path: true,
+        checksum: true,
+      },
+      orderBy: { chunkIndex: 'asc' as const },
+    },
+  } as const;
 }
 
 /**
@@ -199,35 +232,12 @@ export function getDocumentListSelect(includeAnalytics = false, includeChunks = 
       select: {
         id: true,
         name: true,
-        image: true
-      }
+        image: true,
+      },
     },
-    ...(includeAnalytics && {
-      analytics: {
-        select: {
-          id: true,
-          viewCount: true,
-          shareCount: true,
-          lastViewed: true,
-          parseTime: true,
-          renderTime: true,
-          memoryUsage: true
-        }
-      }
-    }),
-    ...(includeChunks && {
-      chunks: {
-        select: {
-          id: true,
-          chunkIndex: true,
-          size: true,
-          path: true,
-          checksum: true
-        },
-        orderBy: { chunkIndex: 'asc' as const }
-      }
-    })
-  };
+    ...selectAnalytics(includeAnalytics),
+    ...selectChunks(includeChunks),
+  } as const;
 }
 
 /**
@@ -264,37 +274,13 @@ export function getDocumentDetailSelect(includeAnalytics = false, includeChunks 
         id: true,
         name: true,
         image: true,
-        email: true
-      }
+        email: true,
+      },
     },
-    ...(includeAnalytics && {
-      analytics: {
-        select: {
-          id: true,
-          viewCount: true,
-          shareCount: true,
-          lastViewed: true,
-          parseTime: true,
-          renderTime: true,
-          memoryUsage: true
-        }
-      }
-    }),
-    ...(includeChunks && {
-      chunks: {
-        select: {
-          id: true,
-          chunkIndex: true,
-          size: true,
-          path: true,
-          checksum: true
-        },
-        orderBy: { chunkIndex: 'asc' as const }
-      }
-    })
-  };
+    ...selectAnalytics(includeAnalytics),
+    ...selectChunks(includeChunks),
+  } as const;
 }
-
 
 /**
  * Validate and sanitize search parameters
@@ -331,16 +317,16 @@ export function validateSearchParams(params: SearchParams): {
     } else if (params.tags.length > 20) {
       errors.push('Too many tags. Maximum 20 tags.');
     } else {
-      sanitized.tags = params.tags.filter(tag => 
-        typeof tag === 'string' && tag.trim().length > 0
-      ).map(tag => tag.trim());
+      sanitized.tags = params.tags
+        .filter((tag) => typeof tag === 'string' && tag.trim().length > 0)
+        .map((tag) => tag.trim());
     }
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -376,7 +362,7 @@ export function validatePaginationParams(params: PaginationParams): {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -404,9 +390,12 @@ export function handleDatabaseError(error: unknown): {
       return {
         status: 500,
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' 
-          ? (error instanceof Error ? error.message : String(error))
-          : undefined
+        details:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       };
   }
 }
@@ -426,7 +415,7 @@ export async function verifyDocumentOwnership(
   status?: number;
 }> {
   const { prisma } = await import('@/lib/db');
-  
+
   try {
     const document = await prisma.jsonDocument.findFirst({
       where: {
@@ -435,8 +424,8 @@ export async function verifyDocumentOwnership(
       select: selectFields || {
         id: true,
         userId: true,
-        version: true
-      }
+        version: true,
+      },
     });
 
     if (!document) {
@@ -449,12 +438,12 @@ export async function verifyDocumentOwnership(
 
     return {
       success: true,
-      data: document
+      data: document,
     };
   } catch (error) {
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -484,7 +473,7 @@ export function formatDocumentForResponse(doc: any, includeContent = false) {
       content: doc.content,
       metadata: doc.metadata,
       checksum: doc.checksum,
-      version: doc.version
-    })
+      version: doc.version,
+    }),
   };
 }

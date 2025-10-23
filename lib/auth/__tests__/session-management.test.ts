@@ -53,7 +53,7 @@ describe('Session Management', () => {
       const now = Date.now();
       const expirationMs = SESSION_CONFIG.maxAge * 1000;
       const expectedExpiration = now + expirationMs;
-      
+
       // Allow 1 second tolerance
       expect(expectedExpiration).toBeGreaterThan(now);
       expect(expectedExpiration).toBeLessThan(now + expirationMs + 1000);
@@ -235,7 +235,7 @@ describe('Session Management', () => {
       const now = Math.floor(Date.now() / 1000); // Current time in seconds
       const maxAge = SESSION_CONFIG.maxAge;
       const expectedExpiration = now + maxAge;
-      
+
       expect(expectedExpiration).toBeGreaterThan(now);
       expect(expectedExpiration - now).toBe(maxAge);
     });
@@ -244,7 +244,7 @@ describe('Session Management', () => {
       const now = Date.now();
       const expirationMs = SESSION_CONFIG.maxAge * 1000;
       const futureExpiration = now + expirationMs;
-      
+
       expect(futureExpiration).toBeGreaterThan(now);
     });
 
@@ -324,4 +324,3 @@ describe('Session Management', () => {
     });
   });
 });
-

@@ -1,7 +1,7 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { config } from '@/lib/config'
-import { logger } from '@/lib/logger'
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { config } from '@/lib/config';
+import { logger } from '@/lib/logger';
 
 /**
  * Server-side check for superadmin access
@@ -27,17 +27,17 @@ import { logger } from '@/lib/logger'
  */
 export async function isSuperAdmin(): Promise<boolean> {
   try {
-    const session = await getServerSession(authOptions)
-    const userEmail = session?.user?.email
+    const session = await getServerSession(authOptions);
+    const userEmail = session?.user?.email;
 
     if (!userEmail) {
-      return false
+      return false;
     }
 
-    return config.auth.superadminEmails.includes(userEmail)
+    return config.auth.superadminEmails.includes(userEmail);
   } catch (error) {
-    logger.error({ err: error }, 'Failed to check superadmin status')
-    return false
+    logger.error({ err: error }, 'Failed to check superadmin status');
+    return false;
   }
 }
 
@@ -55,13 +55,13 @@ export async function isSuperAdmin(): Promise<boolean> {
  */
 export function checkSuperAdmin(userEmail?: string | null): boolean {
   if (!userEmail) {
-    return false
+    return false;
   }
   // Safety check for config.auth.superadminEmails
   if (!config.auth?.superadminEmails || !Array.isArray(config.auth.superadminEmails)) {
-    return false
+    return false;
   }
-  return config.auth.superadminEmails.includes(userEmail)
+  return config.auth.superadminEmails.includes(userEmail);
 }
 
 /**
@@ -77,8 +77,8 @@ export function checkSuperAdmin(userEmail?: string | null): boolean {
  * }
  */
 export async function requireSuperAdmin(): Promise<void> {
-  const isAdmin = await isSuperAdmin()
+  const isAdmin = await isSuperAdmin();
   if (!isAdmin) {
-    throw new Error('Unauthorized: Superadmin access required')
+    throw new Error('Unauthorized: Superadmin access required');
   }
 }

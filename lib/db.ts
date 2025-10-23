@@ -20,20 +20,20 @@ if (!config.isProduction) globalForPrisma.prisma = prisma;
 export async function checkDBHealth() {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    
+
     // Dynamically import Redis only on server
     let redisHealth = false;
     if (typeof window === 'undefined') {
       try {
         const { redis } = await import('@/lib/redis');
         if (redis) {
-          redisHealth = await redis.ping() === 'PONG';
+          redisHealth = (await redis.ping()) === 'PONG';
         }
       } catch (error) {
         logger.warn({ err: error }, 'Redis not available');
       }
     }
-    
+
     return {
       postgres: true,
       redis: redisHealth,
@@ -53,7 +53,7 @@ export async function checkDBHealth() {
 // Graceful shutdown
 export async function closeConnections() {
   await prisma.$disconnect();
-  
+
   if (typeof window === 'undefined') {
     try {
       const { closeRedisConnection } = await import('@/lib/redis');

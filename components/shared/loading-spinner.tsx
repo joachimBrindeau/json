@@ -14,11 +14,7 @@ const sizeClasses = {
   lg: 'h-12 w-12',
 };
 
-export function LoadingSpinner({
-  size = 'md',
-  className = '',
-  label
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className = '', label }: LoadingSpinnerProps) {
   const sizeClass = sizeClasses[size];
 
   return (
@@ -28,9 +24,7 @@ export function LoadingSpinner({
         role="status"
         aria-label={label || 'Loading'}
       />
-      {label && (
-        <span className="text-sm text-muted-foreground">{label}</span>
-      )}
+      {label && <span className="text-sm text-muted-foreground">{label}</span>}
     </div>
   );
 }

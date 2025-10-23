@@ -6,4 +6,3 @@
 export { JsonEditor } from './json-editor';
 export { JsonMetadataForm } from './json-metadata-form';
 export { RichTextEditor } from './rich-text-editor';
-

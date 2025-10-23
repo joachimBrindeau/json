@@ -51,7 +51,12 @@ function JsonFlowViewInner({ json, className, onNodeClick, searchTerm = '' }: Js
   const { nodes: parsedNodes, edges: parsedEdges } = useFlowParser(json);
 
   // Manage node state with collapse functionality
-  const { nodes, edges, onNodesChange, onEdgesChange } = useFlowNodes(parsedNodes, parsedEdges, undefined, searchTerm);
+  const { nodes, edges, onNodesChange, onEdgesChange } = useFlowNodes(
+    parsedNodes,
+    parsedEdges,
+    undefined,
+    searchTerm
+  );
 
   // Manage node details modal
   const { selectedNode, isOpen, openModal, closeModal } = useNodeDetailsModal();
@@ -82,7 +87,7 @@ function JsonFlowViewInner({ json, className, onNodeClick, searchTerm = '' }: Js
 
       // Prevent duplicate connections
       const isDuplicate = edges.some(
-        edge =>
+        (edge) =>
           edge.source === connection.source &&
           edge.target === connection.target &&
           edge.sourceHandle === connection.sourceHandle &&

@@ -36,11 +36,16 @@ test.describe('Anonymous User - Tree View Interactions', () => {
         await viewerPage.takeScreenshot('tree-view-expandable-nodes');
       } else {
         // Fail fast if tree view not available
-        expect(await viewerPage.treeViewButton.isVisible(), 'Tree view must be available for this test').toBe(true);
+        expect(
+          await viewerPage.treeViewButton.isVisible(),
+          'Tree view must be available for this test'
+        ).toBe(true);
       }
     });
 
-    test('should display realistic deeply nested user data in tree view', async ({ dataGenerator }) => {
+    test('should display realistic deeply nested user data in tree view', async ({
+      dataGenerator,
+    }) => {
       const nestedData = dataGenerator.generateRealisticDeepNesting();
       const jsonString = JSON.stringify(nestedData, null, 2);
 

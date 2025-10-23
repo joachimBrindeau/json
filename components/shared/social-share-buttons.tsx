@@ -37,11 +37,7 @@ export function SocialShareButtons({
     <div className="space-y-2">
       {showLabel && <Label>Share on social media</Label>}
       <div className="flex flex-wrap gap-2">
-        <TwitterShareButton
-          url={url}
-          title={title}
-          className="hover:opacity-80 transition-opacity"
-        >
+        <TwitterShareButton url={url} title={title} className="hover:opacity-80 transition-opacity">
           <TwitterIcon size={32} round />
         </TwitterShareButton>
 

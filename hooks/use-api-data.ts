@@ -64,9 +64,7 @@ export interface UseApiDataResult<T> {
  * });
  * ```
  */
-export function useApiData<T, TRaw = T>(
-  options: UseApiDataOptions<T, TRaw>
-): UseApiDataResult<T> {
+export function useApiData<T, TRaw = T>(options: UseApiDataOptions<T, TRaw>): UseApiDataResult<T> {
   const {
     endpoint,
     onError,
@@ -88,7 +86,11 @@ export function useApiData<T, TRaw = T>(
       setLoading(true);
       setError(null);
 
-      const rawData = await apiClient.get<TRaw>(endpoint);
+      const rawResponse = await apiClient.get<any>(endpoint);
+      const rawData: TRaw =
+        rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
+          ? (rawResponse.data as TRaw)
+          : (rawResponse as TRaw);
       const processedData = transform ? await transform(rawData) : (rawData as unknown as T);
 
       setData(processedData);
@@ -99,9 +101,7 @@ export function useApiData<T, TRaw = T>(
       setError(apiError);
 
       if (showToast) {
-        const displayMessage = apiError instanceof ApiError
-          ? apiError.message
-          : errorMessage;
+        const displayMessage = apiError instanceof ApiError ? apiError.message : errorMessage;
 
         toast({
           title: 'Error',

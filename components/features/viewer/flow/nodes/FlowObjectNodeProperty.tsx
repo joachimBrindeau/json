@@ -1,5 +1,8 @@
 import { memo } from 'react';
-import { validateJsonDataType, isEmptyArray } from '@/components/features/viewer/flow/utils/flow-utils';
+import {
+  validateJsonDataType,
+  isEmptyArray,
+} from '@/components/features/viewer/flow/utils/flow-utils';
 import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBooleanChip';
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
 import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
@@ -27,7 +30,7 @@ const ObjectNodePropertyComponent = ({
   hasChildNode,
   childNodeId,
   collapsedBranches,
-  onToggleCollapse
+  onToggleCollapse,
 }: Props) => {
   const { isObjectData, isArrayData, isStringData, isNumberData, isBooleanData, isNullData } =
     validateJsonDataType(propertyV);
@@ -70,7 +73,12 @@ const ObjectNodePropertyComponent = ({
       </div>
 
       {shouldRenderHandle && (
-        <FlowHandle style={{ backgroundColor: '#94a3b8' }} id={propertyK} type="source" direction="horizontal" />
+        <FlowHandle
+          style={{ backgroundColor: '#94a3b8' }}
+          id={propertyK}
+          type="source"
+          direction="horizontal"
+        />
       )}
 
       {/* Collapse button for properties with child nodes */}

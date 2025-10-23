@@ -432,7 +432,7 @@ test.describe('Authenticated User - Library Management', () => {
       for (let i = 0; i < sortTestData.length; i++) {
         const data = sortTestData[i];
         await apiHelper.uploadJSON(data.content, { title: data.title });
-        
+
         // Note: Timestamps are naturally different due to sequential API calls
         // Removed artificial delay - database timestamps provide ordering
       }

@@ -16,16 +16,16 @@ const migrateAnonymousSchema = z.object({
 
 /**
  * POST migrate anonymous JSON documents to authenticated user
- * 
+ *
  * This endpoint is called when a user signs up or logs in and has
  * anonymous JSON documents that need to be associated with their account.
- * 
+ *
  * The migration process:
  * 1. Validates the user is authenticated
  * 2. Finds all anonymous documents matching the provided IDs
  * 3. Updates the documents to associate them with the user
  * 4. Marks them as no longer anonymous
- * 
+ *
  * @param request - Contains anonymousJsonIds array
  * @returns Success response with migration count
  */
@@ -37,10 +37,7 @@ export const POST = withAuth(async (request: NextRequest, session) => {
 
     // If no IDs provided, return early
     if (!anonymousJsonIds || anonymousJsonIds.length === 0) {
-      logger.info(
-        { userId: session.user.id },
-        'No anonymous documents to migrate'
-      );
+      logger.info({ userId: session.user.id }, 'No anonymous documents to migrate');
       return success({
         migratedCount: 0,
         message: 'No documents to migrate',
@@ -155,12 +152,13 @@ export const POST = withAuth(async (request: NextRequest, session) => {
       logger.warn(
         {
           userId: session.user.id,
-          errors: error.errors,
+          errors: error.issues,
         },
         'Invalid migration request data'
       );
       return badRequest('Invalid request data', {
-        errors: error.errors,
+        details: 'Invalid request schema',
+        metadata: { issues: error.issues },
       });
     }
 
@@ -179,4 +177,3 @@ export const POST = withAuth(async (request: NextRequest, session) => {
     return badRequest('Failed to migrate documents. Please try again.');
   }
 });
-

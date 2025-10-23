@@ -11,7 +11,7 @@ import { useState } from 'react';
 export default function ViewerPage() {
   const [activeTab, setActiveTab] = useState<'tree' | 'list' | 'flow'>('flow');
   const { searchTerm, setSearchTerm } = useSearch();
-  const { currentJson } = useBackendStore();
+  const currentJson = useBackendStore((s) => s.currentJson);
   const viewerSettings = useViewerSettings();
 
   return (
@@ -22,7 +22,7 @@ export default function ViewerPage() {
           onValueChange={(value) => setActiveTab(value as 'tree' | 'list' | 'flow')}
           showEditor={false}
         />
-        
+
         <div className="flex-1 overflow-hidden">
           <Viewer
             content={currentJson}

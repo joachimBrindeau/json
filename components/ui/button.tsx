@@ -19,7 +19,8 @@ const buttonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         // Custom color variants
-        green: 'border border-green-500 text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700 hover:border-green-600',
+        green:
+          'border border-green-500 text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700 hover:border-green-600',
         red: 'border border-red-500 text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 hover:border-red-600',
         blue: 'border border-blue-500 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 hover:border-blue-600',
       },
@@ -52,28 +53,31 @@ export interface ButtonProps
   /** Tooltip content - shown on hover */
   tooltip?: React.ReactNode;
   /** Tooltip position */
-  tooltipSide?: "top" | "right" | "bottom" | "left";
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({
-    className,
-    variant,
-    size,
-    asChild = false,
-    icon: Icon,
-    text,
-    isLoading = false,
-    loadingText,
-    iconPosition = 'left',
-    iconOnly = false,
-    children,
-    disabled,
-    title,
-    tooltip,
-    tooltipSide = 'top',
-    ...props
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      icon: Icon,
+      text,
+      isLoading = false,
+      loadingText,
+      iconPosition = 'left',
+      iconOnly = false,
+      children,
+      disabled,
+      title,
+      tooltip,
+      tooltipSide = 'top',
+      ...props
+    },
+    ref
+  ) => {
     const isDisabled = disabled || isLoading;
 
     // If asChild is true, use Slot and pass through all props
@@ -92,7 +96,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const effectiveSize = iconOnly ? 'icon' : size;
 
     // Determine tooltip content: explicit tooltip prop > title prop > iconOnly text
-    const tooltipContent = tooltip || title || (iconOnly && typeof displayText === 'string' ? displayText : undefined);
+    const tooltipContent =
+      tooltip || title || (iconOnly && typeof displayText === 'string' ? displayText : undefined);
+
+    // Accessibility: When rendering an icon-only control, expose an accessible name
+    const computedAriaLabel =
+      (iconOnly || effectiveSize === 'icon') && typeof tooltipContent === 'string'
+        ? tooltipContent
+        : undefined;
 
     // Icon classes
     const iconClasses = cn(
@@ -106,17 +117,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size: effectiveSize }), className)}
         ref={ref}
         disabled={isDisabled}
+        aria-label={computedAriaLabel}
         {...props}
       >
-        {DisplayIcon && iconPosition === 'left' && (
-          <DisplayIcon className={iconClasses} />
-        )}
+        {DisplayIcon && iconPosition === 'left' && <DisplayIcon className={iconClasses} />}
 
         {!iconOnly && displayText}
 
-        {DisplayIcon && iconPosition === 'right' && (
-          <DisplayIcon className={iconClasses} />
-        )}
+        {DisplayIcon && iconPosition === 'right' && <DisplayIcon className={iconClasses} />}
       </button>
     );
 

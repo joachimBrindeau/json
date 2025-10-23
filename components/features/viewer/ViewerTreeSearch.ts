@@ -11,8 +11,10 @@ interface TreeSearchResult {
   matchCount: number;
 }
 
-export const useViewerTreeSearch = (nodes: JsonNode[], searchTerm: string = ''): TreeSearchResult => {
-
+export const useViewerTreeSearch = (
+  nodes: JsonNode[],
+  searchTerm: string = ''
+): TreeSearchResult => {
   const { filteredNodes, matchCount } = useMemo(() => {
     if (!searchTerm.trim()) {
       return {
@@ -49,7 +51,7 @@ export const useViewerTreeSearch = (nodes: JsonNode[], searchTerm: string = ''):
       }
     }
 
-    const filtered = nodes.filter(node => matches.has(node.id));
+    const filtered = nodes.filter((node) => matches.has(node.id));
 
     return {
       filteredNodes: filtered,

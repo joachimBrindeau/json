@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -25,19 +25,22 @@ interface CursorPopoverProps {
 export function CursorPopover({
   children,
   open: controlledOpen,
-  onOpenChange
+  onOpenChange,
 }: CursorPopoverProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const triggerRef = useRef<HTMLElement | null>(null);
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen = useCallback((newOpen: boolean) => {
-    if (onOpenChange) {
-      onOpenChange(newOpen);
-    } else {
-      setInternalOpen(newOpen);
-    }
-  }, [onOpenChange]);
+  const setOpen = useCallback(
+    (newOpen: boolean) => {
+      if (onOpenChange) {
+        onOpenChange(newOpen);
+      } else {
+        setInternalOpen(newOpen);
+      }
+    },
+    [onOpenChange]
+  );
 
   return (
     <CursorPopoverContext.Provider value={{ open, setOpen, triggerRef }}>
@@ -54,15 +57,12 @@ interface CursorPopoverTriggerProps {
 /**
  * CursorPopoverTrigger - The element that triggers the popover
  */
-export function CursorPopoverTrigger({ 
-  children, 
-  asChild = true 
-}: CursorPopoverTriggerProps) {
+export function CursorPopoverTrigger({ children, asChild = true }: CursorPopoverTriggerProps) {
   const context = useContext(CursorPopoverContext);
   if (!context) throw new Error('CursorPopoverTrigger must be used within CursorPopover');
-  
+
   const { open, setOpen, triggerRef } = context;
-  
+
   if (asChild && React.isValidElement(children)) {
     const childProps = children.props as any;
     return React.cloneElement(children, {
@@ -80,15 +80,12 @@ export function CursorPopoverTrigger({
         setOpen(!open);
         // Don't call original onClick - the popover content will handle the action
         // This prevents the action from being triggered when opening the popover
-      }
+      },
     } as any);
   }
-  
+
   return (
-    <button 
-      ref={triggerRef as any}
-      onClick={() => setOpen(!open)}
-    >
+    <button ref={triggerRef as any} onClick={() => setOpen(!open)}>
       {children}
     </button>
   );
@@ -102,8 +99,8 @@ interface Position {
 interface CursorPopoverContentProps {
   children: React.ReactNode;
   className?: string;
-  align?: "start" | "center" | "end";
-  side?: "top" | "right" | "bottom" | "left";
+  align?: 'start' | 'center' | 'end';
+  side?: 'top' | 'right' | 'bottom' | 'left';
   sideOffset?: number;
   alignOffset?: number;
 }
@@ -114,15 +111,15 @@ interface CursorPopoverContentProps {
  */
 export function CursorPopoverContent({
   children,
-  className = "",
-  align = "center",
-  side = "bottom",
+  className = '',
+  align = 'center',
+  side = 'bottom',
   sideOffset = 8,
   alignOffset = 0,
 }: CursorPopoverContentProps) {
   const context = useContext(CursorPopoverContext);
   if (!context) throw new Error('CursorPopoverContent must be used within CursorPopover');
-  
+
   const { open, setOpen, triggerRef } = context;
   const contentRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 });
@@ -138,7 +135,7 @@ export function CursorPopoverContent({
 
       const triggerRect = trigger.getBoundingClientRect();
       const contentRect = contentRef.current?.getBoundingClientRect();
-      
+
       let top = 0;
       let left = 0;
 
@@ -234,7 +231,7 @@ export function CursorPopoverContent({
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       if (
-        contentRef.current && 
+        contentRef.current &&
         !contentRef.current.contains(target) &&
         triggerRef.current &&
         !triggerRef.current.contains(target)
@@ -242,7 +239,7 @@ export function CursorPopoverContent({
         setOpen(false);
       }
     }
-    
+
     if (open) {
       // Small delay to prevent immediate close on trigger click
       setTimeout(() => {
@@ -259,7 +256,7 @@ export function CursorPopoverContent({
         setOpen(false);
       }
     }
-    
+
     if (open) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
@@ -270,16 +267,16 @@ export function CursorPopoverContent({
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   if (!open || !mounted) return null;
-  
+
   return createPortal(
-    <div 
+    <div
       ref={contentRef}
       className={cn(
-        "fixed z-50 rounded-md border bg-popover text-popover-foreground shadow-md",
-        "animate-in fade-in-0 zoom-in-95",
-        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+        'fixed z-50 rounded-md border bg-popover text-popover-foreground shadow-md',
+        'animate-in fade-in-0 zoom-in-95',
+        'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
         className
       )}
       style={{
@@ -292,4 +289,3 @@ export function CursorPopoverContent({
     document.body
   );
 }
-

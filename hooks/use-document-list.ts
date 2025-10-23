@@ -40,7 +40,9 @@ export interface UseDocumentListResult<T> {
   page: number;
   loadMoreRef: (node: HTMLElement | null) => void;
   filters: DocumentListFilters;
-  setFilters: (filters: DocumentListFilters | ((prev: DocumentListFilters) => DocumentListFilters)) => void;
+  setFilters: (
+    filters: DocumentListFilters | ((prev: DocumentListFilters) => DocumentListFilters)
+  ) => void;
   refetch: () => void;
   deleteDocument: (id: string) => Promise<void>;
 }
@@ -52,13 +54,7 @@ export interface UseDocumentListResult<T> {
 export function useDocumentList<T extends { id: string; title?: string }>(
   options: UseDocumentListOptions<T>
 ): UseDocumentListResult<T> {
-  const {
-    endpoint,
-    enabled = true,
-    pageSize = 12,
-    debounceMs = 500,
-    onError,
-  } = options;
+  const { endpoint, enabled = true, pageSize = 12, debounceMs = 500, onError } = options;
 
   // State
   const [documents, setDocuments] = useState<T[]>([]);
@@ -78,23 +74,26 @@ export function useDocumentList<T extends { id: string; title?: string }>(
   const { page, setPage, loadMoreRef } = useInfiniteScroll(hasMore, loading || isLoadingMore);
 
   // Build query parameters
-  const buildQueryParams = useCallback((currentPage: number) => {
-    const params = new URLSearchParams({
-      page: currentPage.toString(),
-      limit: pageSize.toString(),
-      sort: filters.sortBy || 'recent',
-    });
+  const buildQueryParams = useCallback(
+    (currentPage: number) => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        sort: filters.sortBy || 'recent',
+      });
 
-    if (debouncedQuery) params.set('search', debouncedQuery);
-    if (filters.category) params.set('category', filters.category);
-    if (filters.visibility) params.set('visibility', filters.visibility);
-    if (filters.dateRange) params.set('dateRange', filters.dateRange);
-    if (filters.complexity) params.set('complexity', filters.complexity);
-    if (filters.minSize) params.set('minSize', filters.minSize);
-    if (filters.maxSize) params.set('maxSize', filters.maxSize);
+      if (debouncedQuery) params.set('search', debouncedQuery);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.visibility) params.set('visibility', filters.visibility);
+      if (filters.dateRange) params.set('dateRange', filters.dateRange);
+      if (filters.complexity) params.set('complexity', filters.complexity);
+      if (filters.minSize) params.set('minSize', filters.minSize);
+      if (filters.maxSize) params.set('maxSize', filters.maxSize);
 
-    return params.toString();
-  }, [debouncedQuery, filters, pageSize]);
+      return params.toString();
+    },
+    [debouncedQuery, filters, pageSize]
+  );
 
   // Fetch documents
   const fetchDocuments = useCallback(
@@ -153,7 +152,11 @@ export function useDocumentList<T extends { id: string; title?: string }>(
       const doc = documents.find((d) => d.id === id);
       if (!doc) return;
 
-      if (!confirm(`Are you sure you want to delete "${doc.title || 'this document'}"? This action cannot be undone.`)) {
+      if (
+        !confirm(
+          `Are you sure you want to delete "${doc.title || 'this document'}"? This action cannot be undone.`
+        )
+      ) {
         return;
       }
 
@@ -183,7 +186,17 @@ export function useDocumentList<T extends { id: string; title?: string }>(
     if (enabled && typeof window !== 'undefined') {
       fetchDocuments(true);
     }
-  }, [enabled, debouncedQuery, filters.category, filters.visibility, filters.sortBy, filters.dateRange, filters.complexity, filters.minSize, filters.maxSize]);
+  }, [
+    enabled,
+    debouncedQuery,
+    filters.category,
+    filters.visibility,
+    filters.sortBy,
+    filters.dateRange,
+    filters.complexity,
+    filters.minSize,
+    filters.maxSize,
+  ]);
 
   // Load more when page changes
   useEffect(() => {

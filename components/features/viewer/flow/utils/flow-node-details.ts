@@ -29,13 +29,14 @@ export const extractNodeDetails = (node: Node): NodeDetails => {
     key = (node.data as any).propertyK || node.id;
   }
 
-  const type = node.type === 'primitive'
-    ? value === null
-      ? 'null'
-      : Array.isArray(value)
-        ? 'array'
-        : typeof value
-    : node.type || 'unknown';
+  const type =
+    node.type === 'primitive'
+      ? value === null
+        ? 'null'
+        : Array.isArray(value)
+          ? 'array'
+          : typeof value
+      : node.type || 'unknown';
 
   return {
     id: node.id,

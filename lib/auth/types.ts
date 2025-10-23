@@ -1,6 +1,6 @@
 /**
  * Shared TypeScript types for authentication system
- * 
+ *
  * This file contains all shared types used across the authentication modules.
  * Import these types instead of using 'any' or duplicating type definitions.
  */
@@ -31,13 +31,7 @@ export interface AuthSession {
  * Login context types
  * Used to customize login modal messaging based on user action
  */
-export type LoginContext = 
-  | 'default'
-  | 'save'
-  | 'share'
-  | 'library'
-  | 'profile'
-  | 'admin';
+export type LoginContext = 'default' | 'save' | 'share' | 'library' | 'profile' | 'admin';
 
 /**
  * OAuth provider types
@@ -143,4 +137,3 @@ export interface AccountLinkingResult {
   isNewAccount: boolean;
   wasLinked: boolean;
 }
-

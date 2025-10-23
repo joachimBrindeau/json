@@ -44,4 +44,3 @@ function QuickActionsComponent({ onNewDraft, onUploadClick }: QuickActionsProps)
 }
 
 export const QuickActions = memo(QuickActionsComponent);
-

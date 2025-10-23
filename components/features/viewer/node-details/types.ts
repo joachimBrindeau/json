@@ -247,4 +247,3 @@ export interface ModalState {
   isLoading: boolean;
   error?: string;
 }
-

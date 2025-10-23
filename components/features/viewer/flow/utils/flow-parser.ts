@@ -1,6 +1,6 @@
 /**
  * Flow Parser - Refactored for simplicity (KISS principle)
- * 
+ *
  * Converts JSON data into ReactFlow nodes and edges.
  * Simplified from the original 400+ line implementation.
  */
@@ -55,8 +55,6 @@ const addDefaultEdge = (context: ParserContext, params: DefaultEdgeParams): void
 const addChainEdge = (context: ParserContext, source: string, target: string): void => {
   context.chainEdges.push(createChainEdge({ source, target }));
 };
-
-
 
 /**
  * Create an object node
@@ -173,7 +171,9 @@ const parseObject = (
   context.visitedObjects.add(obj);
 
   // Create object node
-  nodes.push(createObjectNode(currentNodeId, depth, obj, parentNodePathIds, arrayIndexForObject, isRootNode));
+  nodes.push(
+    createObjectNode(currentNodeId, depth, obj, parentNodePathIds, arrayIndexForObject, isRootNode)
+  );
 
   // Add edge from parent if not root
   if (sourceNodeId) {
@@ -186,10 +186,26 @@ const parseObject = (
   // Parse each property
   Object.entries(obj).forEach(([key, value]) => {
     if (isObject(value)) {
-      const childNodes = parseObject(context, value, nextDepth, nextParentNodePathIds, null, false, currentNodeId, key);
+      const childNodes = parseObject(
+        context,
+        value,
+        nextDepth,
+        nextParentNodePathIds,
+        null,
+        false,
+        currentNodeId,
+        key
+      );
       nodes.push(...childNodes);
     } else if (isArray(value)) {
-      const childNodes = parseArray(context, value, nextDepth, nextParentNodePathIds, currentNodeId, key);
+      const childNodes = parseArray(
+        context,
+        value,
+        nextDepth,
+        nextParentNodePathIds,
+        currentNodeId,
+        key
+      );
       nodes.push(...childNodes);
     }
   });
@@ -243,17 +259,45 @@ const parseArray = (
 
     if (itemType.isObjectData) {
       // Array item is an object
-      const childNodes = parseObject(context, item as object, nextDepth, nextParentNodePathIds, index, false, arrayNodeId, String(index));
+      const childNodes = parseObject(
+        context,
+        item as object,
+        nextDepth,
+        nextParentNodePathIds,
+        index,
+        false,
+        arrayNodeId,
+        String(index)
+      );
       nodes.push(...childNodes);
     } else if (itemType.isArrayData) {
       // Array item is another array
       const items = item as unknown[];
-      const childNodes = parseArray(context, items, nextDepth, nextParentNodePathIds, arrayNodeId, String(index));
+      const childNodes = parseArray(
+        context,
+        items,
+        nextDepth,
+        nextParentNodePathIds,
+        arrayNodeId,
+        String(index)
+      );
       nodes.push(...childNodes);
     } else if (itemType.isPrimitiveData) {
       // Array item is a primitive value
-      nodes.push(createPrimitiveNode(nextNodeId, nextDepth, index, item as string | number | boolean | null, nextParentNodePathIds));
-      addDefaultEdge(context, { source: arrayNodeId, target: nextNodeId, sourceHandle: String(index) });
+      nodes.push(
+        createPrimitiveNode(
+          nextNodeId,
+          nextDepth,
+          index,
+          item as string | number | boolean | null,
+          nextParentNodePathIds
+        )
+      );
+      addDefaultEdge(context, {
+        source: arrayNodeId,
+        target: nextNodeId,
+        sourceHandle: String(index),
+      });
     }
   });
 
@@ -280,11 +324,17 @@ export const jsonParser = (
   // Parse directly from the actual JSON data at depth 0
   const flowNodes = isObject(json)
     ? parseObject(context, json as object, ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, null, true)
-    : parseArray(context, json as unknown[], ROOT_NODE_DEPTH, ROOT_PARENT_NODE_PATH_IDS, undefined, undefined);
+    : parseArray(
+        context,
+        json as unknown[],
+        ROOT_NODE_DEPTH,
+        ROOT_PARENT_NODE_PATH_IDS,
+        undefined,
+        undefined
+      );
 
   return {
     flowNodes,
     edges: [...context.defaultEdges, ...context.chainEdges],
   };
 };
-

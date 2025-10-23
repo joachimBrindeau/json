@@ -74,21 +74,24 @@ export async function POST(request: NextRequest) {
         nodeCount: document.nodeCount,
         processingTime: performance.duration,
         extensionId,
-        sourceUrl
+        sourceUrl,
       },
       'Extension JSON submission successful'
     );
 
-    return success({
-      shareId: document.shareId,
-      viewerUrl: `/library/${document.shareId}`,
-      stats: {
-        size: Number(document.size),
-        nodeCount: document.nodeCount,
-        maxDepth: document.maxDepth,
-        processingTime: performance.duration,
+    return success(
+      {
+        shareId: document.shareId,
+        viewerUrl: `/library/${document.shareId}`,
+        stats: {
+          size: Number(document.size),
+          nodeCount: document.nodeCount,
+          maxDepth: document.maxDepth,
+          processingTime: performance.duration,
+        },
       },
-    }, { headers: corsHeaders });
+      { headers: corsHeaders }
+    );
   } catch (error) {
     // Extract request data for error logging (may not be available if parsing failed)
     let requestData: { extensionId?: string; sourceUrl?: string } = {};

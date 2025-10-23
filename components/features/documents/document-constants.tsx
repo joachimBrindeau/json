@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Globe,
-  Zap,
-  Database,
-  Code2,
-  FileJson,
-  BookOpen
-} from 'lucide-react';
+import { Globe, Zap, Database, Code2, FileJson, BookOpen } from 'lucide-react';
 
 /**
  * Complexity colors for document badges
@@ -24,11 +17,11 @@ export const complexityColors: Record<string, string> = {
 export function getCategoryIcon(category: string): React.ReactNode {
   const icons: Record<string, React.ReactNode> = {
     'API Response': <Globe className="h-4 w-4" />,
-    'Configuration': <Zap className="h-4 w-4" />,
+    Configuration: <Zap className="h-4 w-4" />,
     'Database Schema': <Database className="h-4 w-4" />,
     'Test Data': <Code2 className="h-4 w-4" />,
-    'Template': <FileJson className="h-4 w-4" />,
-    'Example': <BookOpen className="h-4 w-4" />,
+    Template: <FileJson className="h-4 w-4" />,
+    Example: <BookOpen className="h-4 w-4" />,
   };
   return icons[category] || <FileJson className="h-4 w-4" />;
 }

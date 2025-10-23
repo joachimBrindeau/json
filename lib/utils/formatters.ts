@@ -52,10 +52,7 @@ export function formatRelativeTime(date: string | Date): string {
  * @param options - Intl.DateTimeFormatOptions
  * @returns Formatted date string
  */
-export function formatDate(
-  date: string | Date,
-  options?: Intl.DateTimeFormatOptions
-): string {
+export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const d = new Date(date);
   return d.toLocaleDateString(undefined, options);
 }
@@ -86,10 +83,7 @@ export function formatCount(count: number): string {
  * @param options - Intl.NumberFormatOptions
  * @returns Formatted number string
  */
-export function formatNumber(
-  value: number,
-  options?: Intl.NumberFormatOptions
-): string {
+export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
   return value.toLocaleString(undefined, options);
 }
 

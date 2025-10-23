@@ -15,11 +15,9 @@ function SidebarHeaderComponent({ isMobile, onClose }: SidebarHeaderProps) {
     <div className="flex h-16 items-center justify-between border-b px-6">
       <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
         <FileJson className="h-6 w-6 text-primary transition-transform hover:scale-110" />
-        <span className="text-xl font-semibold text-foreground">
-          JSON Viewer
-        </span>
+        <span className="text-xl font-semibold text-foreground">JSON Viewer</span>
       </Link>
-      
+
       {/* Close button for mobile */}
       {isMobile && onClose && (
         <Button
@@ -36,4 +34,3 @@ function SidebarHeaderComponent({ isMobile, onClose }: SidebarHeaderProps) {
 }
 
 export const SidebarHeader = memo(SidebarHeaderComponent);
-

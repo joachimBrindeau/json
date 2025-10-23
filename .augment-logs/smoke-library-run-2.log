@@ -1,0 +1,81 @@
+🚀 Global setup started
+🎲 Initializing deterministic faker...
+✅ Faker initialized with seed
+🐳 Checking Docker dependencies...
+  ✅ Docker daemon is running
+  ✅ config-postgres-1: Up About an hour (healthy)
+  ✅ config-redis-1: Up About an hour (healthy)
+  ✅ PostgreSQL is accessible
+  ✅ Redis is accessible
+📡 Using base URL: http://localhost:3456
+📡 Checking if server is available...
+✅ Server responded with status 200
+✅ Server is available
+🧹 Cleaning up existing test users...
+  ✅ Deleted 7 existing test users
+👤 Creating test users...
+  Creating user: testuser@jsonshare.test
+  ✅ Created user: testuser@jsonshare.test
+  Creating user: admin@jsonshare.test
+  ✅ Created user: admin@jsonshare.test
+  Creating user: dev@jsonshare.test
+  ✅ Created user: dev@jsonshare.test
+  Creating user: power@jsonshare.test
+  ✅ Created user: power@jsonshare.test
+  Creating user: community@jsonshare.test
+  ✅ Created user: community@jsonshare.test
+  Creating user: temp1@jsonshare.test
+  ✅ Created user: temp1@jsonshare.test
+  Creating user: temp2@jsonshare.test
+  ✅ Created user: temp2@jsonshare.test
+🔍 Verifying basic app functionality...
+✅ Main content area found
+🎯 Global setup completed successfully
+
+Running 5 tests using 1 worker
+
+✅ Successfully logged in as testuser@jsonshare.test
+✅ JSON saved via Share modal
+🔎 Saved doc appeared via API: [33mfalse[39m
+🔍 Current URL: http://localhost:3456/save
+⚠️ Library content did not load in time
+🔍 Library isEmpty: [33mtrue[39m
+🔍 Page content includes "No Shared JSONs": [33mtrue[39m
+🔍 Page content includes "Loading": [33mfalse[39m
+  ✘  1 [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke (27.9s)
+Testing stopped early after 1 maximum allowed failures.
+🧹 Global teardown started
+✅ Server health check passed during teardown
+✅ Global teardown completed successfully
+
+
+  1) [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mfalse[39m
+    Received: [31mtrue[39m
+
+      236 |     }
+      237 |
+    > 238 |     expect(isEmpty).toBe(false);
+          |                     ^
+      239 |
+      240 |     // Verify items are displayed with strict assertion
+      241 |     const items = await libraryPage.getAllJSONItems();
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:238:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+  4 did not run
+  1 error was not a part of any test, see above for details

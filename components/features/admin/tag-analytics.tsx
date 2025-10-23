@@ -1,43 +1,47 @@
-'use client'
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { LoadingState } from '@/components/shared/loading-state'
-import { EmptyState } from '@/components/shared/empty-states'
-import { AlertTriangle } from 'lucide-react'
-import { ErrorBoundary } from '@/components/shared/error-boundary'
-import { useApiData } from '@/hooks/use-api-data'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-states';
+import { AlertTriangle } from 'lucide-react';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { useApiData } from '@/hooks/use-api-data';
 
 interface TagStats {
-  name: string
-  count: number
-  percentage: number
-  trend: 'up' | 'down' | 'stable'
-  recentUsage: number
+  name: string;
+  count: number;
+  percentage: number;
+  trend: 'up' | 'down' | 'stable';
+  recentUsage: number;
 }
 
 interface TagAnalytics {
-  totalTags: number
-  totalUsage: number
-  popularTags: TagStats[]
-  recentTags: string[]
+  totalTags: number;
+  totalUsage: number;
+  popularTags: TagStats[];
+  recentTags: string[];
   tagsByUser: Array<{
-    userId: string
-    userEmail: string
-    userName?: string
-    tagCount: number
-  }>
+    userId: string;
+    userEmail: string;
+    userName?: string;
+    tagCount: number;
+  }>;
 }
 
 export function TagAnalytics() {
-  const { data: analytics, loading, refetch } = useApiData<TagAnalytics>({
+  const {
+    data: analytics,
+    loading,
+    refetch,
+  } = useApiData<TagAnalytics>({
     endpoint: '/api/admin/tags/analytics',
     errorMessage: 'Failed to load tag analytics',
-  })
+  });
 
   if (loading) {
-    return <LoadingState message="Loading tag analytics..." size="md" />
+    return <LoadingState message="Loading tag analytics..." size="md" />;
   }
 
   if (!analytics) {
@@ -49,10 +53,10 @@ export function TagAnalytics() {
         action={{
           label: 'Retry',
           onClick: refetch,
-          variant: 'outline'
+          variant: 'outline',
         }}
       />
-    )
+    );
   }
 
   return (
@@ -85,7 +89,9 @@ export function TagAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analytics.totalUsage > 0 ? (analytics.totalUsage / analytics.totalTags).toFixed(1) : '0'}
+              {analytics.totalUsage > 0
+                ? (analytics.totalUsage / analytics.totalTags).toFixed(1)
+                : '0'}
             </div>
             <p className="text-sm text-gray-500">Tags per document</p>
           </CardContent>
@@ -96,120 +102,124 @@ export function TagAnalytics() {
         {/* Popular Tags */}
         <ErrorBoundary
           level="widget"
-          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load popular tags</div>}
+          fallback={
+            <div className="text-sm text-muted-foreground p-4">Failed to load popular tags</div>
+          }
           compactMode
         >
-        <Card>
-          <CardHeader>
-            <CardTitle>Most Popular Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {analytics.popularTags.map((tag, index) => (
-                <div key={tag.name} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
-                    <Badge variant="outline">{tag.name}</Badge>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">{tag.count} uses</span>
-                    <div className="flex items-center">
-                      {tag.trend === 'up' && (
-                        <span className="text-green-500">↗</span>
-                      )}
-                      {tag.trend === 'down' && (
-                        <span className="text-red-500">↘</span>
-                      )}
-                      {tag.trend === 'stable' && (
-                        <span className="text-gray-400">→</span>
-                      )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Most Popular Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analytics.popularTags.map((tag, index) => (
+                  <div key={tag.name} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
+                      <Badge variant="outline">{tag.name}</Badge>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium">{tag.count} uses</span>
+                      <div className="flex items-center">
+                        {tag.trend === 'up' && <span className="text-green-500">↗</span>}
+                        {tag.trend === 'down' && <span className="text-red-500">↘</span>}
+                        {tag.trend === 'stable' && <span className="text-gray-400">→</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </ErrorBoundary>
 
         {/* Tag Usage by User */}
         <ErrorBoundary
           level="widget"
-          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load tag contributors</div>}
+          fallback={
+            <div className="text-sm text-muted-foreground p-4">Failed to load tag contributors</div>
+          }
           compactMode
         >
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Tag Contributors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {analytics.tagsByUser.slice(0, 10).map((user, index) => (
-                <div key={user.userId} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
-                    <div>
-                      <div className="text-sm font-medium">{user.userName || 'Anonymous'}</div>
-                      <div className="text-xs text-gray-500">{user.userEmail}</div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Tag Contributors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analytics.tagsByUser.slice(0, 10).map((user, index) => (
+                  <div key={user.userId} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
+                      <div>
+                        <div className="text-sm font-medium">{user.userName || 'Anonymous'}</div>
+                        <div className="text-xs text-gray-500">{user.userEmail}</div>
+                      </div>
                     </div>
+                    <div className="text-sm font-medium">{user.tagCount} tags</div>
                   </div>
-                  <div className="text-sm font-medium">{user.tagCount} tags</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </ErrorBoundary>
 
         {/* Recent Tags */}
         <ErrorBoundary
           level="widget"
-          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load recent tags</div>}
+          fallback={
+            <div className="text-sm text-muted-foreground p-4">Failed to load recent tags</div>
+          }
           compactMode
         >
-        <Card>
-          <CardHeader>
-            <CardTitle>Recently Created Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {analytics.recentTags.map((tag) => (
-                <Badge key={tag} variant="secondary">{tag}</Badge>
-              ))}
-            </div>
-            {analytics.recentTags.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">No recent tags</p>
-            )}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recently Created Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {analytics.recentTags.map((tag) => (
+                  <Badge key={tag} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              {analytics.recentTags.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">No recent tags</p>
+              )}
+            </CardContent>
+          </Card>
         </ErrorBoundary>
 
         {/* Tag Distribution */}
         <ErrorBoundary
           level="widget"
-          fallback={<div className="text-sm text-muted-foreground p-4">Failed to load tag distribution</div>}
+          fallback={
+            <div className="text-sm text-muted-foreground p-4">Failed to load tag distribution</div>
+          }
           compactMode
         >
-        <Card>
-          <CardHeader>
-            <CardTitle>Tag Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {analytics.popularTags.slice(0, 5).map((tag) => (
-                <div key={tag.name}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>{tag.name}</span>
-                    <span>{tag.percentage.toFixed(1)}%</span>
+          <Card>
+            <CardHeader>
+              <CardTitle>Tag Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {analytics.popularTags.slice(0, 5).map((tag) => (
+                  <div key={tag.name}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{tag.name}</span>
+                      <span>{tag.percentage.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={tag.percentage} className="h-2" />
                   </div>
-                  <Progress value={tag.percentage} className="h-2" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </ErrorBoundary>
       </div>
     </div>
-  )
+  );
 }

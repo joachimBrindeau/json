@@ -23,18 +23,16 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { openModal } = useLoginModal();
-  const {
-    currentJson,
-    currentDocument,
-    shareId,
-    updateTitle,
-    isUploading,
-    uploadProgress,
-    isDirty,
-    showLibraryHint,
-    updateSession,
-    migrateAnonymousData,
-  } = useBackendStore();
+  const currentJson = useBackendStore((s) => s.currentJson);
+  const currentDocument = useBackendStore((s) => s.currentDocument);
+  const shareId = useBackendStore((s) => s.shareId);
+  const isUploading = useBackendStore((s) => s.isUploading);
+  const uploadProgress = useBackendStore((s) => s.uploadProgress);
+  const isDirty = useBackendStore((s) => s.isDirty);
+  const showLibraryHint = useBackendStore((s) => s.showLibraryHint);
+  const updateTitle = useBackendStore((s) => s.updateTitle);
+  const updateSession = useBackendStore((s) => s.updateSession);
+  const migrateAnonymousData = useBackendStore((s) => s.migrateAnonymousData);
 
   // Update store session when NextAuth session changes
   useEffect(() => {
@@ -43,7 +41,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
       migrateAnonymousData();
     }
   }, [session, status, updateSession, migrateAnonymousData]);
-
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -58,7 +55,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
     },
     [toast]
   );
-
 
   const handleEditTitle = useCallback(() => {
     setEditTitle(currentDocument?.title || 'Untitled');
@@ -89,9 +85,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
     setEditTitle('');
   }, []);
 
-
-
-
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="px-2">
@@ -109,10 +102,13 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
                 <Menu className="h-6 w-6" />
               </Button>
             )}
-            
-          {/* Left side - Breadcrumb navigation */}
+
+            {/* Left side - Breadcrumb navigation */}
             <DynamicBreadcrumb
-              currentTitle={currentDocument?.title || (pathname === '/' && currentDocument ? 'Untitled' : undefined)}
+              currentTitle={
+                currentDocument?.title ||
+                (pathname === '/' && currentDocument ? 'Untitled' : undefined)
+              }
               onTitleEdit={pathname === '/' && currentDocument ? handleEditTitle : undefined}
               isEditingTitle={isEditingTitle}
               shareId={shareId}
@@ -177,10 +173,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
               </div>
             )}
 
-            
-
-            
-            
             {/* User menu / Sign in button */}
             <div className="ml-2">
               <UserMenu />
@@ -188,9 +180,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
           </div>
         </div>
       </div>
-
-
-
     </header>
   );
 }

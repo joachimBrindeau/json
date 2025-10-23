@@ -47,4 +47,3 @@ export const useJsonParser = (jsonString: string): ParseResult => {
     }
   }, [jsonString]);
 };
-

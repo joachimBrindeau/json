@@ -1,0 +1,29 @@
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 8.0s
+   Linting and checking validity of types ...
+
+./components/features/modals/share-modal.tsx
+214:13  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./components/features/viewer/ViewerActions.tsx
+562:19  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./lib/store/backend.ts
+401:15  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+   Generating static pages (0/42) ...
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at x (.next/server/chunks/2341.js:5:9968)
+Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at x (.next/server/chunks/2341.js:5:9968)
+Export encountered an error on /_error: /404, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null

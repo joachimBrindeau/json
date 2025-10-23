@@ -58,7 +58,10 @@ test.describe('Anonymous User - Visualization Modes', () => {
         await viewerPage.takeScreenshot('tree-view-display');
       } else {
         // Fail fast if tree view not available
-        expect(await viewerPage.treeViewButton.isVisible(), 'Tree view must be available for this test').toBe(true);
+        expect(
+          await viewerPage.treeViewButton.isVisible(),
+          'Tree view must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -83,7 +86,10 @@ test.describe('Anonymous User - Visualization Modes', () => {
         await viewerPage.takeScreenshot('list-view-display');
       } else {
         // Fail fast if list view not available
-        expect(await viewerPage.listViewButton.isVisible(), 'List view must be available for this test').toBe(true);
+        expect(
+          await viewerPage.listViewButton.isVisible(),
+          'List view must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -110,7 +116,10 @@ test.describe('Anonymous User - Visualization Modes', () => {
         await viewerPage.takeScreenshot('flow-view-display');
       } else {
         // Fail fast if flow view not available
-        expect(await viewerPage.flowViewButton.isVisible(), 'Sea/Flow view must be available for this test').toBe(true);
+        expect(
+          await viewerPage.flowViewButton.isVisible(),
+          'Sea/Flow view must be available for this test'
+        ).toBe(true);
       }
     });
 

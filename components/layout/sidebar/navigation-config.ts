@@ -6,7 +6,7 @@ import {
   GitCompare,
   ArrowRightLeft,
   Minimize2,
-  LucideIcon
+  LucideIcon,
 } from 'lucide-react';
 
 export interface NavigationConfig {
@@ -77,4 +77,3 @@ export const NAVIGATION_ITEMS: NavigationConfig[] = [
     requiresAuth: true,
   },
 ];
-

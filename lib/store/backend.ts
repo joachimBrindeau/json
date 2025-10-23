@@ -5,6 +5,7 @@ import { getSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
 import { logger } from '@/lib/logger';
 import { apiClient, api } from '@/lib/api/client';
+import { createCommonViewerSetters } from './shared-setters';
 import type { JsonValue } from '@/lib/types/json';
 import { config } from '@/lib/config';
 
@@ -25,6 +26,20 @@ interface JsonDocument {
   publishedAt?: Date;
 }
 
+// Lightweight metadata we can persist across navigations without large content
+interface JsonDocumentMeta {
+  id: string;
+  shareId: string;
+  title?: string;
+  size: number;
+  nodeCount: number;
+  maxDepth: number;
+  complexity: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  visibility?: 'private' | 'public';
+}
+
 interface BackendAppState {
   // Auth state
   session: Session | null;
@@ -34,6 +49,8 @@ interface BackendAppState {
   currentDocument: JsonDocument | null;
   currentJson: string;
   shareId: string;
+  // Persistable lightweight metadata for last saved doc
+  lastSavedMeta: JsonDocumentMeta | null;
   isDirty: boolean;
 
   // Anonymous tracking
@@ -292,6 +309,7 @@ export const useBackendStore = create<BackendAppState>()(
   }
 }`,
       shareId: '',
+      lastSavedMeta: null,
       isDirty: false,
 
       // Anonymous tracking
@@ -395,10 +413,28 @@ export const useBackendStore = create<BackendAppState>()(
             };
           }
 
-          const result = await apiClient.post<UploadResponse>('/api/json/upload', formData);
+          try {
+            // eslint-disable-next-line no-console
+            console.log('[DEBUG] uploadJson: POST /api/json/upload with title', title || '(none)');
+          } catch {}
+          const rawResponse = await apiClient.post<any>('/api/json/upload', formData);
+          // API may return either { document: ... } or { success: true, data: { document: ... } }
+          const result =
+            rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
+              ? (rawResponse as { data: UploadResponse }).data
+              : (rawResponse as UploadResponse);
+
+          try {
+            // eslint-disable-next-line no-console
+            console.log(
+              '[DEBUG] uploadJson: response received for',
+              result?.document?.id || '(unknown)'
+            );
+          } catch {}
 
           clearInterval(progressInterval);
           set({ uploadProgress: 100 });
+
           const document: JsonDocument = {
             id: result.document.id,
             shareId: result.document.shareId,
@@ -411,10 +447,23 @@ export const useBackendStore = create<BackendAppState>()(
             createdAt: new Date(result.document.createdAt),
           };
 
+          const meta: JsonDocumentMeta = {
+            id: document.id,
+            shareId: document.shareId,
+            title: document.title,
+            size: document.size,
+            nodeCount: document.nodeCount,
+            maxDepth: document.maxDepth,
+            complexity: document.complexity,
+            createdAt: document.createdAt,
+            visibility: 'private',
+          };
+
           set({
             currentDocument: document,
             currentJson: JSON.stringify(document.content, null, 2),
             shareId: document.shareId,
+            lastSavedMeta: meta,
             isDirty: false,
             isUploading: false,
             uploadProgress: 0,
@@ -529,10 +578,13 @@ export const useBackendStore = create<BackendAppState>()(
             }
 
             // Check if we already have a document with this content hash
-            const existingDocument = await apiClient.post<FindByContentResponse>('/api/json/find-by-content', {
-              contentHash: hashHex,
-              content: currentJson,
-            });
+            const existingDocument = await apiClient.post<FindByContentResponse>(
+              '/api/json/find-by-content',
+              {
+                contentHash: hashHex,
+                content: currentJson,
+              }
+            );
 
             if (existingDocument.document) {
               // Update our state to reference the existing document
@@ -644,7 +696,7 @@ export const useBackendStore = create<BackendAppState>()(
 
           const uploadJson = get().uploadJson;
           await uploadJson(file, title || 'Untitled JSON');
-          
+
           // Notify library to refresh
           const { onLibraryUpdate: libraryUpdateCallback } = get();
           if (libraryUpdateCallback) {
@@ -664,6 +716,7 @@ export const useBackendStore = create<BackendAppState>()(
             set({
               currentDocument: null,
               shareId: '',
+              lastSavedMeta: null,
               isDirty: false,
             });
           }
@@ -705,19 +758,7 @@ export const useBackendStore = create<BackendAppState>()(
         }
       },
 
-      setShareId: (id: string) => {
-        set({ shareId: id });
-      },
-
-      setViewerConfig: (config: JsonSeaConfig) => {
-        set({ viewerConfig: config });
-      },
-
-      updateViewerConfig: (updates: Partial<JsonSeaConfig>) => {
-        set((state) => ({
-          viewerConfig: { ...state.viewerConfig, ...updates },
-        }));
-      },
+      ...createCommonViewerSetters<BackendAppState>(set as any, get as any),
 
       setLibraryUpdateCallback: (callback: () => void) => {
         // Only update if the callback is actually different to prevent unnecessary re-renders
@@ -732,6 +773,7 @@ export const useBackendStore = create<BackendAppState>()(
           currentDocument: null,
           currentJson: '',
           shareId: '',
+          lastSavedMeta: null,
           isDirty: false,
           isUploading: false,
           uploadProgress: 0,
@@ -755,6 +797,8 @@ export const useBackendStore = create<BackendAppState>()(
         anonymousJsonIds: state.anonymousJsonIds,
         showLibraryHint: state.showLibraryHint,
         currentJson: state.currentJson, // Persist the current JSON content
+        // shareId intentionally NOT persisted to avoid stale state across sessions/tests
+        lastSavedMeta: state.lastSavedMeta, // Persist lightweight metadata for last saved document
         lastActiveTab: state.lastActiveTab, // Persist active tab across pages
         sidebarScrollPosition: state.sidebarScrollPosition, // Persist sidebar scroll
       }),

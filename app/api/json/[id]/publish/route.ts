@@ -24,85 +24,83 @@ const createSlug = (title: string, shareId: string): string =>
 /**
  * POST publish document to public library
  */
-export const POST = withAuth(async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+export const POST = withAuth(
+  async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+    // Apply rate limiting
+    const rateLimitKey = session.user.id;
+    if (!publishLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = publishLimiter.getResetTime(rateLimitKey);
+      throw new RateLimitError(
+        resetTime ? Math.ceil((resetTime.getTime() - Date.now()) / 1000) : undefined,
+        'Publishing limit reached. Please wait before publishing more documents.',
+        {
+          resetTime: resetTime?.toISOString(),
+          remaining: publishLimiter.getRemainingAttempts(rateLimitKey),
+        }
+      );
+    }
 
-  // Apply rate limiting
-  const rateLimitKey = session.user.id;
-  if (!publishLimiter.isAllowed(rateLimitKey)) {
-    const resetTime = publishLimiter.getResetTime(rateLimitKey);
-    throw new RateLimitError(
-      resetTime ? Math.ceil((resetTime.getTime() - Date.now()) / 1000) : undefined,
-      'Publishing limit reached. Please wait before publishing more documents.',
-      {
-        resetTime: resetTime?.toISOString(),
-        remaining: publishLimiter.getRemainingAttempts(rateLimitKey),
-      }
-    );
+    const { id } = await params;
+    // Zod validation errors automatically handled by middleware
+    const data = publishSchema.parse(await request.json());
+
+    // Validate and normalize tags
+    const { validTags, invalidTags } = validateTags(data.tags);
+
+    if (invalidTags.length > 0) {
+      throw new ValidationError('Invalid tags', [
+        { field: 'tags', message: `Invalid tags: ${invalidTags.join(', ')}` },
+      ]);
+    }
+
+    // Remove duplicates after normalization
+    const uniqueTags = Array.from(new Set(validTags));
+
+    // Prisma errors automatically handled by middleware
+    const document = await prisma.jsonDocument.update({
+      where: {
+        shareId: id,
+        userId: session.user.id,
+        visibility: 'private', // Only allow publishing private documents
+      },
+      data: {
+        visibility: 'public',
+        publishedAt: new Date(),
+        title: data.title,
+        description: data.description,
+        richContent: data.richContent,
+        tags: uniqueTags, // Store normalized, unique tags
+        category: data.category,
+        slug: createSlug(data.title, id),
+      },
+      select: { shareId: true, title: true, slug: true, publishedAt: true, tags: true },
+    });
+
+    return success({ document });
   }
-
-  const { id } = await params;
-  // Zod validation errors automatically handled by middleware
-  const data = publishSchema.parse(await request.json());
-
-  // Validate and normalize tags
-  const { validTags, invalidTags } = validateTags(data.tags);
-
-  if (invalidTags.length > 0) {
-    throw new ValidationError('Invalid tags', [
-      { field: 'tags', message: `Invalid tags: ${invalidTags.join(', ')}` },
-    ]);
-  }
-
-  // Remove duplicates after normalization
-  const uniqueTags = Array.from(new Set(validTags));
-
-  // Prisma errors automatically handled by middleware
-  const document = await prisma.jsonDocument.update({
-    where: {
-      shareId: id,
-      userId: session.user.id,
-      visibility: 'private', // Only allow publishing private documents
-    },
-    data: {
-      visibility: 'public',
-      publishedAt: new Date(),
-      title: data.title,
-      description: data.description,
-      richContent: data.richContent,
-      tags: uniqueTags, // Store normalized, unique tags
-      category: data.category,
-      slug: createSlug(data.title, id),
-    },
-    select: { shareId: true, title: true, slug: true, publishedAt: true, tags: true },
-  });
-
-  return success({ document });
-});
+);
 
 /**
  * DELETE unpublish document from public library
  */
-export const DELETE = withAuth(async (
-  request: NextRequest,
-  session,
-  { params }: { params: Promise<{ id: string }> }
-) => {
+export const DELETE = withAuth(
+  async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
 
-  const { id } = await params;
+    // Prisma errors automatically handled by middleware
+    await prisma.jsonDocument.update({
+      where: {
+        shareId: id,
+        userId: session.user.id,
+        visibility: 'public', // Only allow unpublishing public documents
+      },
+      data: {
+        visibility: 'private',
+        publishedAt: null,
+        slug: null,
+      },
+    });
 
-  // Prisma errors automatically handled by middleware
-  await prisma.jsonDocument.update({
-    where: {
-      shareId: id,
-      userId: session.user.id,
-      visibility: 'public', // Only allow unpublishing public documents
-    },
-    data: {
-      visibility: 'private',
-      publishedAt: null,
-      slug: null,
-    },
-  });
-
-  return success({});
-});
+    return success({});
+  }
+);

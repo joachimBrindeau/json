@@ -8,15 +8,15 @@ export type ActionPosition = 'left' | 'right';
 /**
  * Button variant types
  */
-export type ActionVariant = 
-  | 'default' 
-  | 'destructive' 
-  | 'outline' 
-  | 'secondary' 
-  | 'ghost' 
-  | 'link' 
-  | 'green' 
-  | 'red' 
+export type ActionVariant =
+  | 'default'
+  | 'destructive'
+  | 'outline'
+  | 'secondary'
+  | 'ghost'
+  | 'link'
+  | 'green'
+  | 'red'
   | 'blue';
 
 /**
@@ -78,19 +78,19 @@ export interface EditorAction {
 export interface EditorPaneProps {
   /** Title displayed in the editor header */
   title: string;
-  
+
   /** Current editor content */
   value: string;
-  
+
   /** Change handler for editor content */
   onChange?: (value: string) => void;
-  
+
   /** Monaco editor language mode */
   language?: string;
-  
+
   /** Whether the editor is read-only */
   readOnly?: boolean;
-  
+
   /** Array of action buttons to display */
   actions?: EditorAction[];
 
@@ -99,32 +99,31 @@ export interface EditorPaneProps {
 
   /** Whether to show the search bar */
   showSearch?: boolean;
-  
+
   /** Current search term */
   searchValue?: string;
-  
+
   /** Search change handler */
   onSearchChange?: (value: string) => void;
-  
+
   /** Optional validation badge to display in header */
   validationBadge?: React.ReactNode;
-  
+
   /** Optional content to display in header (e.g., format selectors) */
   headerContent?: React.ReactNode;
-  
+
   /** Optional className for the container */
   className?: string;
-  
+
   /** Monaco editor theme */
   theme?: string;
-  
+
   /** Monaco editor mount handler */
   onMount?: (editor: any, monaco: any) => void;
-  
+
   /** Monaco editor beforeMount handler */
   beforeMount?: (monaco: any) => void;
-  
+
   /** Monaco editor options */
   options?: any;
 }
-

@@ -1,39 +1,39 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { ErrorBoundary } from '@/components/shared/error-boundary'
-import { LoadingState } from '@/components/shared/loading-state'
-import { DataTable, Column } from './data-table'
-import { filterBySearch, sortBy as sortByField, sortByDate } from '@/lib/utils/filters'
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { LoadingState } from '@/components/shared/loading-state';
+import { DataTable, Column } from './data-table';
+import { filterBySearch, sortBy as sortByField, sortByDate } from '@/lib/utils/filters';
 
 export interface MobileCardProps<T> {
-  item: T
-  onAction?: (item: T) => void
+  item: T;
+  onAction?: (item: T) => void;
 }
 
 export interface ResponsiveTableProps<T extends Record<string, unknown>> {
-  data: T[]
-  columns: Column<T>[]
-  loading?: boolean
-  loadingMessage?: string
-  emptyMessage?: string
-  searchable?: boolean
-  searchPlaceholder?: string
-  searchFields?: (keyof T)[]
-  sortable?: boolean
+  data: T[];
+  columns: Column<T>[];
+  loading?: boolean;
+  loadingMessage?: string;
+  emptyMessage?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  searchFields?: (keyof T)[];
+  sortable?: boolean;
   sortOptions?: Array<{
-    value: keyof T
-    label: string
-    type?: 'string' | 'date'
-  }>
-  defaultSortBy?: keyof T
-  mobileCard?: React.ComponentType<MobileCardProps<T>>
-  onRowClick?: (item: T) => void
-  keyExtractor?: (item: T) => string
-  summary?: (data: T[]) => React.ReactNode
-  rowClassName?: string | ((item: T) => string)
+    value: keyof T;
+    label: string;
+    type?: 'string' | 'date';
+  }>;
+  defaultSortBy?: keyof T;
+  mobileCard?: React.ComponentType<MobileCardProps<T>>;
+  onRowClick?: (item: T) => void;
+  keyExtractor?: (item: T) => string;
+  summary?: (data: T[]) => React.ReactNode;
+  rowClassName?: string | ((item: T) => string);
 }
 
 export function ResponsiveTable<T extends Record<string, unknown>>({
@@ -54,34 +54,34 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
   summary,
   rowClassName,
 }: ResponsiveTableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState<keyof T | undefined>(defaultSortBy)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<keyof T | undefined>(defaultSortBy);
 
   const processedData = (() => {
-    let result = [...data]
+    let result = [...data];
 
     // Apply search filter
     if (searchable && searchTerm && searchFields.length > 0) {
-      result = filterBySearch(result, searchTerm, searchFields as string[])
+      result = filterBySearch(result, searchTerm, searchFields as string[]);
     }
 
     // Apply sorting
     if (sortable && sortBy && sortOptions.length > 0) {
-      const sortOption = sortOptions.find(opt => opt.value === sortBy)
+      const sortOption = sortOptions.find((opt) => opt.value === sortBy);
       if (sortOption) {
         if (sortOption.type === 'date') {
-          result = sortByDate(result, sortBy as string, 'desc')
+          result = sortByDate(result, sortBy as string, 'desc');
         } else {
-          result = sortByField(result, sortBy as string, 'asc')
+          result = sortByField(result, sortBy as string, 'asc');
         }
       }
     }
 
-    return result
-  })()
+    return result;
+  })();
 
   if (loading) {
-    return <LoadingState message={loadingMessage} size="md" />
+    return <LoadingState message={loadingMessage} size="md" />;
   }
 
   return (
@@ -117,9 +117,7 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
       <ErrorBoundary
         level="component"
         fallback={
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Failed to load table
-          </div>
+          <div className="p-4 text-center text-sm text-muted-foreground">Failed to load table</div>
         }
         enableRetry
       >
@@ -171,5 +169,5 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
         </div>
       )}
     </div>
-  )
+  );
 }

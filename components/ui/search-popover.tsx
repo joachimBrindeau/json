@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
@@ -24,14 +24,14 @@ interface SearchPopoverProps {
   /** Custom className for the popover content */
   className?: string;
   /** Alignment of the popover */
-  align?: "start" | "center" | "end";
+  align?: 'start' | 'center' | 'end';
   /** Side of the trigger to show the popover */
-  side?: "top" | "right" | "bottom" | "left";
+  side?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 /**
  * SearchPopover - A minimalist search popover that appears near the trigger
- * 
+ *
  * @example
  * <SearchPopover
  *   trigger={<Button icon={Search} iconOnly />}
@@ -41,15 +41,15 @@ interface SearchPopoverProps {
  */
 export function SearchPopover({
   trigger,
-  placeholder = "Search...",
+  placeholder = 'Search...',
   value: controlledValue,
   onSearch,
   onSubmit,
   showSearchButton = true,
   showClearButton = true,
   className,
-  align = "start",
-  side = "bottom",
+  align = 'start',
+  side = 'bottom',
 }: SearchPopoverProps) {
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(controlledValue || '');
@@ -87,13 +87,11 @@ export function SearchPopover({
 
   return (
     <CursorPopover open={open} onOpenChange={setOpen}>
-      <CursorPopoverTrigger>
-        {trigger}
-      </CursorPopoverTrigger>
-      <CursorPopoverContent 
-        align={align} 
+      <CursorPopoverTrigger>{trigger}</CursorPopoverTrigger>
+      <CursorPopoverContent
+        align={align}
         side={side}
-        className={cn("p-2 min-w-[280px]", className)}
+        className={cn('p-2 min-w-[280px]', className)}
       >
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -105,9 +103,9 @@ export function SearchPopover({
               onChange={(e) => handleValueChange(e.target.value)}
               placeholder={placeholder}
               className={cn(
-                "w-full h-8 pl-8 pr-8 text-sm rounded-md border border-input bg-background",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0",
-                "placeholder:text-muted-foreground"
+                'w-full h-8 pl-8 pr-8 text-sm rounded-md border border-input bg-background',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0',
+                'placeholder:text-muted-foreground'
               )}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
@@ -126,12 +124,7 @@ export function SearchPopover({
             )}
           </div>
           {showSearchButton && (
-            <Button
-              type="submit"
-              size="sm"
-              variant="blue"
-              className="h-8 px-3"
-            >
+            <Button type="submit" size="sm" variant="blue" className="h-8 px-3">
               <Search className="h-3.5 w-3.5" />
             </Button>
           )}
@@ -140,4 +133,3 @@ export function SearchPopover({
     </CursorPopover>
   );
 }
-

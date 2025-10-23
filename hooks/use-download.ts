@@ -23,48 +23,46 @@ export function useDownload(options: UseDownloadOptions = {}) {
 
   const { toast } = useToast();
 
-  const download = useCallback((
-    content: string | Blob,
-    filename: string,
-    mimeType: string = 'application/json'
-  ) => {
-    if (!content) {
-      toast({
-        title: errorMessage,
-        description: 'No content to download',
-        variant: 'destructive',
-      });
-      return false;
-    }
+  const download = useCallback(
+    (content: string | Blob, filename: string, mimeType: string = 'application/json') => {
+      if (!content) {
+        toast({
+          title: errorMessage,
+          description: 'No content to download',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-    try {
-      const blob = typeof content === 'string'
-        ? new Blob([content], { type: mimeType })
-        : content;
+      try {
+        const blob =
+          typeof content === 'string' ? new Blob([content], { type: mimeType }) : content;
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-      toast({
-        title: successMessage,
-        description: successDescription,
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: errorMessage,
-        description: errorDescription,
-        variant: 'destructive',
-      });
-      return false;
-    }
-  }, [toast, successMessage, errorMessage, successDescription, errorDescription]);
+        toast({
+          title: successMessage,
+          description: successDescription,
+        });
+        return true;
+      } catch (error) {
+        toast({
+          title: errorMessage,
+          description: errorDescription,
+          variant: 'destructive',
+        });
+        return false;
+      }
+    },
+    [toast, successMessage, errorMessage, successDescription, errorDescription]
+  );
 
   return { download };
 }

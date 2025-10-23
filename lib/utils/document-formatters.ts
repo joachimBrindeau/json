@@ -101,9 +101,7 @@ export function formatComplexity(complexity: 'Low' | 'Medium' | 'High'): {
  */
 export function generateDocumentPreview(content: JsonValue, maxLength: number = 200): string {
   try {
-    const jsonString = typeof content === 'string'
-      ? content
-      : JSON.stringify(content, null, 2);
+    const jsonString = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
 
     if (jsonString.length <= maxLength) {
       return jsonString;
@@ -135,7 +133,10 @@ export function formatDocumentStats(doc: {
 /**
  * Sanitize document title for display
  */
-export function sanitizeDocumentTitle(title: string | null | undefined, maxLength: number = 100): string {
+export function sanitizeDocumentTitle(
+  title: string | null | undefined,
+  maxLength: number = 100
+): string {
   if (!title) return 'Untitled Document';
 
   const sanitized = title.trim();

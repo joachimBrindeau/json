@@ -10,7 +10,7 @@ import { config } from '@/lib/config';
 /**
  * Creates and returns Prisma adapter for NextAuth
  * Returns undefined if database is not configured
- * 
+ *
  * @returns Adapter instance or undefined
  */
 export function createAuthAdapter(): Adapter | undefined {
@@ -26,7 +26,7 @@ export function createAuthAdapter(): Adapter | undefined {
 /**
  * Gets Prisma client instance
  * Returns null if database is not configured
- * 
+ *
  * @returns Prisma client or null
  */
 export function getPrismaClient() {
@@ -38,4 +38,3 @@ export function getPrismaClient() {
   const { prisma } = require('@/lib/db');
   return prisma;
 }
-

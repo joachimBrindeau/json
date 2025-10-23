@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { indexedDBStorage } from '@/lib/indexed-db';
 import type { JsonSeaConfig } from '@/lib/types';
 import { logger } from '@/lib/logger';
+import { createCommonViewerSetters } from './shared-setters';
 
 interface AppState {
   // Current JSON ID (reference to IndexedDB)
@@ -62,24 +63,15 @@ export const useAppStore = create<AppState>()(
           // Cleanup old data in background
           setTimeout(() => indexedDBStorage.clearOldLargeData(), 100);
         } catch (error) {
-          logger.warn({ err: error, jsonId }, 'IndexedDB storage failed, continuing with memory only');
+          logger.warn(
+            { err: error, jsonId },
+            'IndexedDB storage failed, continuing with memory only'
+          );
           // App continues to work without IndexedDB
         }
       },
 
-      setShareId: (id: string) => {
-        set({ shareId: id });
-      },
-
-      setViewerConfig: (config: JsonSeaConfig) => {
-        set({ viewerConfig: config });
-      },
-
-      updateViewerConfig: (updates: Partial<JsonSeaConfig>) => {
-        set((state) => ({
-          viewerConfig: { ...state.viewerConfig, ...updates },
-        }));
-      },
+      ...createCommonViewerSetters<AppState>(set as any, get as any),
 
       shareJson: async () => {
         const { currentJson } = get();

@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { UserList } from './user-list'
-import { TagAnalytics } from './tag-analytics'
-import { SystemStats } from './system-stats'
-import { SEOManager } from './seo-manager'
-import { useAdminStats } from '@/hooks/use-admin-stats'
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { UserList } from './user-list';
+import { TagAnalytics } from './tag-analytics';
+import { SystemStats } from './system-stats';
+import { SEOManager } from './seo-manager';
+import { useAdminStats } from '@/hooks/use-admin-stats';
 
 export function SuperAdminDashboard() {
   const { stats, loading, error } = useAdminStats();
@@ -16,11 +16,21 @@ export function SuperAdminDashboard() {
     <div className="w-full">
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-          <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
-          <TabsTrigger value="users" className="text-xs md:text-sm">Users</TabsTrigger>
-          <TabsTrigger value="tags" className="text-xs md:text-sm">Tags</TabsTrigger>
-          <TabsTrigger value="seo" className="text-xs md:text-sm">SEO</TabsTrigger>
-          <TabsTrigger value="system" className="text-xs md:text-sm">System</TabsTrigger>
+          <TabsTrigger value="overview" className="text-xs md:text-sm">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="users" className="text-xs md:text-sm">
+            Users
+          </TabsTrigger>
+          <TabsTrigger value="tags" className="text-xs md:text-sm">
+            Tags
+          </TabsTrigger>
+          <TabsTrigger value="seo" className="text-xs md:text-sm">
+            SEO
+          </TabsTrigger>
+          <TabsTrigger value="system" className="text-xs md:text-sm">
+            System
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -45,7 +55,11 @@ export function SuperAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {loading ? 'Loading...' : error ? 'Error' : (stats?.userCount ?? 0).toLocaleString()}
+                  {loading
+                    ? 'Loading...'
+                    : error
+                      ? 'Error'
+                      : (stats?.userCount ?? 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">Registered accounts</p>
               </CardContent>
@@ -70,7 +84,11 @@ export function SuperAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {loading ? 'Loading...' : error ? 'Error' : (stats?.documentCount ?? 0).toLocaleString()}
+                  {loading
+                    ? 'Loading...'
+                    : error
+                      ? 'Error'
+                      : (stats?.documentCount ?? 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">JSON documents saved</p>
               </CardContent>
@@ -95,7 +113,11 @@ export function SuperAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {loading ? 'Loading...' : error ? 'Error' : (stats?.tagCount ?? 0).toLocaleString()}
+                  {loading
+                    ? 'Loading...'
+                    : error
+                      ? 'Error'
+                      : (stats?.tagCount ?? 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">Total tags in use</p>
               </CardContent>
@@ -119,7 +141,11 @@ export function SuperAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {loading ? 'Loading...' : error ? 'Error' : (stats?.activeToday ?? 0).toLocaleString()}
+                  {loading
+                    ? 'Loading...'
+                    : error
+                      ? 'Error'
+                      : (stats?.activeToday ?? 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">Users active today</p>
               </CardContent>
@@ -151,7 +177,9 @@ export function SuperAdminDashboard() {
                   <div className="flex items-center space-x-4">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                     <div className="flex-1 text-sm">
-                      <p className="font-medium text-foreground">New tag created: &quot;api-schema&quot;</p>
+                      <p className="font-medium text-foreground">
+                        New tag created: &quot;api-schema&quot;
+                      </p>
                       <p className="text-muted-foreground">12 minutes ago</p>
                     </div>
                   </div>
@@ -237,5 +265,5 @@ export function SuperAdminDashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

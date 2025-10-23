@@ -1,5 +1,16 @@
 import type { EditorAction } from '@/types/editor-actions';
-import { Copy, Download, Trash2, FileJson, Zap, Minimize2, ArrowRightLeft, Check, Undo, Redo } from 'lucide-react';
+import {
+  Copy,
+  Download,
+  Trash2,
+  FileJson,
+  Zap,
+  Minimize2,
+  ArrowRightLeft,
+  Check,
+  Undo,
+  Redo,
+} from 'lucide-react';
 
 /**
  * Factory function options for creating actions
@@ -381,4 +392,3 @@ export function createRedoAction({
     className,
   };
 }
-

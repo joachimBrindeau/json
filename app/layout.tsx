@@ -40,7 +40,10 @@ export default function RootLayout({
 
   // Debug: Log the JSON-LD only in development
   if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
-    logger.debug({ jsonLd, appUrl: process.env.NEXT_PUBLIC_APP_URL }, 'Root layout JSON-LD structured data');
+    logger.debug(
+      { jsonLd, appUrl: process.env.NEXT_PUBLIC_APP_URL },
+      'Root layout JSON-LD structured data'
+    );
   }
 
   return (
@@ -50,10 +53,10 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* Preload Monaco Editor for faster loading */}
         <script src="/monaco-preload.js" defer />
-        
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

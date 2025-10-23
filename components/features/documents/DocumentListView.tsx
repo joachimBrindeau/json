@@ -133,7 +133,9 @@ export function DocumentListView<T extends BaseDocument>({
             >
               <DocumentCard
                 document={doc}
-                onDelete={onDelete && (!canDelete || canDelete(doc)) ? () => onDelete(doc) : undefined}
+                onDelete={
+                  onDelete && (!canDelete || canDelete(doc)) ? () => onDelete(doc) : undefined
+                }
                 showBulkSelect={showBulkSelect}
                 isSelected={selectedIds.includes(doc.id)}
                 onSelect={(id, checked) => {

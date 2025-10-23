@@ -1,63 +1,66 @@
-'use client'
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { LoadingState } from '@/components/shared/loading-state'
-import { EmptyState } from '@/components/shared/empty-states'
-import { AlertTriangle } from 'lucide-react'
-import { formatSize, formatUptime } from '@/lib/utils/formatters'
-import { useApiData } from '@/hooks/use-api-data'
-import { useApiDelete, useApiPost } from '@/hooks/use-api-mutation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-states';
+import { AlertTriangle } from 'lucide-react';
+import { formatSize, formatUptime } from '@/lib/utils/formatters';
+import { useApiData } from '@/hooks/use-api-data';
+import { useApiDelete, useApiPost } from '@/hooks/use-api-mutation';
 
 interface SystemStats {
   database: {
-    status: 'healthy' | 'warning' | 'error'
-    responseTime: number
-    totalTables: number
-    totalRecords: number
-  }
+    status: 'healthy' | 'warning' | 'error';
+    responseTime: number;
+    totalTables: number;
+    totalRecords: number;
+  };
   redis: {
-    status: 'connected' | 'disconnected'
-    memoryUsed: number
-    memoryMax: number
-    hitRate: number
-  }
+    status: 'connected' | 'disconnected';
+    memoryUsed: number;
+    memoryMax: number;
+    hitRate: number;
+  };
   application: {
-    uptime: number
-    version: string
-    nodeVersion: string
-    environment: string
-    memoryUsage: number
-  }
+    uptime: number;
+    version: string;
+    nodeVersion: string;
+    environment: string;
+    memoryUsage: number;
+  };
   storage: {
-    documentsCount: number
-    totalSize: number
-    avgDocumentSize: number
-  }
+    documentsCount: number;
+    totalSize: number;
+    avgDocumentSize: number;
+  };
 }
 
 export function SystemStats() {
-  const { data: stats, loading, refetch } = useApiData<SystemStats>({
+  const {
+    data: stats,
+    loading,
+    refetch,
+  } = useApiData<SystemStats>({
     endpoint: '/api/admin/system/stats',
     errorMessage: 'Failed to load system stats',
     refreshInterval: 30000, // Refresh every 30 seconds
-  })
+  });
 
   const clearCache = useApiDelete('/api/admin/system/cache', {
     successMessage: 'Cache cleared successfully',
     onSuccess: () => refetch(),
-  })
+  });
 
   const optimizeDb = useApiPost('/api/admin/system/optimize', {
     successMessage: 'Database optimization started',
     onSuccess: () => refetch(),
-  })
-
+  });
 
   if (loading) {
-    return <LoadingState message="Loading system statistics..." size="md" />
+    return <LoadingState message="Loading system statistics..." size="md" />;
   }
 
   if (!stats) {
@@ -69,10 +72,10 @@ export function SystemStats() {
         action={{
           label: 'Retry',
           onClick: refetch,
-          variant: 'outline'
+          variant: 'outline',
         }}
       />
-    )
+    );
   }
 
   return (
@@ -106,14 +109,21 @@ export function SystemStats() {
               <Badge variant={stats.redis.status === 'connected' ? 'default' : 'destructive'}>
                 {stats.redis.status}
               </Badge>
-              <span className="text-sm text-gray-500">{stats.redis.hitRate.toFixed(1)}% hit rate</span>
+              <span className="text-sm text-gray-500">
+                {stats.redis.hitRate.toFixed(1)}% hit rate
+              </span>
             </div>
             <div className="mt-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Memory</span>
-                <span>{formatSize(stats.redis.memoryUsed)} / {formatSize(stats.redis.memoryMax)}</span>
+                <span>
+                  {formatSize(stats.redis.memoryUsed)} / {formatSize(stats.redis.memoryMax)}
+                </span>
               </div>
-              <Progress value={(stats.redis.memoryUsed / stats.redis.memoryMax) * 100} className="h-2" />
+              <Progress
+                value={(stats.redis.memoryUsed / stats.redis.memoryMax) * 100}
+                className="h-2"
+              />
             </div>
           </CardContent>
         </Card>
@@ -143,7 +153,9 @@ export function SystemStats() {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold">{stats.storage.documentsCount.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                {stats.storage.documentsCount.toLocaleString()}
+              </div>
               <div className="text-sm text-gray-500">Total Documents</div>
             </div>
             <div className="text-center">
@@ -215,5 +227,5 @@ export function SystemStats() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

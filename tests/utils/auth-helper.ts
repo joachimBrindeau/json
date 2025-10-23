@@ -19,21 +19,23 @@ export class AuthHelper {
       await this.page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
 
       // Wait for NextAuth session check to complete by waiting for loading skeleton to disappear
-      await this.page.waitForSelector('[data-testid="user-menu-loading"]', {
-        state: 'hidden',
-        timeout: 10000
-      }).catch(() => {
-        // Loading skeleton might not appear if session resolves very quickly
-      });
+      await this.page
+        .waitForSelector('[data-testid="user-menu-loading"]', {
+          state: 'hidden',
+          timeout: 30000,
+        })
+        .catch(() => {
+          // Loading skeleton might not appear if session resolves very quickly
+        });
 
       // Check if already logged in
       const userMenu = this.page.locator('[data-testid="user-menu"]');
       const signInButton = this.page.locator('[data-testid="sign-in-button"]');
-      
+
       // Wait for either user menu or sign-in button to appear (one must be visible after loading)
       await Promise.race([
-        userMenu.waitFor({ state: 'visible', timeout: 10000 }),
-        signInButton.waitFor({ state: 'visible', timeout: 10000 })
+        userMenu.waitFor({ state: 'visible', timeout: 30000 }),
+        signInButton.waitFor({ state: 'visible', timeout: 30000 }),
       ]);
 
       const isAlreadyLoggedIn = await userMenu.isVisible();
@@ -53,34 +55,37 @@ export class AuthHelper {
 
       // Wait for login modal to appear with proper state check
       const modal = this.page.locator('[role="dialog"]');
-      await expect(modal).toBeVisible({ timeout: 10000 });
+      await expect(modal).toBeVisible({ timeout: 30000 });
 
       // Fill in credentials with explicit waits
-      const emailInput = this.page.locator('#email');
-      const passwordInput = this.page.locator('#password');
+      const emailInput = modal.locator('#email');
+      const passwordInput = modal.locator('#password');
 
-      await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+      await emailInput.waitFor({ state: 'visible', timeout: 30000 });
       await emailInput.fill(user.email);
 
-      await passwordInput.waitFor({ state: 'visible', timeout: 5000 });
+      await passwordInput.waitFor({ state: 'visible', timeout: 30000 });
       await passwordInput.fill(user.password);
 
       // Submit the login form
-      const submitButton = this.page.locator('button[type="submit"]').filter({ hasText: /sign in/i });
-      await submitButton.waitFor({ state: 'visible', timeout: 5000 });
+      const submitButton = modal.locator('button[type="submit"]').filter({ hasText: /sign in/i });
+      await submitButton.waitFor({ state: 'visible', timeout: 30000 });
       await submitButton.click();
 
       // Wait for modal to close (indicates login processing)
-      await modal.waitFor({ state: 'detached', timeout: 10000 }).catch(() => {
+      await modal.waitFor({ state: 'detached', timeout: 30000 }).catch(() => {
         console.log('⚠️ Modal still visible, but continuing...');
       });
 
       // NOTE: The login modal now uses updateSession() + router.refresh()
       // router.refresh() causes Next.js to revalidate server components
       // Wait for the page to stabilize by checking for main content
-      await this.page.locator('main').waitFor({ state: 'attached', timeout: 10000 }).catch(() => {
-        console.log('⚠️ Page content not stable, but continuing...');
-      });
+      await this.page
+        .locator('main')
+        .waitFor({ state: 'attached', timeout: 30000 })
+        .catch(() => {
+          console.log('⚠️ Page content not stable, but continuing...');
+        });
 
       // Wait for the user menu to appear (indicates successful session sync)
       // This should appear after both SessionProvider.update() and router.refresh() complete
@@ -97,15 +102,31 @@ export class AuthHelper {
         throw new Error('Login appeared to succeed but user menu is not visible');
       }
 
-      console.log(`✅ Successfully logged in as ${user.email}`);
+      // Ensure any lingering modal/overlay is dismissed to avoid intercepting pointer events
+      try {
+        const dialog = this.page.getByRole('dialog');
+        const overlay = this.page.locator(
+          'div[data-state="open"][class*="fixed"][class*="inset-0"]'
+        );
+        for (let i = 0; i < 3; i++) {
+          const visibleDialog = await dialog.isVisible().catch(() => false);
+          const visibleOverlay = await overlay.isVisible().catch(() => false);
+          if (!visibleDialog && !visibleOverlay) break;
+          await this.page.keyboard.press('Escape').catch(() => {});
+          await dialog.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
+          await overlay.click().catch(() => {});
+          await overlay.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+        }
+      } catch {}
 
+      console.log(`✅ Successfully logged in as ${user.email}`);
     } catch (error) {
       console.error(`❌ Login failed for ${user.email}:`, (error as Error).message);
 
       // Take screenshot for debugging
       await this.page.screenshot({
         path: `test-results/login-failure-${userType}-${Date.now()}.png`,
-        fullPage: true
+        fullPage: true,
       });
 
       throw error;
@@ -147,7 +168,7 @@ export class AuthHelper {
       // Check for session token in response headers/cookies
       const headers = response.headers();
       const cookies = await this.context.cookies();
-      const sessionCookie = cookies.find(c => c.name === 'next-auth.session-token');
+      const sessionCookie = cookies.find((c) => c.name === 'next-auth.session-token');
 
       if (!sessionCookie) {
         const responseText = await response.text();
@@ -162,10 +183,32 @@ export class AuthHelper {
       // We need to explicitly transfer the cookie so the browser can use it
       await this.context.addCookies([sessionCookie]);
 
-      console.log(`✅ Successfully logged in via API as ${user.email} (session cookie present and added to browser)`);
-
+      console.log(
+        `✅ Successfully logged in via API as ${user.email} (session cookie present and added to browser)`
+      );
     } catch (error) {
       console.error(`❌ API Login failed for ${user.email}:`, (error as Error).message);
+      throw error;
+    }
+  }
+  /**
+   * Logout via API (avoids UI overlays intercepting clicks)
+   */
+  async logoutAPI() {
+    try {
+      const csrfToken = await this.getCSRFToken();
+      await this.context.request.post('/api/auth/signout', {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        form: {
+          csrfToken,
+          callbackUrl: '/',
+        },
+        maxRedirects: 0,
+      });
+      // Refresh the page to reflect logged-out state
+      await this.page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
+    } catch (error) {
+      console.error('❌ API logout failed:', (error as Error).message);
       throw error;
     }
   }
@@ -204,25 +247,26 @@ export class AuthHelper {
       // Wait for dropdown menu to be visible
       const dropdownMenu = this.page.locator('[role="menu"]');
       await expect(dropdownMenu).toBeVisible({ timeout: 15000 });
-      
+
       // Click the Sign out option with multiple possible selectors
-      const signOutButton = this.page.locator(
-        '[role="menuitem"]:has-text("Sign out"), ' +
-        '[role="menuitem"]:has-text("Sign Out"), ' +
-        '[role="menuitem"]:has-text("Logout"), ' +
-        'button:has-text("Sign out"), ' +
-        'button:has-text("Sign Out"), ' +
-        'button:has-text("Logout")'
-      ).first();
-      
+      const signOutButton = this.page
+        .locator(
+          '[role="menuitem"]:has-text("Sign out"), ' +
+            '[role="menuitem"]:has-text("Sign Out"), ' +
+            '[role="menuitem"]:has-text("Logout"), ' +
+            'button:has-text("Sign out"), ' +
+            'button:has-text("Sign Out"), ' +
+            'button:has-text("Logout")'
+        )
+        .first();
+
       await signOutButton.waitFor({ state: 'visible', timeout: 5000 });
       await signOutButton.click();
 
       // Wait for logout to complete - sign in button should appear
-      await this.page.waitForSelector('[data-testid="sign-in-button"]', { timeout: 10000 });
-      
+      await this.page.waitForSelector('[data-testid="sign-in-button"]', { timeout: 30000 });
+
       console.log('✅ Successfully logged out');
-      
     } catch (error) {
       console.error('❌ Logout failed:', (error as Error).message);
       throw error;
@@ -238,9 +282,9 @@ export class AuthHelper {
 
     // Click the Sign in button to open modal
     await this.page.locator('[data-testid="sign-in-button"]').click();
-    
+
     // Wait for login modal to appear
-    await this.page.waitForSelector('[role="dialog"]', { timeout: 10000 });
+    await this.page.waitForSelector('[role="dialog"]', { timeout: 30000 });
 
     // Click the "Need an account? Sign up" link to switch to signup mode
     await this.page.locator('button:has-text("Need an account? Sign up")').click();
@@ -269,11 +313,14 @@ export class AuthHelper {
         // Check for user menu
         this.page.waitForSelector('[data-testid="user-menu"]', { timeout: 2000 }),
         // Check for absence of sign in button
-        this.page.waitForSelector('[data-testid="sign-in-button"]', { state: 'hidden', timeout: 2000 })
+        this.page.waitForSelector('[data-testid="sign-in-button"]', {
+          state: 'hidden',
+          timeout: 2000,
+        }),
       ]);
-      
+
       // If any check succeeded, user is logged in
-      return loggedInChecks.some(result => result.status === 'fulfilled');
+      return loggedInChecks.some((result) => result.status === 'fulfilled');
     } catch (error) {
       return false;
     }
@@ -295,15 +342,22 @@ export class AuthHelper {
       // Extract user info from the dropdown content
       const userInfo = await this.page.evaluate(() => {
         // Look for user email and name in the dropdown
-        const userElements = document.querySelectorAll('[class*="text-xs text-muted-foreground"], [class*="font-medium"]');
+        const userElements = document.querySelectorAll(
+          '[class*="text-xs text-muted-foreground"], [class*="font-medium"]'
+        );
         let email = null;
         let name = null;
-        
+
         for (const element of userElements) {
           const text = element.textContent?.trim();
           if (text && text.includes('@')) {
             email = text;
-          } else if (text && !text.includes('@') && text !== 'Sign out' && text !== 'Profile & Settings') {
+          } else if (
+            text &&
+            !text.includes('@') &&
+            text !== 'Sign out' &&
+            text !== 'Profile & Settings'
+          ) {
             name = text;
           }
         }

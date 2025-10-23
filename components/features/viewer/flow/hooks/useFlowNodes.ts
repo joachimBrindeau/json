@@ -111,15 +111,18 @@ export const useFlowNodes = (
     // Helper function to check if node matches search term
     const matchesSearch = (node: Node): boolean => {
       if (!searchTerm) return false;
-      
+
       const term = searchTerm.toLowerCase();
       const nodeData = node.data;
-      
+
       // Search in node ID
       if (node.id.toLowerCase().includes(term)) return true;
 
       // Search in stringified JSON
-      if ((nodeData as any)?.stringifiedJson && (nodeData as any).stringifiedJson.toLowerCase().includes(term)) {
+      if (
+        (nodeData as any)?.stringifiedJson &&
+        (nodeData as any).stringifiedJson.toLowerCase().includes(term)
+      ) {
         return true;
       }
 
@@ -128,13 +131,13 @@ export const useFlowNodes = (
         const objStr = JSON.stringify((nodeData as any).obj).toLowerCase();
         if (objStr.includes(term)) return true;
       }
-      
+
       // Search in primitive values
       if (nodeData?.value !== undefined) {
         const valueStr = String(nodeData.value).toLowerCase();
         if (valueStr.includes(term)) return true;
       }
-      
+
       return false;
     };
 
@@ -162,7 +165,17 @@ export const useFlowNodes = (
 
     setNodes(visibleNodes);
     setEdges(visibleEdges);
-  }, [parsedNodes, parsedEdges, collapsedBranches, hiddenNodes, handleToggleCollapse, onToggleCollapse, searchTerm, setNodes, setEdges]);
+  }, [
+    parsedNodes,
+    parsedEdges,
+    collapsedBranches,
+    hiddenNodes,
+    handleToggleCollapse,
+    onToggleCollapse,
+    searchTerm,
+    setNodes,
+    setEdges,
+  ]);
 
   return {
     nodes,
@@ -173,4 +186,3 @@ export const useFlowNodes = (
     collapsedBranches,
   };
 };
-

@@ -49,8 +49,7 @@ export async function linkOAuthAccount(
     // Check if this provider is already linked
     const isLinked = existingUser.accounts.some(
       (acc) =>
-        acc.provider === account.provider &&
-        acc.providerAccountId === account.providerAccountId
+        acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
     );
 
     if (!isLinked) {
@@ -75,7 +74,7 @@ export async function linkOAuthAccount(
         {
           userId: existingUser.id,
           provider: account.provider,
-          email
+          email,
         },
         'Linked OAuth account to existing user'
       );
@@ -109,7 +108,7 @@ export async function linkOAuthAccount(
       {
         err: error,
         email: user.email,
-        provider: account.provider
+        provider: account.provider,
       },
       'Failed to link OAuth account'
     );

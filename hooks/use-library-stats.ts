@@ -23,15 +23,20 @@ export function useLibraryStats(): LibraryStats {
   const { data: session } = useSession();
   const setLibraryUpdateCallback = useBackendStore((state) => state.setLibraryUpdateCallback);
 
+  const transform = useCallback(
+    (rawData: UserStatsResponse) => ({
+      totalJsons: rawData.total || 0,
+      totalSize: rawData.totalSize || 0,
+    }),
+    []
+  );
+
   const { data, loading, refetch } = useApiData<LibraryStatsData, UserStatsResponse>({
     endpoint: '/api/user/stats',
     errorMessage: 'Failed to load library stats',
     enabled: !!session,
     showToast: false,
-    transform: (rawData) => ({
-      totalJsons: rawData.total || 0,
-      totalSize: rawData.totalSize || 0,
-    }),
+    transform,
     // Don't pass session as dependency - it changes on every render
     // The enabled flag is sufficient to control when to fetch
   });

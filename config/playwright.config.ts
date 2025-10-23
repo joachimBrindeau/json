@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
-const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Use a single source of truth for test server URL
+const SERVER_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3456';
+const baseURL = SERVER_URL;
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -95,7 +97,7 @@ export default defineConfig({
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
         // Mobile-specific launch options
         launchOptions: {
@@ -121,15 +123,16 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:3456',
-  //   reuseExistingServer: true, // Always reuse existing server
-  //   timeout: 180_000,
-  //   stdout: 'pipe',
-  //   stderr: 'pipe',
-  // },
+  /* Run a production server for tests to avoid dev-time vendor chunk issues */
+  webServer: {
+    command: "bash -lc 'npm run -s build && next start -p 3456'",
+    url: SERVER_URL,
+    reuseExistingServer: true,
+    timeout: 180_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    env: { NEXT_PUBLIC_APP_URL: SERVER_URL, PLAYWRIGHT: '1', TURBOPACK: '0' },
+  },
 
   /* Global setup and teardown */
   globalSetup: require.resolve('../tests/utils/global-setup.ts'),

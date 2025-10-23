@@ -34,17 +34,10 @@ export const shortDescriptionSchema = z
   .default('');
 
 /** Rich content validation: optional, no max length specified in current implementation */
-export const richContentSchema = z
-  .string()
-  .optional()
-  .default('');
+export const richContentSchema = z.string().optional().default('');
 
 /** Category validation: optional, must be from predefined list */
-export const categorySchema = z
-  .enum(DOCUMENT_CATEGORIES)
-  .optional()
-  .or(z.literal(''))
-  .default('');
+export const categorySchema = z.enum(DOCUMENT_CATEGORIES).optional().or(z.literal('')).default('');
 
 /** Tags validation: optional array, max 10 tags */
 export const tagsSchema = z
@@ -54,9 +47,7 @@ export const tagsSchema = z
   .default([]);
 
 /** Visibility validation */
-export const visibilitySchema = z
-  .enum(['public', 'private'])
-  .default('private');
+export const visibilitySchema = z.enum(['public', 'private']).default('private');
 
 /**
  * Share Modal Form Schema
@@ -104,6 +95,22 @@ export const publishFormSchema = z.object({
  * Type inference for PublishForm
  */
 export type PublishFormData = z.infer<typeof publishFormSchema>;
+
+/**
+ * JSON Metadata Form Schema
+ *
+ * Used by the editor metadata form (create/edit) combining visibility and rich content
+ */
+export const jsonMetadataFormSchema = z.object({
+  title: titleSchema,
+  description: shortDescriptionSchema, // 300 char limit used in editor form
+  richContent: richContentSchema,
+  category: categorySchema,
+  tags: tagsSchema,
+  visibility: visibilitySchema,
+});
+
+export type JsonMetadataFormData = z.infer<typeof jsonMetadataFormSchema>;
 
 /**
  * Validation helpers for manual validation (during migration)

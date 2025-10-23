@@ -43,16 +43,34 @@ export const ViewerTree = ({
 
   // Precompute lightweight type counts for E2E and metrics without forcing DOM rendering
   const typeCounts = useMemo(() => {
-    let objects = 0, arrays = 0, strings = 0, numbers = 0, booleans = 0, nulls = 0;
+    let objects = 0,
+      arrays = 0,
+      strings = 0,
+      numbers = 0,
+      booleans = 0,
+      nulls = 0;
     for (const n of filteredNodes) {
       switch (n.type) {
-        case 'object': objects++; break;
-        case 'array': arrays++; break;
-        case 'string': strings++; break;
-        case 'number': numbers++; break;
-        case 'boolean': booleans++; break;
-        case 'null': nulls++; break;
-        default: break;
+        case 'object':
+          objects++;
+          break;
+        case 'array':
+          arrays++;
+          break;
+        case 'string':
+          strings++;
+          break;
+        case 'number':
+          numbers++;
+          break;
+        case 'boolean':
+          booleans++;
+          break;
+        case 'null':
+          nulls++;
+          break;
+        default:
+          break;
       }
     }
     return { objects, arrays, strings, numbers, booleans, nulls };
@@ -61,9 +79,26 @@ export const ViewerTree = ({
   // Estimate total node/type counts by walking raw data without forcing UI expansion
   const stats = useMemo(() => {
     const cap = 200000; // safety cap to avoid pathological traversals
-    let total = 0, objects = 0, arrays = 0, strings = 0, numbers = 0, booleans = 0, nulls = 0;
+    let total = 0,
+      objects = 0,
+      arrays = 0,
+      strings = 0,
+      numbers = 0,
+      booleans = 0,
+      nulls = 0;
     let maxDepth = 0;
-    if (data === undefined) return { total: 0, objects: 0, arrays: 0, strings: 0, numbers: 0, booleans: 0, nulls: 0, maxDepth: 0, capped: false };
+    if (data === undefined)
+      return {
+        total: 0,
+        objects: 0,
+        arrays: 0,
+        strings: 0,
+        numbers: 0,
+        booleans: 0,
+        nulls: 0,
+        maxDepth: 0,
+        capped: false,
+      };
     type StackItem = { v: any; d: number };
     const stack: StackItem[] = [{ v: data, d: 0 }];
     while (stack.length) {
@@ -71,7 +106,10 @@ export const ViewerTree = ({
       total++;
       if (d > maxDepth) maxDepth = d;
       if (total > cap) break;
-      if (v === null) { nulls++; continue; }
+      if (v === null) {
+        nulls++;
+        continue;
+      }
       if (Array.isArray(v)) {
         arrays++;
         for (let i = 0; i < v.length && total < cap; i++) stack.push({ v: v[i], d: d + 1 });
@@ -88,13 +126,30 @@ export const ViewerTree = ({
             }
           } catch {}
           break;
-        case 'string': strings++; break;
-        case 'number': numbers++; break;
-        case 'boolean': booleans++; break;
-        default: break;
+        case 'string':
+          strings++;
+          break;
+        case 'number':
+          numbers++;
+          break;
+        case 'boolean':
+          booleans++;
+          break;
+        default:
+          break;
       }
     }
-    return { total, objects, arrays, strings, numbers, booleans, nulls, maxDepth, capped: total >= cap };
+    return {
+      total,
+      objects,
+      arrays,
+      strings,
+      numbers,
+      booleans,
+      nulls,
+      maxDepth,
+      capped: total >= cap,
+    };
   }, [data]);
 
   const [selectedNode, setSelectedNode] = useState<JsonNode | null>(null);
@@ -139,16 +194,15 @@ export const ViewerTree = ({
       }
       return false;
     };
-    return filteredNodes.findIndex((n) => (
-      n.key.toLowerCase().includes(term) || valueMatches(n.value)
-    ));
+    return filteredNodes.findIndex(
+      (n) => n.key.toLowerCase().includes(term) || valueMatches(n.value)
+    );
   }, [filteredNodes, searchTerm]);
 
   useEffect(() => {
     if (virtualized && firstMatchIndex >= 0 && listRef.current) {
       try {
         // Center the first match in view
-        // @ts-expect-error react-window typing
         listRef.current.scrollToItem(firstMatchIndex, 'center');
       } catch {}
     }
@@ -197,47 +251,33 @@ export const ViewerTree = ({
     return (
       <div className="viewer-tree h-full" style={{ position: 'relative' }}>
         {/* Invisible badge to expose match presence to E2E reliably */}
-        {enableSearch && searchTerm?.trim() ? (
-          <div
-            data-testid="search-summary"
-            className={(matchCount > 0 || virtualSearchHit) ? 'highlighted' : (nodes.length > 5000 ? 'search-result' : '')}
-            aria-hidden
-            style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}
-          />
-        ) : null}
-        {/* Expose node counts to E2E even when virtualization limits DOM nodes */}
-        <div
-          data-testid="nodes-summary"
-          data-total={stats.total}
-          data-objects={stats.objects}
-          data-arrays={stats.arrays}
-          data-strings={stats.strings}
-          data-numbers={stats.numbers}
-          data-booleans={stats.booleans}
-          data-nulls={stats.nulls}
-          data-max-depth={stats.maxDepth}
-          data-virtualized="true"
-          aria-hidden
-          style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}
+        <SearchSummaryBadge
+          enableSearch={enableSearch}
+          searchTerm={searchTerm}
+          nodesLen={nodes.length}
+          matchCount={matchCount}
+          virtualized={true}
+          virtualSearchHit={virtualSearchHit}
         />
+        {/* Expose node counts to E2E even when virtualization limits DOM nodes */}
+        <NodesSummary stats={stats} virtualized />
         {/* Hidden max depth indicator for E2E */}
-        <div data-testid="max-depth" aria-hidden style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}>
-          Max Depth: {stats.maxDepth}
-        </div>
+        <MaxDepthIndicator maxDepth={stats.maxDepth} />
         {/* Mirror results container for E2E count on virtualized lists */}
-        {enableSearch && searchTerm?.trim() ? (
-          <div aria-hidden style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}>
-            {Array.from({ length: Math.max(Math.min(matchCount, 200), virtualSearchHit ? 1 : 0) }).map((_, i) => (
-              <span key={i} className="search-result" />
-            ))}
-          </div>
-        ) : null}
+        <MirrorResults
+          enableSearch={enableSearch}
+          searchTerm={searchTerm}
+          matchCount={matchCount}
+          virtualized
+          virtualSearchHit={virtualSearchHit}
+        />
         {/* Virtualized list */}
         <List
           ref={listRef as any}
           height={height}
           itemCount={filteredNodes.length}
           itemSize={() => 32}
+          itemKey={(index) => filteredNodes[index].id}
           width="100%"
         >
           {({ index, style }) => (
@@ -259,41 +299,18 @@ export const ViewerTree = ({
   return (
     <div className="viewer-tree h-full flex flex-col" style={{ position: 'relative' }}>
       {/* Invisible badge to expose match presence to E2E reliably */}
-      {enableSearch && searchTerm?.trim() ? (
-        <div
-          data-testid="search-summary"
-          className={matchCount > 0 ? 'highlighted' : (nodes.length > 5000 ? 'search-result' : '')}
-          aria-hidden
-          style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}
-        />
-      ) : null}
-      {/* Mirror results container for E2E count on non-virtualized lists too */}
-      {enableSearch && searchTerm?.trim() ? (
-        <div aria-hidden style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}>
-          {Array.from({ length: Math.min(matchCount, 200) }).map((_, i) => (
-            <span key={i} className="search-result" />
-          ))}
-        </div>
-      ) : null}
-      {/* Expose node counts for non-virtualized mode as well */}
-      <div
-        data-testid="nodes-summary"
-        data-total={stats.total}
-        data-objects={stats.objects}
-        data-arrays={stats.arrays}
-        data-strings={stats.strings}
-        data-numbers={stats.numbers}
-        data-booleans={stats.booleans}
-        data-nulls={stats.nulls}
-        data-max-depth={stats.maxDepth}
-        data-virtualized="false"
-        aria-hidden
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}
+      <SearchSummaryBadge
+        enableSearch={enableSearch}
+        searchTerm={searchTerm}
+        nodesLen={nodes.length}
+        matchCount={matchCount}
       />
+      {/* Mirror results container for E2E count on non-virtualized lists too */}
+      <MirrorResults enableSearch={enableSearch} searchTerm={searchTerm} matchCount={matchCount} />
+      {/* Expose node counts for non-virtualized mode as well */}
+      <NodesSummary stats={stats} />
       {/* Hidden max depth indicator for E2E */}
-      <div data-testid="max-depth" aria-hidden style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}>
-        Max Depth: {stats.maxDepth}
-      </div>
+      <MaxDepthIndicator maxDepth={stats.maxDepth} />
       {/* Tree nodes */}
       <motion.div
         className="tree-nodes flex-1 overflow-auto"
@@ -302,11 +319,7 @@ export const ViewerTree = ({
         animate="visible"
       >
         {filteredNodes.map((node, index) => (
-          <motion.div
-            key={node.id}
-            variants={VARIANTS.slideUp}
-            custom={index}
-          >
+          <motion.div key={node.id} variants={VARIANTS.slideUp} custom={index}>
             <ViewerTreeNode
               node={node}
               isExpanded={expandedNodes.has(node.id)}
@@ -328,3 +341,114 @@ export const ViewerTree = ({
   );
 };
 
+// Small presentational helpers to keep JSX DRY while preserving behavior
+function SearchSummaryBadge({
+  enableSearch,
+  searchTerm,
+  nodesLen,
+  matchCount,
+  virtualized = false,
+  virtualSearchHit = false,
+}: {
+  enableSearch: boolean;
+  searchTerm?: string;
+  nodesLen: number;
+  matchCount: number;
+  virtualized?: boolean;
+  virtualSearchHit?: boolean;
+}) {
+  if (!(enableSearch && searchTerm?.trim())) return null;
+  const cls = virtualized
+    ? matchCount > 0 || virtualSearchHit
+      ? 'highlighted'
+      : nodesLen > 5000
+        ? 'search-result'
+        : ''
+    : matchCount > 0
+      ? 'highlighted'
+      : nodesLen > 5000
+        ? 'search-result'
+        : '';
+  return (
+    <div
+      data-testid="search-summary"
+      className={cls}
+      aria-hidden
+      style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }}
+    />
+  );
+}
+
+function HiddenTelemetryContainer({ children, ...rest }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div aria-hidden style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01 }} {...rest}>
+      {children}
+    </div>
+  );
+}
+
+function NodesSummary({
+  stats,
+  virtualized = false,
+}: {
+  stats: {
+    total: number;
+    objects: number;
+    arrays: number;
+    strings: number;
+    numbers: number;
+    booleans: number;
+    nulls: number;
+    maxDepth: number;
+  };
+  virtualized?: boolean;
+}) {
+  return (
+    <HiddenTelemetryContainer
+      data-testid="nodes-summary"
+      data-total={stats.total}
+      data-objects={stats.objects}
+      data-arrays={stats.arrays}
+      data-strings={stats.strings}
+      data-numbers={stats.numbers}
+      data-booleans={stats.booleans}
+      data-nulls={stats.nulls}
+      data-max-depth={stats.maxDepth}
+      data-virtualized={virtualized ? 'true' : 'false'}
+    />
+  );
+}
+
+function MaxDepthIndicator({ maxDepth }: { maxDepth: number }) {
+  return (
+    <HiddenTelemetryContainer data-testid="max-depth">
+      Max Depth: {maxDepth}
+    </HiddenTelemetryContainer>
+  );
+}
+
+function MirrorResults({
+  enableSearch,
+  searchTerm,
+  matchCount,
+  virtualized = false,
+  virtualSearchHit = false,
+}: {
+  enableSearch: boolean;
+  searchTerm?: string;
+  matchCount: number;
+  virtualized?: boolean;
+  virtualSearchHit?: boolean;
+}) {
+  if (!(enableSearch && searchTerm?.trim())) return null;
+  const count = virtualized
+    ? Math.max(Math.min(matchCount, 200), virtualSearchHit ? 1 : 0)
+    : Math.min(matchCount, 200);
+  return (
+    <HiddenTelemetryContainer>
+      {Array.from({ length: count }).map((_, i) => (
+        <span key={i} className="search-result" />
+      ))}
+    </HiddenTelemetryContainer>
+  );
+}

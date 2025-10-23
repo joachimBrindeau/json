@@ -22,10 +22,12 @@ interface AnimatedActionButtonProps extends ButtonProps {
  */
 export const AnimatedActionButton = forwardRef<HTMLButtonElement, AnimatedActionButtonProps>(
   ({ animationVariant = 'default', children, ...props }, ref) => {
-    const interaction = 
-      animationVariant === 'subtle' ? INTERACTIONS.buttonSubtle :
-      animationVariant === 'bounce' ? INTERACTIONS.buttonBounce :
-      INTERACTIONS.button;
+    const interaction =
+      animationVariant === 'subtle'
+        ? INTERACTIONS.buttonSubtle
+        : animationVariant === 'bounce'
+          ? INTERACTIONS.buttonBounce
+          : INTERACTIONS.button;
 
     return (
       <motion.div
@@ -43,4 +45,3 @@ export const AnimatedActionButton = forwardRef<HTMLButtonElement, AnimatedAction
 );
 
 AnimatedActionButton.displayName = 'AnimatedActionButton';
-

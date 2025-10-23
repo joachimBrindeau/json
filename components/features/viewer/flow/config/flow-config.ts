@@ -2,7 +2,14 @@
  * Flow view configuration - centralized constants and settings
  */
 
-import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node, MarkerType } from '@xyflow/react';
+import {
+  NodeTypes,
+  EdgeTypes,
+  FitViewOptions,
+  DefaultEdgeOptions,
+  Node,
+  MarkerType,
+} from '@xyflow/react';
 import { FlowObjectNode } from '../nodes/FlowObjectNode';
 import { FlowArrayNode } from '../nodes/FlowArrayNode';
 import { FlowPrimitiveNode } from '../nodes/FlowPrimitiveNode';
@@ -88,4 +95,3 @@ export const getMinimapNodeColor = (node: Node): string => {
       return '#6b7280'; // gray-500
   }
 };
-

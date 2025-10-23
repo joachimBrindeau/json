@@ -38,13 +38,13 @@ export default function EmbedPage({ params }: EmbedPageProps) {
   });
 
   // Parse URL parameters
-  const theme = searchParams.get('theme') || 'auto';
-  const height = parseInt(searchParams.get('height') || '400');
-  const showCopy = searchParams.get('copy') !== 'false';
-  const showDownload = searchParams.get('download') === 'true';
-  const borderRadius = parseInt(searchParams.get('radius') || '8');
-  const viewMode = searchParams.get('view') || 'smart'; // smart, editor, flow, tree, list, tabs
-  const showTabs = searchParams.get('tabs') === 'true' || viewMode === 'tabs';
+  const theme = searchParams?.get('theme') || 'auto';
+  const height = parseInt(searchParams?.get('height') || '400');
+  const showCopy = searchParams?.get('copy') !== 'false';
+  const showDownload = searchParams?.get('download') === 'true';
+  const borderRadius = parseInt(searchParams?.get('radius') || '8');
+  const viewMode = searchParams?.get('view') || 'smart'; // smart, editor, flow, tree, list, tabs
+  const showTabs = searchParams?.get('tabs') === 'true' || viewMode === 'tabs';
 
   // Tab state for full tabbed viewer
   const [activeTab, setActiveTab] = useState(() => {
@@ -61,7 +61,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
       setShareId(resolvedParams.id);
     };
     getParams();
-    
+
     // Set client-specific values after hydration
     if (typeof window !== 'undefined') {
       setHostname(window.location.hostname.replace('www.', ''));
@@ -374,8 +374,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
           </span>
           <span className="text-gray-400 dark:text-gray-600">•</span>
           <span>
-            {hostname}{' '}
-            {currentDate && `• ${currentDate}`}
+            {hostname} {currentDate && `• ${currentDate}`}
           </span>
         </div>
         <a

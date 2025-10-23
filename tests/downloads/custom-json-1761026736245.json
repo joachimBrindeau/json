@@ -1,0 +1,275 @@
+{
+  "success": true,
+  "timestamp": "2025-10-21T06:05:30.978Z",
+  "requestId": "req_fv86kyoapq",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "username": "user1",
+        "email": "user1@example.com",
+        "firstName": "Carol",
+        "lastName": "Davis",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-04-12T22:54:16.809Z"
+      },
+      {
+        "id": 2,
+        "username": "user2",
+        "email": "user2@example.com",
+        "firstName": "Bob",
+        "lastName": "Davis",
+        "active": false,
+        "role": "admin",
+        "createdAt": "2025-05-19T07:00:47.388Z"
+      },
+      {
+        "id": 3,
+        "username": "user3",
+        "email": "user3@example.com",
+        "firstName": "Carol",
+        "lastName": "Brown",
+        "active": true,
+        "role": "user",
+        "createdAt": "2025-04-19T12:39:18.887Z"
+      },
+      {
+        "id": 4,
+        "username": "user4",
+        "email": "user4@example.com",
+        "firstName": "Bob",
+        "lastName": "Wilson",
+        "active": true,
+        "role": "user",
+        "createdAt": "2025-06-24T22:42:50.679Z"
+      },
+      {
+        "id": 5,
+        "username": "user5",
+        "email": "user5@example.com",
+        "firstName": "Jane",
+        "lastName": "Johnson",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-04-30T03:58:39.306Z"
+      },
+      {
+        "id": 6,
+        "username": "user6",
+        "email": "user6@example.com",
+        "firstName": "Jane",
+        "lastName": "Wilson",
+        "active": true,
+        "role": "user",
+        "createdAt": "2025-10-01T02:04:11.981Z"
+      },
+      {
+        "id": 7,
+        "username": "user7",
+        "email": "user7@example.com",
+        "firstName": "Carol",
+        "lastName": "Davis",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-06-30T03:07:39.391Z"
+      },
+      {
+        "id": 8,
+        "username": "user8",
+        "email": "user8@example.com",
+        "firstName": "Bob",
+        "lastName": "Wilson",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-08-10T19:13:46.114Z"
+      },
+      {
+        "id": 9,
+        "username": "user9",
+        "email": "user9@example.com",
+        "firstName": "John",
+        "lastName": "Johnson",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-09-10T10:34:18.930Z"
+      },
+      {
+        "id": 10,
+        "username": "user10",
+        "email": "user10@example.com",
+        "firstName": "Alice",
+        "lastName": "Brown",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-09-20T11:15:19.073Z"
+      },
+      {
+        "id": 11,
+        "username": "user11",
+        "email": "user11@example.com",
+        "firstName": "Bob",
+        "lastName": "Davis",
+        "active": true,
+        "role": "user",
+        "createdAt": "2025-03-03T12:47:11.011Z"
+      },
+      {
+        "id": 12,
+        "username": "user12",
+        "email": "user12@example.com",
+        "firstName": "John",
+        "lastName": "Wilson",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-07-11T05:42:42.910Z"
+      },
+      {
+        "id": 13,
+        "username": "user13",
+        "email": "user13@example.com",
+        "firstName": "Carol",
+        "lastName": "Brown",
+        "active": true,
+        "role": "user",
+        "createdAt": "2025-02-01T09:46:01.819Z"
+      },
+      {
+        "id": 14,
+        "username": "user14",
+        "email": "user14@example.com",
+        "firstName": "John",
+        "lastName": "Davis",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-02-28T12:19:23.638Z"
+      },
+      {
+        "id": 15,
+        "username": "user15",
+        "email": "user15@example.com",
+        "firstName": "Bob",
+        "lastName": "Davis",
+        "active": false,
+        "role": "admin",
+        "createdAt": "2025-08-14T10:05:11.185Z"
+      },
+      {
+        "id": 16,
+        "username": "user16",
+        "email": "user16@example.com",
+        "firstName": "Jane",
+        "lastName": "Brown",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2024-10-24T04:40:59.675Z"
+      },
+      {
+        "id": 17,
+        "username": "user17",
+        "email": "user17@example.com",
+        "firstName": "Jane",
+        "lastName": "Brown",
+        "active": false,
+        "role": "moderator",
+        "createdAt": "2024-12-23T22:15:27.202Z"
+      },
+      {
+        "id": 18,
+        "username": "user18",
+        "email": "user18@example.com",
+        "firstName": "Carol",
+        "lastName": "Brown",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-07-04T13:00:20.827Z"
+      },
+      {
+        "id": 19,
+        "username": "user19",
+        "email": "user19@example.com",
+        "firstName": "John",
+        "lastName": "Brown",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2025-10-19T10:33:51.644Z"
+      },
+      {
+        "id": 20,
+        "username": "user20",
+        "email": "user20@example.com",
+        "firstName": "Bob",
+        "lastName": "Davis",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-08-23T10:20:30.490Z"
+      },
+      {
+        "id": 21,
+        "username": "user21",
+        "email": "user21@example.com",
+        "firstName": "Alice",
+        "lastName": "Johnson",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-04-12T13:04:28.760Z"
+      },
+      {
+        "id": 22,
+        "username": "user22",
+        "email": "user22@example.com",
+        "firstName": "Carol",
+        "lastName": "Brown",
+        "active": true,
+        "role": "moderator",
+        "createdAt": "2025-06-17T02:51:58.514Z"
+      },
+      {
+        "id": 23,
+        "username": "user23",
+        "email": "user23@example.com",
+        "firstName": "Bob",
+        "lastName": "Wilson",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2024-12-26T04:25:09.496Z"
+      },
+      {
+        "id": 24,
+        "username": "user24",
+        "email": "user24@example.com",
+        "firstName": "Bob",
+        "lastName": "Davis",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2024-11-28T19:31:20.436Z"
+      },
+      {
+        "id": 25,
+        "username": "user25",
+        "email": "user25@example.com",
+        "firstName": "John",
+        "lastName": "Smith",
+        "active": true,
+        "role": "admin",
+        "createdAt": "2024-11-29T22:48:08.483Z"
+      }
+    ]
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 25,
+    "total": 250,
+    "totalPages": 10,
+    "hasNext": true,
+    "hasPrev": false
+  },
+  "meta": {
+    "version": "2.0",
+    "documentation": "https://api.example.com/docs",
+    "rateLimiting": {
+      "remaining": 995,
+      "reset": "2025-10-21T07:05:30.978Z"
+    }
+  }
+}

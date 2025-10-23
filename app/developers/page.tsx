@@ -53,7 +53,9 @@ Response:
                   <Globe className="h-4 w-4" />
                   Public Library
                 </h3>
-                <p className="text-sm text-muted-foreground">Browse and search public JSON documents</p>
+                <p className="text-sm text-muted-foreground">
+                  Browse and search public JSON documents
+                </p>
                 <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
                   <code>{`GET /api/library?page=1&limit=20&search=example
 
@@ -104,7 +106,9 @@ Response:
                   <Key className="h-4 w-4" />
                   Upload JSON (Authenticated)
                 </h3>
-                <p className="text-sm text-muted-foreground">Upload and save JSON documents (requires authentication)</p>
+                <p className="text-sm text-muted-foreground">
+                  Upload and save JSON documents (requires authentication)
+                </p>
                 <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
                   <code>{`POST /api/json/upload
 Content-Type: application/json
@@ -132,9 +136,7 @@ Response:
           <Card>
             <CardHeader>
               <CardTitle>Integration Examples</CardTitle>
-              <CardDescription>
-                Code examples for common integration scenarios
-              </CardDescription>
+              <CardDescription>Code examples for common integration scenarios</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* JavaScript Example */}
@@ -211,4 +213,3 @@ curl "https://jsonviewer.io/api/json/xyz789"`}</code>
     </MainLayout>
   );
 }
-

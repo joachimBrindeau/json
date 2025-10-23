@@ -48,12 +48,7 @@ export const StringRenderer = memo(({ value, detections }: StringRendererProps) 
             <code className="flex-1 text-sm bg-muted p-3 rounded break-all font-mono max-h-64 overflow-y-auto">
               &quot;{value}&quot;
             </code>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="flex-shrink-0"
-            >
+            <Button variant="ghost" size="sm" onClick={handleCopy} className="flex-shrink-0">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
@@ -93,12 +88,7 @@ export const StringRenderer = memo(({ value, detections }: StringRendererProps) 
         </CardHeader>
         <CardContent className="space-y-3">
           {!hash ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerateHash}
-              disabled={isHashing}
-            >
+            <Button variant="outline" size="sm" onClick={handleGenerateHash} disabled={isHashing}>
               {isHashing ? 'Generating...' : 'Generate SHA-256 Hash'}
             </Button>
           ) : (
@@ -143,4 +133,3 @@ export const StringRenderer = memo(({ value, detections }: StringRendererProps) 
 });
 
 StringRenderer.displayName = 'StringRenderer';
-

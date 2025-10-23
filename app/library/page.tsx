@@ -19,7 +19,11 @@ export default function PublicLibraryPage() {
 
   // Skip rendering during SSR
   if (typeof window === 'undefined') {
-    return <MainLayout><div className="h-full flex items-center justify-center">Loading...</div></MainLayout>;
+    return (
+      <MainLayout>
+        <div className="h-full flex items-center justify-center">Loading...</div>
+      </MainLayout>
+    );
   }
 
   return (
@@ -38,7 +42,8 @@ export default function PublicLibraryPage() {
         emptyDescription: 'Try adjusting your search criteria or browse all available JSONs',
         enableBulkDelete: !!session,
         enableBulkExport: true,
-        canDelete: (doc) => !!session && (doc.userId === session?.user?.id || doc.author?.id === session?.user?.id),
+        canDelete: (doc) =>
+          !!session && (doc.userId === session?.user?.id || doc.author?.id === session?.user?.id),
         showDeleteButton: !!session,
         testId: 'library',
       }}

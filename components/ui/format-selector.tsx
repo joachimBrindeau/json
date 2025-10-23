@@ -1,5 +1,11 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface FormatOption {
   id: string;
@@ -15,7 +21,12 @@ interface FormatSelectorProps {
   className?: string;
 }
 
-export function FormatSelector({ value, onValueChange, options, className = '' }: FormatSelectorProps) {
+export function FormatSelector({
+  value,
+  onValueChange,
+  options,
+  className = '',
+}: FormatSelectorProps) {
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className={`h-6 w-32 text-xs ${className}`}>

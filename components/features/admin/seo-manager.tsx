@@ -1,38 +1,38 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ExternalLink, AlertTriangle } from 'lucide-react'
-import { ErrorBoundary } from '@/components/shared/error-boundary'
-import { LoadingState } from '@/components/shared/loading-state'
-import { EmptyState } from '@/components/shared/empty-states'
-import { useApiData } from '@/hooks/use-api-data'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, AlertTriangle } from 'lucide-react';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-states';
+import { useApiData } from '@/hooks/use-api-data';
 
 interface SEOData {
-  pageKey: string
-  title: string
-  description: string
-  keywords: string[]
-  isActive: boolean
-  priority: number
-  updatedAt: string
+  pageKey: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  isActive: boolean;
+  priority: number;
+  updatedAt: string;
 }
 
 export function SEOManager() {
   const { data, loading, refetch } = useApiData<{ settings: SEOData[] }>({
     endpoint: '/api/admin/seo',
     errorMessage: 'Failed to load SEO data',
-  })
+  });
 
-  const seoData = data?.settings || []
+  const seoData = data?.settings || [];
 
   const handleEditSEO = () => {
-    window.open('/superadmin', '_blank')
-  }
+    window.open('/superadmin', '_blank');
+  };
 
   if (loading) {
-    return <LoadingState message="Loading SEO configuration..." size="md" />
+    return <LoadingState message="Loading SEO configuration..." size="md" />;
   }
 
   if (!data) {
@@ -44,10 +44,10 @@ export function SEOManager() {
         action={{
           label: 'Retry',
           onClick: refetch,
-          variant: 'outline'
+          variant: 'outline',
         }}
       />
-    )
+    );
   }
 
   return (
@@ -73,51 +73,53 @@ export function SEOManager() {
         }
         enableRetry
       >
-      <div className="grid gap-4">
-        {seoData.map((page) => (
-          <Card key={page.pageKey}>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <CardTitle className="text-base capitalize">{page.pageKey} Page</CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Badge variant={page.isActive ? "default" : "secondary"} className="text-xs">
-                    {page.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">Priority: {page.priority}</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Title</label>
-                  <p className="text-sm mt-1">{page.title}</p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-sm mt-1 text-gray-700">{page.description}</p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Keywords</label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {page.keywords.map((keyword, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {keyword}
-                      </Badge>
-                    ))}
+        <div className="grid gap-4">
+          {seoData.map((page) => (
+            <Card key={page.pageKey}>
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <CardTitle className="text-base capitalize">{page.pageKey} Page</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={page.isActive ? 'default' : 'secondary'} className="text-xs">
+                      {page.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Priority: {page.priority}
+                    </Badge>
                   </div>
                 </div>
-                
-                <div className="text-xs text-gray-500">
-                  Last updated: {new Date(page.updatedAt).toLocaleDateString()}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Title</label>
+                    <p className="text-sm mt-1">{page.title}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Description</label>
+                    <p className="text-sm mt-1 text-gray-700">{page.description}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Keywords</label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {page.keywords.map((keyword, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-gray-500">
+                    Last updated: {new Date(page.updatedAt).toLocaleDateString()}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </ErrorBoundary>
 
       {seoData.length === 0 && (
@@ -140,14 +142,14 @@ export function SEOManager() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm">Pages configured</span>
-              <Badge variant={seoData.length > 0 ? "default" : "destructive"}>
+              <Badge variant={seoData.length > 0 ? 'default' : 'destructive'}>
                 {seoData.length} pages
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">Active pages</span>
-              <Badge variant={seoData.some(p => p.isActive) ? "default" : "destructive"}>
-                {seoData.filter(p => p.isActive).length} active
+              <Badge variant={seoData.some((p) => p.isActive) ? 'default' : 'destructive'}>
+                {seoData.filter((p) => p.isActive).length} active
               </Badge>
             </div>
             <div className="flex items-center justify-between">
@@ -163,5 +165,5 @@ export function SEOManager() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

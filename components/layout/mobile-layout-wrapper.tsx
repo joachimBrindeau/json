@@ -17,7 +17,7 @@ export function MobileLayoutWrapper({ children, className = '' }: MobileLayoutWr
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024); // lg breakpoint
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -38,32 +38,26 @@ export function MobileLayoutWrapper({ children, className = '' }: MobileLayoutWr
           <Sidebar />
         </aside>
       )}
-      
+
       {/* Mobile Sidebar */}
       {isMobile && (
-        <Sidebar 
-          isMobile={true}
-          isOpen={isMobileMenuOpen}
-          onOpenChange={setIsMobileMenuOpen}
-        />
+        <Sidebar isMobile={true} isOpen={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen} />
       )}
 
       {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header */}
-        <MobileAwareHeader 
-          onMobileMenuToggle={isMobile ? () => setIsMobileMenuOpen(true) : undefined} 
+        <MobileAwareHeader
+          onMobileMenuToggle={isMobile ? () => setIsMobileMenuOpen(true) : undefined}
         />
-        
+
         {/* Main content */}
-        <main className="flex-1 min-h-0 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 min-h-0 overflow-y-auto">{children}</main>
       </div>
-      
+
       {/* Mobile menu overlay */}
       {isMobile && isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />

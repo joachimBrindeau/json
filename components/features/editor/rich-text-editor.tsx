@@ -7,16 +7,16 @@ import Link from '@tiptap/extension-link';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Button } from '@/components/ui/button';
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  List, 
-  ListOrdered, 
-  Quote, 
-  Link as LinkIcon, 
+import {
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Quote,
+  Link as LinkIcon,
   Palette,
-  Type
+  Type,
 } from 'lucide-react';
 import { useCallback } from 'react';
 
@@ -27,11 +27,11 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-export function RichTextEditor({ 
-  content = '', 
-  onChange, 
-  placeholder = 'Write something amazing...', 
-  className = '' 
+export function RichTextEditor({
+  content = '',
+  onChange,
+  placeholder = 'Write something amazing...',
+  className = '',
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -66,9 +66,12 @@ export function RichTextEditor({
     }
   }, [editor]);
 
-  const setColor = useCallback((color: string) => {
-    editor?.chain().focus().setColor(color).run();
-  }, [editor]);
+  const setColor = useCallback(
+    (color: string) => {
+      editor?.chain().focus().setColor(color).run();
+    },
+    [editor]
+  );
 
   if (!editor) {
     return null;
@@ -86,7 +89,7 @@ export function RichTextEditor({
         >
           <Bold className="h-4 w-4" />
         </Button>
-        
+
         <Button
           variant={editor.isActive('italic') ? 'default' : 'ghost'}
           size="sm"
@@ -146,23 +149,21 @@ export function RichTextEditor({
         </Button>
 
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Palette className="h-4 w-4" />
           </Button>
           <div className="flex gap-1">
-            {['#000000', '#374151', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'].map((color) => (
-              <button
-                key={color}
-                onClick={() => setColor(color)}
-                className="w-4 h-4 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-                title={`Set color to ${color}`}
-              />
-            ))}
+            {['#000000', '#374151', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'].map(
+              (color) => (
+                <button
+                  key={color}
+                  onClick={() => setColor(color)}
+                  className="w-4 h-4 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
+                  style={{ backgroundColor: color }}
+                  title={`Set color to ${color}`}
+                />
+              )
+            )}
           </div>
         </div>
 

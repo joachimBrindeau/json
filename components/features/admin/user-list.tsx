@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { UserDetailsModal } from '@/components/features/modals/user-details-modal'
-import { formatRelativeTime, getInitials } from '@/lib/utils/formatters'
-import { useApiData } from '@/hooks/use-api-data'
-import { ResponsiveTable, MobileCardProps } from '@/components/shared/responsive-table'
-import { Column } from '@/components/shared/data-table'
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { UserDetailsModal } from '@/components/features/modals/user-details-modal';
+import { formatRelativeTime, getInitials } from '@/lib/utils/formatters';
+import { useApiData } from '@/hooks/use-api-data';
+import { ResponsiveTable, MobileCardProps } from '@/components/shared/responsive-table';
+import { Column } from '@/components/shared/data-table';
 
 interface User extends Record<string, unknown> {
-  id: string
-  name?: string
-  email: string
-  image?: string
-  createdAt: string
-  lastLogin?: string
-  documentsCount: number
-  isActive: boolean
+  id: string;
+  name?: string;
+  email: string;
+  image?: string;
+  createdAt: string;
+  lastLogin?: string;
+  documentsCount: number;
+  isActive: boolean;
 }
 
 // Mobile card component
@@ -42,7 +42,7 @@ function UserMobileCard({ item: user, onAction }: MobileCardProps<User>) {
             <div className="text-xs text-gray-500">{user.email}</div>
           </div>
         </div>
-        <Badge variant={user.isActive ? "default" : "secondary"} className="text-xs">
+        <Badge variant={user.isActive ? 'default' : 'secondary'} className="text-xs">
           {user.isActive ? 'Active' : 'Inactive'}
         </Badge>
       </div>
@@ -54,9 +54,7 @@ function UserMobileCard({ item: user, onAction }: MobileCardProps<User>) {
         </div>
         <div>
           <span className="text-gray-500">Registered:</span>
-          <span className="ml-1 font-medium text-xs">
-            {formatRelativeTime(user.createdAt)}
-          </span>
+          <span className="ml-1 font-medium text-xs">{formatRelativeTime(user.createdAt)}</span>
         </div>
       </div>
 
@@ -67,32 +65,28 @@ function UserMobileCard({ item: user, onAction }: MobileCardProps<User>) {
             {user.lastLogin ? formatRelativeTime(user.lastLogin) : 'Never'}
           </span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onAction?.(user)}
-        >
+        <Button variant="outline" size="sm" onClick={() => onAction?.(user)}>
           View
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 export function UserList() {
   const { data, loading } = useApiData<{ users: User[] }>({
     endpoint: '/api/admin/users',
     errorMessage: 'Failed to load users',
-  })
+  });
 
-  const users = data?.users || []
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
+  const users = data?.users || [];
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleViewUser = (user: User) => {
-    setSelectedUserId(user.id)
-    setModalOpen(true)
-  }
+    setSelectedUserId(user.id);
+    setModalOpen(true);
+  };
 
   // Define table columns
   const columns: Column<User>[] = [
@@ -103,11 +97,7 @@ export function UserList() {
       render: (user) => (
         <>
           {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name || user.email}
-              className="w-8 h-8 rounded-full"
-            />
+            <img src={user.image} alt={user.name || user.email} className="w-8 h-8 rounded-full" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-sm font-medium">
               {getInitials(user.name || user.email)}
@@ -127,7 +117,7 @@ export function UserList() {
       key: 'isActive',
       label: 'Status',
       render: (user) => (
-        <Badge variant={user.isActive ? "default" : "secondary"}>
+        <Badge variant={user.isActive ? 'default' : 'secondary'}>
           {user.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
@@ -144,13 +134,12 @@ export function UserList() {
     {
       key: 'lastLogin',
       label: 'Last Login',
-      render: (user) => (
+      render: (user) =>
         user.lastLogin ? (
           <span className="text-sm">{formatRelativeTime(user.lastLogin)}</span>
         ) : (
           <span className="text-sm text-gray-500">Never</span>
-        )
-      ),
+        ),
     },
     {
       key: 'actions',
@@ -160,15 +149,15 @@ export function UserList() {
           variant="outline"
           size="sm"
           onClick={(e) => {
-            e.stopPropagation()
-            handleViewUser(user)
+            e.stopPropagation();
+            handleViewUser(user);
           }}
         >
           View
         </Button>
       ),
     },
-  ]
+  ];
 
   return (
     <>
@@ -195,18 +184,14 @@ export function UserList() {
         summary={(filteredUsers) => (
           <>
             <span>Total: {filteredUsers.length} users</span>
-            <span>Active: {filteredUsers.filter(u => u.isActive).length} users</span>
+            <span>Active: {filteredUsers.filter((u) => u.isActive).length} users</span>
           </>
         )}
       />
 
       {selectedUserId && (
-        <UserDetailsModal
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          userId={selectedUserId}
-        />
+        <UserDetailsModal open={modalOpen} onOpenChange={setModalOpen} userId={selectedUserId} />
       )}
     </>
-  )
+  );
 }

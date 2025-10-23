@@ -17,7 +17,7 @@ interface NestedObjectButtonProps {
 
 export const NestedObjectButton = ({ value, label, type }: NestedObjectButtonProps) => {
   const [open, setOpen] = useState(false);
-  
+
   const isArray = Array.isArray(value);
   const Icon = isArray ? Database : Package;
   const count = isArray ? value.length : Object.keys(value as Record<string, unknown>).length;
@@ -59,9 +59,17 @@ export const NestedObjectButton = ({ value, label, type }: NestedObjectButtonPro
             <TabsContent value="content" className="flex-1 min-h-0 mt-4">
               <ScrollArea className="h-full pr-4">
                 {isArray ? (
-                  <ArrayRenderer value={value as unknown[]} detections={[]} nodeDetails={null as any} />
+                  <ArrayRenderer
+                    value={value as unknown[]}
+                    detections={[]}
+                    nodeDetails={null as any}
+                  />
                 ) : (
-                  <ObjectRenderer value={value as Record<string, unknown>} detections={[]} nodeDetails={null as any} />
+                  <ObjectRenderer
+                    value={value as Record<string, unknown>}
+                    detections={[]}
+                    nodeDetails={null as any}
+                  />
                 )}
               </ScrollArea>
             </TabsContent>
@@ -79,4 +87,3 @@ export const NestedObjectButton = ({ value, label, type }: NestedObjectButtonPro
     </>
   );
 };
-

@@ -11,19 +11,19 @@ import { apiClient } from '@/lib/api/client';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  
+
   // Enhanced error handling options
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   enableErrorReporting?: boolean;
   showErrorDetails?: boolean;
   resetOnPropsChange?: boolean;
   level?: 'page' | 'component' | 'widget';
-  
+
   // Recovery options
   enableRetry?: boolean;
   maxRetries?: number;
   retryDelay?: number;
-  
+
   // Custom styling
   className?: string;
   compactMode?: boolean;
@@ -75,12 +75,15 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo: enhancedErrorInfo });
 
     // Log error with enhanced context
-    logger.error({
-      err: error,
-      errorId: this.state.errorId,
-      errorInfo: enhancedErrorInfo,
-      componentStack: errorInfo.componentStack,
-    }, 'ErrorBoundary caught an error');
+    logger.error(
+      {
+        err: error,
+        errorId: this.state.errorId,
+        errorInfo: enhancedErrorInfo,
+        componentStack: errorInfo.componentStack,
+      },
+      'ErrorBoundary caught an error'
+    );
 
     // Call custom error handler
     this.props.onError?.(error, errorInfo);
@@ -93,7 +96,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     // Reset error state if props change (helpful for route changes)
-    if (this.props.resetOnPropsChange && this.state.hasError && prevProps.children !== this.props.children) {
+    if (
+      this.props.resetOnPropsChange &&
+      this.state.hasError &&
+      prevProps.children !== this.props.children
+    ) {
       this.setState({
         hasError: false,
         error: undefined,
@@ -111,7 +118,10 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  private reportError = async (error: Error, errorInfo: ErrorInfo & { timestamp?: string; userAgent?: string; url?: string; level?: string }) => {
+  private reportError = async (
+    error: Error,
+    errorInfo: ErrorInfo & { timestamp?: string; userAgent?: string; url?: string; level?: string }
+  ) => {
     try {
       // This would typically send to an error tracking service
       const errorReport = {
@@ -138,13 +148,16 @@ export class ErrorBoundary extends Component<Props, State> {
     const { maxRetries = 3, retryDelay = 1000 } = this.props;
 
     if (this.state.retryCount >= maxRetries) {
-      logger.warn({ maxRetries, retryCount: this.state.retryCount }, 'Max retries reached for ErrorBoundary');
+      logger.warn(
+        { maxRetries, retryCount: this.state.retryCount },
+        'Max retries reached for ErrorBoundary'
+      );
       return;
     }
 
     if (retryDelay > 0) {
       this.retryTimeoutId = setTimeout(() => {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
           hasError: false,
           error: undefined,
           errorInfo: undefined,
@@ -154,7 +167,7 @@ export class ErrorBoundary extends Component<Props, State> {
         }));
       }, retryDelay);
     } else {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         hasError: false,
         error: undefined,
         errorInfo: undefined,
@@ -166,7 +179,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private toggleDetails = () => {
-    this.setState(prevState => ({ showDetails: !prevState.showDetails }));
+    this.setState((prevState) => ({ showDetails: !prevState.showDetails }));
   };
 
   private getErrorLevel = (): 'critical' | 'error' | 'warning' => {
@@ -186,7 +199,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private renderErrorDetails = () => {
     const { error, errorInfo, showDetails } = this.state;
     const { showErrorDetails = false } = this.props;
-    
+
     if (!showErrorDetails || !showDetails) return null;
 
     return (
@@ -196,7 +209,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <strong className="text-xs text-gray-600">Error Message:</strong>
             <p className="text-xs font-mono mt-1 text-red-600">{error?.message}</p>
           </div>
-          
+
           {error?.stack && (
             <div>
               <strong className="text-xs text-gray-600">Stack Trace:</strong>
@@ -205,7 +218,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
           )}
-          
+
           {errorInfo?.componentStack && (
             <div>
               <strong className="text-xs text-gray-600">Component Stack:</strong>
@@ -214,7 +227,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </pre>
             </div>
           )}
-          
+
           <div className="pt-2 border-t">
             <strong className="text-xs text-gray-600">Error ID:</strong>
             <p className="text-xs font-mono mt-1 text-gray-600">{this.state.errorId}</p>
@@ -244,21 +257,27 @@ export class ErrorBoundary extends Component<Props, State> {
       const canRetry = enableRetry && retryCount < maxRetries;
 
       return (
-        <Card className={`h-full flex items-center justify-center ${compactMode ? 'p-4' : 'p-8'} ${className}`}>
+        <Card
+          role="alert"
+          aria-live="polite"
+          className={`h-full flex items-center justify-center ${compactMode ? 'p-4' : 'p-8'} ${className}`}
+        >
           <div className={`text-center ${compactMode ? 'max-w-sm' : 'max-w-md'}`}>
-            <AlertTriangle 
-              className={`mx-auto mb-4 text-destructive ${compactMode ? 'h-12 w-12' : 'h-16 w-16'}`} 
+            <AlertTriangle
+              className={`mx-auto mb-4 text-destructive ${compactMode ? 'h-12 w-12' : 'h-16 w-16'}`}
             />
-            
+
             <div className="flex items-center justify-center gap-2 mb-2">
-              <h3 className={`font-semibold text-destructive ${compactMode ? 'text-base' : 'text-lg'}`}>
+              <h3
+                className={`font-semibold text-destructive ${compactMode ? 'text-base' : 'text-lg'}`}
+              >
                 Something went wrong
               </h3>
               <Badge variant="destructive" className="text-xs">
                 {errorLevel}
               </Badge>
             </div>
-            
+
             <p className={`text-muted-foreground mb-4 ${compactMode ? 'text-xs' : 'text-sm'}`}>
               {this.state.error?.message ||
                 'An unexpected error occurred while rendering this component.'}
@@ -279,14 +298,9 @@ export class ErrorBoundary extends Component<Props, State> {
                   Try Again
                 </Button>
               )}
-              
+
               {showErrorDetails && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={this.toggleDetails}
-                  className="gap-2"
-                >
+                <Button variant="outline" size="sm" onClick={this.toggleDetails} className="gap-2">
                   <Bug className="h-3 w-3" />
                   {this.state.showDetails ? 'Hide' : 'Show'} Details
                   {this.state.showDetails ? (

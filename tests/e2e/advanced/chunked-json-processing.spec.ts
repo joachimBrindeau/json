@@ -152,7 +152,9 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
       await viewerPage.inputJSON(jsonString);
 
       // Should show loading indicators
-      try { await expect(viewerPage.loadingSpinner).toBeVisible({ timeout: 500 }); } catch {}
+      try {
+        await expect(viewerPage.loadingSpinner).toBeVisible({ timeout: 500 });
+      } catch {}
 
       // Look for progressive display indicators
       const progressSelectors = [
@@ -436,11 +438,9 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
         }
 
         // Look for memory usage indicators in UI
-        const memoryIndicators = (
-          await viewerPage.page.locator('[data-testid*="memory"]').count()
-        ) + (
-          await viewerPage.page.getByText(/memory/i).count()
-        );
+        const memoryIndicators =
+          (await viewerPage.page.locator('[data-testid*="memory"]').count()) +
+          (await viewerPage.page.getByText(/memory/i).count());
         if (memoryIndicators > 0) {
           await viewerPage.takeScreenshot('memory-usage-indicators');
         }

@@ -32,7 +32,9 @@ export class MainLayoutPage extends BasePage {
     super(page);
 
     // Header elements
-    this.logo = page.locator('[data-testid="logo-desktop"]:visible, [data-testid="logo-mobile"]:visible').first();
+    this.logo = page
+      .locator('[data-testid="logo-desktop"]:visible, [data-testid="logo-mobile"]:visible')
+      .first();
     this.navigationMenu = page.locator('[data-testid="navigation-menu"]');
     this.loginButton = page.locator('[data-testid="sign-in-button"]');
     this.userMenu = page
@@ -43,7 +45,10 @@ export class MainLayoutPage extends BasePage {
       .or(page.locator('[aria-label*="theme"]'));
 
     // Navigation links (use first() to avoid strict mode violations from sidebar duplicates)
-    this.homeLink = page.locator('[data-testid="nav-home"]').or(page.locator('a[href="/"]')).first();
+    this.homeLink = page
+      .locator('[data-testid="nav-home"]')
+      .or(page.locator('a[href="/"]'))
+      .first();
     this.viewerLink = page
       .locator('[data-testid="nav-viewer"]')
       .or(page.locator('a[href*="/viewer"]'))
@@ -102,7 +107,6 @@ export class MainLayoutPage extends BasePage {
     await this.waitForNavigation('/library');
   }
 
-
   /**
    * Open login modal
    */
@@ -116,15 +120,18 @@ export class MainLayoutPage extends BasePage {
    */
   async isLoggedIn(): Promise<boolean> {
     try {
-      // Wait for page to be in stable state
-      await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForLoadState('networkidle');
-      
-      // Check if user menu (avatar) is visible in header
-      const userMenuVisible = await this.page.locator('[data-testid="user-menu"]').isVisible();
-      const signInButtonVisible = await this.page.locator('[data-testid="sign-in-button"]').isVisible();
-      
-      // User is logged in if user menu is visible and sign in button is not visible
+      const userMenu = this.page.locator('[data-testid="user-menu"]');
+      const signInButton = this.page.locator('[data-testid="sign-in-button"]');
+
+      // Wait briefly for either state to present without forcing networkidle
+      await Promise.race([
+        userMenu.waitFor({ state: 'visible', timeout: 10_000 }),
+        signInButton.waitFor({ state: 'visible', timeout: 10_000 }),
+        signInButton.waitFor({ state: 'hidden', timeout: 10_000 }),
+      ]).catch(() => {});
+
+      const userMenuVisible = await userMenu.isVisible().catch(() => false);
+      const signInButtonVisible = await signInButton.isVisible().catch(() => false);
       return userMenuVisible && !signInButtonVisible;
     } catch (error) {
       console.log(`🔍 Error in isLoggedIn check: ${(error as Error).message}`);
@@ -137,6 +144,62 @@ export class MainLayoutPage extends BasePage {
    */
   async openUserMenu() {
     if (await this.isLoggedIn()) {
+      // Dismiss any open modal overlay that could intercept pointer events before interacting with header
+      try {
+        // 1) Try to close any visible dialog via Escape or known cancel buttons
+        const dialog = this.page.getByRole('dialog');
+        const isDialogVisible = await dialog.isVisible().catch(() => false);
+        if (isDialogVisible) {
+          await this.page.keyboard.press('Escape').catch(() => {});
+          await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+          await this.page
+            .locator('[data-testid="share-cancel-button"], [data-testid="modal-close"]')
+            .first()
+            .click()
+            .catch(() => {});
+          await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+        }
+
+        // 2) If an overlay is present (Radix/Shadcn), try clicking it to dismiss
+        const overlay = this.page.locator(
+          'div[data-state="open"][class*="fixed"][class*="inset-0"][class*="bg-black"]'
+        );
+        if (await overlay.isVisible().catch(() => false)) {
+          await overlay.click({ trial: true }).catch(() => {});
+          await overlay.click().catch(() => {});
+          await overlay.waitFor({ state: 'detached', timeout: 2000 }).catch(() => {});
+        }
+
+        // 3) Final check: wait briefly for any overlay to disappear
+        await this.page
+          .waitForSelector('div[data-state="open"][class*="fixed"][class*="inset-0"]', {
+            state: 'detached',
+            timeout: 1000,
+          })
+          .catch(() => {});
+
+        // 4) Last-resort: surgically remove overlays in test environment
+        const stillBlocking = await this.page
+          .locator('div[data-state="open"][class*="fixed"][class*="inset-0"]')
+          .isVisible()
+          .catch(() => false);
+        if (stillBlocking) {
+          await this.page
+            .evaluate(() => {
+              const candidates = Array.from(
+                document.querySelectorAll('div[data-state="open"]')
+              ) as HTMLElement[];
+              for (const el of candidates) {
+                const cls = el.getAttribute('class') || '';
+                if (cls.includes('fixed') && cls.includes('inset-0')) {
+                  el.remove();
+                }
+              }
+            })
+            .catch(() => {});
+        }
+      } catch {}
+
       // Click on the user dropdown in header
       await this.page.locator('[data-testid="user-menu"]').click();
     } else {

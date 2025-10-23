@@ -74,7 +74,11 @@ export const validateJson = (value: string): string | null => {
 };
 
 // Toast function type for better type safety
-type ToastFunction = (options: { title: string; description?: string; variant?: 'default' | 'destructive' }) => void;
+type ToastFunction = (options: {
+  title: string;
+  description?: string;
+  variant?: 'default' | 'destructive';
+}) => void;
 
 // Common toast message patterns
 export const createToastHandlers = (toast: ToastFunction) => ({

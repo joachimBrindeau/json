@@ -1,6 +1,6 @@
 /**
  * Connection statistics display component
- * 
+ *
  * Shows incoming/outgoing connection counts with tooltips
  */
 
@@ -27,10 +27,7 @@ export const ConnectionStats = ({
   connectedNodesData,
 }: ConnectionStatsProps) => (
   <div className={FLOW_STYLES.connectionStats}>
-    <div 
-      className={FLOW_STYLES.connectionStat} 
-      title={`Incoming: ${targetConnections.length}`}
-    >
+    <div className={FLOW_STYLES.connectionStat} title={`Incoming: ${targetConnections.length}`}>
       <ArrowDownToLine className="h-3 w-3" />
       <span>{targetConnections.length}</span>
     </div>
@@ -38,7 +35,7 @@ export const ConnectionStats = ({
       className={FLOW_STYLES.connectionStat}
       title={
         connectedNodesData.length > 0
-          ? `Connected to: ${connectedNodesData.map(n => n?.data?.label || n?.id).join(', ')}`
+          ? `Connected to: ${connectedNodesData.map((n) => n?.data?.label || n?.id).join(', ')}`
           : `Outgoing: ${sourceConnections.length}`
       }
     >
@@ -47,4 +44,3 @@ export const ConnectionStats = ({
     </div>
   </div>
 );
-

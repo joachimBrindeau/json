@@ -95,7 +95,7 @@ export function useMonacoEditor(
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ['class'],
     });
 
     return () => observer.disconnect();
@@ -110,29 +110,42 @@ export function useMonacoEditor(
   }, [isDarkMode]);
 
   // Handle editor mount
-  const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
-    editorRef.current = editor;
-    monacoRef.current = monaco;
+  const handleEditorDidMount: OnMount = useCallback(
+    (editor, monaco) => {
+      editorRef.current = editor;
+      monacoRef.current = monaco;
 
-    try {
-      // Define custom themes immediately
-      defineMonacoThemes(monaco);
+      // Expose editor instance for E2E/tests convenience (no-op in SSR)
+      try {
+        if (typeof window !== 'undefined') {
+          (window as any).monacoEditorInstance = editor;
+          // Also ensure a minimal global monaco API reference for test helpers
+          const w = window as any;
+          w.monaco = w.monaco || monaco;
+        }
+      } catch {}
 
-      // Set the correct theme based on current dark mode state
-      const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-      monaco.editor.setTheme(currentTheme);
+      try {
+        // Define custom themes immediately
+        defineMonacoThemes(monaco);
 
-      // Use optimized options based on content size
-      const optimizedOptions = getOptimizedMonacoOptions(contentLength);
-      editor.updateOptions(optimizedOptions);
+        // Set the correct theme based on current dark mode state
+        const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
+        monaco.editor.setTheme(currentTheme);
 
-      setEditorError(null);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize editor';
-      setEditorError(errorMessage);
-      logger.error({ err: error }, 'Monaco editor initialization error');
-    }
-  }, [contentLength, isDarkMode]);
+        // Use optimized options based on content size
+        const optimizedOptions = getOptimizedMonacoOptions(contentLength);
+        editor.updateOptions(optimizedOptions);
+
+        setEditorError(null);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to initialize editor';
+        setEditorError(errorMessage);
+        logger.error({ err: error }, 'Monaco editor initialization error');
+      }
+    },
+    [contentLength, isDarkMode]
+  );
 
   // Compute editor options
   const editorOptions = useMemo<editor.IStandaloneEditorConstructionOptions>(() => {

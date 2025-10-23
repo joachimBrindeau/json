@@ -83,7 +83,9 @@ test.describe('Anonymous User - Library & Embed Features', () => {
         if (categories.length > 1) {
           // Select a specific category
           await categoryFilter.click();
-          const firstCategory = libraryPage.page.locator('[data-testid="category-filter"] option:nth-child(2)');
+          const firstCategory = libraryPage.page.locator(
+            '[data-testid="category-filter"] option:nth-child(2)'
+          );
 
           if (await firstCategory.isVisible()) {
             await firstCategory.click();

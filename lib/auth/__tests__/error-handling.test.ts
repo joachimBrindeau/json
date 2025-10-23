@@ -84,7 +84,9 @@ describe('Authentication Error Handling', () => {
     });
 
     it('should have defined error message for session required', () => {
-      expect(AUTH_ERROR_MESSAGES.SESSION_REQUIRED).toBe('You must be signed in to access this resource');
+      expect(AUTH_ERROR_MESSAGES.SESSION_REQUIRED).toBe(
+        'You must be signed in to access this resource'
+      );
     });
 
     it('should have defined error message for admin required', () => {
@@ -109,7 +111,7 @@ describe('Authentication Error Handling', () => {
       const lowerResult = await verifyPassword('password123', hash);
       const upperResult = await verifyPassword('PASSWORD123', hash);
       const correctResult = await verifyPassword('Password123', hash);
-      
+
       expect(lowerResult).toBe(false);
       expect(upperResult).toBe(false);
       expect(correctResult).toBe(true);
@@ -120,7 +122,7 @@ describe('Authentication Error Handling', () => {
       const result1 = await verifyPassword('password124', hash);
       const result2 = await verifyPassword('password12', hash);
       const result3 = await verifyPassword('password1234', hash);
-      
+
       expect(result1).toBe(false);
       expect(result2).toBe(false);
       expect(result3).toBe(false);
@@ -172,8 +174,8 @@ describe('Authentication Error Handling', () => {
   describe('Concurrent Operations', () => {
     it('should handle multiple hash operations concurrently', async () => {
       const passwords = ['pass1', 'pass2', 'pass3', 'pass4', 'pass5'];
-      const hashes = await Promise.all(passwords.map(p => hashPassword(p)));
-      
+      const hashes = await Promise.all(passwords.map((p) => hashPassword(p)));
+
       expect(hashes).toHaveLength(5);
       expect(new Set(hashes).size).toBe(5); // All hashes should be unique
     });
@@ -181,7 +183,7 @@ describe('Authentication Error Handling', () => {
     it('should handle multiple verify operations concurrently', async () => {
       const password = 'testpass123';
       const hash = await hashPassword(password);
-      
+
       const verifications = await Promise.all([
         verifyPassword(password, hash),
         verifyPassword(password, hash),
@@ -189,7 +191,7 @@ describe('Authentication Error Handling', () => {
         verifyPassword('wrong', hash),
         verifyPassword('wrong', hash),
       ]);
-      
+
       expect(verifications).toEqual([true, true, true, false, false]);
     });
   });
@@ -199,7 +201,7 @@ describe('Authentication Error Handling', () => {
       const start = Date.now();
       await hashPassword('testpassword');
       const duration = Date.now() - start;
-      
+
       // Bcrypt with 10 rounds should complete in under 500ms
       expect(duration).toBeLessThan(500);
     });
@@ -209,7 +211,7 @@ describe('Authentication Error Handling', () => {
       const start = Date.now();
       await verifyPassword('testpassword', hash);
       const duration = Date.now() - start;
-      
+
       // Verification should be fast
       expect(duration).toBeLessThan(200);
     });
@@ -218,10 +220,10 @@ describe('Authentication Error Handling', () => {
       const password = 'samepassword';
       const hash1 = await hashPassword(password);
       const hash2 = await hashPassword(password);
-      
+
       // Bcrypt includes salt, so hashes should be different
       expect(hash1).not.toBe(hash2);
-      
+
       // But both should verify correctly
       expect(await verifyPassword(password, hash1)).toBe(true);
       expect(await verifyPassword(password, hash2)).toBe(true);
@@ -251,4 +253,3 @@ describe('Authentication Error Handling', () => {
     });
   });
 });
-

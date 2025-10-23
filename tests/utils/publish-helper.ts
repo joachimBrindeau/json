@@ -63,7 +63,7 @@ export class PublishHelper {
     const titleInput = this.libraryPage.page.locator('[data-testid="publish-title"]');
     await titleInput.fill(metadata.title);
 
-    // Fill description  
+    // Fill description
     const descriptionInput = this.libraryPage.page.locator('[data-testid="publish-description"]');
     await descriptionInput.fill(metadata.description);
 
@@ -105,16 +105,16 @@ export class PublishHelper {
    */
   async openPreview(): Promise<boolean> {
     const previewButton = this.libraryPage.page.locator('[data-testid="preview-publication"]');
-    
+
     if (await previewButton.isVisible()) {
       await previewButton.click();
-      
+
       const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
       const previewPage = this.libraryPage.page.locator('[data-testid="publish-preview-page"]');
-      
+
       const isModal = await previewModal.isVisible();
       const isPage = await previewPage.isVisible();
-      
+
       return isModal || isPage;
     }
     return false;
@@ -126,9 +126,9 @@ export class PublishHelper {
   async validatePreviewContent(expectedMetadata: PublishMetadata): Promise<boolean> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
     const previewPage = this.libraryPage.page.locator('[data-testid="publish-preview-page"]');
-    
-    const previewContainer = await previewModal.isVisible() ? previewModal : previewPage;
-    
+
+    const previewContainer = (await previewModal.isVisible()) ? previewModal : previewPage;
+
     // Check title
     const previewTitle = previewContainer.locator('[data-testid="preview-title"]');
     if (await previewTitle.isVisible()) {
@@ -179,17 +179,21 @@ export class PublishHelper {
    */
   async testPreviewOptions(options: PreviewOptions): Promise<boolean> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
-    
+
     // Test view mode switching
     if (options.viewMode) {
       const previewViewModes = previewModal.locator('[data-testid="preview-view-modes"]');
       if (await previewViewModes.isVisible()) {
-        const viewButton = previewViewModes.locator(`[data-testid="preview-${options.viewMode}-view"]`);
+        const viewButton = previewViewModes.locator(
+          `[data-testid="preview-${options.viewMode}-view"]`
+        );
         if (await viewButton.isVisible()) {
           await viewButton.click();
-          
+
           // Wait for view content to be visible
-          const viewContent = previewModal.locator(`[data-testid="preview-${options.viewMode}-content"]`);
+          const viewContent = previewModal.locator(
+            `[data-testid="preview-${options.viewMode}-content"]`
+          );
           await expect(viewContent).toBeVisible({ timeout: 5000 });
           return await viewContent.isVisible();
         }
@@ -201,7 +205,7 @@ export class PublishHelper {
       const themeSelector = previewModal.locator('[data-testid="preview-theme-selector"]');
       if (await themeSelector.isVisible()) {
         await themeSelector.selectOption(options.theme);
-        
+
         // Wait for theme to be applied
         const previewContent = previewModal.locator('[data-testid="preview-content"]');
         await this.page.waitForLoadState('networkidle');
@@ -218,7 +222,7 @@ export class PublishHelper {
    */
   async editFromPreview(): Promise<boolean> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
-    
+
     const editButton = previewModal.locator('[data-testid="edit-publication"]');
     const backToEdit = previewModal.locator('[data-testid="back-to-edit"]');
 
@@ -231,7 +235,7 @@ export class PublishHelper {
       await expect(this.viewerPage.publishModal).toBeVisible();
       return true;
     }
-    
+
     return false;
   }
 
@@ -241,12 +245,14 @@ export class PublishHelper {
   async publishFromPreview(): Promise<PublishResult> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
     const publishFromPreview = previewModal.locator('[data-testid="publish-from-preview"]');
-    
+
     if (await publishFromPreview.isVisible()) {
       await publishFromPreview.click();
 
       // Wait for publishing process
-      const publishingIndicator = this.libraryPage.page.locator('[data-testid="publishing-indicator"]');
+      const publishingIndicator = this.libraryPage.page.locator(
+        '[data-testid="publishing-indicator"]'
+      );
       if (await publishingIndicator.isVisible()) {
         await publishingIndicator.waitFor({ state: 'hidden', timeout: 10000 });
       }
@@ -265,7 +271,7 @@ export class PublishHelper {
         return { success: false, error: 'No notification received' };
       }
     }
-    
+
     return { success: false, error: 'Publish button not found' };
   }
 
@@ -275,7 +281,7 @@ export class PublishHelper {
   async saveDraftFromPreview(): Promise<boolean> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
     const saveDraftButton = previewModal.locator('[data-testid="save-draft"]');
-    
+
     if (await saveDraftButton.isVisible()) {
       await saveDraftButton.click();
 
@@ -287,7 +293,7 @@ export class PublishHelper {
         return false;
       }
     }
-    
+
     return false;
   }
 
@@ -296,21 +302,21 @@ export class PublishHelper {
    */
   async validatePublicationRequirements(metadata?: Partial<PublishMetadata>): Promise<string[]> {
     const errors: string[] = [];
-    
+
     // Check for validation errors after trying to preview
     const titleError = this.libraryPage.page.locator('[data-testid="title-error"]');
     const descriptionError = this.libraryPage.page.locator('[data-testid="description-error"]');
-    
+
     if (await titleError.isVisible()) {
       const titleErrorText = await titleError.textContent();
       if (titleErrorText) errors.push(`Title: ${titleErrorText}`);
     }
-    
+
     if (await descriptionError.isVisible()) {
       const descErrorText = await descriptionError.textContent();
       if (descErrorText) errors.push(`Description: ${descErrorText}`);
     }
-    
+
     return errors;
   }
 
@@ -320,7 +326,7 @@ export class PublishHelper {
   async getQualityWarnings(): Promise<string[]> {
     const warnings: string[] = [];
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
-    
+
     const qualityWarning = previewModal.locator('[data-testid="preview-quality-warning"]');
     if (await qualityWarning.isVisible()) {
       const warningText = await qualityWarning.textContent();
@@ -328,17 +334,21 @@ export class PublishHelper {
         warnings.push(warningText);
       }
     }
-    
+
     return warnings;
   }
 
   /**
    * Common pattern: Get estimated engagement metrics
    */
-  async getEstimatedEngagement(): Promise<{ views?: number; similar?: number; score?: string } | null> {
+  async getEstimatedEngagement(): Promise<{
+    views?: number;
+    similar?: number;
+    score?: string;
+  } | null> {
     const previewModal = this.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
     const result: { views?: number; similar?: number; score?: string } = {};
-    
+
     // Estimated views
     const estimatedViews = previewModal.locator('[data-testid="estimated-views"]');
     if (await estimatedViews.isVisible()) {
@@ -348,20 +358,20 @@ export class PublishHelper {
         result.views = parseInt(viewsMatch[0]);
       }
     }
-    
+
     // Similar content count
     const similarContent = previewModal.locator('[data-testid="similar-content"]');
     if (await similarContent.isVisible()) {
       const similarItems = similarContent.locator('[data-testid="similar-item"]');
       result.similar = await similarItems.count();
     }
-    
+
     // Discoverability score
     const discoverabilityScore = previewModal.locator('[data-testid="discoverability-score"]');
     if (await discoverabilityScore.isVisible()) {
-      result.score = await discoverabilityScore.textContent() || '';
+      result.score = (await discoverabilityScore.textContent()) || '';
     }
-    
+
     return Object.keys(result).length > 0 ? result : null;
   }
 
@@ -369,7 +379,7 @@ export class PublishHelper {
    * Complete publish workflow: create content, fill metadata, preview, and publish
    */
   async completePublishWorkflow(
-    jsonContent: string, 
+    jsonContent: string,
     metadata: PublishMetadata,
     previewFirst: boolean = false
   ): Promise<PublishResult> {
@@ -390,19 +400,19 @@ export class PublishHelper {
       if (!(await this.openPreview())) {
         return { success: false, error: 'Could not open preview' };
       }
-      
+
       // Validate preview content
       if (!(await this.validatePreviewContent(metadata))) {
         return { success: false, error: 'Preview content validation failed' };
       }
-      
+
       // Publish from preview
       return await this.publishFromPreview();
     } else {
       // Direct publish
       const publishButton = this.libraryPage.page.locator('[data-testid="publish-confirm"]');
       await publishButton.click();
-      
+
       try {
         await this.layoutPage.waitForNotification('Successfully published');
         return { success: true };

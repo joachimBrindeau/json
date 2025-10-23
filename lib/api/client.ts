@@ -21,7 +21,9 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     // Maintain legacy statusCode for backward compatibility
     Object.defineProperty(this, 'statusCode', {
-      get() { return this.status; },
+      get() {
+        return this.status;
+      },
       enumerable: true,
     });
   }
@@ -41,6 +43,8 @@ export interface RequestOptions extends Options {
  */
 const api = ky.create({
   timeout: 30000, // 30 seconds
+  // Ensure cookies (NextAuth session) are sent with requests
+  credentials: 'include',
   retry: {
     limit: 3,
     methods: ['get', 'post', 'put', 'patch', 'delete'],
@@ -64,22 +68,28 @@ const api = ky.create({
       async (_request, _options, response) => {
         // Log responses in development
         if (process.env.NODE_ENV === 'development') {
-          logger.debug({
-            method: _request.method,
-            url: _request.url,
-            status: response.status,
-          }, 'API Response');
+          logger.debug(
+            {
+              method: _request.method,
+              url: _request.url,
+              status: response.status,
+            },
+            'API Response'
+          );
         }
       },
     ],
     beforeRetry: [
       ({ request, error, retryCount }) => {
-        logger.warn({
-          method: request.method,
-          url: request.url,
-          error: error.message,
-          retryCount,
-        }, 'Retrying request');
+        logger.warn(
+          {
+            method: request.method,
+            url: request.url,
+            error: error.message,
+            retryCount,
+          },
+          'Retrying request'
+        );
       },
     ],
   },
@@ -152,7 +162,11 @@ export const apiClient = {
 /**
  * Handle ky errors and convert to ApiError with centralized logging and toast notifications
  */
-async function handleError(error: unknown, context?: string, options?: RequestOptions): Promise<never> {
+async function handleError(
+  error: unknown,
+  context?: string,
+  options?: RequestOptions
+): Promise<never> {
   let apiError: ApiError;
 
   if (error instanceof HTTPError) {
@@ -163,7 +177,7 @@ async function handleError(error: unknown, context?: string, options?: RequestOp
 
     // Try to parse error response
     try {
-      const body = await error.response.json() as {
+      const body = (await error.response.json()) as {
         error?: string;
         message?: string;
         code?: string;
@@ -185,12 +199,15 @@ async function handleError(error: unknown, context?: string, options?: RequestOp
 
   // Centralized logging with context
   const logContext = options?.errorContext || context || 'API call';
-  logger.error({
-    err: apiError,
-    context: logContext,
-    status: apiError.status,
-    code: apiError.code
-  }, 'API call failed');
+  logger.error(
+    {
+      err: apiError,
+      context: logContext,
+      status: apiError.status,
+      code: apiError.code,
+    },
+    'API call failed'
+  );
 
   // Show toast for user-facing errors (4xx except auth errors)
   // Skip if explicitly disabled or if it's an auth/forbidden error

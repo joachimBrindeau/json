@@ -119,7 +119,9 @@ const DocumentRow = memo(function DocumentRow({
   }, [document.shareId, onLoad]);
 
   const shareUrl = useMemo(() => {
-    return typeof window !== 'undefined' ? `${window.location.origin}/library/${document.shareId}` : '';
+    return typeof window !== 'undefined'
+      ? `${window.location.origin}/library/${document.shareId}`
+      : '';
   }, [document.shareId]);
 
   const copyUrl = useCallback(async () => {
@@ -153,16 +155,23 @@ const DocumentRow = memo(function DocumentRow({
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground" data-testid="json-date">
+        <div
+          className="flex items-center gap-1 text-sm text-muted-foreground"
+          data-testid="json-date"
+        >
           <Calendar className="h-3 w-3" />
           {formatDate(document.createdAt)}
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" data-testid="json-size">{formatSize(document.size)}</Badge>
+        <Badge variant="outline" data-testid="json-size">
+          {formatSize(document.size)}
+        </Badge>
       </TableCell>
       <TableCell>
-        <code className="text-xs bg-muted px-2 py-1 rounded">{document.shareId.substring(0, 12)}...</code>
+        <code className="text-xs bg-muted px-2 py-1 rounded">
+          {document.shareId.substring(0, 12)}...
+        </code>
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -196,7 +205,10 @@ const DocumentRow = memo(function DocumentRow({
                       await apiClient.delete(`/api/json/${document.shareId}/publish`);
                       onPublished?.();
                     } catch (error) {
-                      logger.error({ err: error, shareId: document.shareId }, 'Failed to unpublish document');
+                      logger.error(
+                        { err: error, shareId: document.shareId },
+                        'Failed to unpublish document'
+                      );
                     }
                   }}
                   className="text-orange-600"
@@ -206,7 +218,11 @@ const DocumentRow = memo(function DocumentRow({
                 </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive" data-testid="delete-json">
+            <DropdownMenuItem
+              onClick={handleDeleteClick}
+              className="text-destructive"
+              data-testid="delete-json"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </DropdownMenuItem>
@@ -277,7 +293,7 @@ const SortableTableHead = memo(function SortableTableHead({
 });
 
 function LibraryPageComponent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -292,10 +308,16 @@ function LibraryPageComponent() {
     const params = new URLSearchParams({
       page: currentPage.toString(),
       limit: ITEMS_PER_PAGE.toString(),
-      sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' :
-            sortField === 'createdAt' && sortOrder === 'asc' ? 'recent' :
-            sortField === 'title' ? 'title' :
-            sortField === 'size' ? 'size' : 'recent',
+      sort:
+        sortField === 'createdAt' && sortOrder === 'desc'
+          ? 'recent'
+          : sortField === 'createdAt' && sortOrder === 'asc'
+            ? 'recent'
+            : sortField === 'title'
+              ? 'title'
+              : sortField === 'size'
+                ? 'size'
+                : 'recent',
     });
 
     if (searchQuery.trim()) {
@@ -317,11 +339,72 @@ function LibraryPageComponent() {
   const { data, loading, error, refetch } = useApiData<SavedResponse>({
     endpoint: `/api/saved?${queryParams}`,
     errorMessage: 'Failed to load your library',
-    enabled: !!session,
+    enabled: status === 'authenticated',
   });
 
   const documents = data?.documents || [];
   const totalPages = data?.pagination?.totalPages || 1;
+  // Merge in the just-saved document immediately so the table reflects it without waiting for API re-fetch
+  const storeCurrentDocument = useBackendStore((s) => s.currentDocument);
+  const lastSavedMeta = useBackendStore((s) => s.lastSavedMeta);
+  const effectiveDocuments = useMemo(() => {
+    const list: LibraryDocument[] = [...(documents || [])];
+    try {
+      if (status === 'authenticated') {
+        if (storeCurrentDocument) {
+          const exists = list.some(
+            (d) =>
+              d.id === (storeCurrentDocument as any).id ||
+              d.shareId === (storeCurrentDocument as any).shareId
+          );
+          if (!exists) {
+            list.unshift({
+              id: (storeCurrentDocument as any).id,
+              shareId: (storeCurrentDocument as any).shareId,
+              title: (storeCurrentDocument as any).title || 'Untitled JSON',
+              description: undefined,
+              richContent: undefined,
+              size: (storeCurrentDocument as any).size || 0,
+              nodeCount: (storeCurrentDocument as any).nodeCount || 0,
+              maxDepth: (storeCurrentDocument as any).maxDepth || 0,
+              complexity: (storeCurrentDocument as any).complexity || 'unknown',
+              visibility: 'private',
+              publishedAt: undefined,
+              createdAt: (storeCurrentDocument as any).createdAt || new Date(),
+              updatedAt:
+                (storeCurrentDocument as any).updatedAt ||
+                (storeCurrentDocument as any).createdAt ||
+                new Date(),
+            } as LibraryDocument);
+          }
+        } else if (lastSavedMeta) {
+          const exists = list.some(
+            (d) => d.id === lastSavedMeta.id || d.shareId === lastSavedMeta.shareId
+          );
+          if (!exists) {
+            list.unshift({
+              id: lastSavedMeta.id,
+              shareId: lastSavedMeta.shareId,
+              title: lastSavedMeta.title || 'Untitled JSON',
+              description: undefined,
+              richContent: undefined,
+              size: lastSavedMeta.size || 0,
+              nodeCount: lastSavedMeta.nodeCount || 0,
+              maxDepth: lastSavedMeta.maxDepth || 0,
+              complexity: lastSavedMeta.complexity || 'unknown',
+              visibility: lastSavedMeta.visibility || 'private',
+              publishedAt: undefined,
+              createdAt: (lastSavedMeta as any).createdAt || new Date(),
+              updatedAt:
+                (lastSavedMeta as any).updatedAt || (lastSavedMeta as any).createdAt || new Date(),
+            } as LibraryDocument);
+          }
+        }
+      }
+    } catch {}
+    return list;
+  }, [documents, status, storeCurrentDocument, lastSavedMeta]);
+
   const totalCount = data?.pagination?.total || 0;
 
   // Register for library updates
@@ -332,16 +415,56 @@ function LibraryPageComponent() {
     };
   }, [refetch, setLibraryUpdateCallback]);
 
-  // Delete document handler
-  const handleDelete = useCallback(async (id: string) => {
+  // Robustness: if initial fetch races with recent save, do a couple of quick re-fetches
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    // Only apply when we currently have no documents; avoids unnecessary extra fetches
+    if ((documents?.length || 0) > 0) return;
+
+    const t1 = setTimeout(() => refetch(), 1000);
+    const t2 = setTimeout(() => refetch(), 3000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [status, documents?.length, refetch]);
+  // Debug: log fetch state to help diagnose race conditions in tests
+  useEffect(() => {
     try {
-      await apiClient.delete(`/api/json/${id}`);
-      // Refresh the library
+      logger.debug(
+        {
+          status,
+          haveData: data !== null,
+          docCount: documents?.length || 0,
+          loading,
+          error: !!error,
+        },
+        'Library page fetch state'
+      );
+    } catch {}
+  }, [status, data, documents?.length, loading, error]);
+
+  // Ensure we fetch once when auth becomes ready even if initial effect missed it
+  useEffect(() => {
+    if (status === 'authenticated' && data === null && !loading && !error) {
       refetch();
-    } catch (err) {
-      logger.error({ err, documentId: id }, 'Failed to delete document');
     }
-  }, [refetch]);
+  }, [status, data, loading, error, refetch]);
+
+  // Delete document handler
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await apiClient.delete(`/api/json/${id}`);
+        // Refresh the library
+        refetch();
+      } catch (err) {
+        logger.error({ err, documentId: id }, 'Failed to delete document');
+      }
+    },
+    [refetch]
+  );
 
   // Load document into editor
   const handleLoad = useCallback(
@@ -360,7 +483,7 @@ function LibraryPageComponent() {
 
   // Client-side filtering (API handles search and pagination)
   const processedDocuments = useMemo(() => {
-    let result = [...documents];
+    let result = [...effectiveDocuments];
 
     // Apply client-side size filters if needed
     if (filters.minSize !== undefined) {
@@ -379,7 +502,7 @@ function LibraryPageComponent() {
     }
 
     return result;
-  }, [documents, filters]);
+  }, [effectiveDocuments, filters]);
 
   // Pagination
   const computedTotalPages = Math.ceil(processedDocuments.length / ITEMS_PER_PAGE);
@@ -437,13 +560,29 @@ function LibraryPageComponent() {
         action={{
           label: 'Try Again',
           onClick: refetch,
-          variant: 'default'
+          variant: 'default',
         }}
       />
     );
   }
 
-  if (documents.length === 0 && !loading && !error) {
+  // Show loading while auth status is being determined
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingState message="Loading your library..." />
+      </div>
+    );
+  }
+
+  // If authenticated but no documents, show empty state ONLY after first fetch completed (data !== null)
+  if (
+    status === 'authenticated' &&
+    data !== null &&
+    effectiveDocuments.length === 0 &&
+    !loading &&
+    !error
+  ) {
     return (
       <EmptyState
         icon={<FileJson className="h-16 w-16" />}
@@ -451,8 +590,8 @@ function LibraryPageComponent() {
         description="Create and share your first JSON to see it appear in your library."
         action={{
           label: 'Create New JSON',
-          onClick: () => window.location.href = '/',
-          variant: 'default'
+          onClick: () => (window.location.href = '/'),
+          variant: 'default',
         }}
       />
     );
@@ -605,7 +744,10 @@ function LibraryPageComponent() {
       {/* Table */}
       <div className="flex-1 overflow-auto px-6">
         {processedDocuments.length === 0 ? (
-          <div className="flex items-center justify-center h-full" data-testid="empty-search-results">
+          <div
+            className="flex items-center justify-center h-full"
+            data-testid="empty-search-results"
+          >
             <div className="text-center text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No results found</p>

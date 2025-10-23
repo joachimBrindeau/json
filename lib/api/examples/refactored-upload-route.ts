@@ -10,12 +10,7 @@ import { withAuth, validateRequest, handleApiError, withCors } from '@/lib/api/u
 import { fileUploadSchema, jsonAnalysisOptionsSchema } from '@/lib/api/validators';
 import { success, badRequest, unprocessableEntity } from '@/lib/api/responses';
 import { prisma } from '@/lib/db';
-import {
-  analyzeJsonStream,
-  chunkJsonData,
-  createPerformanceMonitor,
-  JsonCache,
-} from '@/lib/json';
+import { analyzeJsonStream, chunkJsonData, createPerformanceMonitor, JsonCache } from '@/lib/json';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -37,15 +32,13 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
     // Check file size using environment variable
     const maxSize = parseInt(process.env.MAX_JSON_SIZE_MB || '2048') * 1024 * 1024;
     if (file.size > maxSize) {
-      return unprocessableEntity(
-        `File size exceeds ${maxSize / (1024 * 1024)}MB limit`
-      );
+      return unprocessableEntity(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
     }
 
     // Read and validate JSON content
     const content = await file.text();
     let parsedContent: unknown;
-    
+
     try {
       parsedContent = JSON.parse(content);
     } catch {
@@ -109,9 +102,12 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
           parseTime: Math.round(performance.duration),
           memoryUsage: performance.memoryUsage ? BigInt(performance.memoryUsage) : null,
           userAgent: req.headers.get('user-agent') || undefined,
-          ipHash: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
-            ? createHash('sha256').update(req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '').digest('hex')
-            : undefined,
+          ipHash:
+            req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+              ? createHash('sha256')
+                  .update(req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '')
+                  .digest('hex')
+              : undefined,
         },
       });
 
@@ -170,7 +166,7 @@ export const OPTIONS = withCors(async () => new Response(null) as any, {
 
 /**
  * Key improvements over the original:
- * 
+ *
  * 1. Uses withAuth() for authentication instead of manual session checking
  * 2. Uses standardized success() and error responses
  * 3. Uses handleApiError() for consistent error handling and logging

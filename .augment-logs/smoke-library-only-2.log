@@ -1,0 +1,15 @@
+[WebServer] [35m[1mAttention[22m[39m: Next.js now collects completely anonymous telemetry regarding usage.
+[WebServer] This information is used to shape Next.js' roadmap and prioritize features.
+[WebServer] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[WebServer] [36mhttps://nextjs.org/telemetry[39m
+[WebServer] 
+[WebServer]    [1m[38;2;173;127;168m▲ Next.js 15.4.2[39m[22m (Turbopack)
+[WebServer]    - Environments: .env
+[WebServer] 
+[WebServer]  [37m[1m [22m[39m Creating an optimized production build ...
+
+Error: Process from config.webServer was not able to start. Exit code: 1
+::error ::Error: Process from config.webServer was not able to start. Exit code: 1
+
+
+::notice title=🎭 Playwright Run Summary::

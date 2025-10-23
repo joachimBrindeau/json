@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { success } from '@/lib/api/responses';
-import { withAuth } from '@/lib/api/utils';
+import { sanitizeString, withAuth } from '@/lib/api/utils';
 import { ValidationError, NotFoundError } from '@/lib/utils/app-errors';
+import { z } from 'zod';
 
 /**
  * GET linked accounts for the current user
  */
 export const GET = withAuth(async (_request: NextRequest, session) => {
-
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
@@ -40,9 +40,16 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
  * DELETE unlink an account
  */
 export const DELETE = withAuth(async (request: NextRequest, session) => {
-
-  const { accountId } = await request.json();
-
+  const body = await request.json();
+  const parsed = z
+    .object({ accountId: z.string().min(1, 'Account ID is required').max(64) })
+    .safeParse(body);
+  if (!parsed.success) {
+    throw new ValidationError('Account ID required', [
+      { field: 'accountId', message: parsed.error.issues[0]?.message || 'Account ID is required' },
+    ]);
+  }
+  const accountId = sanitizeString(parsed.data.accountId).slice(0, 64);
   if (!accountId) {
     throw new ValidationError('Account ID required', [
       { field: 'accountId', message: 'Account ID is required' },
@@ -72,7 +79,7 @@ export const DELETE = withAuth(async (request: NextRequest, session) => {
   }
 
   const hasPassword = !!user.password;
-  const otherAccounts = user.accounts.filter(a => a.id !== accountId);
+  const otherAccounts = user.accounts.filter((a) => a.id !== accountId);
 
   if (!hasPassword && otherAccounts.length === 0) {
     throw new ValidationError('Cannot remove last authentication method', [

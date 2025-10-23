@@ -47,7 +47,11 @@ export async function analyzeJsonStream(
     findLargeArrays?: boolean;
   } = {}
 ): Promise<JsonAnalysisResult> {
-  const { maxChunkSize = config.performance.jsonStreamingChunkSize, trackPaths = true, findLargeArrays = true } = options;
+  const {
+    maxChunkSize = config.performance.jsonStreamingChunkSize,
+    trackPaths = true,
+    findLargeArrays = true,
+  } = options;
 
   let parsed: JsonValue;
   if (typeof jsonContent === 'string') {
@@ -117,7 +121,10 @@ export async function analyzeJsonStream(
 }
 
 // Chunk large JSON for streaming
-export function chunkJsonData(jsonData: JsonValue, maxChunkSize: number = config.performance.jsonStreamingChunkSize): JsonChunkInfo[] {
+export function chunkJsonData(
+  jsonData: JsonValue,
+  maxChunkSize: number = config.performance.jsonStreamingChunkSize
+): JsonChunkInfo[] {
   const chunks: JsonChunkInfo[] = [];
 
   function processNode(obj: JsonValue, path: string): boolean {

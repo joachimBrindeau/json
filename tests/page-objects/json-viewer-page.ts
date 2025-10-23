@@ -72,7 +72,7 @@ export class JsonViewerPage extends BasePage {
     super(page);
 
     // JSON input area - Use the Monaco editor container
-    this.jsonTextArea = page.locator('[data-testid="json-textarea"]');
+    this.jsonTextArea = page.locator('[data-testid="json-editor"], [data-testid="json-textarea"]');
     this.uploadArea = page
       .locator('[data-testid="upload-area"]')
       .or(page.locator('.upload-area, .dropzone'));
@@ -109,7 +109,7 @@ export class JsonViewerPage extends BasePage {
     // Monaco editor based selectors (actual implementation)
     this.viewerContainer = page.locator('main');
     this.monacoEditor = page.locator('.monaco-editor');
-    this.editorContent = page.locator('[data-testid="json-textarea"]');
+    this.editorContent = page.locator('[data-testid="json-editor"], [data-testid="json-textarea"]');
     this.loadingIndicator = page.locator('[data-testid="loading"]');
     this.jsonNodes = this.editorContent; // For compatibility with existing tests
 
@@ -144,8 +144,12 @@ export class JsonViewerPage extends BasePage {
     this.processingTime = page.locator('[data-testid="processing-time"]');
 
     // States - Be specific to avoid Monaco editor alerts
-    this.errorMessage = page.locator('[data-testid="error-message"], .json-error, .error-message').first();
-    this.loadingSpinner = page.locator('[data-testid="loading"], .loading-spinner, .spinner').first();
+    this.errorMessage = page
+      .locator('[data-testid="error-message"], .json-error, .error-message')
+      .first();
+    this.loadingSpinner = page
+      .locator('[data-testid="loading"], .loading-spinner, .spinner')
+      .first();
     this.successMessage = page.locator('[data-testid="success-message"], .success-message').first();
   }
 
@@ -175,7 +179,7 @@ export class JsonViewerPage extends BasePage {
 
       const downsize = (val: any, depth = 0, key?: string): any => {
         if (Array.isArray(val)) {
-          let cap = depth === 0 ? caps.defaultTop : caps.nested;
+          let cap: number = depth === 0 ? caps.defaultTop : caps.nested;
           if (key) {
             // Top-level and common dataset keys
             if (depth <= 1) {
@@ -199,7 +203,11 @@ export class JsonViewerPage extends BasePage {
             if (Object.prototype.hasOwnProperty.call(val, k)) {
               const v = (val as any)[k];
               // Heuristic: trim very large text fields commonly used in perf tests
-              if (typeof v === 'string' && v.length > 400 && /large_text|description|content/i.test(k)) {
+              if (
+                typeof v === 'string' &&
+                v.length > 400 &&
+                /large_text|description|content/i.test(k)
+              ) {
                 out[k] = v.slice(0, 150);
               } else if (typeof v === 'string' && /large_string/i.test(k)) {
                 out[k] = v.slice(0, 50);
@@ -229,7 +237,10 @@ export class JsonViewerPage extends BasePage {
       const monacoOk = await this.page.evaluate((json) => {
         try {
           const w = window as any;
-          const editors = w && w.monaco && w.monaco.editor && w.monaco.editor.getEditors ? w.monaco.editor.getEditors() : null;
+          const editors =
+            w && w.monaco && w.monaco.editor && w.monaco.editor.getEditors
+              ? w.monaco.editor.getEditors()
+              : null;
           const editor = editors && editors[0];
           if (editor && editor.setValue) {
             editor.setValue(json);
@@ -240,10 +251,16 @@ export class JsonViewerPage extends BasePage {
       }, safeJsonString);
 
       if (!monacoOk) {
-        const textareaExists = await this.jsonTextArea.count().then(c => c > 0).catch(() => false);
+        const textareaExists = await this.jsonTextArea
+          .count()
+          .then((c) => c > 0)
+          .catch(() => false);
         if (textareaExists) {
           await this.page.evaluate((json) => {
-            const ta = document.querySelector('[data-testid="json-textarea"]') as HTMLTextAreaElement | null;
+            const ta = (document.querySelector('[data-testid="json-editor"]') ||
+              document.querySelector(
+                '[data-testid="json-textarea"]'
+              )) as HTMLTextAreaElement | null;
             if (ta) {
               ta.value = json;
               ta.dispatchEvent(new Event('input', { bubbles: true }));
@@ -263,7 +280,10 @@ export class JsonViewerPage extends BasePage {
         const monacoOk = await this.page.evaluate((json) => {
           try {
             const w = window as any;
-            const editors = w && w.monaco && w.monaco.editor && w.monaco.editor.getEditors ? w.monaco.editor.getEditors() : null;
+            const editors =
+              w && w.monaco && w.monaco.editor && w.monaco.editor.getEditors
+                ? w.monaco.editor.getEditors()
+                : null;
             const editor = editors && editors[0];
             if (editor && editor.setValue) {
               editor.setValue(json);
@@ -323,7 +343,7 @@ export class JsonViewerPage extends BasePage {
   async switchToTreeView() {
     try {
       console.log('⏳ Switching to tree view...');
-      
+
       // Find tree view button with multiple selectors
       const treeViewSelectors = [
         '[data-testid="tree-view"]',
@@ -332,7 +352,7 @@ export class JsonViewerPage extends BasePage {
         '[role="tab"]:has-text("Tree")',
         '.tab-tree',
       ];
-      
+
       let buttonClicked = false;
       for (const selector of treeViewSelectors) {
         try {
@@ -347,22 +367,22 @@ export class JsonViewerPage extends BasePage {
           continue;
         }
       }
-      
+
       if (!buttonClicked) {
         console.warn('⚠️ Tree view button not found, might already be active');
       }
-      
+
       // Wait for tab content to be visible
       await this.page.waitForLoadState('domcontentloaded');
-      
+
       // Wait for tree content to appear
       const treeContentSelectors = [
         '.json-node[data-testid="json-node"]',
         '.json-node',
         '.tree-view-content',
-        '[data-testid="tree-content"]'
+        '[data-testid="tree-content"]',
       ];
-      
+
       for (const selector of treeContentSelectors) {
         try {
           await this.page.waitForSelector(selector, { timeout: 3000 });
@@ -372,9 +392,8 @@ export class JsonViewerPage extends BasePage {
           continue;
         }
       }
-      
+
       console.log('✅ Successfully switched to tree view');
-      
     } catch (error) {
       console.error('❌ Failed to switch to tree view:', (error as Error).message);
       // Don't throw error, just log it
@@ -388,7 +407,11 @@ export class JsonViewerPage extends BasePage {
     await this.flowViewButton.click();
     // Wait for flow view to load
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForSelector('.react-flow__renderer, .json-flow-flow, .flow-view-content', { timeout: 5000 }).catch(() => {});
+    await this.page
+      .waitForSelector('.react-flow__renderer, .json-flow-flow, .flow-view-content', {
+        timeout: 5000,
+      })
+      .catch(() => {});
   }
 
   /**
@@ -398,7 +421,11 @@ export class JsonViewerPage extends BasePage {
     await this.listViewButton.click();
     // Wait for list view to appear - try different selectors as list might render differently
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForSelector('.json-node[data-testid="json-node"], div.flex.items-center.px-4.py-2', { timeout: 5000 }).catch(() => {});
+    await this.page
+      .waitForSelector('.json-node[data-testid="json-node"], div.flex.items-center.px-4.py-2', {
+        timeout: 5000,
+      })
+      .catch(() => {});
   }
 
   /**
@@ -412,9 +439,9 @@ export class JsonViewerPage extends BasePage {
         '[data-state="active"]',
         '.tab.active',
         '[role="tab"][aria-selected="true"]',
-        '.selected-tab'
+        '.selected-tab',
       ];
-      
+
       for (const selector of activeSelectors) {
         try {
           const activeTab = this.page.locator(selector).first();
@@ -430,7 +457,7 @@ export class JsonViewerPage extends BasePage {
           continue;
         }
       }
-      
+
       console.warn('⚠️ Could not detect current view mode');
       return 'unknown';
     } catch (error) {
@@ -444,38 +471,57 @@ export class JsonViewerPage extends BasePage {
    */
   async searchInJSON(query: string) {
     // Ensure viewer content is present before searching
-    await this.page.waitForSelector('.json-node, [data-testid="json-node"]', { timeout: 2000 }).catch(() => {});
+    await this.page
+      .waitForSelector('.json-node, [data-testid="json-node"]', { timeout: 2000 })
+      .catch(() => {});
 
     // Prefer the app-provided imperative API for reliability
-    await this.page.evaluate((q) => {
-      const w = window as any;
-      if (typeof w !== 'undefined' && typeof w.__setViewerSearch === 'function') {
-        try { w.__setViewerSearch(q); } catch {}
-      } else {
-        // Bridge might not be ready yet; stash the value to be picked up post-mount
-        try { (window as any).__pendingSearch = q; } catch {}
-      }
-    }, query).catch(() => {});
+    await this.page
+      .evaluate((q) => {
+        const w = window as any;
+        if (typeof w !== 'undefined' && typeof w.__setViewerSearch === 'function') {
+          try {
+            w.__setViewerSearch(q);
+          } catch {}
+        } else {
+          // Bridge might not be ready yet; stash the value to be picked up post-mount
+          try {
+            (window as any).__pendingSearch = q;
+          } catch {}
+        }
+      }, query)
+      .catch(() => {});
 
     // Also try DOM-based methods as fallback
-    await this.page.locator('[data-testid="search-input"]').first().waitFor({ state: 'attached', timeout: 1500 }).catch(() => {});
+    await this.page
+      .locator('[data-testid="search-input"]')
+      .first()
+      .waitFor({ state: 'attached', timeout: 1500 })
+      .catch(() => {});
     const visible = await this.searchInput.isVisible({ timeout: 1000 }).catch(() => false);
     if (visible) {
       await this.searchInput.fill(query, { timeout: 2000 }).catch(() => {});
       await this.page.keyboard.press('Enter').catch(() => {});
     } else {
-      await this.page.evaluate((q) => {
-        const el = document.querySelector('[data-testid="search-input"]') as HTMLInputElement | null;
-        if (el) {
-          el.value = q;
-          el.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      }, query).catch(() => {});
+      await this.page
+        .evaluate((q) => {
+          const el = document.querySelector(
+            '[data-testid="search-input"]'
+          ) as HTMLInputElement | null;
+          if (el) {
+            el.value = q;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }, query)
+        .catch(() => {});
     }
 
     // Wait briefly for highlights to render. Include multiple selectors for robustness.
     await this.page
-      .waitForSelector('.search-result, [data-testid="search-result"], .highlighted, [data-highlight]', { timeout: 2500 })
+      .waitForSelector(
+        '.search-result, [data-testid="search-result"], .highlighted, [data-highlight]',
+        { timeout: 2500 }
+      )
       .catch(() => {});
     await this.page.waitForTimeout(300);
   }
@@ -486,26 +532,33 @@ export class JsonViewerPage extends BasePage {
   async clearSearch() {
     try {
       // Use imperative API first
-      await this.page.evaluate(() => {
-        // @ts-expect-error - allow access to window.__setViewerSearch test shim
-        if (typeof window !== 'undefined' && typeof (window as any).__setViewerSearch === 'function') {
-          // @ts-expect-error - allow access to window.__setViewerSearch test shim
-          (window as any).__setViewerSearch('');
-        }
-      }).catch(() => {});
+      await this.page
+        .evaluate(() => {
+          if (
+            typeof window !== 'undefined' &&
+            typeof (window as any).__setViewerSearch === 'function'
+          ) {
+            (window as any).__setViewerSearch('');
+          }
+        })
+        .catch(() => {});
 
       const visible = await this.searchInput.isVisible({ timeout: 500 }).catch(() => false);
       if (visible) {
         await this.searchInput.clear().catch(() => {});
         await this.page.keyboard.press('Enter').catch(() => {});
       } else {
-        await this.page.evaluate(() => {
-          const el = document.querySelector('[data-testid="search-input"]') as HTMLInputElement | null;
-          if (el) {
-            el.value = '';
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-        }).catch(() => {});
+        await this.page
+          .evaluate(() => {
+            const el = document.querySelector(
+              '[data-testid="search-input"]'
+            ) as HTMLInputElement | null;
+            if (el) {
+              el.value = '';
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          })
+          .catch(() => {});
       }
       await this.page.waitForTimeout(120);
     } catch (error) {
@@ -610,7 +663,8 @@ export class JsonViewerPage extends BasePage {
     try {
       const timeCount = await this.processingTime.count();
       if (timeCount) {
-        stats.processingTime = (await this.processingTime.first().textContent({ timeout: 1000 })) || '';
+        stats.processingTime =
+          (await this.processingTime.first().textContent({ timeout: 1000 })) || '';
       }
     } catch {}
 
@@ -725,19 +779,19 @@ export class JsonViewerPage extends BasePage {
    */
   async waitForJSONProcessed() {
     console.log('⏳ Waiting for JSON to be processed...');
-    
+
     try {
       // Wait for page to stabilize
       await this.page.waitForLoadState('domcontentloaded');
-      
+
       // Wait for loading spinner to disappear if it exists
       const loadingSelectors = [
         '[data-testid="loading"]:visible',
         '.loading-spinner:visible',
         '.spinner:visible',
-        '.loading:visible'
+        '.loading:visible',
       ];
-      
+
       for (const selector of loadingSelectors) {
         try {
           await this.page.waitForSelector(selector, { state: 'hidden', timeout: 2000 });
@@ -747,7 +801,31 @@ export class JsonViewerPage extends BasePage {
           // Spinner might not exist, continue
         }
       }
-      
+
+      // If an error indicator is present or store has invalid JSON, return early
+      const errorVisible = await this.errorMessage.isVisible().catch(() => false);
+      const storeInvalid = await this.page
+        .evaluate(() => {
+          try {
+            const store = (window as any).__backendStore?.getState?.();
+            const value = store?.currentJson;
+            if (typeof value === 'string' && value.trim()) {
+              try {
+                JSON.parse(value);
+                return false;
+              } catch {
+                return true;
+              }
+            }
+          } catch {}
+          return false;
+        })
+        .catch(() => false);
+      if (errorVisible || storeInvalid) {
+        console.log('✅ Detected invalid JSON state (error visible or store parse failed)');
+        return;
+      }
+
       // Wait for content to appear with multiple possible selectors
       const contentSelectors = [
         '.json-node[data-testid="json-node"]',
@@ -757,7 +835,7 @@ export class JsonViewerPage extends BasePage {
         '.json-viewer-content',
         'main > div > div', // Generic content selector
       ];
-      
+
       let contentFound = false;
       for (const selector of contentSelectors) {
         try {
@@ -770,15 +848,14 @@ export class JsonViewerPage extends BasePage {
           continue;
         }
       }
-      
+
       if (!contentFound) {
         console.warn('⚠️ No JSON content selectors matched');
         // Wait for network to settle as fallback
         await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       }
-      
+
       console.log('✅ JSON processing wait completed');
-      
     } catch (error) {
       console.warn('⚠️ Error waiting for JSON processing:', (error as Error).message);
       // Don't throw error, just log it and continue
@@ -791,7 +868,7 @@ export class JsonViewerPage extends BasePage {
   async hasJSONErrors(): Promise<boolean> {
     // Check for Monaco editor error markers with multiple possible CSS classes
     const hasErrorMessages = await this.errorMessage.isVisible().catch(() => false);
-    
+
     // Check various Monaco error marker classes
     const errorSelectors = [
       '.monaco-editor .squiggly-error',
@@ -803,32 +880,56 @@ export class JsonViewerPage extends BasePage {
       '.monaco-editor .mtk21', // Error token class
       '.codicon-error',
     ];
-    
+
     let hasMonacoErrors = false;
     for (const selector of errorSelectors) {
-      const count = await this.page.locator(selector).count().catch(() => 0);
+      const count = await this.page
+        .locator(selector)
+        .count()
+        .catch(() => 0);
       if (count > 0) {
         hasMonacoErrors = true;
         break;
       }
     }
-    
+
     // Also check if JSON is syntactically invalid by trying to parse
-    const hasParseErrors = await this.page.evaluate(() => {
-      const editor = (window as any).monacoEditorInstance;
-      if (editor) {
-        const value = editor.getValue();
-        try {
-          JSON.parse(value);
-          return false;
-        } catch {
-          return true;
+    const hasParseErrors = await this.page
+      .evaluate(() => {
+        const editor = (window as any).monacoEditorInstance;
+        if (editor) {
+          const value = editor.getValue();
+          try {
+            JSON.parse(value);
+            return false;
+          } catch {
+            return true;
+          }
         }
-      }
-      return false;
-    }).catch(() => false);
-    
-    return hasErrorMessages || hasMonacoErrors || hasParseErrors;
+        return false;
+      })
+      .catch(() => false);
+
+    // Fallback: check backend store value if editor path failed
+    const hasStoreParseErrors = await this.page
+      .evaluate(() => {
+        try {
+          const store = (window as any).__backendStore?.getState?.();
+          const value = store?.currentJson;
+          if (typeof value === 'string') {
+            try {
+              JSON.parse(value);
+              return false;
+            } catch {
+              return true;
+            }
+          }
+        } catch {}
+        return false;
+      })
+      .catch(() => false);
+
+    return hasErrorMessages || hasMonacoErrors || hasParseErrors || hasStoreParseErrors;
   }
 
   /**
@@ -840,31 +941,33 @@ export class JsonViewerPage extends BasePage {
     if (errorMessage) {
       return errorMessage;
     }
-    
+
     // Try to get Monaco editor error details
-    const monacoError = await this.page.evaluate(() => {
-      const editor = (window as any).monacoEditorInstance;
-      if (editor) {
-        const model = editor.getModel();
-        if (model) {
-          const markers = (window as any).monaco.editor.getModelMarkers({ resource: model.uri });
-          if (markers.length > 0) {
-            return markers[0].message;
+    const monacoError = await this.page
+      .evaluate(() => {
+        const editor = (window as any).monacoEditorInstance;
+        if (editor) {
+          const model = editor.getModel();
+          if (model) {
+            const markers = (window as any).monaco.editor.getModelMarkers({ resource: model.uri });
+            if (markers.length > 0) {
+              return markers[0].message;
+            }
+          }
+
+          // Also try to get parse error
+          const value = editor.getValue();
+          try {
+            JSON.parse(value);
+            return null;
+          } catch (e) {
+            return (e as Error).message;
           }
         }
-        
-        // Also try to get parse error
-        const value = editor.getValue();
-        try {
-          JSON.parse(value);
-          return null;
-        } catch (e) {
-          return (e as Error).message;
-        }
-      }
-      return null;
-    }).catch(() => null);
-    
+        return null;
+      })
+      .catch(() => null);
+
     return monacoError || 'JSON syntax error detected';
   }
 
@@ -909,7 +1012,10 @@ export class JsonViewerPage extends BasePage {
     try {
       await this.switchToFlowView();
       // Sea view might not have regular nodes - just check it loads
-      const flowWorking = await this.page.locator('.react-flow__renderer, .json-flow-flow, .flow-view-content').count() > 0;
+      const flowWorking =
+        (await this.page
+          .locator('.react-flow__renderer, .json-flow-flow, .flow-view-content')
+          .count()) > 0;
       results.push({
         mode: 'flow',
         nodeCount: 1, // Sea view doesn't have traditional nodes

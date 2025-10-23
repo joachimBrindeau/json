@@ -73,16 +73,21 @@ export default function SEOAdminPage() {
     }
   };
 
-  const handleUpdate = (index: number, field: keyof SEOSettings, value: SEOSettings[keyof SEOSettings]) => {
-    setSettings(prev => 
-      prev.map((setting, i) => 
-        i === index ? { ...setting, [field]: value } : setting
-      )
+  const handleUpdate = (
+    index: number,
+    field: keyof SEOSettings,
+    value: SEOSettings[keyof SEOSettings]
+  ) => {
+    setSettings((prev) =>
+      prev.map((setting, i) => (i === index ? { ...setting, [field]: value } : setting))
     );
   };
 
   const handleKeywordsUpdate = (index: number, keywordsStr: string) => {
-    const keywords = keywordsStr.split(',').map(k => k.trim()).filter(Boolean);
+    const keywords = keywordsStr
+      .split(',')
+      .map((k) => k.trim())
+      .filter(Boolean);
     handleUpdate(index, 'keywords', keywords);
   };
 
@@ -115,7 +120,9 @@ export default function SEOAdminPage() {
 
         {settings.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-muted-foreground">No SEO settings found. Database may not be initialized.</p>
+            <p className="text-muted-foreground">
+              No SEO settings found. Database may not be initialized.
+            </p>
             <p className="text-sm text-muted-foreground mt-2">
               Run the seed script: <code>npx tsx scripts/seed-seo.ts</code>
             </p>
@@ -148,7 +155,9 @@ export default function SEOAdminPage() {
 
                 <div className="grid gap-4">
                   <div>
-                    <label className="text-sm font-medium">Title ({setting.title.length}/200)</label>
+                    <label className="text-sm font-medium">
+                      Title ({setting.title.length}/200)
+                    </label>
                     <Input
                       value={setting.title}
                       onChange={(e) => handleUpdate(index, 'title', e.target.value)}
@@ -158,7 +167,9 @@ export default function SEOAdminPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">Description ({setting.description.length}/500)</label>
+                    <label className="text-sm font-medium">
+                      Description ({setting.description.length}/500)
+                    </label>
                     <Textarea
                       value={setting.description}
                       onChange={(e) => handleUpdate(index, 'description', e.target.value)}
@@ -205,7 +216,10 @@ export default function SEOAdminPage() {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <label htmlFor={`priority-${setting.pageKey}`} className="text-sm font-medium">
+                      <label
+                        htmlFor={`priority-${setting.pageKey}`}
+                        className="text-sm font-medium"
+                      >
                         Priority:
                       </label>
                       <Input

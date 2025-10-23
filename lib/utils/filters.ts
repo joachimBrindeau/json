@@ -150,14 +150,17 @@ export function groupBy<T extends Record<string, unknown>>(
   items: T[],
   field: keyof T
 ): Record<string, T[]> {
-  return items.reduce((groups, item) => {
-    const key = String(item[field]);
-    if (!groups[key]) {
-      groups[key] = [];
-    }
-    groups[key].push(item);
-    return groups;
-  }, {} as Record<string, T[]>);
+  return items.reduce(
+    (groups, item) => {
+      const key = String(item[field]);
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    },
+    {} as Record<string, T[]>
+  );
 }
 
 /**
@@ -338,11 +341,14 @@ export function countBy<T extends Record<string, unknown>>(
   items: T[],
   field: keyof T
 ): Record<string, number> {
-  return items.reduce((counts, item) => {
-    const key = String(item[field]);
-    counts[key] = (counts[key] || 0) + 1;
-    return counts;
-  }, {} as Record<string, number>);
+  return items.reduce(
+    (counts, item) => {
+      const key = String(item[field]);
+      counts[key] = (counts[key] || 0) + 1;
+      return counts;
+    },
+    {} as Record<string, number>
+  );
 }
 
 /**

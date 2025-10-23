@@ -21,7 +21,7 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
 
     // Check cache first
     const cached = statsCache.get(userId);
-    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+    if (cached && now - cached.timestamp < CACHE_TTL) {
       logger.debug({ userId }, 'Returning cached user stats');
 
       // Return cached response with cache headers
@@ -35,15 +35,15 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
     const stats = await prisma.jsonDocument.aggregate({
       where: {
         userId,
-        expiresAt: { gt: new Date() } // Exclude expired documents
+        expiresAt: { gt: new Date() }, // Exclude expired documents
       },
       _count: { id: true },
-      _sum: { size: true }
+      _sum: { size: true },
     });
 
     const data = {
       total: stats._count.id || 0,
-      totalSize: Number(stats._sum.size || 0)
+      totalSize: Number(stats._sum.size || 0),
     };
 
     // Update cache
@@ -63,7 +63,6 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
     response.headers.set('X-Cache', 'MISS');
     response.headers.set('Cache-Control', 'private, max-age=30');
     return response;
-
   } catch (error: unknown) {
     logger.error({ err: error }, 'User stats API error');
     return internalServerError('Failed to fetch user statistics');
@@ -74,7 +73,7 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
  * Invalidate cache for a specific user
  * Call this when user's documents change
  */
-export function invalidateUserStatsCache(userId: string) {
+function invalidateUserStatsCache(userId: string) {
   statsCache.delete(userId);
   logger.debug({ userId }, 'Invalidated user stats cache');
 }

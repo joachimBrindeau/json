@@ -28,6 +28,7 @@ export function SearchBar({
       <Input
         type="text"
         placeholder={placeholder}
+        aria-label={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-7 pl-7 text-sm"
@@ -36,4 +37,3 @@ export function SearchBar({
     </div>
   );
 }
-

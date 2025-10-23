@@ -1,0 +1,30 @@
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 7.0s
+   Linting and checking validity of types ...
+
+./components/features/modals/share-modal.tsx
+214:13  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./components/features/viewer/ViewerActions.tsx
+562:19  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./lib/store/backend.ts
+401:15  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./components/layout/sidebar.tsx:123:12
+Type error: 'pathname' is possibly 'null'.
+
+[0m [90m 121 |[39m   [36mconst[39m isItemCurrent [33m=[39m useCallback((item[33m:[39m [36mtypeof[39m [33mNAVIGATION_ITEMS[39m[[35m0[39m]) [33m=>[39m {
+ [90m 122 |[39m     [36mif[39m (item[33m.[39mid [33m===[39m [32m'viewer'[39m) [36mreturn[39m pathname [33m===[39m [32m'/view'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 123 |[39m     [36mreturn[39m pathname[33m.[39mstartsWith(item[33m.[39mhref)[33m;[39m
+ [90m     |[39m            [31m[1m^[22m[39m
+ [90m 124 |[39m   }[33m,[39m [pathname])[33m;[39m
+ [90m 125 |[39m
+ [90m 126 |[39m   [90m// Handle navigation click (close mobile menu)[39m[0m
+Next.js build worker exited with code: 1 and signal: null

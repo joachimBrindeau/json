@@ -13,6 +13,104 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
+function getFinalDescription(
+  showCharCount?: boolean,
+  maxLength?: number,
+  value?: unknown,
+  description?: string
+) {
+  const charCount =
+    showCharCount && maxLength
+      ? `${String(value ?? '').length}/${maxLength} characters`
+      : undefined;
+  return charCount || description;
+}
+
+function FormFieldWrapper(props: {
+  label: string;
+  error?: string;
+  description?: string;
+  required?: boolean;
+  htmlFor?: string;
+  containerClassName?: string;
+  children: React.ReactNode;
+}) {
+  const { label, error, description, required, htmlFor, containerClassName, children } = props;
+  return (
+    <FormField
+      label={label}
+      error={error}
+      description={description}
+      required={required}
+      htmlFor={htmlFor}
+      className={containerClassName}
+    >
+      {children}
+    </FormField>
+  );
+}
+
+function createFormTextControl<
+  T extends HTMLElement,
+  P extends {
+    label: string;
+    error?: string;
+    description?: string;
+    required?: boolean;
+    showCharCount?: boolean;
+    containerClassName?: string;
+    className?: string;
+    value?: any;
+    maxLength?: number;
+    id?: string;
+  } & React.HTMLAttributes<T>,
+>(Control: any) {
+  /* eslint-disable react/display-name */
+  const Comp = React.forwardRef<T, P>((props, ref) => {
+    const {
+      label,
+      error,
+      description,
+      required,
+      showCharCount,
+      containerClassName,
+      className,
+      maxLength,
+      value,
+      id,
+      ...controlProps
+    } = props as any;
+
+    const finalDescription = getFinalDescription(showCharCount, maxLength, value, description);
+
+    return (
+      <FormFieldWrapper
+        label={label}
+        error={error}
+        description={finalDescription}
+        required={required}
+        htmlFor={id}
+        containerClassName={containerClassName}
+      >
+        {(() => {
+          const controlPropsFinal: any = {
+            ref,
+            id,
+            maxLength,
+            className: cn('mt-1', className),
+            ...controlProps,
+          };
+          if (value !== undefined) controlPropsFinal.value = value;
+          return <Control {...controlPropsFinal} />;
+        })()}
+      </FormFieldWrapper>
+    );
+  });
+  (Comp as any).displayName = 'FormTextControl';
+  /* eslint-enable react/display-name */
+  return Comp;
+}
+
 /**
  * Base form field wrapper with label, error, and description
  */
@@ -43,9 +141,7 @@ export function FormField({
       </Label>
       {children}
       {error && <p className="text-xs text-red-500">{error}</p>}
-      {description && !error && (
-        <p className="text-xs text-muted-foreground">{description}</p>
-      )}
+      {description && !error && <p className="text-xs text-muted-foreground">{description}</p>}
     </div>
   );
 }
@@ -62,45 +158,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   containerClassName?: string;
 }
 
-export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
-  (
-    {
-      label,
-      error,
-      description,
-      required,
-      showCharCount,
-      maxLength,
-      className,
-      containerClassName,
-      value,
-      ...props
-    },
-    ref
-  ) => {
-    const charCount = showCharCount && maxLength ? `${String(value || '').length}/${maxLength} characters` : undefined;
-    const finalDescription = charCount || description;
-
-    return (
-      <FormField
-        label={label}
-        error={error}
-        description={finalDescription}
-        required={required}
-        htmlFor={props.id}
-        className={containerClassName}
-      >
-        <Input
-          ref={ref}
-          value={value}
-          maxLength={maxLength}
-          className={cn('mt-1', className)}
-          {...props}
-        />
-      </FormField>
-    );
-  }
-);
+export const FormInput = createFormTextControl<HTMLInputElement, FormInputProps>(Input);
 FormInput.displayName = 'FormInput';
 
 /**
@@ -115,45 +173,7 @@ interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
   containerClassName?: string;
 }
 
-export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
-  (
-    {
-      label,
-      error,
-      description,
-      required,
-      showCharCount,
-      maxLength,
-      className,
-      containerClassName,
-      value,
-      ...props
-    },
-    ref
-  ) => {
-    const charCount = showCharCount && maxLength ? `${String(value || '').length}/${maxLength} characters` : undefined;
-    const finalDescription = charCount || description;
-
-    return (
-      <FormField
-        label={label}
-        error={error}
-        description={finalDescription}
-        required={required}
-        htmlFor={props.id}
-        className={containerClassName}
-      >
-        <Textarea
-          ref={ref}
-          value={value}
-          maxLength={maxLength}
-          className={cn('mt-1', className)}
-          {...props}
-        />
-      </FormField>
-    );
-  }
-);
+export const FormTextarea = createFormTextControl<HTMLTextAreaElement, FormTextareaProps>(Textarea);
 FormTextarea.displayName = 'FormTextarea';
 
 /**

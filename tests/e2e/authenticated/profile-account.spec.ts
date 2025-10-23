@@ -11,10 +11,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
   });
 
   test.describe('View Profile with Usage Statistics', () => {
-
     test('should display user profile with basic information', async ({ profileHelper }) => {
       const profileInfo = await profileHelper.getUserProfileInfo();
-      
+
       expect(profileInfo).toBeTruthy();
       expect(profileInfo!.email).toBeTruthy();
       expect(profileInfo!.email).toContain('@');
@@ -23,19 +22,19 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
     test('should display usage statistics', async ({ profileHelper }) => {
       const stats = await profileHelper.getUsageStatistics();
-      
+
       if (stats.totalDocuments !== undefined) {
         expect(stats.totalDocuments).toBeGreaterThanOrEqual(3);
       }
-      
+
       if (stats.publishedDocuments !== undefined) {
         expect(stats.publishedDocuments).toBeGreaterThanOrEqual(1);
       }
-      
+
       if (stats.storageUsed) {
         expect(stats.storageUsed).toMatch(/\d+.*[KMGT]?B/);
       }
-      
+
       if (stats.memberSince) {
         expect(stats.memberSince).toBeTruthy();
       }
@@ -43,10 +42,10 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
     test('should display activity timeline', async ({ profileHelper }) => {
       const activities = await profileHelper.getActivityTimeline();
-      
+
       if (activities.length > 0) {
         expect(activities.length).toBeGreaterThan(0);
-        
+
         // Activities should have timestamps
         const firstActivity = activities[0];
         expect(firstActivity.timestamp).toBeTruthy();
@@ -109,33 +108,41 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       }
     });
 
-    test('should handle empty profile statistics gracefully', async ({ dataGenerator, authHelper, profileHelper }) => {
+    test('should handle empty profile statistics gracefully', async ({
+      dataGenerator,
+      authHelper,
+      profileHelper,
+    }) => {
       // Create a brand new user with no data
       await profileHelper.cleanup(); // Logout current user
-      
+
       const newUser = dataGenerator.generateUserData();
       await authHelper.createAccount(newUser);
-      
+
       // Setup empty profile helper (no test data)
       const newProfileHelper = profileHelper;
       await newProfileHelper.setupUserWithData('regular'); // No test data
 
       const profileInfo = await newProfileHelper.getUserProfileInfo();
       expect(profileInfo).toBeTruthy();
-      
+
       const stats = await newProfileHelper.getUsageStatistics();
       if (stats.totalDocuments !== undefined) {
         expect(stats.totalDocuments).toBe(0);
       }
-      
+
       // Check for empty state elements
       if (await newProfileHelper.goToProfileAndVerify()) {
-        const emptyLibraryMessage = newProfileHelper.layoutPage.page.locator('[data-testid="empty-library-message"]');
+        const emptyLibraryMessage = newProfileHelper.layoutPage.page.locator(
+          '[data-testid="empty-library-message"]'
+        );
         if (await emptyLibraryMessage.isVisible()) {
           expect(await emptyLibraryMessage.textContent()).toContain('no documents');
         }
 
-        const createFirstDoc = newProfileHelper.layoutPage.page.locator('[data-testid="create-first-document"]');
+        const createFirstDoc = newProfileHelper.layoutPage.page.locator(
+          '[data-testid="create-first-document"]'
+        );
         if (await createFirstDoc.isVisible()) {
           await createFirstDoc.click();
           await newProfileHelper.layoutPage.page.waitForURL('**/viewer');
@@ -145,10 +152,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
   });
 
   test.describe('Export All Data', () => {
-
     test('should export all user data as JSON', async ({ profileHelper }) => {
       const exportResult = await profileHelper.exportUserData();
-      
+
       expect(exportResult.success).toBe(true);
       expect(exportResult.filename).toBeTruthy();
       expect(exportResult.filename).toMatch(/.*export.*\.json/);
@@ -159,7 +165,7 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       const cancelResult = await profileHelper.exportUserData({ confirm: false });
       expect(cancelResult.success).toBe(false);
       expect(cancelResult.error).toContain('cancelled');
-      
+
       // Test actual export
       const exportResult = await profileHelper.exportUserData({ confirm: true });
       expect(exportResult.success).toBe(true);
@@ -171,7 +177,7 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       const jsonResult = await profileHelper.exportUserData({ format: 'json' });
       expect(jsonResult.success).toBe(true);
       expect(jsonResult.filename).toMatch(/\.json$/);
-      
+
       // Test CSV export if available
       const csvResult = await profileHelper.exportUserData({ format: 'csv' });
       if (csvResult.success) {
@@ -237,10 +243,12 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       await exportButton.click();
 
       // Wait for export API call to complete
-      await layoutPage.page.waitForResponse(
-        (response) => response.url().includes('/api/user/export') && response.status() === 200,
-        { timeout: 5000 }
-      ).catch(() => null);
+      await layoutPage.page
+        .waitForResponse(
+          (response) => response.url().includes('/api/user/export') && response.status() === 200,
+          { timeout: 5000 }
+        )
+        .catch(() => null);
 
       if (exportData) {
         // Should include user profile information
@@ -294,14 +302,13 @@ test.describe('Authenticated User - Profile and Account Management', () => {
   });
 
   test.describe('Delete Account Permanently', () => {
-
     test('should require confirmation before account deletion', async ({ profileHelper }) => {
       const initResult = await profileHelper.initiateAccountDeletion();
-      
+
       if (initResult.success && initResult.confirmationRequired) {
         // Confirmation dialog should be shown with proper warnings
         expect(initResult.confirmationRequired).toBe(true);
-        
+
         // For this test, we don't actually complete the deletion
         // Just verify that the process can be initiated and requires confirmation
         expect(await profileHelper.layoutPage.isLoggedIn()).toBe(true);
@@ -310,10 +317,13 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
     test('should delete account and all associated data', async ({ profileHelper }) => {
       const initResult = await profileHelper.initiateAccountDeletion();
-      
+
       if (initResult.success && initResult.confirmationRequired) {
-        const deleteResult = await profileHelper.completeAccountDeletion('DELETE', 'testuser@jsonshare.test');
-        
+        const deleteResult = await profileHelper.completeAccountDeletion(
+          'DELETE',
+          'testuser@jsonshare.test'
+        );
+
         expect(deleteResult.success).toBe(true);
         expect(await profileHelper.layoutPage.isLoggedIn()).toBe(false);
       }
@@ -502,11 +512,11 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should update profile information', async ({ profileHelper }) => {
       const updateResult = await profileHelper.updateProfile({
         name: 'Updated Test User Name',
-        bio: 'Updated bio for testing profile functionality'
+        bio: 'Updated bio for testing profile functionality',
       });
-      
+
       expect(updateResult.success).toBe(true);
-      
+
       // Verify changes are reflected
       const updatedProfile = await profileHelper.getUserProfileInfo();
       expect(updatedProfile?.name).toContain('Updated Test User Name');
@@ -515,9 +525,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should manage notification preferences', async ({ profileHelper }) => {
       const updateResult = await profileHelper.updateNotificationPreferences({
         emailNotifications: false,
-        marketingEmails: true
+        marketingEmails: true,
       });
-      
+
       expect(updateResult.success).toBe(true);
     });
 

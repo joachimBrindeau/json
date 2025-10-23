@@ -1,6 +1,6 @@
 /**
  * Custom hook for Flow node toolbar functionality
- * 
+ *
  * Consolidates duplicate hook patterns from FlowObjectNode and FlowArrayNode
  * Follows DRY principle - single source of truth for toolbar logic
  */
@@ -13,17 +13,17 @@ interface UseFlowNodeToolbarParams {
 
 export const useFlowNodeToolbar = ({ nodeId }: UseFlowNodeToolbarParams) => {
   const edges = useEdges();
-  
+
   // Calculate if node has children
   const hasChildren = edges.some((edge) => edge.source === nodeId);
-  
+
   // Track connections
   const connections = useNodeConnections({ id: nodeId });
-  const sourceConnections = connections.filter(conn => conn.source === nodeId);
-  const targetConnections = connections.filter(conn => conn.target === nodeId);
-  
+  const sourceConnections = connections.filter((conn) => conn.source === nodeId);
+  const targetConnections = connections.filter((conn) => conn.target === nodeId);
+
   // Get connected nodes data
-  const connectedNodeIds = sourceConnections.map(conn => conn.target);
+  const connectedNodeIds = sourceConnections.map((conn) => conn.target);
   const connectedNodesData = useNodesData(connectedNodeIds);
 
   return {
@@ -33,4 +33,3 @@ export const useFlowNodeToolbar = ({ nodeId }: UseFlowNodeToolbarParams) => {
     connectedNodesData: connectedNodesData as any,
   };
 };
-

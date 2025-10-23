@@ -111,7 +111,7 @@ export abstract class BasePage {
         return;
       }
       // Use Promise.resolve to yield control without arbitrary timeout
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
     throw new Error(`Condition not met within ${timeout}ms`);

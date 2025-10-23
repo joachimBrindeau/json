@@ -73,13 +73,9 @@ function handleZodError(error: ZodError): ValidationError {
     message: issue.message,
   }));
 
-  return new ValidationError(
-    'Validation failed',
-    validationErrors,
-    {
-      zodErrors: error.issues,
-    }
-  );
+  return new ValidationError('Validation failed', validationErrors, {
+    zodErrors: error.issues,
+  });
 }
 
 /**
@@ -107,12 +103,7 @@ export function withErrorHandler<T = unknown, P = Record<string, string>>(
   handler: ApiRouteHandler<T, P>,
   options: ErrorHandlerOptions = {}
 ): ApiRouteHandler<T, P> {
-  const {
-    logErrors = true,
-    transformError,
-    onError,
-    includeRequestId = true,
-  } = options;
+  const { logErrors = true, transformError, onError, includeRequestId = true } = options;
 
   return async (request: NextRequest, context: { params: Promise<P> }) => {
     const requestId = generateRequestId();

@@ -17,7 +17,8 @@ async function globalSetup(config: FullConfig) {
   await ensureDockerDependencies();
 
   // Get base URL from config
-  const baseURL = config.projects?.find(p => p.name !== 'setup')?.use?.baseURL || 'http://localhost:3456';
+  const baseURL =
+    config.projects?.find((p) => p.name !== 'setup')?.use?.baseURL || 'http://localhost:3456';
   console.log(`📡 Using base URL: ${baseURL}`);
 
   // Launch browser for global setup operations
@@ -25,22 +26,17 @@ async function globalSetup(config: FullConfig) {
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
     extraHTTPHeaders: {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9',
     },
   });
   const page = await context.newPage();
 
   try {
-    // Optionally skip server readiness check (useful when dev server is already running and slow to warm up)
-    const skipServerCheck = process.env.SKIP_SERVER_CHECK === '1' || process.env.SKIP_SERVER_CHECK === 'true';
-    if (!skipServerCheck) {
-      console.log('📡 Checking if server is available...');
-      await waitForServer(page, baseURL);
-      console.log('✅ Server is available');
-    } else {
-      console.log('⏭️  SKIP_SERVER_CHECK=1 detected — skipping server availability check');
-    }
+    // Always check server readiness to fail fast
+    console.log('📡 Checking if server is available...');
+    await waitForServer(page, baseURL);
+    console.log('✅ Server is available');
 
     // Clean up existing test users before creating new ones
     console.log('🧹 Cleaning up existing test users...');
@@ -67,27 +63,39 @@ async function globalSetup(config: FullConfig) {
 async function waitForServer(page: any, baseURL: string, maxRetries = 20) {
   for (let i = 0; i < maxRetries; i++) {
     try {
+      // Prefer API health endpoint (more stable in dev) and fall back to root page
+      const health = await page.request.get(`${baseURL}/api/health`);
+      if (health && health.status() < 400) {
+        console.log(`✅ Health endpoint responded with status ${health.status()}`);
+        return;
+      }
+
       const response = await page.goto(baseURL, {
         timeout: 10000,
         waitUntil: 'domcontentloaded',
       });
-      
+
       if (response && response.status() < 400) {
         console.log(`✅ Server responded with status ${response.status()}`);
         return;
       }
-      
-      console.log(`⚠️ Server responded with status ${response?.status()}, retrying...`);
+
+      console.log(
+        `⚠️ Server responded with status ${response?.status() ?? health?.status()}, retrying...`
+      );
     } catch (error) {
-      console.log(`⚠️ Server check attempt ${i + 1}/${maxRetries} failed:`, (error as Error).message);
+      console.log(
+        `⚠️ Server check attempt ${i + 1}/${maxRetries} failed:`,
+        (error as Error).message
+      );
     }
-    
+
     if (i < maxRetries - 1) {
       console.log(`⏳ Waiting 3 seconds before retry...`);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
-  
+
   throw new Error(`Server at ${baseURL} is not responding after ${maxRetries} attempts`);
 }
 
@@ -99,7 +107,7 @@ async function verifyBasicApp(page: any, baseURL: string) {
     // Wait for React to hydrate
     await Promise.race([
       page.waitForLoadState('networkidle', { timeout: 3000 }),
-      page.waitForFunction(() => document.readyState === 'complete', { timeout: 3000 })
+      page.waitForFunction(() => document.readyState === 'complete', { timeout: 3000 }),
     ]).catch(() => {});
 
     // Look for common elements that should exist
@@ -118,7 +126,6 @@ async function verifyBasicApp(page: any, baseURL: string) {
     } else {
       console.log('✅ Main content area found');
     }
-
   } catch (error) {
     console.warn('⚠️ Basic app verification failed:', (error as Error).message);
   }
@@ -179,12 +186,12 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
   for (const user of testUsers) {
     try {
       console.log(`  Creating user: ${user.email}`);
-      
+
       // Create user via API with proper headers and error handling
       const response = await context.request.post(`${baseURL}/api/auth/signup`, {
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         data: {
           name: user.name,
@@ -196,7 +203,7 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
       if (response.ok()) {
         console.log(`  ✅ Created user: ${user.email}`);
       } else if (response.status() === 400 || response.status() === 409) {
-        let errorData;
+        let errorData: any;
         try {
           errorData = await response.json();
         } catch {
@@ -204,23 +211,35 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
           errorData = { error: textData };
         }
 
-        if (errorData.error?.includes('already exists') || errorData.message?.includes('already exists')) {
+        // Unwrap standardized envelope if present
+        const isStandard =
+          errorData &&
+          typeof errorData === 'object' &&
+          'success' in errorData &&
+          errorData.success === false;
+        const message = isStandard
+          ? errorData.error || errorData.message
+          : errorData.error || errorData.message;
+
+        if (message && String(message).includes('already exists')) {
           console.log(`  ℹ️  User already exists: ${user.email}`);
         } else {
-          console.log(`  ⚠️  Failed to create user ${user.email}: ${errorData.error || errorData.message || 'Unknown error'}`);
+          console.log(`  ⚠️  Failed to create user ${user.email}: ${message || 'Unknown error'}`);
         }
       } else if (response.status() === 404) {
         console.log(`  ⚠️  Signup endpoint not found - user creation skipped: ${user.email}`);
       } else {
         const responseText = await response.text().catch(() => 'No response text');
-        console.log(`  ❌ Failed to create user ${user.email}: ${response.status()} - ${responseText}`);
+        console.log(
+          `  ❌ Failed to create user ${user.email}: ${response.status()} - ${responseText}`
+        );
       }
     } catch (error) {
       console.log(`  ❌ Error creating user ${user.email}:`, (error as Error).message);
     }
-    
+
     // Small delay between user creations to avoid overwhelming the server
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 
@@ -229,11 +248,6 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
  * This prevents test failures due to missing database connections
  */
 async function ensureDockerDependencies() {
-  // Allow skipping Docker checks for front-end only E2E runs
-  if (process.env.SKIP_DOCKER_CHECK === '1') {
-    console.log('🔧 SKIP_DOCKER_CHECK=1 detected — skipping Docker dependency checks');
-    return;
-  }
   try {
     // Check if Docker daemon is running
     try {
@@ -252,8 +266,10 @@ async function ensureDockerDependencies() {
     for (const containerName of requiredContainers) {
       try {
         // Check if container exists and is running
-        const output = execSync(`docker ps --filter "name=${containerName}" --format "{{.Names}}: {{.Status}}"`,
-          { encoding: 'utf-8' });
+        const output = execSync(
+          `docker ps --filter "name=${containerName}" --format "{{.Names}}: {{.Status}}"`,
+          { encoding: 'utf-8' }
+        );
 
         if (output.trim()) {
           console.log(`  ✅ ${output.trim()}`);
@@ -271,8 +287,10 @@ async function ensureDockerDependencies() {
     if (missingContainers.length > 0) {
       console.log('  🚀 Starting Docker containers...');
       try {
-        execSync('docker-compose -f config/docker-compose.local.yml up -d postgres redis',
-          { stdio: 'inherit', cwd: process.cwd() });
+        execSync('docker compose -f config/docker-compose.local.yml up -d postgres redis', {
+          stdio: 'inherit',
+          cwd: process.cwd(),
+        });
 
         // Wait for containers to be healthy
         console.log('  ⏳ Waiting for containers to be healthy...');
@@ -290,7 +308,6 @@ async function ensureDockerDependencies() {
 
     // Verify Redis is accessible
     await verifyRedis();
-
   } catch (error) {
     console.error('  ❌ Docker dependency check failed:', (error as Error).message);
     throw error;
@@ -319,10 +336,10 @@ async function waitForDockerHealth(maxRetries = 30) {
       }
 
       console.log(`  ⏳ Waiting for containers to be healthy (${i + 1}/${maxRetries})...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     } catch (error) {
       // Container might not have health check yet, continue waiting
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 

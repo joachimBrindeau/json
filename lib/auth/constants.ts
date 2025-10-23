@@ -95,4 +95,3 @@ export const AUTH_ERROR_MESSAGES = {
   SESSION_REQUIRED: 'You must be signed in to access this resource',
   ADMIN_REQUIRED: 'Admin access required',
 };
-

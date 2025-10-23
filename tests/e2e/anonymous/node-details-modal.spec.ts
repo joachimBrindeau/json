@@ -28,7 +28,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
           await firstNode.dblclick();
 
           // Wait for modal to appear
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Check if node details modal opened
           const modalVisible =
@@ -67,7 +69,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const stringNode = viewerPage.page.locator('text="Sample string value"').first();
         if (await stringNode.isVisible()) {
           await stringNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Look for detailed information in modal
           const hasTypeInfo =
@@ -104,7 +108,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const arrayNode = viewerPage.page.locator('text="array"').first();
         if (await arrayNode.isVisible()) {
           await arrayNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Should show array-specific info (length, items count)
           const hasArrayInfo =
@@ -130,7 +136,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const emailNode = viewerPage.page.locator('text="alice@example.com"').first();
         if (await emailNode.isVisible()) {
           await emailNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Should show path information
           const hasPathInfo =
@@ -154,7 +162,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const firstNode = viewerPage.jsonNodes.first();
         if (await firstNode.isVisible()) {
           await firstNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Look for copy button in modal
           const copyButton = viewerPage.page.locator(
@@ -187,7 +197,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const firstNode = viewerPage.jsonNodes.first();
         if (await firstNode.isVisible()) {
           await firstNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Test escape key
           await viewerPage.page.keyboard.press('Escape');
@@ -199,7 +211,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
 
           // Test close button if available
           await firstNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           const closeButton = viewerPage.page.locator(
             '[data-testid="close-modal"], button[aria-label="Close"], .close-button'
@@ -234,7 +248,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const largeStringNode = viewerPage.page.locator('text="largeString"').first();
         if (await largeStringNode.isVisible()) {
           await largeStringNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Modal should handle large content gracefully
           const modalVisible = await viewerPage.nodeDetailsModal.isVisible();
@@ -268,7 +284,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const objectNode = viewerPage.page.locator('text="personal"').first();
         if (await objectNode.isVisible()) {
           await objectNode.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Look for metadata like:
           const hasKeyCount =
@@ -301,7 +319,9 @@ test.describe('Anonymous User - Node Details Modal', () => {
         const firstItem = viewerPage.page.locator('text="Item 0"').first();
         if (await firstItem.isVisible()) {
           await firstItem.dblclick();
-          await expect(viewerPage.page.locator('[role="dialog"], .modal, .popup').first()).toBeVisible();
+          await expect(
+            viewerPage.page.locator('[role="dialog"], .modal, .popup').first()
+          ).toBeVisible();
 
           // Look for navigation buttons
           const nextButton = viewerPage.page.locator(

@@ -11,13 +11,7 @@ interface SaveButtonProps extends Omit<ButtonProps, 'variant' | 'icon'> {
 const SaveButton = forwardRef<HTMLButtonElement, SaveButtonProps>(
   ({ isLoading, children = 'Save', ...props }, ref) => {
     return (
-      <Button
-        ref={ref}
-        variant="green"
-        icon={Save}
-        isLoading={isLoading}
-        {...props}
-      >
+      <Button ref={ref} variant="green" icon={Save} isLoading={isLoading} {...props}>
         {children}
       </Button>
     );

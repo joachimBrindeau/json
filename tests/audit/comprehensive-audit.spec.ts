@@ -53,63 +53,68 @@ test.describe('Comprehensive Application Audit', () => {
   test.afterAll(async () => {
     // Generate comprehensive report
     console.log('\n=== AUDIT REPORT ===\n');
-    
+
     const errorCount = allErrors.reduce((acc, report) => {
-      return acc + 
-        report.consoleErrors.length + 
-        report.pageErrors.length + 
-        report.networkErrors.length + 
+      return (
+        acc +
+        report.consoleErrors.length +
+        report.pageErrors.length +
+        report.networkErrors.length +
         report.accessibilityIssues.length +
-        (report.hydrationErrors ? 1 : 0);
+        (report.hydrationErrors ? 1 : 0)
+      );
     }, 0);
-    
+
     console.log(`Total Errors Found: ${errorCount}`);
-    
+
     if (errorCount > 0) {
       console.log('\nDetailed Errors by Page:\n');
-      
-      allErrors.forEach(report => {
-        if (report.consoleErrors.length + report.pageErrors.length + report.networkErrors.length > 0) {
+
+      allErrors.forEach((report) => {
+        if (
+          report.consoleErrors.length + report.pageErrors.length + report.networkErrors.length >
+          0
+        ) {
           console.log(`\n📄 ${report.page} (${report.viewport})`);
-          
+
           if (report.consoleErrors.length > 0) {
             console.log('  Console Errors:');
-            report.consoleErrors.forEach(err => {
+            report.consoleErrors.forEach((err) => {
               console.log(`    - [${err.type}] ${err.text}`);
               if (err.location) console.log(`      at ${err.location}`);
             });
           }
-          
+
           if (report.pageErrors.length > 0) {
             console.log('  Page Errors:');
-            report.pageErrors.forEach(err => {
+            report.pageErrors.forEach((err) => {
               console.log(`    - ${err.message}`);
             });
           }
-          
+
           if (report.networkErrors.length > 0) {
             console.log('  Network Errors:');
-            report.networkErrors.forEach(err => {
+            report.networkErrors.forEach((err) => {
               console.log(`    - ${err.url} (${err.status || err.error})`);
             });
           }
-          
+
           if (report.hydrationErrors) {
             console.log('  ⚠️  Hydration Error Detected');
           }
-          
+
           if (report.accessibilityIssues.length > 0) {
             console.log('  Accessibility Issues:');
-            report.accessibilityIssues.forEach(issue => {
+            report.accessibilityIssues.forEach((issue) => {
               console.log(`    - [${issue.impact}] ${issue.description}`);
             });
           }
         }
       });
-      
+
       // Performance summary
       console.log('\n📊 Performance Metrics:\n');
-      allErrors.forEach(report => {
+      allErrors.forEach((report) => {
         console.log(`${report.page} (${report.viewport}):`);
         console.log(`  Load Time: ${report.performanceMetrics.loadTime}ms`);
         console.log(`  DOM Content Loaded: ${report.performanceMetrics.domContentLoaded}ms`);
@@ -147,7 +152,9 @@ test.describe('Comprehensive Application Audit', () => {
             report.consoleErrors.push({
               type: 'error',
               text: msg.text(),
-              location: location ? `${location.url}:${location.lineNumber}:${location.columnNumber}` : undefined,
+              location: location
+                ? `${location.url}:${location.lineNumber}:${location.columnNumber}`
+                : undefined,
             });
           } else if (msg.type() === 'warning' && msg.text().includes('hydration')) {
             report.hydrationErrors = true;
@@ -196,12 +203,13 @@ test.describe('Comprehensive Application Audit', () => {
         const performanceMetrics = await page.evaluate(() => {
           const perf = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
           const paintEntries = performance.getEntriesByType('paint');
-          
+
           return {
             domContentLoaded: perf.domContentLoadedEventEnd - perf.fetchStart,
             loadTime: perf.loadEventEnd - perf.fetchStart,
-            firstPaint: paintEntries.find(e => e.name === 'first-paint')?.startTime,
-            firstContentfulPaint: paintEntries.find(e => e.name === 'first-contentful-paint')?.startTime,
+            firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime,
+            firstContentfulPaint: paintEntries.find((e) => e.name === 'first-contentful-paint')
+              ?.startTime,
           };
         });
 
@@ -212,13 +220,14 @@ test.describe('Comprehensive Application Audit', () => {
 
         // Check for React hydration errors
         const hydrationError = await page.evaluate(() => {
-          const errors = Array.from(document.querySelectorAll('body')).some(el => 
-            el.textContent?.includes('Hydration failed') || 
-            el.textContent?.includes('did not match')
+          const errors = Array.from(document.querySelectorAll('body')).some(
+            (el) =>
+              el.textContent?.includes('Hydration failed') ||
+              el.textContent?.includes('did not match')
           );
           return errors;
         });
-        
+
         if (hydrationError) {
           report.hydrationErrors = true;
         }
@@ -226,17 +235,17 @@ test.describe('Comprehensive Application Audit', () => {
         // Run accessibility audit (basic)
         try {
           const accessibilitySnapshot = await page.accessibility.snapshot();
-          
+
           // Check for missing alt text
-          const images = await page.$$eval('img', imgs => 
-            imgs.map(img => ({
+          const images = await page.$$eval('img', (imgs) =>
+            imgs.map((img) => ({
               src: img.src,
               alt: img.alt,
-              hasAlt: !!img.alt
+              hasAlt: !!img.alt,
             }))
           );
-          
-          images.forEach(img => {
+
+          images.forEach((img) => {
             if (!img.hasAlt) {
               report.accessibilityIssues.push({
                 description: `Missing alt text for image: ${img.src}`,
@@ -247,16 +256,18 @@ test.describe('Comprehensive Application Audit', () => {
           });
 
           // Check for missing labels
-          const inputs = await page.$$eval('input:not([type="hidden"]), select, textarea', elements => 
-            elements.map(el => ({
-              id: el.id,
-              name: (el as HTMLInputElement).name,
-              hasLabel: !!el.labels?.length || !!el.getAttribute('aria-label'),
-              type: (el as HTMLInputElement).type,
-            }))
+          const inputs = await page.$$eval(
+            'input:not([type="hidden"]), select, textarea',
+            (elements) =>
+              elements.map((el) => ({
+                id: el.id,
+                name: (el as HTMLInputElement).name,
+                hasLabel: !!el.labels?.length || !!el.getAttribute('aria-label'),
+                type: (el as HTMLInputElement).type,
+              }))
           );
-          
-          inputs.forEach(input => {
+
+          inputs.forEach((input) => {
             if (!input.hasLabel) {
               report.accessibilityIssues.push({
                 description: `Form input missing label: ${input.type || 'input'} (${input.name || input.id})`,
@@ -270,21 +281,21 @@ test.describe('Comprehensive Application Audit', () => {
           const hasLowContrast = await page.evaluate(() => {
             const elements = document.querySelectorAll('*');
             let lowContrastFound = false;
-            
-            elements.forEach(el => {
+
+            elements.forEach((el) => {
               const style = window.getComputedStyle(el);
               const color = style.color;
               const bgColor = style.backgroundColor;
-              
+
               // Very basic check - in production, use a proper contrast calculation
               if (color === bgColor && color !== 'rgba(0, 0, 0, 0)') {
                 lowContrastFound = true;
               }
             });
-            
+
             return lowContrastFound;
           });
-          
+
           if (hasLowContrast) {
             report.accessibilityIssues.push({
               description: 'Potential color contrast issues detected',
@@ -299,22 +310,26 @@ test.describe('Comprehensive Application Audit', () => {
         // Test critical user interactions
         if (pageConfig.path === '/') {
           // Test JSON editor
-          const editor = await page.locator('[data-testid="json-textarea"], .monaco-editor').first();
+          const editor = await page
+            .locator('[data-testid="json-textarea"], .monaco-editor')
+            .first();
           if (await editor.isVisible()) {
             // Try to interact with the editor
             await editor.click().catch(() => {});
-            
+
             // Check if format button works
             const formatButton = page.locator('button:has-text("Format")').first();
             if (await formatButton.isVisible()) {
               await formatButton.click().catch(() => {});
             }
           }
-          
+
           // Test view mode tabs
           const tabs = ['Flow', 'Tree', 'List'];
           for (const tab of tabs) {
-            const tabButton = page.locator(`[data-testid="${tab.toLowerCase()}-view"], button:has-text("${tab}")`).first();
+            const tabButton = page
+              .locator(`[data-testid="${tab.toLowerCase()}-view"], button:has-text("${tab}")`)
+              .first();
             if (await tabButton.isVisible()) {
               await tabButton.click().catch(() => {});
               await page.waitForLoadState('networkidle'); // Wait for view mode switch
@@ -323,13 +338,13 @@ test.describe('Comprehensive Application Audit', () => {
         }
 
         // Check for broken links
-        const links = await page.$$eval('a[href]', anchors => 
-          anchors.map(a => ({
+        const links = await page.$$eval('a[href]', (anchors) =>
+          anchors.map((a) => ({
             href: a.href,
             text: a.textContent,
           }))
         );
-        
+
         for (const link of links) {
           if (link.href.startsWith('http://localhost:3456')) {
             const response = await page.request.head(link.href).catch(() => null);
@@ -349,10 +364,13 @@ test.describe('Comprehensive Application Audit', () => {
         // Assert no critical errors
         expect(report.pageErrors.length).toBe(0);
         expect(report.hydrationErrors).toBe(false);
-        
+
         // Warn about console errors but don't fail
         if (report.consoleErrors.length > 0) {
-          console.warn(`Console errors found on ${pageConfig.name} (${viewport.name}):`, report.consoleErrors);
+          console.warn(
+            `Console errors found on ${pageConfig.name} (${viewport.name}):`,
+            report.consoleErrors
+          );
         }
       });
     }
@@ -416,7 +434,7 @@ test.describe('Comprehensive Application Audit', () => {
     // Check if memory increased significantly (more than 50MB)
     const memoryIncrease = (finalMemory - initialMemory) / 1024 / 1024;
     console.log(`Memory increase: ${memoryIncrease.toFixed(2)}MB`);
-    
+
     if (memoryIncrease > 50) {
       console.warn(`Potential memory leak detected: ${memoryIncrease.toFixed(2)}MB increase`);
     }
@@ -425,25 +443,21 @@ test.describe('Comprehensive Application Audit', () => {
   test('Security headers check', async ({ page }) => {
     const response = await page.goto('http://localhost:3456');
     const headers = response?.headers() || {};
-    
-    const securityHeaders = [
-      'x-content-type-options',
-      'x-frame-options',
-      'referrer-policy',
-    ];
-    
+
+    const securityHeaders = ['x-content-type-options', 'x-frame-options', 'referrer-policy'];
+
     const missingHeaders: string[] = [];
-    
-    securityHeaders.forEach(header => {
+
+    securityHeaders.forEach((header) => {
       if (!headers[header]) {
         missingHeaders.push(header);
       }
     });
-    
+
     if (missingHeaders.length > 0) {
       console.warn('Missing security headers:', missingHeaders);
     }
-    
+
     expect(missingHeaders.length).toBe(0);
   });
 });

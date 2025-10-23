@@ -64,4 +64,3 @@ export function TabTransition({ children, activeKey, className = '' }: TabTransi
     </AnimatePresence>
   );
 }
-

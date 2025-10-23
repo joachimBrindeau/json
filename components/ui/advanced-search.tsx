@@ -11,21 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Search,
-  Filter,
-  X,
-  Calendar,
-  Hash,
-  SortAsc,
-  FileText,
-  Activity
-} from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, Filter, X, Calendar, Hash, SortAsc, FileText, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface SearchFilters {
@@ -52,14 +39,14 @@ export function AdvancedSearch({
   onFiltersChange,
   categories = [
     'API Response',
-    'Configuration', 
+    'Configuration',
     'Database Schema',
     'Test Data',
     'Template',
-    'Example'
+    'Example',
   ],
   availableTags = [],
-  className
+  className,
 }: AdvancedSearchProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -75,7 +62,7 @@ export function AdvancedSearch({
     filters.dateRange,
     filters.complexity,
     filters.minSize,
-    filters.maxSize
+    filters.maxSize,
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
@@ -87,12 +74,15 @@ export function AdvancedSearch({
       dateRange: '',
       complexity: '',
       minSize: '',
-      maxSize: ''
+      maxSize: '',
     });
   };
 
   const removeTag = (tagToRemove: string) => {
-    updateFilter('tags', (filters.tags || []).filter(tag => tag !== tagToRemove));
+    updateFilter(
+      'tags',
+      (filters.tags || []).filter((tag) => tag !== tagToRemove)
+    );
   };
 
   return (
@@ -121,8 +111,10 @@ export function AdvancedSearch({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categories.map(category => (
-              <SelectItem key={category} value={category}>{category}</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -149,7 +141,10 @@ export function AdvancedSearch({
               <Filter className="h-4 w-4 mr-2" />
               More
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                <Badge
+                  variant="secondary"
+                  className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                >
                   {activeFiltersCount}
                 </Badge>
               )}
@@ -172,7 +167,10 @@ export function AdvancedSearch({
                   <Calendar className="h-4 w-4" />
                   Date Range
                 </label>
-                <Select value={filters.dateRange || 'all'} onValueChange={(value) => updateFilter('dateRange', value === 'all' ? '' : value)}>
+                <Select
+                  value={filters.dateRange || 'all'}
+                  onValueChange={(value) => updateFilter('dateRange', value === 'all' ? '' : value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Any time" />
                   </SelectTrigger>
@@ -192,7 +190,12 @@ export function AdvancedSearch({
                   <Activity className="h-4 w-4" />
                   Complexity
                 </label>
-                <Select value={filters.complexity || 'all'} onValueChange={(value) => updateFilter('complexity', value === 'all' ? '' : value)}>
+                <Select
+                  value={filters.complexity || 'all'}
+                  onValueChange={(value) =>
+                    updateFilter('complexity', value === 'all' ? '' : value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Any complexity" />
                   </SelectTrigger>
@@ -213,7 +216,12 @@ export function AdvancedSearch({
                   Size Range
                 </label>
                 <div className="flex gap-2">
-                  <Select value={filters.minSize || 'none'} onValueChange={(value) => updateFilter('minSize', value === 'none' ? '' : value)}>
+                  <Select
+                    value={filters.minSize || 'none'}
+                    onValueChange={(value) =>
+                      updateFilter('minSize', value === 'none' ? '' : value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Min" />
                     </SelectTrigger>
@@ -225,7 +233,12 @@ export function AdvancedSearch({
                       <SelectItem value="1mb">1 MB</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={filters.maxSize || 'none'} onValueChange={(value) => updateFilter('maxSize', value === 'none' ? '' : value)}>
+                  <Select
+                    value={filters.maxSize || 'none'}
+                    onValueChange={(value) =>
+                      updateFilter('maxSize', value === 'none' ? '' : value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Max" />
                     </SelectTrigger>
@@ -251,11 +264,11 @@ export function AdvancedSearch({
             <Hash className="h-3 w-3" />
             Tags:
           </span>
-          {(filters.tags || []).map(tag => (
+          {(filters.tags || []).map((tag) => (
             <Badge key={tag} variant="secondary" className="gap-1">
               {tag}
-              <X 
-                className="h-3 w-3 cursor-pointer hover:text-destructive" 
+              <X
+                className="h-3 w-3 cursor-pointer hover:text-destructive"
                 onClick={() => removeTag(tag)}
               />
             </Badge>

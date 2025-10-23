@@ -21,15 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  CheckSquare,
-  Square,
-  Trash2,
-  Download,
-  Archive,
-  MoreVertical,
-  X
-} from 'lucide-react';
+import { CheckSquare, Square, Trash2, Download, Archive, MoreVertical, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -58,7 +50,7 @@ export function BulkOperations({
   onBulkExport,
   onBulkArchive,
   className,
-  disabled = false
+  disabled = false,
 }: BulkOperationsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -71,13 +63,13 @@ export function BulkOperations({
     if (allSelected) {
       onSelectionChange([]);
     } else {
-      onSelectionChange(items.map(item => item.id));
+      onSelectionChange(items.map((item) => item.id));
     }
   };
 
   const toggleItem = (id: string) => {
     if (selectedIds.includes(id)) {
-      onSelectionChange(selectedIds.filter(selectedId => selectedId !== id));
+      onSelectionChange(selectedIds.filter((selectedId) => selectedId !== id));
     } else {
       onSelectionChange([...selectedIds, id]);
     }
@@ -101,7 +93,10 @@ export function BulkOperations({
       }
       onSelectionChange([]); // Clear selection after action
     } catch (error) {
-      logger.error({ err: error, action, selectedCount: selectedIds.length }, `Bulk ${action} operation failed`);
+      logger.error(
+        { err: error, action, selectedCount: selectedIds.length },
+        `Bulk ${action} operation failed`
+      );
     } finally {
       setIsLoading(null);
     }
@@ -128,7 +123,7 @@ export function BulkOperations({
             disabled={disabled}
             className="data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
           />
-          
+
           <span className="text-sm text-muted-foreground">
             {selectedCount > 0 ? (
               <>
@@ -162,6 +157,7 @@ export function BulkOperations({
               <Button
                 variant="outline"
                 size="sm"
+                data-testid="batch-export"
                 onClick={() => handleBulkAction('export')}
                 disabled={isLoading !== null}
                 className="flex items-center gap-2"
@@ -193,7 +189,7 @@ export function BulkOperations({
                     Archive {selectedCount} items
                   </DropdownMenuItem>
                 )}
-                
+
                 {onBulkDelete && (
                   <>
                     <DropdownMenuSeparator />
@@ -224,10 +220,12 @@ export function BulkOperations({
                 <div className="mt-2 text-sm">
                   <strong>Items to delete:</strong>
                   <ul className="mt-1 list-disc list-inside">
-                    {selectedIds.map(id => {
-                      const item = items.find(item => item.id === id);
+                    {selectedIds.map((id) => {
+                      const item = items.find((item) => item.id === id);
                       return item ? (
-                        <li key={id} className="truncate">{item.title}</li>
+                        <li key={id} className="truncate">
+                          {item.title}
+                        </li>
                       ) : null;
                     })}
                   </ul>
@@ -256,7 +254,7 @@ export function BulkCheckbox({
   checked,
   onCheckedChange,
   disabled = false,
-  className
+  className,
 }: {
   id: string;
   checked: boolean;
@@ -270,8 +268,8 @@ export function BulkCheckbox({
       onCheckedChange={onCheckedChange}
       disabled={disabled}
       className={cn(
-        "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
-        checked && "opacity-100",
+        'absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity',
+        checked && 'opacity-100',
         className
       )}
     />

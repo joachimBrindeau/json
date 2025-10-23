@@ -1,7 +1,10 @@
 import { memo, useCallback } from 'react';
 import { NodeProps, Handle, Position, useEdges } from '@xyflow/react';
 import { NodeType, ArrayNodeData } from '@/components/features/viewer/flow/utils/flow-types';
-import { isEmptyArray, encloseSquareBrackets } from '@/components/features/viewer/flow/utils/flow-utils';
+import {
+  isEmptyArray,
+  encloseSquareBrackets,
+} from '@/components/features/viewer/flow/utils/flow-utils';
 import { ROOT_NODE_NAME } from '@/components/features/viewer/flow/utils/flow-constants';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
@@ -29,15 +32,13 @@ const ArrayNodeComponent = ({ id, data }: NodeProps<any>) => {
 
   const renderItems = useCallback(() => {
     if (isEmptyArray(items)) {
-      return (
-        <div className="text-center text-gray-400 text-xs py-4 italic">
-          Empty array
-        </div>
-      );
+      return <div className="text-center text-gray-400 text-xs py-4 italic">Empty array</div>;
     }
 
     // Find all child nodes for this array
-    const childEdges = edges.filter(edge => edge.source === id && !edge.sourceHandle?.startsWith('chain-'));
+    const childEdges = edges.filter(
+      (edge) => edge.source === id && !edge.sourceHandle?.startsWith('chain-')
+    );
 
     return childEdges.map((edge, index) => {
       const childNodeId = edge.target;

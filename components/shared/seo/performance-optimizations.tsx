@@ -32,7 +32,7 @@ export function PerformanceOptimizations() {
 
       // Preconnect to external domains
       const preconnectDomains = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
-      preconnectDomains.forEach(domain => {
+      preconnectDomains.forEach((domain) => {
         const link = document.createElement('link');
         link.rel = 'preconnect';
         link.href = domain;
@@ -59,7 +59,7 @@ export function PerformanceOptimizations() {
         { rel: 'preconnect', href: 'https://jsonviewer.app' },
       ];
 
-      hints.forEach(hint => {
+      hints.forEach((hint) => {
         if (!document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`)) {
           const link = document.createElement('link');
           link.rel = hint.rel;
@@ -79,14 +79,15 @@ export function PerformanceOptimizations() {
       // Clear any large cached data older than 1 hour
       const clearExpiredCache = () => {
         const cacheKeys = Object.keys(sessionStorage);
-        cacheKeys.forEach(key => {
+        cacheKeys.forEach((key) => {
           if (key.startsWith('json-cache-')) {
             try {
               const item = sessionStorage.getItem(key);
               if (item) {
                 const parsed = JSON.parse(item);
                 const age = Date.now() - (parsed.timestamp || 0);
-                if (age > 3600000) { // 1 hour
+                if (age > 3600000) {
+                  // 1 hour
                   sessionStorage.removeItem(key);
                 }
               }
@@ -157,23 +158,23 @@ export function PerformanceOptimizations() {
  */
 export function PerformanceSchema() {
   const performanceData = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "JSON Viewer",
-    "applicationCategory": "DeveloperApplication",
-    "featureList": [
-      "Real-time JSON formatting",
-      "Instant validation",
-      "Zero-latency editing",
-      "Progressive loading for large files",
-      "Offline functionality"
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'JSON Viewer',
+    applicationCategory: 'DeveloperApplication',
+    featureList: [
+      'Real-time JSON formatting',
+      'Instant validation',
+      'Zero-latency editing',
+      'Progressive loading for large files',
+      'Offline functionality',
     ],
-    "requirements": "Modern web browser with JavaScript enabled",
-    "softwareVersion": "2.0",
-    "operatingSystem": "Any",
-    "processorRequirements": "Any",
-    "memoryRequirements": "Minimal - runs efficiently on low-end devices",
-    "storageRequirements": "None - purely web-based application"
+    requirements: 'Modern web browser with JavaScript enabled',
+    softwareVersion: '2.0',
+    operatingSystem: 'Any',
+    processorRequirements: 'Any',
+    memoryRequirements: 'Minimal - runs efficiently on low-end devices',
+    storageRequirements: 'None - purely web-based application',
   };
 
   return (
@@ -181,7 +182,7 @@ export function PerformanceSchema() {
       id="performance-schema"
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(performanceData)
+        __html: JSON.stringify(performanceData),
       }}
     />
   );

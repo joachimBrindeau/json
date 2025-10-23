@@ -386,7 +386,7 @@ export function stream(
   const responseHeaders: Record<string, string> = {
     'Content-Type': contentType,
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
+    Connection: 'keep-alive',
     ...headers,
   };
 
@@ -425,7 +425,7 @@ export function jsonStream(
         }
 
         // Send chunks
-        chunks.forEach(chunk => {
+        chunks.forEach((chunk) => {
           controller.enqueue(encoder.encode(chunk));
         });
 
@@ -492,7 +492,7 @@ export function serverSentEvents(
   const responseHeaders = {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
+    Connection: 'keep-alive',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Cache-Control',
     ...headers,
@@ -522,11 +522,11 @@ export function serverSentEvents(
 export function formatSSEData(data: unknown, event?: string): string {
   const encoder = new TextEncoder();
   let formatted = '';
-  
+
   if (event) {
     formatted += `event: ${event}\n`;
   }
-  
+
   formatted += `data: ${JSON.stringify(data)}\n\n`;
   return formatted;
 }

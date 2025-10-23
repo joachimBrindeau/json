@@ -20,9 +20,9 @@ async function main() {
 
   // Create test users
   console.log('👤 Creating test users...');
-  
+
   const hashedPassword = await bcrypt.hash('TestPassword123!', 10);
-  
+
   const users = [
     {
       email: 'admin@jsonviewer.app',
@@ -50,7 +50,7 @@ async function main() {
 
   // Create sample JSON documents
   console.log('\n📄 Creating sample JSON documents...');
-  
+
   const sampleDocs = [
     {
       title: 'Sample API Response',
@@ -263,7 +263,7 @@ async function main() {
   // Create some private documents for the test user
   if (testUser) {
     console.log('\n🔒 Creating private documents for test user...');
-    
+
     const privateDocs = [
       {
         title: 'My Private Notes',
@@ -296,13 +296,13 @@ async function main() {
   }
 
   console.log('\n✨ Database seeding completed successfully!\n');
-  
+
   // Print summary
   const userCount = await prisma.user.count();
   const docCount = await prisma.jsonDocument.count();
   const publicDocs = await prisma.jsonDocument.count({ where: { visibility: 'public' } });
   const privateDocs = await prisma.jsonDocument.count({ where: { visibility: 'private' } });
-  
+
   console.log('📊 Summary:');
   console.log(`  - Users created: ${userCount}`);
   console.log(`  - Documents created: ${docCount}`);

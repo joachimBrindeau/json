@@ -202,13 +202,9 @@ test.describe('Developer - Library API Access', () => {
       expect(contentResponse.data).toHaveProperty('stats');
 
       // Test retrieving just metadata without content
-      const metadataResponse = await apiHelper.apiCall(
-        'GET',
-        `/api/library/${jsonId}/metadata`,
-        {
-          expectedStatus: 200,
-        }
-      );
+      const metadataResponse = await apiHelper.apiCall('GET', `/api/library/${jsonId}/metadata`, {
+        expectedStatus: 200,
+      });
 
       expect(metadataResponse.data).toHaveProperty('id', jsonId);
       expect(metadataResponse.data).toHaveProperty('title');
@@ -216,13 +212,9 @@ test.describe('Developer - Library API Access', () => {
       expect(metadataResponse.data).not.toHaveProperty('content');
 
       // Test retrieving only the JSON content
-      const rawContentResponse = await apiHelper.apiCall(
-        'GET',
-        `/api/library/${jsonId}/content`,
-        {
-          expectedStatus: 200,
-        }
-      );
+      const rawContentResponse = await apiHelper.apiCall('GET', `/api/library/${jsonId}/content`, {
+        expectedStatus: 200,
+      });
 
       expect(rawContentResponse.data).toHaveProperty('order');
       expect(rawContentResponse.data.metadata).toHaveProperty('version', '1.0.0');
@@ -231,14 +223,10 @@ test.describe('Developer - Library API Access', () => {
       const formats = ['json', 'pretty', 'minified', 'yaml'];
 
       for (const format of formats) {
-        const formatResponse = await apiHelper.apiCall(
-          'GET',
-          `/api/library/${jsonId}/content`,
-          {
-            params: { format },
-            expectedStatus: 200,
-          }
-        );
+        const formatResponse = await apiHelper.apiCall('GET', `/api/library/${jsonId}/content`, {
+          params: { format },
+          expectedStatus: 200,
+        });
 
         expect(formatResponse.status).toBe(200);
 
@@ -252,13 +240,9 @@ test.describe('Developer - Library API Access', () => {
       }
 
       // Test retrieving JSON schema/structure
-      const schemaResponse = await apiHelper.apiCall(
-        'GET',
-        `/api/library/${jsonId}/schema`,
-        {
-          expectedStatus: 200,
-        }
-      );
+      const schemaResponse = await apiHelper.apiCall('GET', `/api/library/${jsonId}/schema`, {
+        expectedStatus: 200,
+      });
 
       expect(schemaResponse.data).toHaveProperty('schema');
       expect(schemaResponse.data).toHaveProperty('structure');
@@ -267,13 +251,9 @@ test.describe('Developer - Library API Access', () => {
       expect(schemaResponse.data.structure).toHaveProperty('maxDepth');
 
       // Test analytics for public JSON
-      const analyticsResponse = await apiHelper.apiCall(
-        'GET',
-        `/api/library/${jsonId}/analytics`,
-        {
-          expectedStatus: 200,
-        }
-      );
+      const analyticsResponse = await apiHelper.apiCall('GET', `/api/library/${jsonId}/analytics`, {
+        expectedStatus: 200,
+      });
 
       expect(analyticsResponse.data).toHaveProperty('views');
       expect(analyticsResponse.data).toHaveProperty('downloads');
@@ -289,13 +269,9 @@ test.describe('Developer - Library API Access', () => {
         expectedStatus: 200,
       });
 
-      const updatedAnalytics = await apiHelper.apiCall(
-        'GET',
-        `/api/library/${jsonId}/analytics`,
-        {
-          expectedStatus: 200,
-        }
-      );
+      const updatedAnalytics = await apiHelper.apiCall('GET', `/api/library/${jsonId}/analytics`, {
+        expectedStatus: 200,
+      });
 
       expect(updatedAnalytics.data.views).toBeGreaterThan(analyticsResponse.data.views);
     });
@@ -346,17 +322,13 @@ test.describe('Developer - Library API Access', () => {
       });
 
       // Test bulk metadata retrieval
-      const bulkMetadataResponse = await apiHelper.apiCall(
-        'POST',
-        '/api/library/bulk-metadata',
-        {
-          data: {
-            ids: bulkJsons.slice(0, 3),
-            fields: ['title', 'description', 'category', 'tags', 'created'],
-          },
-          expectedStatus: 200,
-        }
-      );
+      const bulkMetadataResponse = await apiHelper.apiCall('POST', '/api/library/bulk-metadata', {
+        data: {
+          ids: bulkJsons.slice(0, 3),
+          fields: ['title', 'description', 'category', 'tags', 'created'],
+        },
+        expectedStatus: 200,
+      });
 
       expect(bulkMetadataResponse.data.items).toHaveLength(3);
       bulkMetadataResponse.data.items.forEach((item) => {
@@ -367,37 +339,29 @@ test.describe('Developer - Library API Access', () => {
       });
 
       // Test bulk download in different formats
-      const bulkDownloadResponse = await apiHelper.apiCall(
-        'POST',
-        '/api/library/bulk-download',
-        {
-          data: {
-            ids: bulkJsons.slice(0, 2),
-            format: 'zip',
-            includeMetadata: true,
-            naming: 'title',
-          },
-          expectedStatus: 200,
-        }
-      );
+      const bulkDownloadResponse = await apiHelper.apiCall('POST', '/api/library/bulk-download', {
+        data: {
+          ids: bulkJsons.slice(0, 2),
+          format: 'zip',
+          includeMetadata: true,
+          naming: 'title',
+        },
+        expectedStatus: 200,
+      });
 
       expect(bulkDownloadResponse.status).toBe(200);
       expect(bulkDownloadResponse.response.headers()['content-type']).toContain('application/zip');
 
       // Test collection creation and retrieval
-      const collectionResponse = await apiHelper.apiCall(
-        'POST',
-        '/api/library/collections',
-        {
-          data: {
-            name: 'Bulk Test Collection',
-            description: 'Collection of bulk test items',
-            items: bulkJsons,
-            isPublic: true,
-          },
-          expectedStatus: 201,
-        }
-      );
+      const collectionResponse = await apiHelper.apiCall('POST', '/api/library/collections', {
+        data: {
+          name: 'Bulk Test Collection',
+          description: 'Collection of bulk test items',
+          items: bulkJsons,
+          isPublic: true,
+        },
+        expectedStatus: 201,
+      });
 
       const collectionId = collectionResponse.data.id;
 
@@ -503,13 +467,9 @@ test.describe('Developer - Library API Access', () => {
       }
 
       // Test tag hierarchy and parent-child relationships
-      const tagHierarchyResponse = await apiHelper.apiCall(
-        'GET',
-        '/api/library/tags/hierarchy',
-        {
-          expectedStatus: 200,
-        }
-      );
+      const tagHierarchyResponse = await apiHelper.apiCall('GET', '/api/library/tags/hierarchy', {
+        expectedStatus: 200,
+      });
 
       expect(tagHierarchyResponse.data).toHaveProperty('hierarchy');
       expect(tagHierarchyResponse.data.hierarchy).toHaveProperty('root');
@@ -691,35 +651,31 @@ test.describe('Developer - Library API Access', () => {
       expect(textSearchResponse.data.results.length).toBeGreaterThan(0);
 
       // Test faceted search
-      const facetedSearchResponse = await apiHelper.apiCall(
-        'POST',
-        '/api/library/search/faceted',
-        {
-          data: {
-            query: 'analytics',
-            facets: {
-              category: ['Analytics', 'API Response'],
-              tags: ['analytics', 'api'],
-              dateRange: {
-                field: 'created',
-                from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                to: new Date().toISOString(),
-              },
-            },
-            sort: {
-              field: 'relevance',
-              order: 'desc',
-            },
-            limit: 20,
-            offset: 0,
-            highlight: {
-              fields: ['title', 'description'],
-              fragments: 3,
+      const facetedSearchResponse = await apiHelper.apiCall('POST', '/api/library/search/faceted', {
+        data: {
+          query: 'analytics',
+          facets: {
+            category: ['Analytics', 'API Response'],
+            tags: ['analytics', 'api'],
+            dateRange: {
+              field: 'created',
+              from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+              to: new Date().toISOString(),
             },
           },
-          expectedStatus: 200,
-        }
-      );
+          sort: {
+            field: 'relevance',
+            order: 'desc',
+          },
+          limit: 20,
+          offset: 0,
+          highlight: {
+            fields: ['title', 'description'],
+            fragments: 3,
+          },
+        },
+        expectedStatus: 200,
+      });
 
       expect(facetedSearchResponse.data).toHaveProperty('results');
       expect(facetedSearchResponse.data).toHaveProperty('facets');
@@ -789,29 +745,21 @@ test.describe('Developer - Library API Access', () => {
       expect(suggestionsResponse.data.suggestions).toHaveProperty('term');
 
       // Test saved searches and search history
-      const saveSearchResponse = await apiHelper.apiCall(
-        'POST',
-        '/api/library/search/save',
-        {
-          data: {
-            name: 'My Analytics Search',
-            query: 'analytics dashboard',
-            filters: { category: 'Analytics' },
-            isPublic: false,
-          },
-          expectedStatus: 201,
-        }
-      );
+      const saveSearchResponse = await apiHelper.apiCall('POST', '/api/library/search/save', {
+        data: {
+          name: 'My Analytics Search',
+          query: 'analytics dashboard',
+          filters: { category: 'Analytics' },
+          isPublic: false,
+        },
+        expectedStatus: 201,
+      });
 
       expect(saveSearchResponse.data).toHaveProperty('savedSearchId');
 
-      const savedSearchesResponse = await apiHelper.apiCall(
-        'GET',
-        '/api/library/search/saved',
-        {
-          expectedStatus: 200,
-        }
-      );
+      const savedSearchesResponse = await apiHelper.apiCall('GET', '/api/library/search/saved', {
+        expectedStatus: 200,
+      });
 
       expect(savedSearchesResponse.data).toHaveProperty('savedSearches');
       expect(Array.isArray(savedSearchesResponse.data.savedSearches)).toBe(true);
@@ -930,18 +878,14 @@ test.describe('Developer - Library API Access', () => {
       });
 
       // Test usage trends
-      const trendsResponse = await apiHelper.apiCall(
-        'GET',
-        '/api/library/analytics/trends',
-        {
-          params: {
-            metrics: 'views,downloads,uploads',
-            timeframe: '30d',
-            interval: 'day',
-          },
-          expectedStatus: 200,
-        }
-      );
+      const trendsResponse = await apiHelper.apiCall('GET', '/api/library/analytics/trends', {
+        params: {
+          metrics: 'views,downloads,uploads',
+          timeframe: '30d',
+          interval: 'day',
+        },
+        expectedStatus: 200,
+      });
 
       expect(trendsResponse.data).toHaveProperty('trends');
       expect(trendsResponse.data.trends).toHaveProperty('views');
@@ -949,18 +893,14 @@ test.describe('Developer - Library API Access', () => {
       expect(trendsResponse.data.trends).toHaveProperty('uploads');
 
       // Test user behavior analytics
-      const behaviorResponse = await apiHelper.apiCall(
-        'GET',
-        '/api/library/analytics/behavior',
-        {
-          params: {
-            timeframe: '7d',
-            includePathAnalysis: 'true',
-            includeSessionData: 'true',
-          },
-          expectedStatus: 200,
-        }
-      );
+      const behaviorResponse = await apiHelper.apiCall('GET', '/api/library/analytics/behavior', {
+        params: {
+          timeframe: '7d',
+          includePathAnalysis: 'true',
+          includeSessionData: 'true',
+        },
+        expectedStatus: 200,
+      });
 
       expect(behaviorResponse.data).toHaveProperty('avgSessionDuration');
       expect(behaviorResponse.data).toHaveProperty('bounceRate');
@@ -969,13 +909,9 @@ test.describe('Developer - Library API Access', () => {
       expect(behaviorResponse.data).toHaveProperty('conversionRates');
 
       // Test real-time analytics
-      const realtimeResponse = await apiHelper.apiCall(
-        'GET',
-        '/api/library/analytics/realtime',
-        {
-          expectedStatus: 200,
-        }
-      );
+      const realtimeResponse = await apiHelper.apiCall('GET', '/api/library/analytics/realtime', {
+        expectedStatus: 200,
+      });
 
       expect(realtimeResponse.data).toHaveProperty('activeUsers');
       expect(realtimeResponse.data).toHaveProperty('currentViews');

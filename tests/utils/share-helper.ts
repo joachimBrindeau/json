@@ -20,11 +20,7 @@ export class ShareHelper {
   public readonly viewerPage: JsonViewerPage;
   public readonly libraryPage?: LibraryPage;
 
-  constructor(
-    page: Page,
-    viewerPage: JsonViewerPage,
-    libraryPage?: LibraryPage
-  ) {
+  constructor(page: Page, viewerPage: JsonViewerPage, libraryPage?: LibraryPage) {
     this.page = page;
     this.viewerPage = viewerPage;
     this.libraryPage = libraryPage;
@@ -34,8 +30,10 @@ export class ShareHelper {
    * Common pattern: Find and click share button with multiple selectors
    */
   async clickShareButton(): Promise<boolean> {
-    const shareButton = this.page.locator('[data-testid="share-button"], button:has-text("Share"), .share-btn');
-    
+    const shareButton = this.page.locator(
+      '[data-testid="share-button"], button:has-text("Share"), .share-btn'
+    );
+
     if (await shareButton.isVisible({ timeout: 5000 })) {
       await shareButton.click();
       await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
@@ -49,7 +47,7 @@ export class ShareHelper {
    */
   async waitForShareModal(): Promise<boolean> {
     const shareModal = this.page.locator('[data-testid="share-modal"], .modal, .share-dialog');
-    
+
     try {
       await expect(shareModal).toBeVisible({ timeout: 5000 });
       return true;
@@ -63,7 +61,7 @@ export class ShareHelper {
    */
   async getShareUrl(): Promise<string | null> {
     const shareUrl = this.page.locator('[data-testid="share-url"], input[readonly], .share-url');
-    
+
     if (await shareUrl.isVisible()) {
       const url = await shareUrl.inputValue();
       if (url && url.match(/https?:\/\/.+/)) {
@@ -77,14 +75,20 @@ export class ShareHelper {
    * Common pattern: Copy share URL to clipboard
    */
   async copyShareUrl(): Promise<boolean> {
-    const copyButton = this.page.locator('[data-testid="copy-share-url"], button:has-text("Copy"), .copy-btn');
-    
+    const copyButton = this.page.locator(
+      '[data-testid="copy-share-url"], button:has-text("Copy"), .copy-btn'
+    );
+
     if (await copyButton.isVisible()) {
       await copyButton.click();
-      
+
       // Check for success message
-      const successMessage = this.page.locator('[data-testid="copy-success"], .success-message, .toast');
-      await expect(successMessage).toBeVisible({ timeout: 3000 }).catch(() => {});
+      const successMessage = this.page.locator(
+        '[data-testid="copy-success"], .success-message, .toast'
+      );
+      await expect(successMessage)
+        .toBeVisible({ timeout: 3000 })
+        .catch(() => {});
       return await successMessage.isVisible({ timeout: 1000 }).catch(() => false);
     }
     return false;
@@ -126,7 +130,9 @@ export class ShareHelper {
   private async configureShareOptions(options: ShareOptions): Promise<void> {
     // Set expiration if provided
     if (options.expiration) {
-      const expirationSelect = this.page.locator('[data-testid="expiration-select"], select[name="expiration"], .expiration-dropdown');
+      const expirationSelect = this.page.locator(
+        '[data-testid="expiration-select"], select[name="expiration"], .expiration-dropdown'
+      );
       if (await expirationSelect.isVisible({ timeout: 2000 })) {
         try {
           await expirationSelect.selectOption(options.expiration);
@@ -139,16 +145,24 @@ export class ShareHelper {
 
     // Set password protection if provided
     if (options.password) {
-      const passwordCheckbox = this.page.locator('[data-testid="password-protect"], input[type="checkbox"], .password-option');
+      const passwordCheckbox = this.page.locator(
+        '[data-testid="password-protect"], input[type="checkbox"], .password-option'
+      );
       if (await passwordCheckbox.isVisible({ timeout: 2000 })) {
         await passwordCheckbox.check();
-        
-        const passwordInput = this.page.locator('[data-testid="share-password"], input[type="password"], .password-input');
-        await expect(passwordInput).toBeVisible({ timeout: 2000 }).catch(() => {});
+
+        const passwordInput = this.page.locator(
+          '[data-testid="share-password"], input[type="password"], .password-input'
+        );
+        await expect(passwordInput)
+          .toBeVisible({ timeout: 2000 })
+          .catch(() => {});
         if (await passwordInput.isVisible()) {
           await passwordInput.fill(options.password);
-          
-          const confirmPasswordInput = this.page.locator('[data-testid="confirm-password"], input[placeholder*="confirm"]');
+
+          const confirmPasswordInput = this.page.locator(
+            '[data-testid="confirm-password"], input[placeholder*="confirm"]'
+          );
           if (await confirmPasswordInput.isVisible()) {
             await confirmPasswordInput.fill(options.password);
           }
@@ -158,7 +172,9 @@ export class ShareHelper {
 
     // Set visibility if provided
     if (options.visibility) {
-      const visibilityOption = this.page.locator(`[data-testid="${options.visibility}-share"], input[value="${options.visibility}"], .${options.visibility}-option`);
+      const visibilityOption = this.page.locator(
+        `[data-testid="${options.visibility}-share"], input[value="${options.visibility}"], .${options.visibility}-option`
+      );
       if (await visibilityOption.isVisible({ timeout: 2000 })) {
         await visibilityOption.click();
         await this.page.waitForLoadState('domcontentloaded').catch(() => {});
@@ -166,7 +182,9 @@ export class ShareHelper {
     }
 
     // Generate share link if there's a generate button
-    const generateButton = this.page.locator('[data-testid="generate-share"], button:has-text("Generate"), .generate-btn');
+    const generateButton = this.page.locator(
+      '[data-testid="generate-share"], button:has-text("Generate"), .generate-btn'
+    );
     if (await generateButton.isVisible()) {
       await generateButton.click();
       await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
@@ -180,15 +198,15 @@ export class ShareHelper {
     try {
       // Close any open modals first
       await this.closeShareModal();
-      
+
       // Navigate to share URL
       await this.page.goto(url);
       await this.viewerPage.waitForLoad();
-      
+
       // Should load the shared JSON
       await this.viewerPage.waitForJSONProcessed();
       const hasErrors = await this.viewerPage.hasJSONErrors();
-      
+
       return !hasErrors;
     } catch {
       return false;
@@ -199,29 +217,37 @@ export class ShareHelper {
    * Common pattern: Close share modal
    */
   async closeShareModal(): Promise<void> {
-    const closeButton = this.page.locator('[data-testid="close-modal"], button:has-text("Close"), .close-btn');
+    const closeButton = this.page.locator(
+      '[data-testid="close-modal"], button:has-text("Close"), .close-btn'
+    );
     const modal = this.page.locator('[data-testid="share-modal"], .modal, .share-dialog');
-    
+
     if (await closeButton.isVisible()) {
       await closeButton.click();
     } else {
       await this.page.keyboard.press('Escape');
     }
-    
-    await expect(modal).not.toBeVisible({ timeout: 2000 }).catch(() => {});
+
+    await expect(modal)
+      .not.toBeVisible({ timeout: 2000 })
+      .catch(() => {});
   }
 
   /**
    * Common pattern: Generate QR code for sharing
    */
   async generateQRCode(): Promise<boolean> {
-    const qrButton = this.page.locator('[data-testid="qr-code"], button:has-text("QR Code"), .qr-btn');
+    const qrButton = this.page.locator(
+      '[data-testid="qr-code"], button:has-text("QR Code"), .qr-btn'
+    );
     if (await qrButton.isVisible({ timeout: 2000 })) {
       await qrButton.click();
 
       // Check if QR code appears
       const qrCodeImage = this.page.locator('[data-testid="qr-image"], img, canvas, .qr-code');
-      await expect(qrCodeImage).toBeVisible({ timeout: 3000 }).catch(() => {});
+      await expect(qrCodeImage)
+        .toBeVisible({ timeout: 3000 })
+        .catch(() => {});
       return await qrCodeImage.isVisible({ timeout: 1000 }).catch(() => false);
     }
     return false;
@@ -232,13 +258,22 @@ export class ShareHelper {
    */
   async checkSocialSharingOptions(): Promise<string[]> {
     const availableOptions: string[] = [];
-    
+
     const socialSection = this.page.locator('[data-testid="social-share"], .social-sharing');
     if (await socialSection.isVisible({ timeout: 2000 })) {
       const platforms = [
-        { name: 'twitter', selector: '[data-testid="share-twitter"], .twitter-share, button:has-text("Twitter")' },
-        { name: 'linkedin', selector: '[data-testid="share-linkedin"], .linkedin-share, button:has-text("LinkedIn")' },
-        { name: 'facebook', selector: '[data-testid="share-facebook"], .facebook-share, button:has-text("Facebook")' }
+        {
+          name: 'twitter',
+          selector: '[data-testid="share-twitter"], .twitter-share, button:has-text("Twitter")',
+        },
+        {
+          name: 'linkedin',
+          selector: '[data-testid="share-linkedin"], .linkedin-share, button:has-text("LinkedIn")',
+        },
+        {
+          name: 'facebook',
+          selector: '[data-testid="share-facebook"], .facebook-share, button:has-text("Facebook")',
+        },
       ];
 
       for (const platform of platforms) {
@@ -257,25 +292,35 @@ export class ShareHelper {
    */
   async revokeShareLink(shareUrl: string): Promise<boolean> {
     // Find and click revoke button
-    const revokeButton = this.page.locator('[data-testid="revoke-share"], button:has-text("Revoke"), .revoke-btn');
+    const revokeButton = this.page.locator(
+      '[data-testid="revoke-share"], button:has-text("Revoke"), .revoke-btn'
+    );
     if (await revokeButton.isVisible()) {
       await revokeButton.click();
-      
+
       // Confirm revocation
-      const confirmButton = this.page.locator('[data-testid="confirm-revoke"], button:has-text("Confirm")');
-      await expect(confirmButton).toBeVisible({ timeout: 2000 }).catch(() => {});
+      const confirmButton = this.page.locator(
+        '[data-testid="confirm-revoke"], button:has-text("Confirm")'
+      );
+      await expect(confirmButton)
+        .toBeVisible({ timeout: 2000 })
+        .catch(() => {});
       if (await confirmButton.isVisible()) {
         await confirmButton.click();
 
         // Check for success message
-        const successMessage = this.page.locator('[data-testid="revoke-success"], .success-message');
+        const successMessage = this.page.locator(
+          '[data-testid="revoke-success"], .success-message'
+        );
         if (await successMessage.isVisible()) {
           // Verify URL is no longer accessible
           try {
             await this.page.goto(shareUrl);
             await this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
-            
-            const accessDenied = this.page.locator('[data-testid="access-denied"], .error-404, .not-found');
+
+            const accessDenied = this.page.locator(
+              '[data-testid="access-denied"], .error-404, .not-found'
+            );
             return await accessDenied.isVisible({ timeout: 3000 });
           } catch {
             return false;
@@ -290,7 +335,9 @@ export class ShareHelper {
    * Common pattern: Check share analytics
    */
   async getShareAnalytics(): Promise<{ views?: number; shares?: number } | null> {
-    const analyticsSection = this.page.locator('[data-testid="share-analytics"], .analytics-section');
+    const analyticsSection = this.page.locator(
+      '[data-testid="share-analytics"], .analytics-section'
+    );
     if (await analyticsSection.isVisible({ timeout: 3000 })) {
       const result: { views?: number; shares?: number } = {};
 

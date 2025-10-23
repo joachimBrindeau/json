@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
   User,
   Mail,
@@ -25,101 +25,101 @@ import {
   Chrome,
   Loader2,
   AlertCircle,
-} from 'lucide-react'
-import { formatDistanceToNow, format } from 'date-fns'
-import { logger } from '@/lib/logger'
-import { apiClient } from '@/lib/api/client'
-import { showApiErrorToast } from '@/lib/utils/toast-helpers'
+} from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/api/client';
+import { showApiErrorToast } from '@/lib/utils/toast-helpers';
 
 interface UserAccount {
-  provider: string
-  providerAccountId: string
-  type: string
+  provider: string;
+  providerAccountId: string;
+  type: string;
 }
 
 interface UserStatistics {
-  totalDocuments: number
-  publicDocuments: number
-  privateDocuments: number
-  totalSize: number
-  totalViews: number
-  uniqueTags: number
-  activeSessions: number
+  totalDocuments: number;
+  publicDocuments: number;
+  privateDocuments: number;
+  totalSize: number;
+  totalViews: number;
+  uniqueTags: number;
+  activeSessions: number;
 }
 
 interface RecentDocument {
-  id: string
-  title: string
-  visibility: string
-  views: number
-  size: number
-  tags: string[]
-  createdAt: string
-  updatedAt: string
+  id: string;
+  title: string;
+  visibility: string;
+  views: number;
+  size: number;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface UserDetails {
-  id: string
-  name?: string
-  email: string
-  emailVerified?: string | null
-  image?: string
-  createdAt: string
-  updatedAt: string
-  lastLogin?: string | null
-  accounts: UserAccount[]
-  statistics: UserStatistics
-  recentDocuments: RecentDocument[]
-  tags: string[]
+  id: string;
+  name?: string;
+  email: string;
+  emailVerified?: string | null;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastLogin?: string | null;
+  accounts: UserAccount[];
+  statistics: UserStatistics;
+  recentDocuments: RecentDocument[];
+  tags: string[];
 }
 
 interface UserDetailsModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  userId: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userId: string;
 }
 
 export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModalProps) {
-  const [user, setUser] = useState<UserDetails | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<UserDetails | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      if (!open || !userId) return
+      if (!open || !userId) return;
 
       try {
-        setLoading(true)
-        const data = await apiClient.get<{ user: UserDetails }>(`/api/admin/users/${userId}`)
-        setUser(data.user)
+        setLoading(true);
+        const data = await apiClient.get<{ user: UserDetails }>(`/api/admin/users/${userId}`);
+        setUser(data.user);
       } catch (error) {
-        logger.error({ err: error, userId }, 'Failed to fetch user details')
-        showApiErrorToast('Failed to load user details', error)
+        logger.error({ err: error, userId }, 'Failed to fetch user details');
+        showApiErrorToast('Failed to load user details', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchUserDetails()
-  }, [open, userId])
+    fetchUserDetails();
+  }, [open, userId]);
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-  }
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
 
   const getProviderIcon = (provider: string) => {
     switch (provider.toLowerCase()) {
       case 'github':
-        return <Github className="h-4 w-4" />
+        return <Github className="h-4 w-4" />;
       case 'google':
-        return <Chrome className="h-4 w-4" />
+        return <Chrome className="h-4 w-4" />;
       default:
-        return <User className="h-4 w-4" />
+        return <User className="h-4 w-4" />;
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -199,9 +199,7 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                       <Calendar className="h-4 w-4" />
                       Registered
                     </div>
-                    <div className="font-medium">
-                      {format(new Date(user.createdAt), 'PPP')}
-                    </div>
+                    <div className="font-medium">{format(new Date(user.createdAt), 'PPP')}</div>
                     <div className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
                     </div>
@@ -234,7 +232,10 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                 <CardContent>
                   <div className="space-y-2">
                     {user.accounts.map((account, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-2 rounded-md bg-muted/50"
+                      >
                         {getProviderIcon(account.provider)}
                         <div className="flex-1">
                           <div className="font-medium capitalize">{account.provider}</div>
@@ -242,7 +243,9 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                             Account ID: {account.providerAccountId}
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">{account.type}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {account.type}
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -264,7 +267,8 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                     </div>
                     <div className="text-2xl font-bold">{user.statistics.totalDocuments}</div>
                     <div className="text-xs text-muted-foreground">
-                      {user.statistics.publicDocuments} public, {user.statistics.privateDocuments} private
+                      {user.statistics.publicDocuments} public, {user.statistics.privateDocuments}{' '}
+                      private
                     </div>
                   </div>
 
@@ -281,7 +285,9 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                       <HardDrive className="h-4 w-4" />
                       Storage Used
                     </div>
-                    <div className="text-2xl font-bold">{formatBytes(user.statistics.totalSize)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatBytes(user.statistics.totalSize)}
+                    </div>
                   </div>
 
                   <div className="space-y-1">
@@ -310,7 +316,8 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
                           <div className="flex-1 min-w-0">
                             <div className="font-medium truncate">{doc.title}</div>
                             <div className="text-xs text-muted-foreground">
-                              Updated {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
+                              Updated{' '}
+                              {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                             </div>
                           </div>
                           <Badge variant={doc.visibility === 'public' ? 'default' : 'secondary'}>
@@ -364,5 +371,5 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

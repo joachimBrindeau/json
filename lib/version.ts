@@ -43,30 +43,30 @@ export function handleVersionUpdate(): void {
 
     // Clear all caches
     if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => caches.delete(name));
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
       });
     }
-    
+
     // Clear localStorage except for user preferences
     const preserveKeys = ['theme', 'user-preferences'];
     const preserved: Record<string, string> = {};
-    
-    preserveKeys.forEach(key => {
+
+    preserveKeys.forEach((key) => {
       const value = localStorage.getItem(key);
       if (value) preserved[key] = value;
     });
-    
+
     localStorage.clear();
-    
+
     // Restore preserved items
     Object.entries(preserved).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
-    
+
     // Store new version
     storeVersion();
-    
+
     // Force reload
     window.location.reload();
   } else {

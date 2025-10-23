@@ -20,40 +20,43 @@ export function useClipboard(options: UseClipboardOptions = {}) {
     errorMessage = 'Failed to copy',
     successDescription = 'Content copied to clipboard',
     errorDescription = 'Could not copy to clipboard',
-    resetDelay = 2000
+    resetDelay = 2000,
   } = options;
 
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
-  const copy = useCallback(async (text: string) => {
-    if (!text) {
-      toast({
-        title: errorMessage,
-        description: 'No content to copy',
-        variant: 'destructive',
-      });
-      return false;
-    }
+  const copy = useCallback(
+    async (text: string) => {
+      if (!text) {
+        toast({
+          title: errorMessage,
+          description: 'No content to copy',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), resetDelay);
-      toast({
-        title: successMessage,
-        description: successDescription,
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: errorMessage,
-        description: errorDescription,
-        variant: 'destructive',
-      });
-      return false;
-    }
-  }, [toast, successMessage, errorMessage, successDescription, errorDescription, resetDelay]);
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), resetDelay);
+        toast({
+          title: successMessage,
+          description: successDescription,
+        });
+        return true;
+      } catch (error) {
+        toast({
+          title: errorMessage,
+          description: errorDescription,
+          variant: 'destructive',
+        });
+        return false;
+      }
+    },
+    [toast, successMessage, errorMessage, successDescription, errorDescription, resetDelay]
+  );
 
   return { copy, copied };
 }

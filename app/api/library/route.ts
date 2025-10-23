@@ -1,10 +1,21 @@
 import { NextRequest } from 'next/server';
-import { validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse, withAuth } from '@/lib/api/utils';
+import {
+  validatePaginationParams,
+  validateSortParam,
+  validateSearchParam,
+  formatDocumentListResponse,
+  withAuth,
+} from '@/lib/api/utils';
+import { validateAndBuildCreateInput } from '@/lib/api/handlers/document-create';
 import { getPublicDocuments, createJsonDocument } from '@/lib/db/queries/documents';
 import { success, created } from '@/lib/api/responses';
 import { withErrorHandler } from '@/lib/api/middleware';
 import { ValidationError } from '@/lib/utils/app-errors';
-import { DOCUMENT_CATEGORIES, isValidCategory, getCategoryValidationError } from '@/lib/constants/categories';
+import {
+  DOCUMENT_CATEGORIES,
+  isValidCategory,
+  getCategoryValidationError,
+} from '@/lib/constants/categories';
 
 /**
  * GET public documents from library with filtering
@@ -15,10 +26,13 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   // Validate parameters
   const pagination = validatePaginationParams(searchParams);
-  const sortResult = validateSortParam(
-    searchParams.get('sort') || 'recent',
-    ['recent', 'popular', 'views', 'size', 'title']
-  );
+  const sortResult = validateSortParam(searchParams.get('sort') || 'recent', [
+    'recent',
+    'popular',
+    'views',
+    'size',
+    'title',
+  ]);
 
   // Check if sort validation failed
   if (typeof sortResult === 'object' && 'error' in sortResult) {
@@ -47,7 +61,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     search: search || undefined,
     category: category || undefined,
     sortBy: sort,
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   });
 
   if (!result.success) {
@@ -64,32 +78,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
  * POST create public document in library
  */
 export const POST = withAuth(async (request: NextRequest, session) => {
-
   const data = await request.json();
 
-  // Validate required fields
-  if (!data.title?.trim()) {
-    throw new ValidationError('Title is required', [
-      { field: 'title', message: 'Title is required' },
-    ]);
-  }
-
-  // Validate category if provided
-  if (data.category && !isValidCategory(data.category)) {
-    throw new ValidationError(getCategoryValidationError(), [
-      { field: 'category', message: 'Invalid category value' },
-    ]);
-  }
+  const input = validateAndBuildCreateInput(data);
 
   // Create the document with public visibility
   const result = await createJsonDocument({
     userId: session.user.id,
-    title: data.title.trim(),
-    description: data.description?.trim() || '',
-    content: data.content || '{}', // Default empty JSON if no content provided
-    category: data.category || undefined,
-    tags: data.tags || [],
-    richContent: data.richContent || '',
+    ...input,
     visibility: 'public', // Force public visibility for public library
   });
 

@@ -19,14 +19,10 @@ export const BooleanRenderer = memo(({ value }: BooleanRendererProps) => {
           >
             {value ? <Check className="h-10 w-10" /> : <X className="h-10 w-10" />}
           </div>
-          
-          <code className="text-2xl font-mono font-bold">
-            {value ? 'true' : 'false'}
-          </code>
-          
-          <div className="text-sm text-muted-foreground">
-            Boolean value
-          </div>
+
+          <code className="text-2xl font-mono font-bold">{value ? 'true' : 'false'}</code>
+
+          <div className="text-sm text-muted-foreground">Boolean value</div>
         </div>
       </CardContent>
     </Card>
@@ -34,4 +30,3 @@ export const BooleanRenderer = memo(({ value }: BooleanRendererProps) => {
 });
 
 BooleanRenderer.displayName = 'BooleanRenderer';
-

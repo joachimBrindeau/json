@@ -38,10 +38,12 @@ export const getSEOSettingsFromDatabase = unstable_cache(
 /**
  * Generate metadata with database fallback to hardcoded values
  */
-export async function generateDatabaseSEOMetadata(pageKey: keyof typeof PAGE_SEO): Promise<Metadata> {
+export async function generateDatabaseSEOMetadata(
+  pageKey: keyof typeof PAGE_SEO
+): Promise<Metadata> {
   // Try to get from database first
   const dbSettings = await getSEOSettingsFromDatabase(pageKey);
-  
+
   if (dbSettings) {
     return generateSEOMetadata({
       title: dbSettings.title,
@@ -107,13 +109,15 @@ export async function upsertSEOSettings(
         },
         update: data,
       }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database operation timeout')), 500) // Much shorter timeout
-      )
+      new Promise(
+        (_, reject) => setTimeout(() => reject(new Error('Database operation timeout')), 500) // Much shorter timeout
+      ),
     ]);
   } catch (error) {
     logger.error({ err: error, pageKey, data }, 'Failed to upsert SEO settings');
-    throw new Error(`SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -123,10 +127,7 @@ export async function upsertSEOSettings(
 export async function getAllSEOSettings() {
   try {
     return await prisma.seoSettings.findMany({
-      orderBy: [
-        { pageKey: 'asc' },
-        { priority: 'desc' },
-      ],
+      orderBy: [{ pageKey: 'asc' }, { priority: 'desc' }],
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to fetch all SEO settings');

@@ -15,7 +15,9 @@ export function DebugAvatar() {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [imageLoadSuccess, setImageLoadSuccess] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshResult, setRefreshResult] = useState<{ updated?: boolean; error?: string } | null>(null);
+  const [refreshResult, setRefreshResult] = useState<{ updated?: boolean; error?: string } | null>(
+    null
+  );
 
   useEffect(() => {
     setImageLoadError(false);
@@ -59,7 +61,9 @@ export function DebugAvatar() {
         <CardTitle className="flex items-center gap-2">
           Profile Picture Debug
           {user.image && (
-            <Badge variant={imageLoadSuccess ? 'default' : imageLoadError ? 'destructive' : 'secondary'}>
+            <Badge
+              variant={imageLoadSuccess ? 'default' : imageLoadError ? 'destructive' : 'secondary'}
+            >
               {imageLoadSuccess ? 'Loaded' : imageLoadError ? 'Failed' : 'Loading'}
             </Badge>
           )}
@@ -107,12 +111,10 @@ export function DebugAvatar() {
             <strong>Email:</strong> {user.email || 'Not available'}
           </div>
           <div>
-            <strong>Image URL:</strong> 
+            <strong>Image URL:</strong>
             {user.image ? (
               <div className="mt-1">
-                <code className="bg-muted p-1 rounded text-xs break-all">
-                  {user.image}
-                </code>
+                <code className="bg-muted p-1 rounded text-xs break-all">{user.image}</code>
               </div>
             ) : (
               <span className="text-muted-foreground"> Not available</span>
@@ -143,14 +145,16 @@ export function DebugAvatar() {
           <div className="space-y-2">
             <strong className="text-sm">Different Sizes Test:</strong>
             <div className="flex gap-2">
-              {[32, 64, 128, 256].map(size => (
+              {[32, 64, 128, 256].map((size) => (
                 <div key={size} className="text-center">
                   <img
                     src={user.image?.replace(/=s\d+/, `=s${size}`) || ''}
                     alt={`${size}px test`}
                     className="rounded-full object-cover border"
                     style={{ width: `${Math.min(size, 64)}px`, height: `${Math.min(size, 64)}px` }}
-                    onError={(e) => logger.error({ size, error: e }, `Image load failed for size ${size}`)}
+                    onError={(e) =>
+                      logger.error({ size, error: e }, `Image load failed for size ${size}`)
+                    }
                   />
                   <div className="text-xs text-muted-foreground">{size}px</div>
                 </div>

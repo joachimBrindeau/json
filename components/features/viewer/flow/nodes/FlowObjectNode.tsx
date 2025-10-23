@@ -1,24 +1,17 @@
 import { memo, useCallback } from 'react';
-import { NodeProps, useEdges, Handle, Position } from '@xyflow/react';
+import { NodeProps, useEdges } from '@xyflow/react';
 import { NodeType, ObjectNodeData } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowObjectNodeProperty } from '@/components/features/viewer/flow/nodes/FlowObjectNodeProperty';
-import { FlowHandle } from '@/components/features/viewer/flow/FlowHandle';
+import { FlowChainHandles } from '@/components/features/viewer/flow/nodes/FlowChainHandles';
 import { FlowCollapseButton } from '@/components/features/viewer/flow/FlowCollapseButton';
 import { FlowNodeToolbar } from '@/components/features/viewer/flow/components/FlowNodeToolbar';
 import { useFlowNodeToolbar } from '@/components/features/viewer/flow/hooks/useFlowNodeToolbar';
 import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-edge-factory';
 
-const CHAIN_HANDLE_STYLE = {
-  background: '#94a3b8',
-  width: 8,
-  height: 8,
-  border: '2px solid #fff',
-  boxShadow: '0 2px 4px rgba(148, 163, 184, 0.3)',
-} as const;
-
 const ObjectNodeComponent = ({ id, data }: NodeProps<any>) => {
-  const { obj, isRootNode, collapsedBranches, onToggleCollapse, stringifiedJson, isHighlighted } = data;
+  const { obj, isRootNode, collapsedBranches, onToggleCollapse, stringifiedJson, isHighlighted } =
+    data;
 
   // Use consolidated toolbar hook
   const toolbarData = useFlowNodeToolbar({ nodeId: id });
@@ -66,23 +59,7 @@ const ObjectNodeComponent = ({ id, data }: NodeProps<any>) => {
 
       <FlowNodeShell nodeId={id} nodeType={NodeType.Object} isHighlight={isHighlighted}>
         {/* Handles */}
-        {!isRootNode && <FlowHandle id={id} type="target" direction="horizontal" />}
-        <FlowHandle id={addPrefixChain(id)} type="target" direction="vertical" isChain />
-        <FlowHandle id={addPrefixChain(id)} type="source" direction="vertical" isChain />
-
-        {/* Chain handles for array items */}
-        <Handle
-          type="target"
-          position={Position.Top}
-          id="top"
-          style={{ ...CHAIN_HANDLE_STYLE, top: -4 }}
-        />
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          id="bottom"
-          style={{ ...CHAIN_HANDLE_STYLE, bottom: -4 }}
-        />
+        <FlowChainHandles id={id} includeHorizontalTarget={!isRootNode} />
 
         <div className="space-y-0">{renderProperties()}</div>
       </FlowNodeShell>

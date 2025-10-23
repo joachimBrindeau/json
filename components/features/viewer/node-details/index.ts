@@ -5,4 +5,3 @@
 
 export { NodeDetailsModal } from './NodeDetailsModal';
 export type { NodeDetails } from './types';
-

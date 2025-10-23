@@ -15,11 +15,12 @@ interface AnimatedButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
  */
 export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
   ({ variant = 'default', children, ...props }, ref) => {
-    const interaction = variant === 'subtle' 
-      ? INTERACTIONS.buttonSubtle 
-      : variant === 'bounce'
-      ? INTERACTIONS.buttonBounce
-      : INTERACTIONS.button;
+    const interaction =
+      variant === 'subtle'
+        ? INTERACTIONS.buttonSubtle
+        : variant === 'bounce'
+          ? INTERACTIONS.buttonBounce
+          : INTERACTIONS.button;
 
     return (
       <motion.button
@@ -65,4 +66,3 @@ export const AnimatedDiv = forwardRef<HTMLDivElement, AnimatedDivProps>(
 );
 
 AnimatedDiv.displayName = 'AnimatedDiv';
-

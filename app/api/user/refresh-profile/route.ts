@@ -7,11 +7,10 @@ import { withAuth } from '@/lib/api/utils';
 
 export const POST = withAuth(async (request, session) => {
   try {
-
     // Get current user data from database
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { accounts: true }
+      include: { accounts: true },
     });
 
     if (!user) {
@@ -19,18 +18,22 @@ export const POST = withAuth(async (request, session) => {
     }
 
     // Find Google account
-    const googleAccount = user.accounts.find(account => account.provider === 'google');
-    
+    const googleAccount = user.accounts.find((account) => account.provider === 'google');
+
     if (!googleAccount) {
       return success({
         message: 'No Google account linked',
-        currentImage: user.image
+        currentImage: user.image,
       });
     }
 
     // Try to refresh profile data from Google
     try {
-      const googleProfile = await api.get(`https://www.googleapis.com/oauth2/v2/userinfo?access_token=${googleAccount.access_token}`).json<any>();
+      const googleProfile = await api
+        .get(
+          `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${googleAccount.access_token}`
+        )
+        .json<any>();
 
       // Update user with fresh Google profile data
       const updatedUser = await prisma.user.update({
@@ -38,24 +41,26 @@ export const POST = withAuth(async (request, session) => {
         data: {
           image: googleProfile.picture,
           name: googleProfile.name || user.name,
-        }
+        },
       });
 
       return success({
         message: 'Profile refreshed successfully',
         oldImage: user.image,
         newImage: updatedUser.image,
-        updated: true
+        updated: true,
       });
     } catch (error) {
-      logger.error({ err: error, userId: user.id, provider: 'google' }, 'Error refreshing Google profile');
+      logger.error(
+        { err: error, userId: user.id, provider: 'google' },
+        'Error refreshing Google profile'
+      );
       return success({
         message: 'Error refreshing profile',
         currentImage: user.image,
-        updated: false
+        updated: false,
       });
     }
-
   } catch (error) {
     logger.error({ err: error, userId: session?.user?.id }, 'Profile refresh error');
     return internalServerError('Failed to refresh profile');
@@ -64,11 +69,10 @@ export const POST = withAuth(async (request, session) => {
 
 export const GET = withAuth(async (request, session) => {
   try {
-
     // Get current user data from database
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { accounts: true }
+      include: { accounts: true },
     });
 
     if (!user) {
@@ -82,17 +86,16 @@ export const GET = withAuth(async (request, session) => {
         email: user.email,
         image: user.image,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
       },
-      accounts: user.accounts.map(account => ({
+      accounts: user.accounts.map((account) => ({
         provider: account.provider,
         type: account.type,
-        providerAccountId: account.providerAccountId
+        providerAccountId: account.providerAccountId,
       })),
-      hasGoogleAccount: user.accounts.some(account => account.provider === 'google'),
-      hasGitHubAccount: user.accounts.some(account => account.provider === 'github')
+      hasGoogleAccount: user.accounts.some((account) => account.provider === 'google'),
+      hasGitHubAccount: user.accounts.some((account) => account.provider === 'github'),
     });
-
   } catch (error) {
     logger.error({ err: error, userId: session?.user?.id }, 'Get profile error');
     return internalServerError('Failed to get profile');

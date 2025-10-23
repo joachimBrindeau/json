@@ -13,7 +13,11 @@ interface TreeState {
   collapseAll: () => void;
 }
 
-export const useViewerTreeState = (data: any, forceExpandAll: boolean = false, fullFlatten: boolean = false): TreeState => {
+export const useViewerTreeState = (
+  data: any,
+  forceExpandAll: boolean = false,
+  fullFlatten: boolean = false
+): TreeState => {
   // Expand root by default so top-level array/object items are visible and searchable
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
 
@@ -24,7 +28,7 @@ export const useViewerTreeState = (data: any, forceExpandAll: boolean = false, f
   }, [data, expandedNodes, forceExpandAll, fullFlatten]);
 
   const toggleNode = useCallback((nodeId: string) => {
-    setExpandedNodes(prev => {
+    setExpandedNodes((prev) => {
       const next = new Set(prev);
       if (next.has(nodeId)) {
         next.delete(nodeId);
@@ -68,13 +72,14 @@ function collectAllIds(value: any, path = '', acc: Set<string> = new Set()): Set
   const nodeId = path || 'root';
   acc.add(nodeId);
   if (Array.isArray(value)) {
-    value.forEach((item, index) => collectAllIds(item, path ? `${path}.${index}` : `${index}`, acc));
+    value.forEach((item, index) =>
+      collectAllIds(item, path ? `${path}.${index}` : `${index}`, acc)
+    );
   } else if (value && typeof value === 'object') {
     Object.entries(value).forEach(([k, v]) => collectAllIds(v, path ? `${path}.${k}` : k, acc));
   }
   return acc;
 }
-
 
 // Helper function to flatten JSON to nodes
 function flattenToNodes(
@@ -111,21 +116,28 @@ function flattenToNodes(
     path,
     childCount,
     // Avoid expensive deep serialization for large datasets
-    size: typeof data === 'string' ? data.length
-      : Array.isArray(data) ? data.length
-      : (data && typeof data === 'object') ? Object.keys(data as any).length
-      : String(data).length,
+    size:
+      typeof data === 'string'
+        ? data.length
+        : Array.isArray(data)
+          ? data.length
+          : data && typeof data === 'object'
+            ? Object.keys(data as any).length
+            : String(data).length,
     isExpanded: expandedNodes.has(nodeId),
   });
 
-  const shouldRecurse = fullFlatten || expandedNodes.has(nodeId) || (Array.isArray(data) && level <= 1);
+  const shouldRecurse =
+    fullFlatten || expandedNodes.has(nodeId) || (Array.isArray(data) && level <= 1);
 
   // Add children if expanded, shallow-array mode, or full flatten requested
   if (shouldRecurse) {
     if (Array.isArray(data)) {
       data.forEach((item, index) => {
         const childPath = path ? `${path}.${index}` : `${index}`;
-        nodes.push(...flattenToNodes(item, expandedNodes, level + 1, childPath, `[${index}]`, fullFlatten));
+        nodes.push(
+          ...flattenToNodes(item, expandedNodes, level + 1, childPath, `[${index}]`, fullFlatten)
+        );
       });
     } else if (data && typeof data === 'object') {
       Object.entries(data).forEach(([k, v]) => {
@@ -137,4 +149,3 @@ function flattenToNodes(
 
   return nodes;
 }
-

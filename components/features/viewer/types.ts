@@ -32,4 +32,3 @@ export interface ParseResult {
   error: string | null;
   stats: JsonStats | null;
 }
-

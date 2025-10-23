@@ -1,0 +1,103 @@
+🚀 Global setup started
+🎲 Initializing deterministic faker...
+✅ Faker initialized with seed
+🐳 Checking Docker dependencies...
+  ✅ Docker daemon is running
+  ✅ config-postgres-1: Up About an hour (healthy)
+  ✅ config-redis-1: Up About an hour (healthy)
+  ✅ PostgreSQL is accessible
+  ✅ Redis is accessible
+📡 Using base URL: http://localhost:3456
+📡 Checking if server is available...
+✅ Server responded with status 200
+✅ Server is available
+🧹 Cleaning up existing test users...
+  ✅ Deleted 7 existing test users
+👤 Creating test users...
+  Creating user: testuser@jsonshare.test
+  ✅ Created user: testuser@jsonshare.test
+  Creating user: admin@jsonshare.test
+  ✅ Created user: admin@jsonshare.test
+  Creating user: dev@jsonshare.test
+  ✅ Created user: dev@jsonshare.test
+  Creating user: power@jsonshare.test
+  ✅ Created user: power@jsonshare.test
+  Creating user: community@jsonshare.test
+  ✅ Created user: community@jsonshare.test
+  Creating user: temp1@jsonshare.test
+  ✅ Created user: temp1@jsonshare.test
+  Creating user: temp2@jsonshare.test
+  ✅ Created user: temp2@jsonshare.test
+🔍 Verifying basic app functionality...
+✅ Main content area found
+🎯 Global setup completed successfully
+
+Running 55 tests using 1 worker
+·⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: .json-node[data-testid="json-node"]
+✅ JSON processing wait completed
+⏳ Waiting for JSON to be processed...
+✅ Loading spinner disappeared: [data-testid="loading"]:visible
+✅ Found JSON content with selector: .json-node[data-testid="json-node"]
+✅ JSON processing wait completed
+🔍 JSON content visible: [33mtrue[39m
+·Uploading JSON via multipart form data
+✅ Upload successful: {
+  status: [33m200[39m,
+  result: {
+    success: [33mtrue[39m,
+    data: { document: [36m[Object][39m, analysis: [36m[Object][39m },
+    timestamp: [32m'2025-10-22T17:03:45.228Z'[39m
+  }
+}
+·✅ Successfully logged in as testuser@jsonshare.test
+·✅ Successfully logged in as testuser@jsonshare.test
+F
+Testing stopped early after 1 maximum allowed failures.
+::error ::Testing stopped early after 1 maximum allowed failures.
+🧹 Global teardown started
+✅ Server health check passed during teardown
+✅ Global teardown completed successfully
+
+
+  1) [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('dialog').getByText('Your JSON is saved and ready to share!')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for getByRole('dialog').getByText('Your JSON is saved and ready to share!')[22m
+
+
+      176 |       await page.getByRole('button', { name: /Save & Generate Link/i }).click();
+      177 |       // Confirm saved state then close the modal
+    > 178 |       await expect(dialog.getByText('Your JSON is saved and ready to share!')).toBeVisible({ timeout: 15000 });
+          |                                                                                ^
+      179 |       await page.getByRole('button', { name: 'Cancel' }).click().catch(() => {});
+      180 |     }
+      181 |
+        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:178:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-smoke-Smoke-Tests-smok-f8ec6-r-authenticated-users-smoke-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke 
+  50 did not run
+  4 passed (26.2s)
+  1 error was not a part of any test, see above for details
+::error file=tests/e2e/smoke.spec.ts,title=[chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke,line=178,col=80::  1) [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke %0A    Error: expect(locator).toBeVisible() failed%0A%0A    Locator: getByRole('dialog').getByText('Your JSON is saved and ready to share!')%0A    Expected: visible%0A    Timeout: 15000ms%0A    Error: element(s) not found%0A%0A    Call log:%0A      - Expect "toBeVisible" with timeout 15000ms%0A      - waiting for getByRole('dialog').getByText('Your JSON is saved and ready to share!')%0A%0A%0A      176 |       await page.getByRole('button', { name: /Save & Generate Link/i }).click();%0A      177 |       // Confirm saved state then close the modal%0A    > 178 |       await expect(dialog.getByText('Your JSON is saved and ready to share!')).toBeVisible({ timeout: 15000 });%0A          |                                                                                ^%0A      179 |       await page.getByRole('button', { name: 'Cancel' }).click().catch(() => {});%0A      180 |     }%0A      181 |%0A        at /Users/joachimbrindeau/Development/json-sea-macos/json-viewer-io/tests/e2e/smoke.spec.ts:178:80
+::notice title=🎭 Playwright Run Summary::  1 failed%0A    [chromium] › tests/e2e/smoke.spec.ts:112:7 › Smoke Tests @smoke › Library functionality works for authenticated users @smoke %0A  50 did not run%0A  4 passed (26.2s)

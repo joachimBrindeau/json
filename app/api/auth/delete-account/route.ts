@@ -26,7 +26,7 @@ export const DELETE = withAuth(async (_request: NextRequest, session) => {
     logger.info(
       {
         userId: user.id,
-        email: session.user.email
+        email: session.user.email,
       },
       'Account deleted successfully'
     );
@@ -36,7 +36,7 @@ export const DELETE = withAuth(async (_request: NextRequest, session) => {
     logger.error(
       {
         err: error,
-        email: session?.user?.email
+        email: session?.user?.email,
       },
       'Failed to delete account'
     );

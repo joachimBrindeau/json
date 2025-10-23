@@ -40,34 +40,25 @@ export const UrlRenderer = memo(({ value, detection }: UrlRendererProps) => {
           alt={`${domain} favicon`}
           className="w-6 h-6 rounded flex-shrink-0"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="%23ddd"/></svg>';
+            (e.target as HTMLImageElement).src =
+              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="%23ddd"/></svg>';
           }}
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Globe className="h-3 w-3 text-muted-foreground" />
             <span className="text-sm font-semibold truncate">{domain}</span>
-            {isSecure && (
-              <Lock className="h-3 w-3 text-green-500" />
-            )}
+            {isSecure && <Lock className="h-3 w-3 text-green-500" />}
           </div>
           {path && path !== '/' && (
             <div className="text-xs text-muted-foreground truncate">{path}</div>
           )}
         </div>
         <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleOpenUrl}
-          >
+          <Button variant="ghost" size="sm" onClick={handleOpenUrl}>
             <ExternalLink className="h-3 w-3" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-          >
+          <Button variant="ghost" size="sm" onClick={handleCopy}>
             {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
           </Button>
         </div>
@@ -89,4 +80,3 @@ export const UrlRenderer = memo(({ value, detection }: UrlRendererProps) => {
 });
 
 UrlRenderer.displayName = 'UrlRenderer';
-

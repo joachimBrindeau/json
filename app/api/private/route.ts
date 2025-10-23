@@ -1,10 +1,21 @@
 import { NextRequest } from 'next/server';
-import { validatePaginationParams, validateSortParam, validateSearchParam, formatDocumentListResponse, withAuth } from '@/lib/api/utils';
+import {
+  validatePaginationParams,
+  validateSortParam,
+  validateSearchParam,
+  formatDocumentListResponse,
+  withAuth,
+} from '@/lib/api/utils';
+import { validateAndBuildCreateInput } from '@/lib/api/handlers/document-create';
 import { getUserDocuments, createJsonDocument } from '@/lib/db/queries/documents';
 import { success, created } from '@/lib/api/responses';
 import { withErrorHandler } from '@/lib/api/middleware';
 import { ValidationError } from '@/lib/utils/app-errors';
-import { DOCUMENT_CATEGORIES, isValidCategory, getCategoryValidationError } from '@/lib/constants/categories';
+import {
+  DOCUMENT_CATEGORIES,
+  isValidCategory,
+  getCategoryValidationError,
+} from '@/lib/constants/categories';
 
 const SORT_OPTIONS = ['recent', 'updated', 'views'] as const;
 
@@ -12,15 +23,11 @@ const SORT_OPTIONS = ['recent', 'updated', 'views'] as const;
  * GET user's private documents with filtering
  */
 export const GET = withAuth(async (request: NextRequest, session) => {
-
   const { searchParams } = new URL(request.url);
 
   // Validate parameters
   const pagination = validatePaginationParams(searchParams);
-  const sort = validateSortParam(
-    searchParams.get('sort') || 'recent',
-    SORT_OPTIONS
-  );
+  const sort = validateSortParam(searchParams.get('sort') || 'recent', SORT_OPTIONS);
   const search = validateSearchParam(searchParams.get('search'));
   const category = searchParams.get('category');
   const visibility = searchParams.get('visibility');
@@ -40,9 +47,14 @@ export const GET = withAuth(async (request: NextRequest, session) => {
   }
 
   // Map sort parameter to database field
-  const sortBy = sort === 'recent' ? 'created' :
-                sort === 'updated' ? 'updated' :
-                sort === 'views' ? 'views' : 'created';
+  const sortBy =
+    sort === 'recent'
+      ? 'created'
+      : sort === 'updated'
+        ? 'updated'
+        : sort === 'views'
+          ? 'views'
+          : 'created';
 
   // Get user documents
   const result = await getUserDocuments(session.user.id, {
@@ -53,7 +65,7 @@ export const GET = withAuth(async (request: NextRequest, session) => {
     sortBy,
     sortOrder: 'desc',
     includeContent: false, // Don't include full content for list view
-    includeAnalytics: true
+    includeAnalytics: true,
   });
 
   if (!result.success) {
@@ -70,32 +82,14 @@ export const GET = withAuth(async (request: NextRequest, session) => {
  * POST create private document
  */
 export const POST = withAuth(async (request: NextRequest, session) => {
-
   const data = await request.json();
 
-  // Validate required fields
-  if (!data.title?.trim()) {
-    throw new ValidationError('Title is required', [
-      { field: 'title', message: 'Title is required' },
-    ]);
-  }
-
-  // Validate category if provided
-  if (data.category && !isValidCategory(data.category)) {
-    throw new ValidationError(getCategoryValidationError(), [
-      { field: 'category', message: 'Invalid category value' },
-    ]);
-  }
+  const input = validateAndBuildCreateInput(data);
 
   // Create the document
   const result = await createJsonDocument({
     userId: session.user.id,
-    title: data.title.trim(),
-    description: data.description?.trim() || '',
-    content: data.content || '{}', // Default empty JSON if no content provided
-    category: data.category || undefined,
-    tags: data.tags || [],
-    richContent: data.richContent || '',
+    ...input,
     visibility: data.visibility || 'private',
   });
 

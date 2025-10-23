@@ -9,22 +9,14 @@ import type { CoordinatesDetection } from '../types';
 import { formatCoordinates, formatDMS } from '../utils/formatters';
 
 // Dynamically import map components to avoid SSR issues
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-);
+const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), {
+  ssr: false,
+});
+const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), {
+  ssr: false,
+});
+const Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), { ssr: false });
 
 interface GeoRendererProps {
   value: string | Record<string, unknown>;
@@ -54,12 +46,8 @@ export const GeoRenderer = memo(({ value, detection }: GeoRendererProps) => {
               </div>
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-lg font-bold">
-                {formatCoordinates(lat, lng)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Geographic Coordinates
-              </div>
+              <div className="text-lg font-bold">{formatCoordinates(lat, lng)}</div>
+              <div className="text-sm text-muted-foreground">Geographic Coordinates</div>
             </div>
           </div>
         </CardContent>
@@ -111,14 +99,16 @@ export const GeoRenderer = memo(({ value, detection }: GeoRendererProps) => {
           <div className="grid gap-2">
             <div className="flex items-center justify-between p-2 bg-muted rounded">
               <span className="text-xs text-muted-foreground">Decimal Degrees</span>
-              <code className="text-xs font-mono">{lat.toFixed(6)}, {lng.toFixed(6)}</code>
+              <code className="text-xs font-mono">
+                {lat.toFixed(6)}, {lng.toFixed(6)}
+              </code>
             </div>
-            
+
             <div className="flex items-center justify-between p-2 bg-muted rounded">
               <span className="text-xs text-muted-foreground">Latitude (DMS)</span>
               <code className="text-xs font-mono">{formatDMS(lat, true)}</code>
             </div>
-            
+
             <div className="flex items-center justify-between p-2 bg-muted rounded">
               <span className="text-xs text-muted-foreground">Longitude (DMS)</span>
               <code className="text-xs font-mono">{formatDMS(lng, false)}</code>
@@ -158,4 +148,3 @@ export const GeoRenderer = memo(({ value, detection }: GeoRendererProps) => {
 });
 
 GeoRenderer.displayName = 'GeoRenderer';
-

@@ -1,0 +1,13 @@
+npm warn deprecated json-schema-ref-parser@6.1.0: Please switch to @apidevtools/json-schema-ref-parser
+
+added 1133 packages, and audited 1134 packages in 52s
+
+291 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (3 low, 4 moderate)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
