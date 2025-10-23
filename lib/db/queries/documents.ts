@@ -15,11 +15,12 @@ import {
   PaginationParams,
   PaginationResult,
   SearchParams,
-  FilterOptions
+  FilterOptions,
 } from './common';
 import { logger } from '@/lib/logger';
 import { analyzeJsonStream } from '@/lib/json';
 import { createHash } from 'crypto';
+import { cacheGetOrSet, CacheKeys, CacheTTL, CacheInvalidation } from '@/lib/cache/redis-cache';
 
 // Document creation input type
 export interface CreateDocumentInput {
@@ -60,6 +61,51 @@ export interface DocumentQueryOptions extends PaginationParams, SearchParams {
   includeChunks?: boolean;
 }
 
+// Internal helper to validate options and build core query parts
+function validateAndBuildQueryParts(
+  options: DocumentQueryOptions,
+  baseFilters: FilterOptions,
+  defaultSortBy?: string
+):
+  | {
+      ok: true;
+      pagination: { skip: number; take: number; page: number; limit: number };
+      where: Prisma.JsonDocumentWhereInput;
+      orderBy: Prisma.JsonDocumentOrderByWithRelationInput;
+    }
+  | { ok: false; response: { success: false; error: string; status: number } } {
+  const paginationValidation = validatePaginationParams(options);
+  if (!paginationValidation.isValid) {
+    return {
+      ok: false,
+      response: {
+        success: false,
+        error: paginationValidation.errors.join(', '),
+        status: 400,
+      },
+    };
+  }
+
+  const searchValidation = validateSearchParams(options);
+  if (!searchValidation.isValid) {
+    return {
+      ok: false,
+      response: {
+        success: false,
+        error: searchValidation.errors.join(', '),
+        status: 400,
+      },
+    };
+  }
+
+  const pagination = buildPagination(paginationValidation.sanitized);
+  const where = buildWhereClause(baseFilters, searchValidation.sanitized);
+  const sortKey = defaultSortBy && !options.sortBy ? defaultSortBy : options.sortBy;
+  const orderBy = buildOrderBy(sortKey, options.sortOrder);
+
+  return { ok: true, pagination, where, orderBy };
+}
+
 /**
  * Get a document by its ID with authentication check
  */
@@ -75,14 +121,14 @@ export async function getDocumentById(
   try {
     // Check if the ID is a valid UUID (for id field) or CUID (for shareId field)
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    
+
     const document = await prisma.jsonDocument.findFirst({
-      where: isUuid 
-        ? { OR: [{ id }, { shareId: id }] }  // If it's a UUID, try both fields
-        : { shareId: id },  // If it's not a UUID (likely CUID), only try shareId
-      select: options.includeContent 
+      where: isUuid
+        ? { OR: [{ id }, { shareId: id }] } // If it's a UUID, try both fields
+        : { shareId: id }, // If it's not a UUID (likely CUID), only try shareId
+      select: options.includeContent
         ? getDocumentDetailSelect(options.includeAnalytics, options.includeChunks)
-        : getDocumentListSelect(options.includeAnalytics, options.includeChunks)
+        : getDocumentListSelect(options.includeAnalytics, options.includeChunks),
     });
 
     if (!document) {
@@ -90,7 +136,7 @@ export async function getDocumentById(
     }
 
     // Check access permissions
-    const hasAccess = 
+    const hasAccess =
       document.visibility === 'public' ||
       (document as any).userId === userId ||
       (document as any).isAnonymous;
@@ -101,23 +147,25 @@ export async function getDocumentById(
 
     // Update access timestamp if user has access
     if (hasAccess) {
-      await prisma.jsonDocument.update({
-        where: { id: document.id },
-        data: { accessedAt: new Date() }
-      }).catch(() => {
-        // Ignore errors updating access timestamp
-      });
+      await prisma.jsonDocument
+        .update({
+          where: { id: document.id },
+          data: { accessedAt: new Date() },
+        })
+        .catch(() => {
+          // Ignore errors updating access timestamp
+        });
     }
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, options.includeContent)
+      data: formatDocumentForResponse(document, options.includeContent),
     };
   } catch (error) {
     logger.error({ err: error, documentId: id, userId }, 'Get document error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -137,14 +185,11 @@ export async function getDocumentByShareId(
     const document = await prisma.jsonDocument.findFirst({
       where: {
         shareId,
-        OR: [
-          { visibility: 'public' },
-          { isAnonymous: true }
-        ]
+        OR: [{ visibility: 'public' }, { isAnonymous: true }],
       },
-      select: options.includeContent 
+      select: options.includeContent
         ? getDocumentDetailSelect(options.includeAnalytics, options.includeChunks)
-        : getDocumentListSelect(options.includeAnalytics, options.includeChunks)
+        : getDocumentListSelect(options.includeAnalytics, options.includeChunks),
     });
 
     if (!document) {
@@ -152,22 +197,24 @@ export async function getDocumentByShareId(
     }
 
     // Update access timestamp
-    await prisma.jsonDocument.update({
-      where: { id: document.id },
-      data: { accessedAt: new Date() }
-    }).catch(() => {
-      // Ignore errors updating access timestamp
-    });
+    await prisma.jsonDocument
+      .update({
+        where: { id: document.id },
+        data: { accessedAt: new Date() },
+      })
+      .catch(() => {
+        // Ignore errors updating access timestamp
+      });
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, options.includeContent)
+      data: formatDocumentForResponse(document, options.includeContent),
     };
   } catch (error) {
     logger.error({ err: error, shareId }, 'Get document by share ID error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -188,68 +235,47 @@ export async function getUserDocuments(
   status?: number;
 }> {
   try {
-    // Validate parameters
-    const paginationValidation = validatePaginationParams(options);
-    if (!paginationValidation.isValid) {
-      return {
-        success: false,
-        error: paginationValidation.errors.join(', '),
-        status: 400
-      };
+    const prepared = validateAndBuildQueryParts(options, { userId, excludeExpired: true });
+    if (!prepared.ok) {
+      return prepared.response;
     }
-
-    const searchValidation = validateSearchParams(options);
-    if (!searchValidation.isValid) {
-      return {
-        success: false,
-        error: searchValidation.errors.join(', '),
-        status: 400
-      };
-    }
-
-    const pagination = buildPagination(paginationValidation.sanitized);
-    const where = buildWhereClause(
-      { userId, excludeExpired: true },
-      searchValidation.sanitized
-    );
-    const orderBy = buildOrderBy(options.sortBy, options.sortOrder);
+    const { pagination, where, orderBy } = prepared;
 
     // Fetch documents and total count
     const [documents, total] = await Promise.all([
       prisma.jsonDocument.findMany({
         where,
-        select: options.includeContent 
+        select: options.includeContent
           ? getDocumentDetailSelect(options.includeAnalytics, options.includeChunks)
           : getDocumentListSelect(options.includeAnalytics, options.includeChunks),
         orderBy,
         skip: pagination.skip,
-        take: pagination.take
+        take: pagination.take,
       }),
-      prisma.jsonDocument.count({ where })
+      prisma.jsonDocument.count({ where }),
     ]);
 
     return {
       success: true,
       data: {
-        documents: documents.map(doc => formatDocumentForResponse(doc, options.includeContent)),
-        pagination: buildPaginationResult(total, pagination.page, pagination.limit)
-      }
+        documents: documents.map((doc) => formatDocumentForResponse(doc, options.includeContent)),
+        pagination: buildPaginationResult(total, pagination.page, pagination.limit),
+      },
     };
   } catch (error) {
     logger.error({ err: error, userId, options }, 'Get user documents error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
 
 /**
  * Get public documents for public library
+ * Cached for 5 minutes to reduce load on high-traffic endpoint
  */
-export async function getPublicDocuments(
-  options: DocumentQueryOptions = {}
-): Promise<{
+export async function getPublicDocuments(options: DocumentQueryOptions = {}): Promise<{
   success: boolean;
   data?: {
     documents: any[];
@@ -259,72 +285,73 @@ export async function getPublicDocuments(
   status?: number;
 }> {
   try {
-    // Validate parameters
-    const paginationValidation = validatePaginationParams(options);
-    if (!paginationValidation.isValid) {
-      return {
-        success: false,
-        error: paginationValidation.errors.join(', '),
-        status: 400
-      };
-    }
-
-    const searchValidation = validateSearchParams(options);
-    if (!searchValidation.isValid) {
-      return {
-        success: false,
-        error: searchValidation.errors.join(', '),
-        status: 400
-      };
-    }
-
-    const pagination = buildPagination(paginationValidation.sanitized);
-    const where = buildWhereClause(
+    const prepared = validateAndBuildQueryParts(
+      options,
       { visibility: 'public', excludeExpired: true },
-      searchValidation.sanitized
+      'published'
     );
-    const orderBy = buildOrderBy(options.sortBy || 'published', options.sortOrder);
+    if (!prepared.ok) {
+      return prepared.response;
+    }
+    const { pagination, where, orderBy } = prepared;
 
-    // Fetch documents and total count
-    const [documents, total] = await Promise.all([
-      prisma.jsonDocument.findMany({
-        where,
-        select: options.includeContent 
-          ? getDocumentDetailSelect(options.includeAnalytics, false) // No chunks for public library
-          : (() => {
-              const selectObj = getDocumentListSelect(options.includeAnalytics, false);
-              return {
-                ...selectObj,
-                content: true // Need content for preview
-              };
-            })(),
-        orderBy,
-        skip: pagination.skip,
-        take: pagination.take
-      }),
-      prisma.jsonDocument.count({ where })
-    ]);
+    // Build cache key with filters
+    const filterHash = createHash('md5')
+      .update(JSON.stringify({ where, orderBy, includeContent: options.includeContent }))
+      .digest('hex')
+      .substring(0, 8);
+    const cacheKey = CacheKeys.publicDocuments(pagination.page, pagination.limit, filterHash);
 
-    // Add preview for public documents without full content
-    const formattedDocuments = documents.map(doc => ({
-      ...formatDocumentForResponse(doc, options.includeContent),
-      ...(!options.includeContent && doc.content && {
-        preview: JSON.stringify(doc.content, null, 2).slice(0, 200) + '...'
-      })
-    }));
+    // Try to get from cache or compute
+    const data = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        // Fetch documents and total count
+        const [documents, total] = await Promise.all([
+          prisma.jsonDocument.findMany({
+            where,
+            select: options.includeContent
+              ? getDocumentDetailSelect(options.includeAnalytics, false) // No chunks for public library
+              : (() => {
+                  const selectObj = getDocumentListSelect(options.includeAnalytics, false);
+                  return {
+                    ...selectObj,
+                    content: true, // Need content for preview
+                  };
+                })(),
+            orderBy,
+            skip: pagination.skip,
+            take: pagination.take,
+          }),
+          prisma.jsonDocument.count({ where }),
+        ]);
+
+        // Add preview for public documents without full content
+        const formattedDocuments = documents.map((doc) => ({
+          ...formatDocumentForResponse(doc, options.includeContent),
+          ...(!options.includeContent &&
+            doc.content && {
+              preview: JSON.stringify(doc.content, null, 2).slice(0, 200) + '...',
+            }),
+        }));
+
+        return {
+          documents: formattedDocuments,
+          pagination: buildPaginationResult(total, pagination.page, pagination.limit),
+        };
+      },
+      { ttl: CacheTTL.MEDIUM, prefix: 'public' }
+    );
 
     return {
       success: true,
-      data: {
-        documents: formattedDocuments,
-        pagination: buildPaginationResult(total, pagination.page, pagination.limit)
-      }
+      data,
     };
   } catch (error) {
     logger.error({ err: error, options }, 'Get public documents error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -332,9 +359,7 @@ export async function getPublicDocuments(
 /**
  * Create a new document
  */
-export async function createDocument(
-  input: CreateDocumentInput
-): Promise<{
+export async function createDocument(input: CreateDocumentInput): Promise<{
   success: boolean;
   data?: any;
   error?: string;
@@ -357,20 +382,20 @@ export async function createDocument(
         complexity: input.complexity,
         checksum: input.checksum,
         expiresAt: input.expiresAt,
-        isAnonymous: !input.userId
+        isAnonymous: !input.userId,
       },
-      select: getDocumentDetailSelect(false, false)
+      select: getDocumentDetailSelect(false, false),
     });
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, true)
+      data: formatDocumentForResponse(document, true),
     };
   } catch (error) {
     logger.error({ err: error, input }, 'Create document error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -392,9 +417,7 @@ export interface CreateJsonDocumentInput {
 /**
  * Create a JSON document with automatic analysis (simplified API for routes)
  */
-export async function createJsonDocument(
-  input: CreateJsonDocumentInput
-): Promise<{
+export async function createJsonDocument(input: CreateJsonDocumentInput): Promise<{
   success: boolean;
   data?: any;
   error?: string;
@@ -402,13 +425,11 @@ export async function createJsonDocument(
 }> {
   try {
     // Parse and normalize content
-    const jsonString = typeof input.content === 'string'
-      ? input.content
-      : JSON.stringify(input.content, null, 2);
+    const jsonString =
+      typeof input.content === 'string' ? input.content : JSON.stringify(input.content, null, 2);
 
-    const parsedContent = typeof input.content === 'string'
-      ? JSON.parse(input.content)
-      : input.content;
+    const parsedContent =
+      typeof input.content === 'string' ? JSON.parse(input.content) : input.content;
 
     // Analyze JSON structure
     const analysis = await analyzeJsonStream(jsonString);
@@ -442,22 +463,32 @@ export async function createJsonDocument(
           analysis: analysis as any,
           richContent: input.richContent || '',
           createdAt: new Date().toISOString(),
-          source: 'api'
-        }
+          source: 'api',
+        },
       },
-      select: getDocumentDetailSelect(false, false)
+      select: getDocumentDetailSelect(false, false),
     });
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, true)
+      data: formatDocumentForResponse(document, true),
     };
   } catch (error) {
     logger.error({ err: error, input }, 'Create JSON document error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
+  } finally {
+    // Invalidate relevant caches after document creation
+    CacheInvalidation.publicDocuments().catch((err) => {
+      logger.error({ err }, 'Failed to invalidate public documents cache');
+    });
+    if (input.userId) {
+      CacheInvalidation.user(input.userId).catch((err) => {
+        logger.error({ err, userId: input.userId }, 'Failed to invalidate user cache');
+      });
+    }
   }
 }
 
@@ -479,7 +510,7 @@ export async function updateDocument(
     const verification = await verifyDocumentOwnership(id, userId, {
       id: true,
       userId: true,
-      version: true
+      version: true,
     });
 
     if (!verification.success) {
@@ -494,21 +525,29 @@ export async function updateDocument(
       data: {
         ...input,
         version: input.version || existingDocument.version + 1,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
-      select: getDocumentDetailSelect(false, false)
+      select: getDocumentDetailSelect(false, false),
     });
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, true)
+      data: formatDocumentForResponse(document, true),
     };
   } catch (error) {
     logger.error({ err: error, documentId: id, userId }, 'Update document error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
+  } finally {
+    // Invalidate relevant caches after document update
+    CacheInvalidation.document(id).catch((err) => {
+      logger.error({ err, documentId: id }, 'Failed to invalidate document cache');
+    });
+    CacheInvalidation.user(userId).catch((err) => {
+      logger.error({ err, userId }, 'Failed to invalidate user cache');
+    });
   }
 }
 
@@ -529,7 +568,7 @@ export async function deleteDocument(
     const verification = await verifyDocumentOwnership(id, userId, {
       id: true,
       userId: true,
-      title: true
+      title: true,
     });
 
     if (!verification.success) {
@@ -541,25 +580,37 @@ export async function deleteDocument(
     if (options.hardDelete) {
       // Hard delete - completely remove from database
       await prisma.jsonDocument.delete({
-        where: { id: existingDocument.id }
+        where: { id: existingDocument.id },
       });
     } else {
       // Soft delete - set expiration to now
       await prisma.jsonDocument.update({
         where: { id: existingDocument.id },
-        data: { 
+        data: {
           expiresAt: new Date(),
-          visibility: 'private' // Make private when soft deleted
-        }
+          visibility: 'private', // Make private when soft deleted
+        },
       });
     }
 
+    // Invalidate relevant caches after deletion
+    await Promise.all([
+      CacheInvalidation.document(id),
+      CacheInvalidation.user(userId),
+      CacheInvalidation.publicDocuments(),
+    ]).catch((err) => {
+      logger.error({ err, documentId: id }, 'Failed to invalidate caches after deletion');
+    });
+
     return { success: true };
   } catch (error) {
-    logger.error({ err: error, documentId: id, userId, hardDelete: options.hardDelete }, 'Delete document error');
+    logger.error(
+      { err: error, documentId: id, userId, hardDelete: options.hardDelete },
+      'Delete document error'
+    );
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -579,13 +630,10 @@ export async function findDocumentsByContent(
 }> {
   try {
     const pagination = buildPagination(options);
-    
+
     // Build base where clause
     const baseWhere: Prisma.JsonDocumentWhereInput = {
-      OR: [
-        { visibility: 'public' },
-        ...(userId ? [{ userId }] : [])
-      ]
+      OR: [{ visibility: 'public' }, ...(userId ? [{ userId }] : [])],
     };
 
     // Use a simpler approach for content similarity
@@ -596,18 +644,18 @@ export async function findDocumentsByContent(
       select: getDocumentListSelect(false, false),
       skip: pagination.skip,
       take: pagination.take,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     return {
       success: true,
-      data: documents.map(doc => formatDocumentForResponse(doc, false))
+      data: documents.map((doc) => formatDocumentForResponse(doc, false)),
     };
   } catch (error) {
     logger.error({ err: error, userId }, 'Find documents by content error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -636,7 +684,7 @@ export async function publishDocument(
     const verification = await verifyDocumentOwnership(id, userId, {
       id: true,
       userId: true,
-      visibility: true
+      visibility: true,
     });
 
     if (!verification.success) {
@@ -655,32 +703,40 @@ export async function publishDocument(
         description: publishData.description,
         tags: publishData.tags || [],
         category: publishData.category,
-        slug: publishData.slug
+        slug: publishData.slug,
       },
-      select: getDocumentDetailSelect(false, false)
+      select: getDocumentDetailSelect(false, false),
     });
 
     return {
       success: true,
-      data: formatDocumentForResponse(document, true)
+      data: formatDocumentForResponse(document, true),
     };
   } catch (error) {
-    logger.error({ err: error, documentId: id, userId, slug: publishData.slug }, 'Publish document error');
+    logger.error(
+      { err: error, documentId: id, userId, slug: publishData.slug },
+      'Publish document error'
+    );
 
     // Handle unique constraint violation for slug
     if ((error as any)?.code === 'P2002' && (error as any)?.meta?.target?.includes('slug')) {
-      return { success: false, error: 'Slug already exists. Please choose a different slug.', status: 409 };
+      return {
+        success: false,
+        error: 'Slug already exists. Please choose a different slug.',
+        status: 409,
+      };
     }
 
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
 
 /**
  * Get document statistics for a user
+ * Cached for 30 seconds to improve dashboard performance
  */
 export async function getDocumentStats(userId: string): Promise<{
   success: boolean;
@@ -696,51 +752,69 @@ export async function getDocumentStats(userId: string): Promise<{
   status?: number;
 }> {
   try {
-    const [stats, complexityStats] = await Promise.all([
-      prisma.jsonDocument.aggregate({
-        where: { userId, expiresAt: { gt: new Date() } },
-        _count: { id: true },
-        _sum: { size: true, viewCount: true }
-      }),
-      prisma.jsonDocument.groupBy({
-        by: ['complexity'],
-        where: { userId, expiresAt: { gt: new Date() } },
-        _count: { complexity: true }
-      })
-    ]);
+    // Build cache key
+    const cacheKey = CacheKeys.userStats(userId);
 
-    const visibilityStats = await prisma.jsonDocument.groupBy({
-      by: ['visibility'],
-      where: { userId, expiresAt: { gt: new Date() } },
-      _count: { visibility: true }
-    });
+    // Try to get from cache or compute
+    const data = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        const [stats, complexityStats] = await Promise.all([
+          prisma.jsonDocument.aggregate({
+            where: { userId, expiresAt: { gt: new Date() } },
+            _count: { id: true },
+            _sum: { size: true, viewCount: true },
+          }),
+          prisma.jsonDocument.groupBy({
+            by: ['complexity'],
+            where: { userId, expiresAt: { gt: new Date() } },
+            _count: { complexity: true },
+          }),
+        ]);
 
-    const complexityDistribution = complexityStats.reduce((acc, stat) => {
-      acc[stat.complexity] = stat._count.complexity;
-      return acc;
-    }, {} as Record<string, number>);
+        const visibilityStats = await prisma.jsonDocument.groupBy({
+          by: ['visibility'],
+          where: { userId, expiresAt: { gt: new Date() } },
+          _count: { visibility: true },
+        });
 
-    const visibilityDistribution = visibilityStats.reduce((acc, stat) => {
-      acc[stat.visibility] = stat._count.visibility;
-      return acc;
-    }, {} as Record<string, number>);
+        const complexityDistribution = complexityStats.reduce(
+          (acc, stat) => {
+            acc[stat.complexity] = stat._count.complexity;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+
+        const visibilityDistribution = visibilityStats.reduce(
+          (acc, stat) => {
+            acc[stat.visibility] = stat._count.visibility;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+
+        return {
+          total: stats._count.id,
+          public: visibilityDistribution.public || 0,
+          private: visibilityDistribution.private || 0,
+          totalSize: (Number(stats._sum.size || 0) / (1024 * 1024)).toFixed(2) + ' MB',
+          totalViews: stats._sum.viewCount || 0,
+          complexityDistribution,
+        };
+      },
+      { ttl: CacheTTL.SHORT, prefix: 'stats' }
+    );
 
     return {
       success: true,
-      data: {
-        total: stats._count.id,
-        public: visibilityDistribution.public || 0,
-        private: visibilityDistribution.private || 0,
-        totalSize: (Number(stats._sum.size || 0) / (1024 * 1024)).toFixed(2) + ' MB',
-        totalViews: stats._sum.viewCount || 0,
-        complexityDistribution
-      }
+      data,
     };
   } catch (error) {
     logger.error({ err: error, userId }, 'Get document stats error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -756,19 +830,19 @@ export async function cleanupExpiredDocuments(): Promise<{
   try {
     const result = await prisma.jsonDocument.deleteMany({
       where: {
-        expiresAt: { lte: new Date() }
-      }
+        expiresAt: { lte: new Date() },
+      },
     });
 
     return {
       success: true,
-      data: { deletedCount: result.count }
+      data: { deletedCount: result.count },
     };
   } catch (error) {
     logger.error({ err: error }, 'Cleanup expired documents error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }

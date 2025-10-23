@@ -5,9 +5,10 @@ import {
   buildPaginationResult,
   handleDatabaseError,
   PaginationParams,
-  PaginationResult
+  PaginationResult,
 } from './common';
 import { logger } from '@/lib/logger';
+import { cacheGetOrSet, CacheKeys, CacheTTL, CacheInvalidation } from '@/lib/cache/redis-cache';
 
 // Analytics input types
 export interface ViewTrackingInput {
@@ -38,7 +39,7 @@ export async function trackView(input: ViewTrackingInput): Promise<{
     // First check if document exists
     const document = await prisma.jsonDocument.findUnique({
       where: { id: input.documentId },
-      select: { id: true, shareId: true }
+      select: { id: true, shareId: true },
     });
 
     if (!document) {
@@ -51,9 +52,9 @@ export async function trackView(input: ViewTrackingInput): Promise<{
         documentId: input.documentId,
         ipHash: input.ipHash,
         lastViewed: {
-          gte: new Date(Date.now() - 30 * 60 * 1000) // Within last 30 minutes
-        }
-      }
+          gte: new Date(Date.now() - 30 * 60 * 1000), // Within last 30 minutes
+        },
+      },
     });
 
     if (existingAnalytics) {
@@ -66,8 +67,8 @@ export async function trackView(input: ViewTrackingInput): Promise<{
           parseTime: input.parseTime || existingAnalytics.parseTime,
           renderTime: input.renderTime || existingAnalytics.renderTime,
           memoryUsage: input.memoryUsage || existingAnalytics.memoryUsage,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
     } else {
       // Create new analytics record
@@ -80,17 +81,20 @@ export async function trackView(input: ViewTrackingInput): Promise<{
           renderTime: input.renderTime,
           memoryUsage: input.memoryUsage,
           viewCount: 1,
-          lastViewed: new Date()
-        }
+          lastViewed: new Date(),
+        },
       });
     }
 
     return { success: true };
   } catch (error) {
-    logger.error({ err: error, documentId: input.documentId, ipHash: input.ipHash }, 'Track view error');
+    logger.error(
+      { err: error, documentId: input.documentId, ipHash: input.ipHash },
+      'Track view error'
+    );
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -127,14 +131,14 @@ export async function getDocumentAnalytics(
     // First verify document exists and user has access
     const document = await prisma.jsonDocument.findFirst({
       where: {
-        OR: [{ id: documentId }, { shareId: documentId }]
+        OR: [{ id: documentId }, { shareId: documentId }],
       },
       select: {
         id: true,
         userId: true,
         visibility: true,
-        isAnonymous: true
-      }
+        isAnonymous: true,
+      },
     });
 
     if (!document) {
@@ -142,7 +146,7 @@ export async function getDocumentAnalytics(
     }
 
     // Check access permissions for analytics
-    const hasAccess = 
+    const hasAccess =
       document.userId === userId || // Owner
       document.visibility === 'public'; // Public document
 
@@ -157,7 +161,7 @@ export async function getDocumentAnalytics(
       _count: { id: true },
       _avg: { parseTime: true, renderTime: true, memoryUsage: true },
       _min: { parseTime: true, renderTime: true },
-      _max: { parseTime: true, renderTime: true }
+      _max: { parseTime: true, renderTime: true },
     });
 
     // Get views over time (last 30 days)
@@ -180,11 +184,11 @@ export async function getDocumentAnalytics(
       by: ['userAgent'],
       where: {
         documentId: document.id,
-        userAgent: { not: null }
+        userAgent: { not: null },
       },
       _count: { userAgent: true },
       orderBy: { _count: { userAgent: 'desc' } },
-      take: 10
+      take: 10,
     });
 
     return {
@@ -194,16 +198,17 @@ export async function getDocumentAnalytics(
         uniqueViews: analytics._count.id,
         avgParseTime: Math.round(analytics._avg.parseTime || 0),
         avgRenderTime: Math.round(analytics._avg.renderTime || 0),
-        avgMemoryUsage: ((Number(analytics._avg.memoryUsage || 0)) / (1024 * 1024)).toFixed(2) + ' MB',
-        viewsOverTime: viewsOverTime.map(item => ({
+        avgMemoryUsage:
+          (Number(analytics._avg.memoryUsage || 0) / (1024 * 1024)).toFixed(2) + ' MB',
+        viewsOverTime: viewsOverTime.map((item) => ({
           date: item.date,
-          views: Number(item.views)
+          views: Number(item.views),
         })),
         topUserAgents: topUserAgents
-          .filter(ua => ua.userAgent)
-          .map(ua => ({
+          .filter((ua) => ua.userAgent)
+          .map((ua) => ({
             userAgent: ua.userAgent!.slice(0, 100), // Truncate for display
-            count: ua._count.userAgent
+            count: ua._count.userAgent,
           })),
         performanceMetrics: {
           avgParseTime: Math.round(analytics._avg.parseTime || 0),
@@ -211,21 +216,22 @@ export async function getDocumentAnalytics(
           maxParseTime: analytics._max.parseTime || 0,
           avgRenderTime: Math.round(analytics._avg.renderTime || 0),
           minRenderTime: analytics._min.renderTime || 0,
-          maxRenderTime: analytics._max.renderTime || 0
-        }
-      }
+          maxRenderTime: analytics._max.renderTime || 0,
+        },
+      },
     };
   } catch (error) {
     logger.error({ err: error, documentId, userId }, 'Get document analytics error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
 
 /**
  * Get tag analytics and usage statistics
+ * Cached for 60 seconds to reduce DB load
  */
 export async function getTagAnalytics(
   options: {
@@ -263,135 +269,159 @@ export async function getTagAnalytics(
   try {
     const days = Math.min(options.days || 30, 365);
     const limit = Math.min(options.limit || 50, 100);
-    const since = new Date();
-    since.setDate(since.getDate() - days);
 
-    const whereClause: Prisma.JsonDocumentWhereInput = {
-      visibility: 'public',
-      publishedAt: { gte: since },
-      ...(options.userId && { userId: options.userId })
-    };
+    // Build cache key
+    const cacheKey = CacheKeys.tagAnalytics(days, limit);
 
-    // Get all documents with tags
-    const documents = await prisma.jsonDocument.findMany({
-      where: whereClause,
-      select: {
-        tags: true,
-        publishedAt: true,
-        viewCount: true,
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      }
-    });
+    // Try to get from cache or compute
+    const data = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
 
-    // Calculate tag statistics
-    const tagStats = new Map<string, {
-      count: number;
-      totalViews: number;
-      firstSeen: Date;
-      lastSeen: Date;
-      users: Set<string>;
-    }>();
-
-    documents.forEach(doc => {
-      doc.tags.forEach(tag => {
-        const stats = tagStats.get(tag) || {
-          count: 0,
-          totalViews: 0,
-          firstSeen: new Date(),
-          lastSeen: new Date(0),
-          users: new Set()
+        const whereClause: Prisma.JsonDocumentWhereInput = {
+          visibility: 'public',
+          publishedAt: { gte: since },
+          ...(options.userId && { userId: options.userId }),
         };
 
-        stats.count++;
-        stats.totalViews += doc.viewCount;
+        // Get documents with tags (limited to prevent unbounded queries)
+        // Using a reasonable limit of 5000 documents for analytics
+        // This covers most use cases while preventing timeout issues
+        const documents = await prisma.jsonDocument.findMany({
+          where: whereClause,
+          select: {
+            tags: true,
+            publishedAt: true,
+            viewCount: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { publishedAt: 'desc' },
+          take: 5000, // Limit to prevent unbounded query
+        });
 
-        if (doc.publishedAt) {
-          if (doc.publishedAt < stats.firstSeen) {
-            stats.firstSeen = doc.publishedAt;
+        // Calculate tag statistics
+        const tagStats = new Map<
+          string,
+          {
+            count: number;
+            totalViews: number;
+            firstSeen: Date;
+            lastSeen: Date;
+            users: Set<string>;
           }
-          if (doc.publishedAt > stats.lastSeen) {
-            stats.lastSeen = doc.publishedAt;
-          }
-        }
+        >();
 
-        if (doc.user?.id) {
-          stats.users.add(doc.user.id);
-        }
+        documents.forEach((doc) => {
+          doc.tags.forEach((tag) => {
+            const stats = tagStats.get(tag) || {
+              count: 0,
+              totalViews: 0,
+              firstSeen: new Date(),
+              lastSeen: new Date(0),
+              users: new Set(),
+            };
 
-        tagStats.set(tag, stats);
-      });
-    });
+            stats.count++;
+            stats.totalViews += doc.viewCount;
 
-    // Convert to array and sort by usage
-    const sortedTags = Array.from(tagStats.entries())
-      .map(([tag, stats]) => ({
-        tag,
-        count: stats.count,
-        totalViews: stats.totalViews,
-        avgViewsPerDoc: Math.round(stats.totalViews / stats.count),
-        uniqueUsers: stats.users.size,
-        firstSeen: stats.firstSeen,
-        lastSeen: stats.lastSeen,
-        trending: calculateTrendScore(stats)
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit);
+            if (doc.publishedAt) {
+              if (doc.publishedAt < stats.firstSeen) {
+                stats.firstSeen = doc.publishedAt;
+              }
+              if (doc.publishedAt > stats.lastSeen) {
+                stats.lastSeen = doc.publishedAt;
+              }
+            }
 
-    // Identify suspicious tags
-    const suspiciousTags = sortedTags.filter(tag => {
-      const singleUserHighFreq = tag.uniqueUsers === 1 && tag.count > 10;
-      const lowEngagement = tag.avgViewsPerDoc < 2 && tag.count > 5;
-      const suddenSpike = isRecentSpike(tag);
-      return singleUserHighFreq || lowEngagement || suddenSpike;
-    });
+            if (doc.user?.id) {
+              stats.users.add(doc.user.id);
+            }
 
-    // Category distribution
-    const categoryMap = new Map<string, number>();
-    documents.forEach(doc => {
-      doc.tags.forEach(tag => {
-        const category = categorizeTag(tag);
-        categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-      });
-    });
+            tagStats.set(tag, stats);
+          });
+        });
 
-    const categoryDistribution = Array.from(categoryMap.entries())
-      .map(([category, count]) => ({ category, count }))
-      .sort((a, b) => b.count - a.count);
+        // Convert to array and sort by usage
+        const sortedTags = Array.from(tagStats.entries())
+          .map(([tag, stats]) => ({
+            tag,
+            count: stats.count,
+            totalViews: stats.totalViews,
+            avgViewsPerDoc: Math.round(stats.totalViews / stats.count),
+            uniqueUsers: stats.users.size,
+            firstSeen: stats.firstSeen,
+            lastSeen: stats.lastSeen,
+            trending: calculateTrendScore(stats),
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, limit);
+
+        // Identify suspicious tags
+        const suspiciousTags = sortedTags.filter((tag) => {
+          const singleUserHighFreq = tag.uniqueUsers === 1 && tag.count > 10;
+          const lowEngagement = tag.avgViewsPerDoc < 2 && tag.count > 5;
+          const suddenSpike = isRecentSpike(tag);
+          return singleUserHighFreq || lowEngagement || suddenSpike;
+        });
+
+        // Category distribution
+        const categoryMap = new Map<string, number>();
+        documents.forEach((doc) => {
+          doc.tags.forEach((tag) => {
+            const category = categorizeTag(tag);
+            categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+          });
+        });
+
+        const categoryDistribution = Array.from(categoryMap.entries())
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count);
+
+        return {
+          period: `${days} days`,
+          totalTags: tagStats.size,
+          topTags: sortedTags.slice(0, 20),
+          trendingTags: sortedTags.sort((a, b) => b.trending - a.trending).slice(0, 10),
+          suspiciousTags: suspiciousTags.slice(0, 10),
+          categoryDistribution,
+          summary: {
+            avgTagsPerDoc:
+              documents.length > 0
+                ? (
+                    documents.reduce((sum, doc) => sum + doc.tags.length, 0) / documents.length
+                  ).toFixed(1)
+                : '0',
+            totalDocuments: documents.length,
+            uniqueAuthors: new Set(documents.map((d) => d.user?.id).filter(Boolean)).size,
+          },
+        };
+      },
+      { ttl: CacheTTL.MINUTE, prefix: 'analytics' }
+    );
 
     return {
       success: true,
-      data: {
-        period: `${days} days`,
-        totalTags: tagStats.size,
-        topTags: sortedTags.slice(0, 20),
-        trendingTags: sortedTags.sort((a, b) => b.trending - a.trending).slice(0, 10),
-        suspiciousTags: suspiciousTags.slice(0, 10),
-        categoryDistribution,
-        summary: {
-          avgTagsPerDoc: documents.length > 0 
-            ? (documents.reduce((sum, doc) => sum + doc.tags.length, 0) / documents.length).toFixed(1)
-            : '0',
-          totalDocuments: documents.length,
-          uniqueAuthors: new Set(documents.map(d => d.user?.id).filter(Boolean)).size
-        }
-      }
+      data,
     };
   } catch (error) {
     logger.error({ err: error, options }, 'Get tag analytics error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
 
 /**
  * Get user activity analytics
+ * Cached for 30 seconds to balance freshness and performance
  */
 export async function getUserAnalytics(
   userId: string,
@@ -427,55 +457,68 @@ export async function getUserAnalytics(
   try {
     const since = options.since || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days
     const until = options.until || new Date();
+    const days = Math.ceil((until.getTime() - since.getTime()) / (24 * 60 * 60 * 1000));
 
-    // Get user documents summary
-    const documentStats = await prisma.jsonDocument.aggregate({
-      where: {
-        userId,
-        createdAt: { gte: since, lte: until }
-      },
-      _count: { id: true },
-      _sum: { viewCount: true }
-    });
+    // Build cache key
+    const cacheKey = CacheKeys.userAnalytics(userId, days);
 
-    // Get visibility breakdown
-    const visibilityStats = await prisma.jsonDocument.groupBy({
-      by: ['visibility'],
-      where: {
-        userId,
-        createdAt: { gte: since, lte: until }
-      },
-      _count: { visibility: true }
-    });
+    // Try to get from cache or compute
+    const data = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        // Get user documents summary
+        const documentStats = await prisma.jsonDocument.aggregate({
+          where: {
+            userId,
+            createdAt: { gte: since, lte: until },
+          },
+          _count: { id: true },
+          _sum: { viewCount: true },
+        });
 
-    const visibilityMap = visibilityStats.reduce((acc, stat) => {
-      acc[stat.visibility] = stat._count.visibility;
-      return acc;
-    }, {} as Record<string, number>);
+        // Get visibility breakdown
+        const visibilityStats = await prisma.jsonDocument.groupBy({
+          by: ['visibility'],
+          where: {
+            userId,
+            createdAt: { gte: since, lte: until },
+          },
+          _count: { visibility: true },
+        });
 
-    // Get top documents by views
-    const topDocuments = await prisma.jsonDocument.findMany({
-      where: {
-        userId,
-        createdAt: { gte: since, lte: until }
-      },
-      select: {
-        id: true,
-        shareId: true,
-        title: true,
-        viewCount: true,
-        createdAt: true
-      },
-      orderBy: { viewCount: 'desc' },
-      take: 10
-    });
+        const visibilityMap = visibilityStats.reduce(
+          (acc, stat) => {
+            acc[stat.visibility] = stat._count.visibility;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
 
-    // Get activity over time
-    const activityOverTime = await prisma.$queryRaw<Array<{
-      date: string;
-      documents_created: bigint;
-      total_views: bigint;
-    }>>`
+        // Get top documents by views
+        const topDocuments = await prisma.jsonDocument.findMany({
+          where: {
+            userId,
+            createdAt: { gte: since, lte: until },
+          },
+          select: {
+            id: true,
+            shareId: true,
+            title: true,
+            viewCount: true,
+            createdAt: true,
+          },
+          orderBy: { viewCount: 'desc' },
+          take: 10,
+        });
+
+        // Get activity over time
+        const activityOverTime = await prisma.$queryRaw<
+          Array<{
+            date: string;
+            documents_created: bigint;
+            total_views: bigint;
+          }>
+        >`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as documents_created,
@@ -488,51 +531,61 @@ export async function getUserAnalytics(
       ORDER BY date ASC
     `;
 
-    // Get performance analytics for user's documents
-    const performanceStats = await prisma.jsonAnalytics.aggregate({
-      where: {
-        document: { userId }
+        // Get performance analytics for user's documents
+        const performanceStats = await prisma.jsonAnalytics.aggregate({
+          where: {
+            document: { userId },
+          },
+          _avg: {
+            parseTime: true,
+            renderTime: true,
+            memoryUsage: true,
+          },
+        });
+
+        return {
+          documentsCreated: documentStats._count.id,
+          totalViews: documentStats._sum.viewCount || 0,
+          avgViewsPerDocument:
+            documentStats._count.id > 0
+              ? Math.round((documentStats._sum.viewCount || 0) / documentStats._count.id)
+              : 0,
+          publicDocuments: visibilityMap.public || 0,
+          privateDocuments: visibilityMap.private || 0,
+          topDocuments: topDocuments.map((doc) => ({
+            id: doc.shareId,
+            title: doc.title || 'Untitled',
+            views: doc.viewCount,
+            created: doc.createdAt,
+          })),
+          activityOverTime: activityOverTime.map((item) => ({
+            date: item.date,
+            documentsCreated: Number(item.documents_created),
+            views: Number(item.total_views),
+          })),
+          performanceStats: {
+            avgParseTime: Math.round(performanceStats._avg.parseTime || 0),
+            avgRenderTime: Math.round(performanceStats._avg.renderTime || 0),
+            avgMemoryUsage:
+              (Number(performanceStats._avg.memoryUsage || 0) / (1024 * 1024)).toFixed(2) + ' MB',
+          },
+        };
       },
-      _avg: {
-        parseTime: true,
-        renderTime: true,
-        memoryUsage: true
-      }
-    });
+      { ttl: CacheTTL.SHORT, prefix: 'analytics' }
+    );
 
     return {
       success: true,
-      data: {
-        documentsCreated: documentStats._count.id,
-        totalViews: documentStats._sum.viewCount || 0,
-        avgViewsPerDocument: documentStats._count.id > 0 
-          ? Math.round((documentStats._sum.viewCount || 0) / documentStats._count.id)
-          : 0,
-        publicDocuments: visibilityMap.public || 0,
-        privateDocuments: visibilityMap.private || 0,
-        topDocuments: topDocuments.map(doc => ({
-          id: doc.shareId,
-          title: doc.title || 'Untitled',
-          views: doc.viewCount,
-          created: doc.createdAt
-        })),
-        activityOverTime: activityOverTime.map(item => ({
-          date: item.date,
-          documentsCreated: Number(item.documents_created),
-          views: Number(item.total_views)
-        })),
-        performanceStats: {
-          avgParseTime: Math.round(performanceStats._avg.parseTime || 0),
-          avgRenderTime: Math.round(performanceStats._avg.renderTime || 0),
-          avgMemoryUsage: ((Number(performanceStats._avg.memoryUsage || 0)) / (1024 * 1024)).toFixed(2) + ' MB'
-        }
-      }
+      data,
     };
   } catch (error) {
-    logger.error({ err: error, userId, since: options.since, until: options.until }, 'Get user analytics error');
+    logger.error(
+      { err: error, userId, since: options.since, until: options.until },
+      'Get user analytics error'
+    );
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -540,9 +593,7 @@ export async function getUserAnalytics(
 /**
  * Get overall platform analytics (admin only)
  */
-export async function getPlatformAnalytics(
-  options: AnalyticsQueryOptions = {}
-): Promise<{
+export async function getPlatformAnalytics(options: AnalyticsQueryOptions = {}): Promise<{
   success: boolean;
   data?: {
     totalDocuments: number;
@@ -569,23 +620,23 @@ export async function getPlatformAnalytics(
     const [documentStats, userStats, performanceStats] = await Promise.all([
       prisma.jsonDocument.aggregate({
         _count: { id: true },
-        _sum: { viewCount: true, size: true }
+        _sum: { viewCount: true, size: true },
       }),
       prisma.user.aggregate({
-        _count: { id: true }
+        _count: { id: true },
       }),
       prisma.jsonAnalytics.aggregate({
         _avg: {
           parseTime: true,
           renderTime: true,
-          memoryUsage: true
-        }
-      })
+          memoryUsage: true,
+        },
+      }),
     ]);
 
     // Public documents count
     const publicCount = await prisma.jsonDocument.count({
-      where: { visibility: 'public' }
+      where: { visibility: 'public' },
     });
 
     // Top categories
@@ -593,19 +644,21 @@ export async function getPlatformAnalytics(
       by: ['category'],
       where: {
         category: { not: null },
-        visibility: 'public'
+        visibility: 'public',
       },
       _count: { category: true },
       orderBy: { _count: { category: 'desc' } },
-      take: 10
+      take: 10,
     });
 
     // User growth over time
-    const userGrowth = await prisma.$queryRaw<Array<{
-      date: string;
-      new_users: bigint;
-      total_users: bigint;
-    }>>`
+    const userGrowth = await prisma.$queryRaw<
+      Array<{
+        date: string;
+        new_users: bigint;
+        total_users: bigint;
+      }>
+    >`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as new_users,
@@ -617,11 +670,13 @@ export async function getPlatformAnalytics(
     `;
 
     // Document growth over time
-    const documentGrowth = await prisma.$queryRaw<Array<{
-      date: string;
-      new_documents: bigint;
-      total_documents: bigint;
-    }>>`
+    const documentGrowth = await prisma.$queryRaw<
+      Array<{
+        date: string;
+        new_documents: bigint;
+        total_documents: bigint;
+      }>
+    >`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as new_documents,
@@ -639,35 +694,39 @@ export async function getPlatformAnalytics(
         totalUsers: userStats._count.id,
         totalViews: documentStats._sum.viewCount || 0,
         publicDocuments: publicCount,
-        averageDocumentSize: ((Number(documentStats._sum.size || 0) / documentStats._count.id) / (1024 * 1024)).toFixed(2) + ' MB',
+        averageDocumentSize:
+          (Number(documentStats._sum.size || 0) / documentStats._count.id / (1024 * 1024)).toFixed(
+            2
+          ) + ' MB',
         topCategories: topCategories
-          .filter(cat => cat.category)
-          .map(cat => ({
+          .filter((cat) => cat.category)
+          .map((cat) => ({
             category: cat.category!,
-            count: cat._count.category
+            count: cat._count.category,
           })),
-        userGrowth: userGrowth.map(item => ({
+        userGrowth: userGrowth.map((item) => ({
           date: item.date,
           newUsers: Number(item.new_users),
-          totalUsers: Number(item.total_users)
+          totalUsers: Number(item.total_users),
         })),
-        documentGrowth: documentGrowth.map(item => ({
+        documentGrowth: documentGrowth.map((item) => ({
           date: item.date,
           newDocuments: Number(item.new_documents),
-          totalDocuments: Number(item.total_documents)
+          totalDocuments: Number(item.total_documents),
         })),
         performanceOverview: {
           avgParseTime: Math.round(performanceStats._avg.parseTime || 0),
           avgRenderTime: Math.round(performanceStats._avg.renderTime || 0),
-          avgMemoryUsage: ((Number(performanceStats._avg.memoryUsage || 0)) / (1024 * 1024)).toFixed(2) + ' MB'
-        }
-      }
+          avgMemoryUsage:
+            (Number(performanceStats._avg.memoryUsage || 0) / (1024 * 1024)).toFixed(2) + ' MB',
+        },
+      },
     };
   } catch (error) {
     logger.error({ err: error, since: options.since }, 'Get platform analytics error');
     return {
       success: false,
-      ...handleDatabaseError(error)
+      ...handleDatabaseError(error),
     };
   }
 }
@@ -712,22 +771,43 @@ function isRecentSpike(tag: {
 function categorizeTag(tag: string): string {
   const lower = tag.toLowerCase();
 
-  if (['javascript', 'typescript', 'python', 'java', 'cpp', 'csharp', 'go', 'rust', 'ruby', 'php'].some(lang => lower.includes(lang))) {
+  if (
+    [
+      'javascript',
+      'typescript',
+      'python',
+      'java',
+      'cpp',
+      'csharp',
+      'go',
+      'rust',
+      'ruby',
+      'php',
+    ].some((lang) => lower.includes(lang))
+  ) {
     return 'Programming Languages';
   }
-  if (['react', 'vue', 'angular', 'nextjs', 'express', 'django', 'flask', 'spring'].some(fw => lower.includes(fw))) {
+  if (
+    ['react', 'vue', 'angular', 'nextjs', 'express', 'django', 'flask', 'spring'].some((fw) =>
+      lower.includes(fw)
+    )
+  ) {
     return 'Frameworks';
   }
-  if (['api', 'rest', 'graphql', 'websocket', 'http'].some(api => lower.includes(api))) {
+  if (['api', 'rest', 'graphql', 'websocket', 'http'].some((api) => lower.includes(api))) {
     return 'API/Network';
   }
-  if (['database', 'sql', 'nosql', 'mongodb', 'postgresql', 'mysql'].some(db => lower.includes(db))) {
+  if (
+    ['database', 'sql', 'nosql', 'mongodb', 'postgresql', 'mysql'].some((db) => lower.includes(db))
+  ) {
     return 'Database';
   }
-  if (['docker', 'kubernetes', 'aws', 'azure', 'gcp', 'devops'].some(infra => lower.includes(infra))) {
+  if (
+    ['docker', 'kubernetes', 'aws', 'azure', 'gcp', 'devops'].some((infra) => lower.includes(infra))
+  ) {
     return 'Infrastructure';
   }
-  if (['test', 'testing', 'unit', 'e2e', 'mock'].some(test => lower.includes(test))) {
+  if (['test', 'testing', 'unit', 'e2e', 'mock'].some((test) => lower.includes(test))) {
     return 'Testing';
   }
 

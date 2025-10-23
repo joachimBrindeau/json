@@ -1,5 +1,7 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
+import { redis } from '../redis';
+import { logger } from '../logger';
 
 /**
  * Rate limiting configurations using express-rate-limit
@@ -13,8 +15,8 @@ export const publishRateLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   keyGenerator: (req) => {
-    // Use user ID if authenticated, otherwise use IP
-    return req.user?.id || req.ip || 'anonymous';
+    // Use user ID if authenticated; otherwise use IPv6-safe helper
+    return (req as any).user?.id || ipKeyGenerator(req as any);
   },
   skip: (req) => {
     // Skip rate limiting for admin users if needed
@@ -32,77 +34,147 @@ export const tagSuggestionsRateLimiter = rateLimit({
 });
 
 /**
- * Simple in-memory rate limiter for Next.js API routes
- * Since express-rate-limit doesn't work directly with Next.js
+ * Redis-backed rate limiter for Next.js API routes
+ * Falls back to in-memory when Redis is unavailable
  */
-class SimpleRateLimiter {
-  private attempts: Map<string, { count: number; resetTime: number }> = new Map();
+class RedisRateLimiter {
+  private memoryCache = new Map<string, { count: number; resetTime: number }>();
   private readonly windowMs: number;
   private readonly maxAttempts: number;
+  private readonly keyPrefix: string;
 
-  constructor(windowMs: number = 15 * 60 * 1000, maxAttempts: number = 10) {
+  constructor(
+    windowMs: number = 15 * 60 * 1000,
+    maxAttempts: number = 10,
+    keyPrefix: string = 'ratelimit'
+  ) {
     this.windowMs = windowMs;
     this.maxAttempts = maxAttempts;
+    this.keyPrefix = keyPrefix;
   }
 
-  isAllowed(identifier: string): boolean {
-    const now = Date.now();
-    const userAttempts = this.attempts.get(identifier);
-
-    if (!userAttempts) {
-      // First attempt
-      this.attempts.set(identifier, {
-        count: 1,
-        resetTime: now + this.windowMs,
-      });
+  private async isRedisAvailable(): Promise<boolean> {
+    if (!redis) return false;
+    try {
+      await redis.ping();
       return true;
-    }
-
-    // Check if window has expired
-    if (now > userAttempts.resetTime) {
-      // Reset the window
-      this.attempts.set(identifier, {
-        count: 1,
-        resetTime: now + this.windowMs,
-      });
-      return true;
-    }
-
-    // Within the window
-    if (userAttempts.count >= this.maxAttempts) {
+    } catch {
       return false;
     }
-
-    // Increment count
-    userAttempts.count++;
-    return true;
   }
 
-  getRemainingAttempts(identifier: string): number {
-    const userAttempts = this.attempts.get(identifier);
-    if (!userAttempts) return this.maxAttempts;
-
+  async isAllowed(identifier: string): Promise<boolean> {
+    const key = `${this.keyPrefix}:${identifier}`;
     const now = Date.now();
-    if (now > userAttempts.resetTime) {
+
+    try {
+      if (await this.isRedisAvailable()) {
+        // Use Redis for rate limiting
+        const windowSeconds = Math.ceil(this.windowMs / 1000);
+        const multi = redis!.multi();
+
+        // Increment counter
+        multi.incr(key);
+        // Set expiry on first access
+        multi.expire(key, windowSeconds);
+        // Get current count
+        multi.get(key);
+
+        const results = await multi.exec();
+        const count = results ? parseInt(results[2][1] as string, 10) : 1;
+
+        if (count > this.maxAttempts) {
+          logger.warn(
+            { identifier, count, limit: this.maxAttempts },
+            'Rate limit exceeded (Redis)'
+          );
+          return false;
+        }
+
+        return true;
+      } else {
+        // Fallback to in-memory rate limiting
+        const userAttempts = this.memoryCache.get(key);
+
+        if (!userAttempts) {
+          this.memoryCache.set(key, {
+            count: 1,
+            resetTime: now + this.windowMs,
+          });
+          return true;
+        }
+
+        if (now > userAttempts.resetTime) {
+          this.memoryCache.set(key, {
+            count: 1,
+            resetTime: now + this.windowMs,
+          });
+          return true;
+        }
+
+        if (userAttempts.count >= this.maxAttempts) {
+          logger.warn(
+            { identifier, count: userAttempts.count, limit: this.maxAttempts },
+            'Rate limit exceeded (Memory)'
+          );
+          return false;
+        }
+
+        userAttempts.count++;
+        return true;
+      }
+    } catch (error) {
+      logger.error({ err: error, identifier }, 'Rate limit check error');
+      // On error, allow the request (fail open)
+      return true;
+    }
+  }
+
+  async getRemainingAttempts(identifier: string): Promise<number> {
+    const key = `${this.keyPrefix}:${identifier}`;
+
+    try {
+      if (await this.isRedisAvailable()) {
+        const count = await redis!.get(key);
+        const current = count ? parseInt(count, 10) : 0;
+        return Math.max(0, this.maxAttempts - current);
+      } else {
+        const userAttempts = this.memoryCache.get(key);
+        if (!userAttempts || Date.now() > userAttempts.resetTime) {
+          return this.maxAttempts;
+        }
+        return Math.max(0, this.maxAttempts - userAttempts.count);
+      }
+    } catch {
       return this.maxAttempts;
     }
-
-    return Math.max(0, this.maxAttempts - userAttempts.count);
   }
 
-  getResetTime(identifier: string): Date | null {
-    const userAttempts = this.attempts.get(identifier);
-    if (!userAttempts) return null;
+  async getResetTime(identifier: string): Promise<Date | null> {
+    const key = `${this.keyPrefix}:${identifier}`;
 
-    return new Date(userAttempts.resetTime);
+    try {
+      if (await this.isRedisAvailable()) {
+        const ttl = await redis!.ttl(key);
+        if (ttl > 0) {
+          return new Date(Date.now() + ttl * 1000);
+        }
+        return null;
+      } else {
+        const userAttempts = this.memoryCache.get(key);
+        return userAttempts ? new Date(userAttempts.resetTime) : null;
+      }
+    } catch {
+      return null;
+    }
   }
 
-  // Clean up old entries periodically
+  // Clean up old entries from memory cache periodically
   cleanup() {
     const now = Date.now();
-    for (const [key, value] of this.attempts.entries()) {
+    for (const [key, value] of this.memoryCache.entries()) {
       if (now > value.resetTime) {
-        this.attempts.delete(key);
+        this.memoryCache.delete(key);
       }
     }
   }
