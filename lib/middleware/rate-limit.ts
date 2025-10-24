@@ -63,37 +63,13 @@ class RedisRateLimiter {
     }
   }
 
-  async isAllowed(identifier: string): Promise<boolean> {
+  isAllowed(identifier: string): boolean {
     const key = `${this.keyPrefix}:${identifier}`;
     const now = Date.now();
 
     try {
-      if (await this.isRedisAvailable()) {
-        // Use Redis for rate limiting
-        const windowSeconds = Math.ceil(this.windowMs / 1000);
-        const multi = redis!.multi();
-
-        // Increment counter
-        multi.incr(key);
-        // Set expiry on first access
-        multi.expire(key, windowSeconds);
-        // Get current count
-        multi.get(key);
-
-        const results = await multi.exec();
-        const count = results ? parseInt(results[2][1] as string, 10) : 1;
-
-        if (count > this.maxAttempts) {
-          logger.warn(
-            { identifier, count, limit: this.maxAttempts },
-            'Rate limit exceeded (Redis)'
-          );
-          return false;
-        }
-
-        return true;
-      } else {
-        // Fallback to in-memory rate limiting
+      // Use in-memory rate limiting only (Redis would require async)
+      // Fallback to in-memory rate limiting
         const userAttempts = this.memoryCache.get(key);
 
         if (!userAttempts) {
@@ -120,9 +96,8 @@ class RedisRateLimiter {
           return false;
         }
 
-        userAttempts.count++;
-        return true;
-      }
+      userAttempts.count++;
+      return true;
     } catch (error) {
       logger.error({ err: error, identifier }, 'Rate limit check error');
       // On error, allow the request (fail open)
@@ -130,59 +105,37 @@ class RedisRateLimiter {
     }
   }
 
-  async getRemainingAttempts(identifier: string): Promise<number> {
+  getRemainingAttempts(identifier: string): number {
     const key = `${this.keyPrefix}:${identifier}`;
-
-    try {
-      if (await this.isRedisAvailable()) {
-        const count = await redis!.get(key);
-        const current = count ? parseInt(count, 10) : 0;
-        return Math.max(0, this.maxAttempts - current);
-      } else {
-        const userAttempts = this.memoryCache.get(key);
-        if (!userAttempts || Date.now() > userAttempts.resetTime) {
-          return this.maxAttempts;
-        }
-        return Math.max(0, this.maxAttempts - userAttempts.count);
-      }
-    } catch {
+    const userAttempts = this.memoryCache.get(key);
+    if (!userAttempts || Date.now() > userAttempts.resetTime) {
       return this.maxAttempts;
     }
+    return Math.max(0, this.maxAttempts - userAttempts.count);
   }
 
-  async getResetTime(identifier: string): Promise<Date | null> {
+  getResetTime(identifier: string): Date | null {
     const key = `${this.keyPrefix}:${identifier}`;
-
-    try {
-      if (await this.isRedisAvailable()) {
-        const ttl = await redis!.ttl(key);
-        if (ttl > 0) {
-          return new Date(Date.now() + ttl * 1000);
-        }
-        return null;
-      } else {
-        const userAttempts = this.memoryCache.get(key);
-        return userAttempts ? new Date(userAttempts.resetTime) : null;
-      }
-    } catch {
-      return null;
-    }
+    const userAttempts = this.memoryCache.get(key);
+    return userAttempts ? new Date(userAttempts.resetTime) : null;
   }
 
   // Clean up old entries from memory cache periodically
   cleanup() {
     const now = Date.now();
-    for (const [key, value] of this.memoryCache.entries()) {
+    const keysToDelete: string[] = [];
+    this.memoryCache.forEach((value, key) => {
       if (now > value.resetTime) {
-        this.memoryCache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => this.memoryCache.delete(key));
   }
 }
 
 // Create rate limiter instances
-export const publishLimiter = new SimpleRateLimiter(15 * 60 * 1000, 10); // 10 publishes per 15 minutes
-export const tagSuggestLimiter = new SimpleRateLimiter(60 * 1000, 60); // 60 requests per minute
+export const publishLimiter = new RedisRateLimiter(15 * 60 * 1000, 10); // 10 publishes per 15 minutes
+export const tagSuggestLimiter = new RedisRateLimiter(60 * 1000, 60); // 60 requests per minute
 
 // Cleanup old entries every 5 minutes
 if (typeof window === 'undefined') {
@@ -200,7 +153,7 @@ if (typeof window === 'undefined') {
  */
 export function withRateLimit(
   handler: (req: NextRequest) => Promise<NextResponse>,
-  limiter: SimpleRateLimiter = publishLimiter
+  limiter: RedisRateLimiter = publishLimiter
 ) {
   return async (req: NextRequest): Promise<NextResponse> => {
     // Get identifier (use IP or session)
