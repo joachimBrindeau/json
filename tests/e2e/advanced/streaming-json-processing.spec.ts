@@ -27,6 +27,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
     test(
       'should process large files incrementally with streaming',
       async () => {
+        test.setTimeout(STREAMING_TIMEOUT);
         const streamingJson = generateLargeTestJSON(150); // 150MB for streaming test
         const jsonString = JSON.stringify(streamingJson);
         const testFilePath = join(testFilesDir, 'streaming-150mb.json');
@@ -60,8 +61,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
         if (streamingIndicators > 0) {
           console.log('Streaming indicators found in UI');
         }
-      },
-      STREAMING_TIMEOUT
+      }
     );
 
     test('should show progressive loading during streaming', async () => {
@@ -161,6 +161,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
     test(
       'should handle streaming with mixed data types efficiently',
       async () => {
+        test.setTimeout(STREAMING_TIMEOUT);
         const mixedData = {
           strings: new Array(10000).fill(0).map((_, i) => `String data ${i} - `.repeat(20)),
           numbers: new Array(50000).fill(0).map(() => Math.random() * 1000000),
@@ -198,8 +199,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
         expect(nodeCounts.objects).toBeGreaterThan(100);
         expect(nodeCounts.arrays).toBeGreaterThan(50);
         expect(nodeCounts.booleans).toBeGreaterThan(100);
-      },
-      STREAMING_TIMEOUT
+      }
     );
 
     test('should handle streaming interruption gracefully', async () => {
@@ -342,6 +342,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
     test(
       'should handle concurrent streaming operations',
       async ({ page, context }) => {
+        test.setTimeout(STREAMING_TIMEOUT);
         // Open multiple tabs to test concurrent streaming
         const page2 = await context.newPage();
         const viewerPage2 = new JsonViewerPage(page2);
@@ -379,8 +380,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
         expect(stats2.nodeCount).toBeGreaterThan(100);
 
         await page2.close();
-      },
-      STREAMING_TIMEOUT
+      }
     );
   });
 
@@ -390,7 +390,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
 
       try {
         // Test direct API streaming upload
-        const response = await apiHelper.request.post('/api/json/upload', {
+        const response = await apiHelper.requestContext.post('/api/json/upload', {
           data: {
             json: largeJson,
             streaming: true,
@@ -428,7 +428,7 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
       const invalidData = { invalid: 'not-json-string' };
 
       try {
-        const response = await apiHelper.request.post('/api/json/stream/invalid-id', {
+        const response = await apiHelper.requestContext.post('/api/json/stream/invalid-id', {
           data: invalidData,
         });
 

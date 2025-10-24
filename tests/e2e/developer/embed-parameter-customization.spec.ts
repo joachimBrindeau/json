@@ -468,7 +468,8 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Test filtering
       await iframe.locator('[data-testid="filter-select"]').selectOption('string');
-      await expect(iframe.locator('.list-item[data-type="string"]')).toHaveCount({ min: 1 });
+      const stringItems = await iframe.locator('.list-item[data-type="string"]').count();
+      expect(stringItems).toBeGreaterThanOrEqual(1);
 
       // Test search with highlighting
       await iframe.locator('[data-testid="search-box"]').fill('users');
@@ -476,7 +477,8 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Test grouping
       const groups = iframe.locator('[data-testid="group-header"]');
-      await expect(groups).toHaveCount({ min: 2 });
+      const groupCount = await groups.count();
+      expect(groupCount).toBeGreaterThanOrEqual(2);
 
       // Test sorting
       await iframe.locator('[data-testid="sort-key"]').selectOption('alphabetical');
@@ -651,8 +653,10 @@ test.describe('Developer - Embed Parameter Customization', () => {
 
       // Verify flow view customizations
       await expect(iframe.locator('[data-testid="flow-canvas"]')).toBeVisible();
-      await expect(iframe.locator('.flow-node')).toHaveCount({ min: 5 });
-      await expect(iframe.locator('.node-connection')).toHaveCount({ min: 3 });
+      const flowNodeCount = await iframe.locator('.flow-node').count();
+      expect(flowNodeCount).toBeGreaterThanOrEqual(5);
+      const connectionCount = await iframe.locator('.node-connection').count();
+      expect(connectionCount).toBeGreaterThanOrEqual(3);
 
       // Test zoom and pan controls
       await expect(iframe.locator('[data-testid="zoom-controls"]')).toBeVisible();

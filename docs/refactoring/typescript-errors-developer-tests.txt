@@ -1,0 +1,66 @@
+tests/e2e/developer/embed-customization.spec.ts(835,23): error TS2339: Property 'embedCallbacks' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embed-customization.spec.ts(835,48): error TS2339: Property 'embedCallbacks' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embed-customization.spec.ts(838,58): error TS2339: Property 'embedCallbacks' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embed-parameter-customization.spec.ts(291,63): error TS2339: Property 'currentTheme' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embed-parameter-customization.spec.ts(1178,25): error TS2551: Property 'capturedEvents' does not exist on type 'Window & typeof globalThis'. Did you mean 'captureEvents'?
+tests/e2e/developer/embed-parameter-customization.spec.ts(1178,50): error TS2551: Property 'capturedEvents' does not exist on type 'Window & typeof globalThis'. Did you mean 'captureEvents'?
+tests/e2e/developer/embed-parameter-customization.spec.ts(1183,63): error TS2551: Property 'capturedEvents' does not exist on type 'Window & typeof globalThis'. Did you mean 'captureEvents'?
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(144,25): error TS2339: Property 'totalInitialized' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(172,61): error TS2339: Property 'callbackData' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(177,67): error TS2339: Property 'initializedViewers' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(398,60): error TS2339: Property 'currentConfig' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(404,56): error TS2339: Property 'currentConfig' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(411,56): error TS2339: Property 'currentConfig' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(425,56): error TS2339: Property 'currentConfig' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(430,62): error TS2339: Property 'updateHistory' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(630,25): error TS2339: Property 'errorTestResults' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(635,61): error TS2339: Property 'errorTestResults' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(976,47): error TS2339: Property 'conditionalLoadingComplete' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(980,62): error TS2339: Property 'loadingEvents' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embeddable-script-data-attributes.spec.ts(1277,61): error TS2551: Property 'performanceMeasurements' does not exist on type 'Window & typeof globalThis'. Did you mean 'PerformanceMeasure'?
+tests/e2e/developer/embedding-functionality.spec.ts(3,24): error TS2307: Cannot find module '@/lib/config' or its corresponding type declarations.
+tests/e2e/developer/embedding-functionality.spec.ts(206,55): error TS2551: Property 'contentDocument' does not exist on type 'HTMLElement'. Did you mean 'ownerDocument'?
+tests/e2e/developer/embedding-functionality.spec.ts(211,16): error TS2339: Property 'sendCommand' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embedding-functionality.spec.ts(216,23): error TS2339: Property 'receivedMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embedding-functionality.spec.ts(216,50): error TS2339: Property 'receivedMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embedding-functionality.spec.ts(220,57): error TS2339: Property 'receivedMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/embedding-functionality.spec.ts(416,47): error TS2339: Property 'widgetLoaded' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/extension-submission-endpoint.spec.ts(375,36): error TS2339: Property 'error' does not exist on type '{ status: number; data: any; response: APIResponse; } | { status: any; error: any; }'.
+  Property 'error' does not exist on type '{ status: number; data: any; response: APIResponse; }'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(263,21): error TS2339: Property 'success' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(759,78): error TS2339: Property 'success' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(763,28): error TS2339: Property 'data' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(764,28): error TS2339: Property 'data' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(765,28): error TS2339: Property 'data' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(768,35): error TS2339: Property 'data' does not exist on type 'unknown'.
+tests/e2e/developer/health-check-endpoints-monitoring.spec.ts(771,74): error TS2339: Property 'status' does not exist on type 'unknown'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(3,24): error TS2307: Cannot find module '@/lib/config' or its corresponding type declarations.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(367,23): error TS2339: Property 'secureMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(367,48): error TS2339: Property 'secureMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(370,57): error TS2339: Property 'secureMessages' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(534,47): error TS2339: Property 'widgetLoaded' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(552,47): error TS2339: Property 'currentTheme' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(557,47): error TS2339: Property 'currentView' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(568,47): error TS2339: Property 'lastSearch' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(570,62): error TS2339: Property 'lastSearch' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(576,47): error TS2339: Property 'currentView' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(579,47): error TS2339: Property 'lastClickedNode' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(581,60): error TS2339: Property 'lastClickedNode' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(718,25): error TS2339: Property 'widget1Loaded' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(718,49): error TS2339: Property 'widget2Loaded' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(718,73): error TS2339: Property 'widget3Loaded' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(756,16): error TS2339: Property 'testWidgets' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(916,47): error TS2339: Property 'widgetInstanceActive' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(923,47): error TS2339: Property 'widgetInstanceActive' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(928,47): error TS2339: Property 'widgetInstanceActive' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(938,49): error TS2339: Property 'widgetInstanceActive' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(1135,47): error TS2339: Property 'widgetLoadedSuccessfully' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(1141,47): error TS2339: Property 'compatibilityResults' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts(1145,69): error TS2339: Property 'compatibilityResults' does not exist on type 'Window & typeof globalThis'.
+tests/e2e/developer/json-analysis-api-insights.spec.ts(778,21): error TS2339: Property 'averageTime' does not exist on type 'unknown'.
+tests/e2e/developer/rest-api-programmatic-sharing.spec.ts(357,32): error TS2339: Property 'error' does not exist on type '{ status: number; data: any; response: APIResponse; } | { status: any; error: any; }'.
+  Property 'error' does not exist on type '{ status: number; data: any; response: APIResponse; }'.
+tests/e2e/developer/rest-api-programmatic-sharing.spec.ts(478,57): error TS2345: Argument of type '"OPTIONS"' is not assignable to parameter of type '"GET" | "POST" | "PUT" | "PATCH" | "DELETE"'.
+tests/utils/auth-helper.ts(351,31): error TS2495: Type 'NodeListOf<Element>' is not an array type or a string type.
+tests/utils/common-assertions.ts(385,32): error TS2802: Type 'ArrayIterator<[number, { title: string; isPublic?: boolean; tags?: string[]; category?: string; }]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+tests/utils/json-schema-generator.ts(10,8): error TS1259: Module '"chance"' can only be default-imported using the 'esModuleInterop' flag

@@ -640,7 +640,8 @@ test.describe('Developer - Embeddable Script with Data Attributes', () => {
 
       // Check that error indicators are displayed
       const errorIndicators = page.locator('.error-indicator');
-      await expect(errorIndicators).toHaveCount({ min: 4 }); // Expecting multiple errors
+      const errorIndicatorCount = await errorIndicators.count();
+      expect(errorIndicatorCount).toBeGreaterThanOrEqual(4); // Expecting multiple errors
 
       // Verify specific error cases
       const errorMessages = await errorIndicators.allTextContents();

@@ -334,4 +334,76 @@ export class APIHelper {
       response,
     };
   }
+  /**
+   * Update existing JSON document
+   */
+  async updateJSON(
+    id: string,
+    content: string | object,
+    options?: {
+      title?: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+    }
+  ) {
+    const jsonContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+
+    const response = await this.request.patch(`/api/json/${id}`, {
+      data: {
+        content: jsonContent,
+        title: options?.title,
+        description: options?.description,
+        category: options?.category,
+        tags: options?.tags,
+      },
+    });
+
+    expect(response.status()).toBe(200);
+    return await response.json();
+  }
+
+  /**
+   * Like/upvote a JSON document
+   */
+  async likeJSON(id: string) {
+    const response = await this.request.post(`/api/json/${id}/like`);
+    expect(response.status()).toBe(200);
+    return await response.json();
+  }
+
+  /**
+   * Download JSON document
+   */
+  async downloadJSON(id: string) {
+    const response = await this.request.get(`/api/json/${id}/download`);
+    expect(response.status()).toBe(200);
+    return await response.body();
+  }
+
+  /**
+   * Moderate content (admin/moderator only)
+   */
+  async moderateContent(
+    id: string,
+    action: 'approve' | 'reject' | 'flag',
+    reason?: string
+  ) {
+    const response = await this.request.post(`/api/json/${id}/moderate`, {
+      data: {
+        action,
+        reason,
+      },
+    });
+
+    expect(response.status()).toBe(200);
+    return await response.json();
+  }
+
+  /**
+   * Get the APIRequestContext for direct use in tests
+   */
+  get requestContext(): APIRequestContext {
+    return this.request;
+  }
 }

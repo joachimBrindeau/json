@@ -382,7 +382,8 @@ export class CommonAssertions {
     );
 
     // Check each expected document
-    for (const [index, doc] of documents.entries()) {
+    for (let i = 0; i < documents.length; i++) {
+      const doc = documents[i];
       const documentLocator = this.page.locator(`text="${doc.title}"`);
       await expect(documentLocator).toBeVisible();
 
@@ -392,7 +393,7 @@ export class CommonAssertions {
           .locator('[data-testid="document-title"], .document-title, .library-item-title')
           .allTextContents();
 
-        expect(allTitles[index]).toBe(doc.title);
+        expect(allTitles[i]).toBe(doc.title);
       }
 
       // Check tags if provided

@@ -825,7 +825,7 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         if (response.success && response.id) {
           // Test export API endpoint
-          const exportResponse = await apiHelper.request.get(`/api/json/${response.id}/export`);
+          const exportResponse = await apiHelper.requestContext.get(`/api/json/${response.id}/export`);
 
           if (exportResponse.ok()) {
             const exportData = await exportResponse.text();
@@ -838,7 +838,7 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
             const formats = ['json', 'csv', 'xml'];
 
             for (const format of formats) {
-              const formatResponse = await apiHelper.request.get(
+              const formatResponse = await apiHelper.requestContext.get(
                 `/api/json/${response.id}/export?format=${format}`
               );
 

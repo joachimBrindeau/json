@@ -235,6 +235,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
     test(
       'should provide real-time processing feedback',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const largeJson = PerformanceTestGenerator.generateLargeArray(25000);
         const jsonString = JSON.stringify({ data: largeJson });
         const testFilePath = join(testFilesDir, 'realtime-feedback.json');
@@ -281,13 +282,13 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Feedback should be cleared after completion
         expect(await viewerPage.loadingSpinner.isVisible()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
 
     test(
       'should show performance warnings for suboptimal operations',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         // Create JSON that might trigger performance warnings
         const problematicJson = {
           metadata: { type: 'performance_warning_test' },
@@ -325,13 +326,13 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Should still process successfully despite potential performance issues
         expect(await viewerPage.hasJSONErrors()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
 
     test(
       'should display processing bottleneck identification',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const bottleneckJson = {
           // Different types of potential bottlenecks
           stringProcessing: new Array(10000)
@@ -375,8 +376,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         }
 
         expect(await viewerPage.hasJSONErrors()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
   });
 
@@ -520,6 +520,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
     test(
       'should benchmark against performance standards',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const benchmarkTests = [
           { size: 'small', json: PerformanceTestGenerator.generateSizedJSON(1), expected: 50 },
           { size: 'medium', json: PerformanceTestGenerator.generateSizedJSON(10), expected: 200 },
@@ -570,8 +571,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         if (benchmarkElements > 0) {
           await viewerPage.takeScreenshot('benchmark-results');
         }
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
   });
 

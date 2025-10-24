@@ -335,7 +335,8 @@ test.describe('Developer - Embed Customization', () => {
       await expect(iframe.locator('.minimap')).not.toBeVisible();
 
       // Verify editor content is displayed
-      await expect(iframe.locator('.monaco-editor .view-line')).toHaveCount({ min: 5 });
+      const viewLineCount = await iframe.locator('.monaco-editor .view-line').count();
+      expect(viewLineCount).toBeGreaterThanOrEqual(5);
     });
 
     test('should support flow/flow view mode customization', async ({
@@ -374,8 +375,10 @@ test.describe('Developer - Embed Customization', () => {
       await expect(iframe.locator('[data-testid="flow-view"]')).toBeVisible();
 
       // Verify flow view elements
-      await expect(iframe.locator('.flow-node')).toHaveCount({ min: 3 });
-      await expect(iframe.locator('.node-connection')).toHaveCount({ min: 2 });
+      const flowNodeCount = await iframe.locator('.flow-node').count();
+      expect(flowNodeCount).toBeGreaterThanOrEqual(3);
+      const nodeConnectionCount = await iframe.locator('.node-connection').count();
+      expect(nodeConnectionCount).toBeGreaterThanOrEqual(2);
       await expect(iframe.locator('[data-testid="zoom-controls"]')).toBeVisible();
 
       // Test zoom functionality
@@ -684,10 +687,12 @@ test.describe('Developer - Embed Customization', () => {
 
       // Test expand/collapse functionality
       await iframe.locator('[data-testid="collapse-all"]').click();
-      await expect(iframe.locator('.tree-node.collapsed')).toHaveCount({ min: 1 });
+      const collapsedCount = await iframe.locator('.tree-node.collapsed').count();
+      expect(collapsedCount).toBeGreaterThanOrEqual(1);
 
       await iframe.locator('[data-testid="expand-all"]').click();
-      await expect(iframe.locator('.tree-node.expanded')).toHaveCount({ min: 1 });
+      const expandedCount = await iframe.locator('.tree-node.expanded').count();
+      expect(expandedCount).toBeGreaterThanOrEqual(1);
     });
 
     test('should support performance optimization settings', async ({

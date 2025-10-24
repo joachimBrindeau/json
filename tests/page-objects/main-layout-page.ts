@@ -362,4 +362,59 @@ export class MainLayoutPage extends BasePage {
 
     return results;
   }
+  /**
+   * Navigate to the Public Library page
+   */
+  async navigateToPublicLibrary(): Promise<void> {
+    await this.page.getByRole('link', { name: /public library/i }).click();
+    await this.page.waitForURL('**/library');
+  }
+
+  /**
+   * Navigate to the Developers section
+   */
+  async goToDevelopers(): Promise<void> {
+    await this.page.getByRole('link', { name: /developers/i }).click();
+    await this.page.waitForURL('**/developers');
+  }
+
+  /**
+   * Navigate to the Dashboard
+   */
+  async goToDashboard(): Promise<void> {
+    await this.page.getByRole('link', { name: /dashboard/i }).click();
+    await this.page.waitForURL('**/dashboard');
+  }
+
+  /**
+   * Navigate to the Moderation Dashboard (admin/moderator only)
+   */
+  async goToModerationDashboard(): Promise<void> {
+    await this.page.getByRole('link', { name: /moderation/i }).click();
+    await this.page.waitForURL('**/moderation');
+  }
+
+  /**
+   * Navigate to Community Guidelines
+   */
+  async navigateToCommunityGuidelines(): Promise<void> {
+    await this.page.getByRole('link', { name: /community guidelines/i }).click();
+    await this.page.waitForURL('**/community/guidelines');
+  }
+
+  /**
+   * Navigate to Help page
+   */
+  async goToHelp(): Promise<void> {
+    await this.page.getByRole('link', { name: /help/i }).click();
+    await this.page.waitForURL('**/help');
+  }
+
+  /**
+   * Get the developers link locator
+   */
+  get developersLink(): Locator {
+    return this.page.getByRole('link', { name: /developers/i });
+  }
+
 }

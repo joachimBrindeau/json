@@ -27,6 +27,7 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
     test(
       'should process large JSON files using chunked loading',
       async () => {
+        test.setTimeout(CHUNKING_TIMEOUT);
         // Create a large JSON file that would benefit from chunking
         const chunkableData = {
           metadata: {
@@ -114,8 +115,7 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
         expect(nodeCounts.total).toBeGreaterThan(10000); // Large dataset should be loaded
 
         await viewerPage.takeScreenshot('chunked-dataset-loaded');
-      },
-      CHUNKING_TIMEOUT
+      }
     );
 
     test('should handle chunked loading with progressive display', async () => {
@@ -271,6 +271,7 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
     test(
       'should handle mixed chunking strategies for different data types',
       async () => {
+        test.setTimeout(CHUNKING_TIMEOUT);
         const mixedChunkData = {
           arrays: {
             large_string_array: Array.from(
@@ -348,13 +349,13 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
         expect(nodeCounts.numbers).toBeGreaterThan(5000); // Many numbers
 
         await viewerPage.takeScreenshot('mixed-chunking-processed');
-      },
-      CHUNKING_TIMEOUT
+      }
     );
 
     test(
       'should provide memory usage feedback during chunked processing',
       async () => {
+        test.setTimeout(CHUNKING_TIMEOUT);
         const memoryTestData = {
           metadata: {
             purpose: 'Memory usage monitoring during chunking',
@@ -447,8 +448,7 @@ test.describe('Advanced User - Chunked JSON Data Processing (Story 8)', () => {
 
         const nodeCounts = await viewerPage.getNodeCounts();
         expect(nodeCounts.total).toBeGreaterThan(25000);
-      },
-      CHUNKING_TIMEOUT
+      }
     );
 
     test('should handle chunked processing interruption and recovery', async () => {

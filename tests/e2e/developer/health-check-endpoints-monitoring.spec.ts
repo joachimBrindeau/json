@@ -257,7 +257,7 @@ test.describe('Developer - Health Check Endpoints for API Monitoring', () => {
       expect(dbTestResponse.data.tests).toHaveProperty('write');
       expect(dbTestResponse.data.tests).toHaveProperty('transaction');
 
-      Object.values(dbTestResponse.data.tests).forEach((test) => {
+      Object.values(dbTestResponse.data.tests).forEach((test: any) => {
         expect(test).toHaveProperty('success');
         expect(test).toHaveProperty('duration');
         expect(test.success).toBe(true);
@@ -756,16 +756,18 @@ test.describe('Developer - Health Check Endpoints for API Monitoring', () => {
       ]);
 
       // Verify health checks remained accurate
-      const successfulHealthChecks = healthResults.filter((result) => result.success);
+      const successfulHealthChecks = healthResults.filter(
+        (result: any) => result.success
+      );
       expect(successfulHealthChecks.length).toBeGreaterThan(8); // At least 80% success rate
 
-      successfulHealthChecks.forEach((healthCheck) => {
+      successfulHealthChecks.forEach((healthCheck: any) => {
         expect(healthCheck.data).toHaveProperty('status');
         expect(healthCheck.data).toHaveProperty('services');
         expect(healthCheck.data).toHaveProperty('metrics');
 
         // Services should still report accurately
-        Object.values(healthCheck.data.services).forEach((service) => {
+        Object.values(healthCheck.data.services).forEach((service: any) => {
           expect(service).toHaveProperty('status');
           expect(service).toHaveProperty('responseTime');
           expect(['healthy', 'degraded', 'unhealthy']).toContain(service.status);

@@ -348,7 +348,8 @@ export class AuthHelper {
         let email = null;
         let name = null;
 
-        for (const element of userElements) {
+        // Convert NodeListOf to Array for iteration
+        Array.from(userElements).forEach((element) => {
           const text = element.textContent?.trim();
           if (text && text.includes('@')) {
             email = text;
@@ -360,7 +361,7 @@ export class AuthHelper {
           ) {
             name = text;
           }
-        }
+        });
 
         return { email, name };
       });
@@ -373,5 +374,17 @@ export class AuthHelper {
       console.warn('Could not extract user info:', error);
       return { email: null, name: null };
     }
+  }
+  /**
+   * Ensure user is authenticated, logging in if necessary
+   */
+  async ensureAuthenticated(userType: keyof typeof TEST_USERS = 'regular'): Promise<void> {
+    if (await this.isLoggedIn()) {
+      console.log('ℹ️ User is already authenticated');
+      return;
+    }
+
+    console.log(`🔐 User not authenticated, logging in as ${userType}...`);
+    await this.login(userType);
   }
 }
