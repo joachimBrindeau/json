@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { isSuperAdmin } from '@/lib/auth/admin';
-import { SuperAdminDashboard } from '@/components/features/admin/super-admin-dashboard';
+import { SuperAdminDashboard } from '@/components/features/admin/SuperAdminDashboard';
 
 export const dynamic = 'force-dynamic';
 

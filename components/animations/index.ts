@@ -4,5 +4,5 @@
  */
 
 export * from './constants';
-export * from './page-transition';
-export * from './animated-button';
+export * from './PageTransition';
+export * from './AnimatedButton';

@@ -7,7 +7,7 @@ import { Eye, User, Calendar, Hash, ChevronRight, Trash2, Globe, Lock } from 'lu
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { formatRelativeTime, formatCount } from '@/lib/utils/formatters';
-import { getCategoryIcon, complexityColors, type BaseDocument } from './document-constants';
+import { getCategoryIcon, complexityColors, type BaseDocument } from './DocumentConstants';
 import { JsonPreview } from './JsonPreview';
 
 interface DocumentCardProps {

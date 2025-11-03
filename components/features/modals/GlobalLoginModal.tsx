@@ -1,6 +1,6 @@
 'use client';
 
-import { LoginModal } from './login-modal';
+import { LoginModal } from './LoginModal';
 import { useLoginModal } from '@/hooks/use-login-modal';
 
 export function GlobalLoginModal() {

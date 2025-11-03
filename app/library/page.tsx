@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { DocumentListPage } from '@/components/features/documents/DocumentListPage';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout';
 import {
   createPublicLibraryConfig,
   type PublicDocument,
