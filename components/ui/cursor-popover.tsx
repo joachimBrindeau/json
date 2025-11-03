@@ -1,2 +1,2 @@
-export { CursorPopover } from './CursorPopover';
+export { CursorPopover, CursorPopoverTrigger, CursorPopoverContent } from './CursorPopover';
 

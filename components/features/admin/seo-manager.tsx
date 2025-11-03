@@ -1,2 +1,2 @@
-export { SeoManager } from './SeoManager';
+export { SEOManager } from './SeoManager';
 

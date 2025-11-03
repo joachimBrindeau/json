@@ -1,2 +1,2 @@
-export { SessionProvider } from './SessionProvider';
+export { AuthSessionProvider } from './SessionProvider';
 
