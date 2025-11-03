@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
-import { HeaderNav } from './header-nav';
+import { HeaderNav } from './HeaderNav';
 import { Sidebar } from './sidebar';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { usePathname } from 'next/navigation';
