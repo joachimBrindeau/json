@@ -28,23 +28,22 @@ This guide provides systematic fix patterns for TypeScript errors in the json-vi
 ### Current State (2025-10-23)
 
 **371 total errors** across 46 files:
-
 - **Production code:** 3 errors (0.8%) - [`lib/middleware/rate-limit.ts`](../../lib/middleware/rate-limit.ts)
 - **Test code:** 368 errors (99.2%)
 
 ### Updated Error Categories
 
-| Category                               | Count | Priority | Status              | Est. Effort |
-| -------------------------------------- | ----- | -------- | ------------------- | ----------- |
-| A. Next.js 15 Route Handler Signatures | 0     | ✅ DONE  | Fixed in production | -           |
-| B. Zod v4 Migration                    | 0     | ✅ DONE  | Fixed in production | -           |
-| C. Test Helper Methods & Page Objects  | 182   | P1       | 🔴 TODO             | 6-8 hours   |
-| D. Playwright Test API Type Mismatches | 78    | P1       | 🔴 TODO             | 3-4 hours   |
-| E. Session Management Test Types       | 20    | P1       | 🔴 TODO             | 2-3 hours   |
-| F. User Type Argument Issues           | 65    | P1       | 🔴 TODO             | 1 hour      |
-| G. Production Code Errors              | 3     | P0       | 🔴 TODO             | 0.5 hours   |
-| H. Implicit Any & Window Properties    | 75    | P2       | 🔴 TODO             | 2-3 hours   |
-| I. Miscellaneous                       | 30    | P2       | 🔴 TODO             | 1 hour      |
+| Category                               | Count | Priority | Status | Est. Effort |
+| -------------------------------------- | ----- | -------- | ------ | ----------- |
+| A. Next.js 15 Route Handler Signatures | 0     | ✅ DONE  | Fixed in production | - |
+| B. Zod v4 Migration                    | 0     | ✅ DONE  | Fixed in production | - |
+| C. Test Helper Methods & Page Objects  | 182   | P1       | 🔴 TODO | 6-8 hours   |
+| D. Playwright Test API Type Mismatches | 78    | P1       | 🔴 TODO | 3-4 hours   |
+| E. Session Management Test Types       | 20    | P1       | 🔴 TODO | 2-3 hours   |
+| F. User Type Argument Issues           | 65    | P1       | 🔴 TODO | 1 hour      |
+| G. Production Code Errors              | 3     | P0       | 🔴 TODO | 0.5 hours   |
+| H. Implicit Any & Window Properties    | 75    | P2       | 🔴 TODO | 2-3 hours   |
+| I. Miscellaneous                       | 30    | P2       | 🔴 TODO | 1 hour      |
 
 **Total Estimated Effort:** 15.5-22.5 hours (reduced from 22-33 hours due to completed work)
 
@@ -84,7 +83,6 @@ This guide provides systematic fix patterns for TypeScript errors in the json-vi
 - **Change:** +3 errors (+0.8%)
 
 This minor increase is within acceptable variance and likely due to:
-
 - Better error discovery in test files
 - New test files added during development
 - Stricter type checking in updated dependencies
@@ -99,7 +97,6 @@ This minor increase is within acceptable variance and likely due to:
 **Root Cause:** Next.js 15 changed route handler signatures from `(request, context)` to `(request)` only.
 
 **Current State:**
-
 - **Production route handlers:** ✅ All migrated to Next.js 15 signature
 - **Test files:** May still contain old signature patterns (not causing compilation errors currently)
 
@@ -176,7 +173,6 @@ const response = await GET(new Request('http://localhost:3000/api/json/123'));
 **Root Cause:** Zod v4 changed error property from `.issues` to `.errors`
 
 **Affected Files:**
-
 - [`lib/validation/schemas.ts`](../../lib/validation/schemas.ts) - ✅ Updated
 
 **Impact:** No TypeScript errors remain related to Zod v4 migration in production code.
@@ -193,7 +189,6 @@ const response = await GET(new Request('http://localhost:3000/api/json/123'));
 See [Status Report - Category A](./typescript-status-report.md#category-a-test-helper-methods--page-objects-182-errors) for detailed breakdown.
 
 **Priority Fixes:**
-
 1. Fix `profile-account.spec.ts` (73 errors) - missing `layoutPage` fixture
 2. Implement `MainLayoutPage.navigateToPublicLibrary()` (52 occurrences)
 3. Add `AuthHelper.ensureAuthenticated()` (5 occurrences)
@@ -418,7 +413,6 @@ declare module 'next-auth/jwt' {
 **Current Errors:** 65
 
 **Affected Files:**
-
 - `tests/e2e/community/*.spec.ts` - 9 files
 
 **Fix Pattern:**
@@ -434,7 +428,6 @@ Extend user type union or use generic string type with validation.
 **Current Errors:** 3
 
 **Affected Files:**
-
 - [`lib/middleware/rate-limit.ts`](../../lib/middleware/rate-limit.ts) - Lines 184, 185, 203
 
 **Fix:** Add or import `SimpleRateLimiter` type definition (estimated 30 minutes)
@@ -449,7 +442,6 @@ Extend user type union or use generic string type with validation.
 **Current Errors:** 75 (down from ~108 baseline)
 
 **Subcategories:**
-
 - Implicit any types: 41 errors
 - Window property extensions: 34 errors
 
@@ -560,6 +552,7 @@ const mockDoc = createMockDocument({ title: 'My Test', isPublic: true });
 ```
 
 ---
+
 
 **Fix Pattern:**
 
