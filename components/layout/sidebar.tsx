@@ -11,9 +11,9 @@ import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
 import { useLibraryStats } from '@/hooks/use-library-stats';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { SidebarHeader } from './sidebar/sidebar-header';
-import { NavigationItem } from './sidebar/navigation-item';
-import { QuickActions } from './sidebar/quick-actions';
+import { SidebarHeader } from './sidebar/SidebarHeader';
+import { NavigationItem } from './sidebar/NavigationItem';
+import { QuickActions } from './sidebar/QuickActions';
 import { NAVIGATION_ITEMS } from './sidebar/navigation-config';
 
 interface SidebarProps {
