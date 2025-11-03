@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import React from 'react';
 import { Globe, Database } from 'lucide-react';
 import { DocumentListPageConfig } from '@/components/features/documents/DocumentListPage';
 import { BaseDocument } from '@/components/features/documents';
@@ -21,7 +21,7 @@ export interface PrivateDocument extends BaseDocument {
  * Library configuration presets
  */
 export interface LibraryConfigPreset {
-  icon: ReactNode;
+  icon?: React.ReactNode;
   title: string;
   description: string;
   endpoint: string;
