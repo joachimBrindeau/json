@@ -8,6 +8,20 @@ export type { BaseModalProps, BaseModalRef } from './base-modal';
 export { JsonViewerBase } from './json-viewer-base';
 export type { JsonViewerBaseProps, ViewerMode } from './json-viewer-base';
 
+// Error Handling
+export { ErrorBoundary } from './error-boundary';
+
+// Loading Components
+export { LoadingSpinner } from './loading-spinner';
+export { LoadingState as LoadingStateComponent } from './loading-state';
+
+// Service Worker & Version
+export { ServiceWorkerManager } from './service-worker-manager';
+export { VersionChecker } from './version-checker';
+
+// Search
+export { SearchBar } from './search-bar';
+
 // Node Rendering
 export {
   NodeRenderer,
@@ -39,6 +53,15 @@ export {
   LoadingState,
   PerformanceWarningState,
 } from './empty-states';
+
+// Providers
+export { NavigationProvider } from './providers/navigation-provider';
+export { AuthSessionProvider } from './providers/session-provider';
+
+// SEO
+export { WebVitals } from './seo/web-vitals';
+export { PerformanceOptimizations } from './seo/PerformanceOptimizations';
+export { Analytics } from './seo/analytics';
 
 // Hooks
 export {
