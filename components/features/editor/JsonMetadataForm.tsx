@@ -10,10 +10,10 @@ import { useValidatedForm } from '@/hooks/use-validated-form';
 import { jsonMetadataFormSchema, type JsonMetadataFormData } from '@/lib/validation/schemas';
 import dynamic from 'next/dynamic';
 const RichTextEditor = dynamic(
-  () => import('@/components/features/editor/rich-text-editor').then((m) => m.RichTextEditor),
+  () => import('@/components/features/editor').then((m) => m.RichTextEditor),
   {
     ssr: false,
-    loading: () => <div className="text-xs text-muted-foreground p-2">Loading editor…</div>,
+    loading: () => <div className="text-xs text-muted-foreground p-2">Loading editor...</div>,
   }
 );
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
