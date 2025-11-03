@@ -1,0 +1,2 @@
+export { VersionChecker } from './VersionChecker';
+
