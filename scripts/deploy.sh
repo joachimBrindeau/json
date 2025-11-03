@@ -94,6 +94,31 @@ fi
 
 echo "✅ Environment variables validated"
 
+
+	# Remove legacy docker-compose project named 'json-viewer' if present
+	echo "🧽 Checking for legacy 'json-viewer' compose stack to remove..."
+	OLD_PROJECT="json-viewer"
+	OLD_CONTAINERS=$(docker ps -aq -f "label=com.docker.compose.project=${OLD_PROJECT}" || true)
+	if [ -n "$OLD_CONTAINERS" ]; then
+	  echo "🧹 Stopping and removing old containers for project '${OLD_PROJECT}'..."
+	  docker rm -f $OLD_CONTAINERS || true
+	fi
+	OLD_NETWORKS=$(docker network ls -q -f "label=com.docker.compose.project=${OLD_PROJECT}" || true)
+	if [ -n "$OLD_NETWORKS" ]; then
+	  echo "🧹 Removing old networks for project '${OLD_PROJECT}'..."
+	  docker network rm $OLD_NETWORKS || true
+	fi
+	OLD_VOLUMES=$(docker volume ls -q -f "label=com.docker.compose.project=${OLD_PROJECT}" || true)
+	if [ -n "$OLD_VOLUMES" ]; then
+	  echo "🧹 Removing old volumes for project '${OLD_PROJECT}' (data will be lost)..."
+	  docker volume rm $OLD_VOLUMES || true
+	fi
+	# Also remove any leftover containers that match the old name prefix just in case
+	LEFTOVER=$(docker ps -aq --filter "name=^${OLD_PROJECT}-" || true)
+	if [ -n "$LEFTOVER" ]; then
+	  docker rm -f $LEFTOVER || true
+	fi
+
 # Stop, build, start (Docker-only build with BuildKit)
 # Minimize downtime: build and recreate in-place without host Node
 DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build --remove-orphans
