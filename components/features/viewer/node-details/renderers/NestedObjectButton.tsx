@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight, Package, Database } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/ScrollArea';
 import { ObjectRenderer } from './ObjectRenderer';
 import { ArrayRenderer } from './ArrayRenderer';
 

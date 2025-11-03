@@ -6,6 +6,47 @@
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import { config } from '@/lib/config';
+import { logger } from '@/lib/logger';
+
+/**
+ * Validates OAuth provider configuration
+ * 
+ * In production/test mode: Throws error if required credentials are missing
+ * This ensures OAuth providers are properly configured before the app starts
+ */
+function validateProviderConfig(provider: 'github' | 'google') {
+  // Skip validation in test mode (test credentials are provided via env defaults)
+  if (config.isTest) {
+    return;
+  }
+
+  // Skip validation during build time (NEXT_PHASE indicates Next.js build phase)
+  const skipValidation = process.env.SKIP_ENV_VALIDATION === 'true' || process.env.NEXT_PHASE === 'phase-production-build';
+  if (skipValidation) {
+    return;
+  }
+
+  const providerConfig = config.auth.providers[provider];
+  
+  if (!providerConfig.clientId || !providerConfig.clientSecret) {
+    const error = new Error(
+      `Missing OAuth configuration for ${provider}. Please set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET environment variables.`
+    );
+    logger.error(
+      { provider, hasClientId: !!providerConfig.clientId, hasClientSecret: !!providerConfig.clientSecret },
+      error.message
+    );
+    throw error;
+  }
+
+  // Validate NEXTAUTH_URL is set (required for OAuth callbacks)
+  if (!config.auth.url) {
+    logger.error(
+      { provider },
+      'NEXTAUTH_URL is not configured. OAuth callbacks will fail.'
+    );
+  }
+}
 
 /**
  * GitHub OAuth provider configuration
@@ -41,6 +82,36 @@ export const githubProvider = GitHubProvider({
    * See: lib/auth/account-linking.ts for the linking implementation
    */
   allowDangerousEmailAccountLinking: true,
+  // Explicitly request user:email scope to maximize chance of getting email
+  // Note: GitHub may still return null email if user has private email settings
+  authorization: {
+    params: {
+      scope: 'read:user user:email',
+    },
+  },
+  profile(profile) {
+    // Validate required fields from GitHub
+    if (!profile.id) {
+      throw new Error('GitHub profile missing required field (id)');
+    }
+
+    // Note: GitHub may return null email if user has private email settings
+    // This will be handled in the signIn callback (account linking won't work without email)
+    // We log a warning but don't throw to allow the flow to continue
+    if (!profile.email) {
+      logger.warn(
+        { githubId: profile.id, login: profile.login },
+        'GitHub profile missing email - user may have private email settings'
+      );
+    }
+
+    return {
+      id: String(profile.id),
+      name: profile.name || profile.login,
+      email: profile.email?.toLowerCase().trim() || null,
+      image: profile.avatar_url,
+    };
+  },
 });
 
 /**
@@ -80,17 +151,31 @@ export const googleProvider = GoogleProvider({
   authorization: {
     params: {
       scope: 'openid email profile',
-      prompt: 'consent',
+      // Use 'select_account' instead of 'consent' for better UX
+      // This prompts user to select account but only asks consent if needed
+      prompt: 'select_account',
       access_type: 'offline',
       response_type: 'code',
     },
   },
   profile(profile) {
+    // Validate required fields from Google
+    if (!profile.sub || !profile.email) {
+      throw new Error('Google profile missing required fields (sub or email)');
+    }
+
     return {
       id: profile.sub,
-      name: profile.name,
-      email: profile.email,
+      name: profile.name || profile.email.split('@')[0],
+      email: profile.email.toLowerCase().trim(),
       image: profile.picture,
     };
   },
 });
+
+// Validate provider configurations on server-side only
+// This runs at module load time to catch configuration errors early
+if (typeof window === 'undefined') {
+  validateProviderConfig('github');
+  validateProviderConfig('google');
+}

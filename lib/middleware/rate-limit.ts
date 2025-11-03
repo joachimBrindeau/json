@@ -136,6 +136,10 @@ class RedisRateLimiter {
 // Create rate limiter instances
 export const publishLimiter = new RedisRateLimiter(15 * 60 * 1000, 10); // 10 publishes per 15 minutes
 export const tagSuggestLimiter = new RedisRateLimiter(60 * 1000, 60); // 60 requests per minute
+// Rate limiter for signup endpoint - prevent account creation abuse
+export const signupLimiter = new RedisRateLimiter(60 * 60 * 1000, 5); // 5 signups per hour per IP
+// Rate limiter for email verification - prevent token brute force attacks
+export const emailVerificationLimiter = new RedisRateLimiter(15 * 60 * 1000, 10); // 10 verification attempts per 15 minutes
 
 // Cleanup old entries every 5 minutes
 if (typeof window === 'undefined') {
@@ -143,6 +147,8 @@ if (typeof window === 'undefined') {
     () => {
       publishLimiter.cleanup();
       tagSuggestLimiter.cleanup();
+      signupLimiter.cleanup();
+      emailVerificationLimiter.cleanup();
     },
     5 * 60 * 1000
   );

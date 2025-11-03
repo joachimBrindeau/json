@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { useDocumentList, UseDocumentListOptions } from '@/hooks/use-document-list';
 import { DocumentFilters } from '@/components/features/documents/DocumentFilters';
 import { DocumentListView } from '@/components/features/documents/DocumentListView';

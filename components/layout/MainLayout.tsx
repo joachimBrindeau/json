@@ -3,7 +3,7 @@
 import { memo, useState, useEffect } from 'react';
 import { HeaderNav } from './HeaderNav';
 import { Sidebar } from './sidebar';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { usePathname } from 'next/navigation';
 import { PageTransition } from '@/components/animations';
 

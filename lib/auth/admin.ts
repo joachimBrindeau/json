@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { config } from '@/lib/config';
 import { logger } from '@/lib/logger';
+import { normalizeEmail } from '@/lib/utils/email';
 
 /**
  * Server-side check for superadmin access
@@ -34,7 +35,13 @@ export async function isSuperAdmin(): Promise<boolean> {
       return false;
     }
 
-    return config.auth.superadminEmails.includes(userEmail);
+    // Normalize email for consistent comparison (security: prevents case-sensitivity bypass)
+    const normalizedEmail = normalizeEmail(userEmail);
+    
+    // Normalize all superadmin emails for comparison
+    const normalizedSuperadminEmails = config.auth.superadminEmails.map((email: string) => normalizeEmail(email));
+    
+    return normalizedSuperadminEmails.includes(normalizedEmail);
   } catch (error) {
     logger.error({ err: error }, 'Failed to check superadmin status');
     return false;
@@ -61,7 +68,12 @@ export function checkSuperAdmin(userEmail?: string | null): boolean {
   if (!config.auth?.superadminEmails || !Array.isArray(config.auth.superadminEmails)) {
     return false;
   }
-  return config.auth.superadminEmails.includes(userEmail);
+  
+  // Normalize email for consistent comparison (security: prevents case-sensitivity bypass)
+  const normalizedEmail = normalizeEmail(userEmail);
+  const normalizedSuperadminEmails = config.auth.superadminEmails.map((email: string) => normalizeEmail(email));
+  
+  return normalizedSuperadminEmails.includes(normalizedEmail);
 }
 
 /**

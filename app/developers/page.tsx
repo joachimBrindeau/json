@@ -1,6 +1,6 @@
 'use client';
 
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Code2, FileJson, Globe, Key, Zap } from 'lucide-react';
 

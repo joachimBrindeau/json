@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/ScrollArea';
 import {
   GitCompare,
   Plus,
@@ -33,7 +33,7 @@ import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import type { EditorAction } from '@/types/editor-actions';
 import { ViewerActions } from '@/components/features/viewer/ViewerActions';
 
@@ -367,13 +367,16 @@ export function ViewerCompare({
                 size="sm"
                 onClick={() => setSyncScroll(!syncScroll)}
                 className={`h-6 text-xs ${syncScroll ? 'bg-blue-50 border-blue-300' : ''}`}
+                data-testid="sync-scroll-toggle"
+                aria-pressed={syncScroll}
+                title={syncScroll ? 'Disable synchronized scrolling' : 'Enable synchronized scrolling'}
               >
                 {syncScroll ? (
                   <Link className="h-3 w-3 mr-1" />
                 ) : (
                   <Unlink className="h-3 w-3 mr-1" />
                 )}
-                Sync Scroll
+                {syncScroll ? 'Sync On' : 'Sync Off'}
               </Button>
               <Button
                 variant="green"

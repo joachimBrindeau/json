@@ -75,7 +75,7 @@ fi
 
 # Verify required environment variables
 echo "🔍 Validating environment variables..."
-required_vars=("DATABASE_URL" "REDIS_URL" "NEXTAUTH_SECRET" "NEXTAUTH_URL" "NEXT_PUBLIC_APP_URL")
+required_vars=("DATABASE_URL" "REDIS_URL" "NEXTAUTH_SECRET" "NEXTAUTH_URL" "NEXT_PUBLIC_APP_URL" "SMTP_HOST" "SMTP_PORT" "SMTP_USERNAME" "SMTP_PASSWORD")
 missing_vars=()
 
 for var in "${required_vars[@]}"; do

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import {

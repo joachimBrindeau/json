@@ -1,2 +1,0 @@
-export { DebugAvatar } from './DebugAvatar';
-

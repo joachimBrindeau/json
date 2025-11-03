@@ -1,2 +1,0 @@
-export { FormatSelector } from './FormatSelector';
-

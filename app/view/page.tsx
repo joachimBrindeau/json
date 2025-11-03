@@ -1,7 +1,7 @@
 'use client';
 
-import { MainLayout } from '@/components/layout/main-layout';
-import { TabsNav } from '@/components/layout/tabs-nav';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { TabsNav } from '@/components/layout/TabsNav';
 import { Viewer } from '@/components/features/viewer';
 import { useBackendStore } from '@/lib/store/backend';
 import { useSearch } from '@/hooks/use-search';

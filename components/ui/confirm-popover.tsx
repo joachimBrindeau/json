@@ -1,2 +1,0 @@
-export { ConfirmPopover } from './ConfirmPopover';
-

@@ -1,2 +1,0 @@
-export { MobileLayoutWrapper } from './MobileLayoutWrapper';
-

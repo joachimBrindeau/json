@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import type { LucideIcon } from 'lucide-react';
 
 export interface DropdownAction {

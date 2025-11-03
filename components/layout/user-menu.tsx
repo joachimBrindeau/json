@@ -1,2 +1,0 @@
-export { UserMenu } from './UserMenu';
-

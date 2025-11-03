@@ -21,10 +21,10 @@ import {
   FileJson,
 } from 'lucide-react';
 import { useJsonProcessing, JsonNode } from './hooks/useJsonProcessing';
-import { ErrorBoundary } from './error-boundary';
+import { ErrorBoundary } from './ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
 import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
-import { SearchBar } from '@/components/shared/search-bar';
+import { SearchBar } from '@/components/shared/SearchBar';
 
 import { useTreeExpansion } from '@/hooks/use-tree-expansion';
 

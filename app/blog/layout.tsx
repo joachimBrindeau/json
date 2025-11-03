@@ -1,4 +1,4 @@
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { createMetadataGenerator } from '@/lib/seo/metadata-layout-factory';
 
 export const generateMetadata = createMetadataGenerator('blog');

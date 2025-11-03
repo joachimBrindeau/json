@@ -1,2 +1,0 @@
-export { JsonMetadataForm } from './JsonMetadataForm';
-

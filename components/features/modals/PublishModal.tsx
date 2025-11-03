@@ -18,11 +18,11 @@ const RichTextEditor = dynamic(
   }
 );
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
-import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/form-fields';
+import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/FormFields';
 import { Globe, Users, Eye, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 
 interface PublishModalProps {

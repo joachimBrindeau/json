@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Viewer } from '@/components/features/viewer';
-import { JsonEditor } from '@/components/features/editor/json-editor';
-import { TabsNav } from '@/components/layout/tabs-nav';
+import { JsonEditor } from '@/components/features/editor/JsonEditor';
+import { TabsNav } from '@/components/layout/TabsNav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Download, ExternalLink } from 'lucide-react';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { useDownload } from '@/hooks/use-download';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { logger } from '@/lib/logger';
 
 interface EmbedPageProps {

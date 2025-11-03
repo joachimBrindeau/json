@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Filter, SortAsc, Eye, Lock, Globe, Clock, Calendar } from 'lucide-react';
 import { DocumentListFilters } from '@/hooks/use-document-list';
-import { AdvancedSearch } from '@/components/ui/advanced-search';
+import { AdvancedSearch } from '@/components/ui/AdvancedSearch';
 import { getCategoryIcon } from '@/components/features/documents';
 
 interface DocumentFiltersProps {

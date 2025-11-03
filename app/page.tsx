@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
-import { JsonEditor } from '@/components/features/editor/json-editor';
-import { TabsNav } from '@/components/layout/tabs-nav';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { JsonEditor } from '@/components/features/editor/JsonEditor';
+import { TabsNav } from '@/components/layout/TabsNav';
 import { Viewer } from '@/components/features/viewer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

@@ -5,12 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { useApiData } from '@/hooks/use-api-data';
-import { LoadingState } from '@/components/shared/loading-state';
-import { EmptyState } from '@/components/shared/empty-states';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { EmptyState } from '@/components/shared/EmptyStates';
 import {
   Select,
   SelectContent,
@@ -31,7 +31,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import {
   Database,
   Plus,
@@ -55,12 +55,12 @@ import {
   Edit,
 } from 'lucide-react';
 import Link from 'next/link';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useAppStore } from '@/lib/store';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { useSession } from 'next-auth/react';
 import { useBackendStore } from '@/lib/store/backend';
-import { PublishModal } from '@/components/features/modals/publish-modal';
+import { PublishModal } from '@/components/features/modals/PublishModal';
 import { formatDate, formatSize } from '@/lib/utils/formatters';
 
 interface LibraryDocument {

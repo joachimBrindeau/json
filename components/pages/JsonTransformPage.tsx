@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';

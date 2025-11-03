@@ -1,5 +1,8 @@
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function NotFound() {
   return (
     <main className="min-h-[60vh] flex flex-col items-center justify-center text-center p-8">

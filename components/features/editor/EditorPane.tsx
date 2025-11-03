@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { SearchBar } from '@/components/shared/search-bar';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { MonacoEditor } from '@/components/features/editor/MonacoEditorWithLoading';
 import { ActionButton } from '@/components/features/editor/ActionButton';
 import type { EditorPaneProps } from '@/types/editor-actions';

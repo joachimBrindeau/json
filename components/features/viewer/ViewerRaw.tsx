@@ -5,7 +5,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/ScrollArea';
 
 interface ViewerRawProps {
   data: any;

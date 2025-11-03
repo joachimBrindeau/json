@@ -10,6 +10,8 @@ const baseURL = SERVER_URL;
  */
 export default defineConfig({
   testDir: './tests',
+  // Only run E2E-style tests; skip unit tests (*.test.ts) which are handled by Vitest
+  testMatch: '**/*.spec.@(ts|tsx|js)',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -123,15 +125,15 @@ export default defineConfig({
     // },
   ],
 
-  /* Run a production server for tests to avoid dev-time vendor chunk issues */
+  /* Start a dev server for tests to avoid a Next.js 15 build bug on /404 */
   webServer: {
-    command: "bash -lc 'npm run -s build && next start -p 3456'",
+    command: "bash -lc 'next dev -p 3456'",
     url: SERVER_URL,
     reuseExistingServer: true,
     timeout: 180_000,
     stdout: 'pipe',
     stderr: 'pipe',
-    env: { NEXT_PUBLIC_APP_URL: SERVER_URL, PLAYWRIGHT: '1', TURBOPACK: '0' },
+    env: { PLAYWRIGHT: '1' },
   },
 
   /* Global setup and teardown */

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ViewerCompare } from '@/components/features/viewer';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useBackendStore } from '@/lib/store/backend';
 
 export default function ComparePage() {

@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 // Disable certain experiments for Playwright runs to avoid dev vendor-chunk issues
 const isPlaywright = !!process.env.PLAYWRIGHT;
@@ -10,6 +11,10 @@ const nextConfig: NextConfig = {
 
   // Ensure Docker-friendly output with standalone server
   output: 'standalone',
+
+  // Explicitly set the workspace root to this repo to avoid Next.js picking the user's home dir
+  // when multiple lockfiles exist on the machine (prevents .next path confusion in dev/tests)
+  outputFileTracingRoot: path.resolve(__dirname),
 
   // Generate build ID based on timestamp for cache busting
   generateBuildId: async () => {
@@ -265,7 +270,10 @@ const nextConfig: NextConfig = {
   },
 
   // Experimental features disabled for stability in tests/dev
-  experimental: {},
+  experimental: {
+    // Disable vendor-chunking that can reference non-existent dev files in some setups
+    optimizePackageImports: [],
+  },
 
   // Performance optimizations
   compiler: {

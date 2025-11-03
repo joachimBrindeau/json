@@ -8,8 +8,8 @@ import { Check, X, Menu, Loader2, Edit2 } from 'lucide-react';
 import { useBackendStore } from '@/lib/store/backend';
 import { useToast } from '@/hooks/use-toast';
 
-import { DynamicBreadcrumb } from '@/components/layout/dynamic-breadcrumb';
-import { UserMenu } from '@/components/layout/user-menu';
+import { DynamicBreadcrumb } from '@/components/layout/DynamicBreadcrumb';
+import { UserMenu } from '@/components/layout/UserMenu';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
@@ -13,7 +13,7 @@ import {
   Search,
   ArrowRightLeft,
 } from 'lucide-react';
-import { FormatSelector } from '@/components/ui/format-selector';
+import { FormatSelector } from '@/components/ui/FormatSelector';
 import { ViewerActions } from '@/components/features/viewer';
 import { EditorPane } from '@/components/features/editor/EditorPane';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';

@@ -6,7 +6,7 @@ import { useBackendStore } from '@/lib/store/backend';
 import { toastPatterns } from '@/lib/utils/toast-helpers';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
 import { useLibraryStats } from '@/hooks/use-library-stats';

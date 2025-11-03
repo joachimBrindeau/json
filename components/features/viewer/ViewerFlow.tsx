@@ -5,8 +5,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 const FlowView = dynamic(() => import('./flow/FlowView').then((m) => ({ default: m.FlowView })), {
   ssr: false,

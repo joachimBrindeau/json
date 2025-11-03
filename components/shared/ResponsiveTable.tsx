@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { LoadingState } from '@/components/shared/loading-state';
-import { DataTable, Column } from './data-table';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { DataTable, Column } from './DataTable';
 import { filterBySearch, sortBy as sortByField, sortByDate } from '@/lib/utils/filters';
 
 export interface MobileCardProps<T> {

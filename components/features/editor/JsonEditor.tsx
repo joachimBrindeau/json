@@ -12,7 +12,7 @@ import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 
 import { formatJsonWithWorker, loadJsonProgressive, debounce } from '@/lib/editor/optimizations';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { useSearch } from '@/hooks/use-search';
 import {

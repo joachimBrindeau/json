@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ConfirmPopover } from '@/components/ui/confirm-popover';
+import { ConfirmPopover } from '@/components/ui/ConfirmPopover';
 import type { EditorAction } from '@/types/editor-actions';
 
 interface ActionButtonProps {

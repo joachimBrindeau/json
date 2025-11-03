@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { Card } from '@/components/ui/card';

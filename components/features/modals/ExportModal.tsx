@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BaseModal } from '@/components/shared/base-modal';
+import { BaseModal } from '@/components/shared/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -27,7 +27,7 @@ import {
 import { exportData, downloadExportedData, ExportOptions } from '@/lib/utils/export-utils';
 import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
 import { logger } from '@/lib/logger';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 interface ExportModalProps {
   open: boolean;

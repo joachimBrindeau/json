@@ -10,10 +10,10 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/ScrollArea';
 import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 export interface BaseModalProps {
   open: boolean;

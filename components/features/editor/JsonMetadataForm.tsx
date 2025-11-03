@@ -17,10 +17,10 @@ const RichTextEditor = dynamic(
   }
 );
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
-import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/form-fields';
+import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/FormFields';
 import { Globe, Lock, Loader2, Save } from 'lucide-react';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 interface JsonMetadataFormProps {
   /** Initial form data */

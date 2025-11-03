@@ -29,7 +29,7 @@ import type { ViewMode } from './types';
 import type { JsonValue } from '@/lib/types/json';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import { SearchBar } from '@/components/shared/search-bar';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { analyzeJson } from '@/lib/json/json-analysis';
 import { downloadJson } from '@/lib/json/json-utils';
 

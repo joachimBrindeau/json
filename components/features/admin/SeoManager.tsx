@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, AlertTriangle } from 'lucide-react';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { LoadingState } from '@/components/shared/loading-state';
-import { EmptyState } from '@/components/shared/empty-states';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { EmptyState } from '@/components/shared/EmptyStates';
 import { useApiData } from '@/hooks/use-api-data';
 
 interface SEOData {

@@ -6,13 +6,10 @@ import { withAuth } from '@/lib/api/utils';
 
 export const DELETE = withAuth(async (_request: NextRequest, session) => {
   try {
-    if (!session?.user?.email) {
-      return unauthorized('Email not found');
-    }
-
+    // withAuth already ensures session.user.id exists
     // Delete user - cascade will automatically delete all related data
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { id: session.user.id },
     });
 
     if (!user) {

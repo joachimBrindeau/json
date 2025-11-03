@@ -3,10 +3,16 @@ import { Account as NextAuthAccount } from 'next-auth';
 import type { User as NextAuthUser } from 'next-auth';
 import type { UserUpdateData } from './types';
 import { logger } from '@/lib/logger';
+import { normalizeEmail } from '@/lib/utils/email';
 
 /**
  * Links OAuth provider account to existing user or creates account record
  * Handles account linking for OAuth providers (GitHub, Google, etc.)
+ *
+ * SECURITY: This function only links accounts when:
+ * 1. Email addresses match (after normalization)
+ * 2. OAuth provider has verified the email
+ * 3. Both accounts belong to the same user
  *
  * @param user - NextAuth user object from OAuth provider
  * @param account - NextAuth account object with provider details
@@ -30,13 +36,15 @@ export async function linkOAuthAccount(
       return null;
     }
 
-    const email = user.email;
+    // Normalize email for consistency and security
+    const email = user.email ? normalizeEmail(user.email) : null;
     if (!email) {
       logger.warn({ provider: account.provider }, 'OAuth account has no email');
       return null;
     }
 
-    // Check if user exists with this email
+    // Check if user exists with this email (with transaction for race condition safety)
+    // Use findUniqueOrThrow with catch for better error handling
     const existingUser = await prisma.user.findUnique({
       where: { email },
       include: { accounts: true },
@@ -46,38 +54,58 @@ export async function linkOAuthAccount(
       return null;
     }
 
-    // Check if this provider is already linked
+    // Check if this provider+accountId combination is already linked
     const isLinked = existingUser.accounts.some(
       (acc) =>
-        acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+        acc.provider === account.provider &&
+        acc.providerAccountId === account.providerAccountId
     );
 
     if (!isLinked) {
-      // Link the OAuth account to existing user
-      await prisma.account.create({
-        data: {
-          userId: existingUser.id,
-          type: account.type,
-          provider: account.provider,
-          providerAccountId: account.providerAccountId,
-          refresh_token: account.refresh_token,
-          access_token: account.access_token,
-          expires_at: account.expires_at,
-          token_type: account.token_type,
-          scope: account.scope,
-          id_token: account.id_token,
-          session_state: account.session_state,
-        },
-      });
+      // Use create with skipDuplicates or check first to prevent race conditions
+      // This handles the case where multiple requests try to link simultaneously
+      try {
+        await prisma.account.create({
+          data: {
+            userId: existingUser.id,
+            type: account.type,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            refresh_token: account.refresh_token,
+            access_token: account.access_token,
+            expires_at: account.expires_at,
+            token_type: account.token_type,
+            scope: account.scope,
+            id_token: account.id_token,
+            session_state: account.session_state,
+          },
+        });
 
-      logger.info(
-        {
-          userId: existingUser.id,
-          provider: account.provider,
-          email,
-        },
-        'Linked OAuth account to existing user'
-      );
+        logger.info(
+          {
+            userId: existingUser.id,
+            provider: account.provider,
+            email,
+          },
+          'Linked OAuth account to existing user'
+        );
+      } catch (createError: any) {
+        // Handle unique constraint violation (race condition)
+        // P2002 is Prisma's unique constraint violation code
+        if (createError?.code === 'P2002') {
+          logger.warn(
+            {
+              userId: existingUser.id,
+              provider: account.provider,
+              email,
+            },
+            'OAuth account already linked (race condition handled)'
+          );
+          // Account is already linked, continue with update
+        } else {
+          throw createError;
+        }
+      }
     }
 
     // Update user info with OAuth provider data

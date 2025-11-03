@@ -14,8 +14,8 @@ import { z } from 'zod';
 // Check if we're on the server
 const isServer = typeof window === 'undefined';
 
-// Check if we're in test mode
-const isTest = process.env.NODE_ENV === 'test';
+// Check if we're in test mode (treat Playwright builds like test)
+const isTest = process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT === '1';
 
 // Shared environment schema for fields common to both server and client
 const sharedEnvSchema = z.object({
@@ -104,6 +104,26 @@ const serverEnvSchema = sharedEnvSchema.extend({
     .string()
     .optional()
     .transform((val) => val?.split(',').map((email) => email.trim()) || []),
+
+  // Email/SMTP Configuration (optional in test mode)
+  SMTP_HOST: isTest
+    ? z.string().optional().default('smtp.sendgrid.net')
+    : z.string().min(1, 'SMTP_HOST is required'),
+  SMTP_PORT: isTest
+    ? z.string().optional().default('587')
+    : z.string().regex(/^\d+$/, 'SMTP_PORT must be a number'),
+  SMTP_USERNAME: isTest
+    ? z.string().optional().default('apikey')
+    : z.string().min(1, 'SMTP_USERNAME is required'),
+  SMTP_PASSWORD: isTest
+    ? z.string().optional().default('test-smtp-password')
+    : z.string().min(1, 'SMTP_PASSWORD is required'),
+  SMTP_FROM_EMAIL: z
+    .string()
+    .email('SMTP_FROM_EMAIL must be a valid email')
+    .optional()
+    .default('noreply@json-viewer.io'),
+  SMTP_FROM_NAME: z.string().optional().default('JSON Viewer'),
 });
 
 // Client-safe environment schema (only shared/public variables)
@@ -136,6 +156,14 @@ function buildEnvObject() {
 
     // Admin (server only)
     SUPERADMIN_EMAILS: process.env.SUPERADMIN_EMAILS,
+
+    // Email/SMTP (server only)
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USERNAME: process.env.SMTP_USERNAME,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL,
+    SMTP_FROM_NAME: process.env.SMTP_FROM_NAME,
 
     // Public URLs (client + server)
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
@@ -239,6 +267,22 @@ export const config = {
     },
   },
 
+  // Email/SMTP
+  email: {
+    smtp: {
+      host: env.SMTP_HOST,
+      port: parseInt(env.SMTP_PORT, 10),
+      username: env.SMTP_USERNAME,
+      password: env.SMTP_PASSWORD,
+      secure: false, // Use TLS (port 587)
+    },
+    from: {
+      email: env.SMTP_FROM_EMAIL,
+      name: env.SMTP_FROM_NAME,
+    },
+    enabled: !!(env.SMTP_HOST && env.SMTP_USERNAME && env.SMTP_PASSWORD),
+  },
+
   // Public URLs
   app: {
     url: env.NEXT_PUBLIC_APP_URL,
@@ -322,6 +366,12 @@ export const {
   CI,
   PLAYWRIGHT_BASE_URL,
   BASE_URL,
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_USERNAME,
+  SMTP_PASSWORD,
+  SMTP_FROM_EMAIL,
+  SMTP_FROM_NAME,
 } = env;
 
 // Type exports

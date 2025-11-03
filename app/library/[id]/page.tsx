@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { MainLayout } from '@/components/layout/main-layout';
-import { TabsNav } from '@/components/layout/tabs-nav';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { TabsNav } from '@/components/layout/TabsNav';
 import { Viewer } from '@/components/features/viewer';
 import { FileJson } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 export default function LibraryViewerPage() {
   const params = useParams();

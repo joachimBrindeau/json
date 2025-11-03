@@ -306,39 +306,63 @@ export async function getPublicDocuments(options: DocumentQueryOptions = {}): Pr
     const data = await cacheGetOrSet(
       cacheKey,
       async () => {
-        // Fetch documents and total count
-        const [documents, total] = await Promise.all([
-          prisma.jsonDocument.findMany({
-            where,
-            select: options.includeContent
-              ? getDocumentDetailSelect(options.includeAnalytics, false) // No chunks for public library
-              : (() => {
-                  const selectObj = getDocumentListSelect(options.includeAnalytics, false);
-                  return {
-                    ...selectObj,
-                    content: true, // Need content for preview
-                  };
-                })(),
-            orderBy,
-            skip: pagination.skip,
-            take: pagination.take,
-          }),
-          prisma.jsonDocument.count({ where }),
-        ]);
-
-        // Add preview for public documents without full content
-        const formattedDocuments = documents.map((doc) => ({
-          ...formatDocumentForResponse(doc, options.includeContent),
-          ...(!options.includeContent &&
-            doc.content && {
-              preview: JSON.stringify(doc.content, null, 2).slice(0, 200) + '...',
+        try {
+          // Fetch documents and total count
+          const [documents, total] = await Promise.all([
+            prisma.jsonDocument.findMany({
+              where,
+              select: options.includeContent
+                ? getDocumentDetailSelect(options.includeAnalytics, false) // No chunks for public library
+                : (() => {
+                    const selectObj = getDocumentListSelect(options.includeAnalytics, false);
+                    return {
+                      ...selectObj,
+                      content: true, // Need content for preview
+                    };
+                  })(),
+              orderBy,
+              skip: pagination.skip,
+              take: pagination.take,
             }),
-        }));
+            prisma.jsonDocument.count({ where }),
+          ]);
 
-        return {
-          documents: formattedDocuments,
-          pagination: buildPaginationResult(total, pagination.page, pagination.limit),
-        };
+          // Add preview for public documents without full content
+          const formattedDocuments = documents.map((doc) => ({
+            ...formatDocumentForResponse(doc, options.includeContent),
+            ...(!options.includeContent &&
+              (doc as any).content && {
+                preview: JSON.stringify((doc as any).content, null, 2).slice(0, 200) + '...',
+              }),
+          }));
+
+          return {
+            documents: formattedDocuments,
+            pagination: buildPaginationResult(total, pagination.page, pagination.limit),
+          };
+        } catch (err: any) {
+          // Graceful fallback on clean DB: if table/column missing, return empty list instead of 500
+          const msg = String(err?.message || '');
+          const code = (err && (err as any).code) || (err && (err as any).prismaCode);
+          const isMissingSchema =
+            code === 'P2021' || // table does not exist
+            code === 'P2022' || // column does not exist
+            /relation \".*\" does not exist/i.test(msg) ||
+            /table .* does not exist/i.test(msg) ||
+            /no such table/i.test(msg);
+
+          if (isMissingSchema) {
+            logger.warn(
+              { err: err },
+              'Public library requested before DB schema exists. Returning empty list.'
+            );
+            return {
+              documents: [],
+              pagination: buildPaginationResult(0, pagination.page, pagination.limit),
+            };
+          }
+          throw err;
+        }
       },
       { ttl: CacheTTL.MEDIUM, prefix: 'public' }
     );

@@ -1,2 +1,0 @@
-export { DynamicBreadcrumb } from './DynamicBreadcrumb';
-

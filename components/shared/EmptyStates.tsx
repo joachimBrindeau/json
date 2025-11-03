@@ -15,7 +15,7 @@ import {
   Filter,
   RefreshCw,
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;

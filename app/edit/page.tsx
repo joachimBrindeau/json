@@ -1,7 +1,7 @@
 'use client';
 
-import { MainLayout } from '@/components/layout/main-layout';
-import { JsonEditor } from '@/components/features/editor/json-editor';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { JsonEditor } from '@/components/features/editor/JsonEditor';
 
 export default function EditPage() {
   return (

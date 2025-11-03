@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BulkCheckbox } from '@/components/ui/bulk-operations';
+import { BulkCheckbox } from '@/components/ui/BulkOperations';
 import { Eye, User, Calendar, Hash, ChevronRight, Trash2, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';

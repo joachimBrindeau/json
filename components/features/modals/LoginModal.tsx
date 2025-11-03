@@ -6,7 +6,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { FormInput } from '@/components/shared/form-fields';
+import { FormInput } from '@/components/shared/FormFields';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,8 @@ import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { normalizeEmail } from '@/lib/utils/email';
 import type { LoginFormData, SignupFormData } from '@/lib/auth/types';
-import { LOGIN_CONTEXT_MESSAGES } from '@/lib/auth/constants';
+import { LOGIN_CONTEXT_MESSAGES, AUTH_ERROR_MESSAGES } from '@/lib/auth/constants';
+import { PasswordStrengthIndicator } from '@/components/shared/PasswordStrengthIndicator';
 
 interface LoginModalProps {
   open: boolean;
@@ -44,25 +45,36 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
   const { update: updateSession } = useSession();
   const message = LOGIN_CONTEXT_MESSAGES[context] || LOGIN_CONTEXT_MESSAGES.general;
 
-  const handleOAuthSignIn = async (provider: string) => {
+  const handleOAuthSignIn = async (provider: 'github' | 'google') => {
     setIsOAuthLoading(true);
+    
     try {
-      await signIn(provider);
+      // NextAuth's signIn() for OAuth providers redirects the user to the provider
+      // Errors will come back via the callback URL, not as thrown exceptions
+      // The OAuth error handler component will handle errors from the callback URL
+      await signIn(provider, {
+        redirect: true,
+        callbackUrl: window.location.href,
+      });
+      
+      // Note: If we reach here, the redirect should have happened
+      // The loading state will be cleared when user returns (or on component unmount)
     } catch (error) {
-      logger.error({ err: error, provider }, `Failed to sign in with OAuth provider`);
+      // This catch block will only fire for immediate errors before redirect (should be rare)
+      logger.error({ err: error, provider }, 'Failed to initiate OAuth sign-in');
+      setIsOAuthLoading(false);
       toast({
         title: 'Sign in failed',
-        description: `Failed to sign in with ${provider}`,
+        description: `Failed to sign in with ${provider}. Please try again.`,
         variant: 'destructive',
       });
-      setIsOAuthLoading(false);
     }
   };
 
   const { submit: submitForm, isSubmitting: isLoading } = useFormSubmit(
     async () => {
       if (!formData.email || !formData.password) {
-        throw new Error('Please enter both email and password');
+        throw new Error(AUTH_ERROR_MESSAGES.MISSING_CREDENTIALS);
       }
 
       const email = normalizeEmail(formData.email);
@@ -94,7 +106,7 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
         });
 
         if (result?.error) {
-          throw new Error('Invalid email or password');
+          throw new Error(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS);
         }
       }
     },
@@ -199,6 +211,11 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+
+          {/* Password Strength Indicator (only show during signup) */}
+          {isSignup && formData.password && (
+            <PasswordStrengthIndicator password={formData.password} />
+          )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Please wait...' : isSignup ? 'Create Account' : 'Sign In'}

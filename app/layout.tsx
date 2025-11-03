@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthSessionProvider } from '@/components/shared/providers/session-provider';
-import { NavigationProvider } from '@/components/shared/providers/navigation-provider';
+import { AuthSessionProvider } from '@/components/shared/providers/SessionProvider';
+import { NavigationProvider } from '@/components/shared/providers/NavigationProvider';
 import { GlobalLoginModal } from '@/components/features/modals';
-import { WebVitals } from '@/components/shared/seo/web-vitals';
-import { VersionChecker } from '@/components/shared/version-checker';
-import { ServiceWorkerManager } from '@/components/shared/service-worker-manager';
+import { WebVitals } from '@/components/shared/seo/WebVitals';
+import { VersionChecker } from '@/components/shared/VersionChecker';
+import { ServiceWorkerManager } from '@/components/shared/ServiceWorkerManager';
 import { generateWebApplicationStructuredData, renderJsonLd } from '@/lib/seo';
 import { generateDatabaseSEOMetadata } from '@/lib/seo/database';
 import { logger } from '@/lib/logger';
+import { OAuthErrorHandler } from '@/components/shared/OAuthErrorHandler';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
@@ -26,6 +27,12 @@ const geistMono = Geist_Mono({
   display: 'swap',
   preload: true,
 });
+
+
+// Force dynamic rendering to avoid static prerender issues during build
+// This keeps pages server-rendered and prevents chunk loading errors in CI/E2E
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   return await generateDatabaseSEOMetadata('home');
@@ -67,6 +74,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthSessionProvider>
           <NavigationProvider>
+            <OAuthErrorHandler />
             <WebVitals />
             <VersionChecker />
             <ServiceWorkerManager />

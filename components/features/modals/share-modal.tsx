@@ -1,2 +1,0 @@
-export { ShareModal } from './ShareModal';
-

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession, Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { AUTH_ERROR_MESSAGES } from '@/lib/auth/constants';
 import { ZodSchema, ZodError } from 'zod';
 import { createHash } from 'crypto';
 import { logger } from '@/lib/logger';
@@ -72,7 +73,7 @@ export function withAuth<T extends any[]>(
       const session = await getServerSession(authOptions);
 
       if (!session?.user?.id) {
-        return createApiResponse({ error: 'Authentication required' }, { status: 401 });
+        return createApiResponse({ error: AUTH_ERROR_MESSAGES.SESSION_REQUIRED }, { status: 401 });
       }
 
       return await handler(req, session as Session, ...args);

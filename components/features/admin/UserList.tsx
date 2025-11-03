@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { UserDetailsModal } from '@/components/features/modals/user-details-modal';
+import { UserDetailsModal } from '@/components/features/modals/UserDetailsModal';
 import { formatRelativeTime, getInitials } from '@/lib/utils/formatters';
 import { useApiData } from '@/hooks/use-api-data';
-import { ResponsiveTable, MobileCardProps } from '@/components/shared/responsive-table';
-import { Column } from '@/components/shared/data-table';
+import { ResponsiveTable, MobileCardProps } from '@/components/shared/ResponsiveTable';
+import { Column } from '@/components/shared/DataTable';
 
 interface User extends Record<string, unknown> {
   id: string;

@@ -11,8 +11,8 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { MainLayout } from '@/components/layout/main-layout';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import {
   User,
   Mail,
@@ -28,8 +28,8 @@ import {
   Chrome,
   Key,
 } from 'lucide-react';
-import { DebugAvatar } from '@/components/debug/debug-avatar';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { DebugAvatar } from '@/components/debug/DebugAvatar';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 

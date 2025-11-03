@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import {
   Copy,
   Download,
@@ -33,8 +33,8 @@ import {
 } from '@/lib/utils/toast-helpers';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
 import { ShareModal } from '@/components/features/modals';
-import { EmbedModal } from '@/components/features/modals/embed-modal';
-import { ExportModal } from '@/components/features/modals/export-modal';
+import { EmbedModal } from '@/components/features/modals/EmbedModal';
+import { ExportModal } from '@/components/features/modals/ExportModal';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
 import { logger } from '@/lib/logger';
@@ -147,9 +147,6 @@ export function ViewerActions({
 
     // If it's a new document (no currentDocument) and has no title, open share modal for title input
     if (!currentDocument) {
-      try {
-        console.log('[DEBUG] ViewerActions.handleSave: opening ShareModal');
-      } catch {}
       setShareModalOpen(true);
       return;
     }
@@ -185,15 +182,8 @@ export function ViewerActions({
     return () => document.removeEventListener('click', handler, true);
   }, [handleSave, isSaving]);
 
-  // If authenticated with fresh JSON (no currentDocument), auto-open ShareModal to collect title
-  useEffect(() => {
-    if (session && currentJson && !currentDocument && !shareModalOpen) {
-      try {
-        console.log('[DEBUG] ViewerActions: auto-opening ShareModal');
-      } catch {}
-      setShareModalOpen(true);
-    }
-  }, [session, currentJson, currentDocument, shareModalOpen]);
+  // Note: ShareModal is now only opened explicitly via user actions (Save/Share buttons)
+  // No auto-opening to prevent unexpected modal appearances
 
   const handleCopyJson = useCallback(() => {
     const source = value?.trim() ? value : currentJson;

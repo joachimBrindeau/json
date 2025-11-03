@@ -3,11 +3,11 @@
  * Centralized exports for application layout components
  */
 
-export { AppLayout } from './app-layout';
-export { MainLayout } from './main-layout';
-export { MobileLayoutWrapper } from './mobile-layout-wrapper';
-export { HeaderNav } from './header-nav';
+export { AppLayout } from './AppLayout';
+export { MainLayout } from './MainLayout';
+export { MobileLayoutWrapper } from './MobileLayoutWrapper';
+export { HeaderNav } from './HeaderNav';
 export { Sidebar } from './sidebar';
-export { TabsNav } from './tabs-nav';
-export { UserMenu } from './user-menu';
-export { DynamicBreadcrumb } from './dynamic-breadcrumb';
+export { TabsNav } from './TabsNav';
+export { UserMenu } from './UserMenu';
+export { DynamicBreadcrumb } from './DynamicBreadcrumb';

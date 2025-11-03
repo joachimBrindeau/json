@@ -2,25 +2,25 @@
 // This reduces duplication across the codebase
 
 // Base Components
-export { BaseModal, ConfirmationModal, InfoModal, SuccessModal } from './base-modal';
-export type { BaseModalProps, BaseModalRef } from './base-modal';
+export { BaseModal, ConfirmationModal, InfoModal, SuccessModal } from './BaseModal';
+export type { BaseModalProps, BaseModalRef } from './BaseModal';
 
-export { JsonViewerBase } from './json-viewer-base';
-export type { JsonViewerBaseProps, ViewerMode } from './json-viewer-base';
+export { JsonViewerBase } from './JsonViewerBase';
+export type { JsonViewerBaseProps, ViewerMode } from './JsonViewerBase';
 
 // Error Handling
-export { ErrorBoundary } from './error-boundary';
+export { ErrorBoundary } from './ErrorBoundary';
 
 // Loading Components
-export { LoadingSpinner } from './loading-spinner';
-export { LoadingState as LoadingStateComponent } from './loading-state';
+export { LoadingSpinner } from './LoadingSpinner';
+export { LoadingState as LoadingStateComponent } from './LoadingState';
 
 // Service Worker & Version
-export { ServiceWorkerManager } from './service-worker-manager';
-export { VersionChecker } from './version-checker';
+export { ServiceWorkerManager } from './ServiceWorkerManager';
+export { VersionChecker } from './VersionChecker';
 
 // Search
-export { SearchBar } from './search-bar';
+export { SearchBar } from './SearchBar';
 
 // Node Rendering
 export {
@@ -52,14 +52,14 @@ export {
   LoadingErrorState,
   LoadingState,
   PerformanceWarningState,
-} from './empty-states';
+} from './EmptyStates';
 
 // Providers
-export { NavigationProvider } from './providers/navigation-provider';
-export { AuthSessionProvider } from './providers/session-provider';
+export { NavigationProvider } from './providers/NavigationProvider';
+export { AuthSessionProvider } from './providers/SessionProvider';
 
 // SEO
-export { WebVitals } from './seo/web-vitals';
+export { WebVitals } from './seo/WebVitals';
 export { PerformanceOptimizations } from './seo/PerformanceOptimizations';
 export { Analytics } from './seo/analytics';
 

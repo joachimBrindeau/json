@@ -95,3 +95,23 @@ export const AUTH_ERROR_MESSAGES = {
   SESSION_REQUIRED: 'You must be signed in to access this resource',
   ADMIN_REQUIRED: 'Admin access required',
 };
+
+/**
+ * OAuth error message mappings
+ * Maps NextAuth error codes to user-friendly messages
+ */
+export const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  Configuration: 'There is a problem with the server configuration. Please contact support.',
+  AccessDenied: 'Access was denied. Please grant the required permissions.',
+  Verification: 'The verification token has expired or has already been used.',
+  OAuthSignin: 'Error initiating OAuth sign-in. Please try again.',
+  OAuthCallback: 'Error completing OAuth sign-in. Please try again.',
+  OAuthCreateAccount: 'Error creating account. Please try again.',
+  OAuthAccountNotLinked:
+    'An account with this email already exists. Please sign in with your existing account first.',
+  EmailCreateAccount: 'Error creating account with email. Please try again.',
+  EmailSignin: 'Error signing in with email. Please check your email and try again.',
+  CredentialsSignin: 'Invalid credentials. Please check your email and password.',
+  SessionRequired: 'Please sign in to access this page.',
+  Default: 'An error occurred during authentication. Please try again.',
+};
