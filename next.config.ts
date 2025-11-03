@@ -286,24 +286,8 @@ const nextConfig: NextConfig = {
       };
     }
 
-    // Production optimizations
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-          },
-        },
-      };
-    }
+    // Use Next.js defaults for splitChunks to avoid asset misclassification issues
+    // (We intentionally disable our custom splitChunks to prevent CSS being emitted as <script> tags.)
 
     return config;
   },

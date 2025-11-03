@@ -61,6 +61,56 @@ export function ViewerCompare({
   const editor1 = useMonacoEditor(json1.length);
   const editor2 = useMonacoEditor(json2.length);
 
+
+  // Scroll sync disposables and updater
+  const scrollDisposable1Ref = useRef<any>(null);
+  const scrollDisposable2Ref = useRef<any>(null);
+
+  const updateScrollSync = useCallback(() => {
+    const e1 = editor1.editorRef.current as any;
+    const e2 = editor2.editorRef.current as any;
+
+    // Clean up previous listeners
+    if (scrollDisposable1Ref.current) {
+      try { scrollDisposable1Ref.current.dispose?.(); } catch {}
+      scrollDisposable1Ref.current = null;
+    }
+    if (scrollDisposable2Ref.current) {
+      try { scrollDisposable2Ref.current.dispose?.(); } catch {}
+      scrollDisposable2Ref.current = null;
+    }
+
+    if (!e1 || !e2 || !syncScroll) return;
+
+    // Attach listeners that respect current syncScroll state
+    scrollDisposable1Ref.current = e1.onDidScrollChange((ev: any) => {
+      if (!(e1 as any)._syncingScroll && syncScroll) {
+        (e2 as any)._syncingScroll = true;
+        e2.setScrollPosition({ scrollTop: ev.scrollTop, scrollLeft: ev.scrollLeft });
+        setTimeout(() => { (e2 as any)._syncingScroll = false; }, 10);
+      }
+    });
+
+    scrollDisposable2Ref.current = e2.onDidScrollChange((ev: any) => {
+      if (!(e2 as any)._syncingScroll && syncScroll) {
+        (e1 as any)._syncingScroll = true;
+        e1.setScrollPosition({ scrollTop: ev.scrollTop, scrollLeft: ev.scrollLeft });
+        setTimeout(() => { (e1 as any)._syncingScroll = false; }, 10);
+      }
+    });
+  }, [syncScroll, editor1.editorRef, editor2.editorRef]);
+
+  // Re-apply listeners when toggle changes
+  useEffect(() => {
+    updateScrollSync();
+    return () => {
+      try { scrollDisposable1Ref.current?.dispose?.(); } catch {}
+      try { scrollDisposable2Ref.current?.dispose?.(); } catch {}
+      scrollDisposable1Ref.current = null;
+      scrollDisposable2Ref.current = null;
+    };
+  }, [updateScrollSync]);
+
   // Update local state when initialJson1 changes (from store)
   useEffect(() => {
     if (initialJson1 !== json1) {
@@ -180,65 +230,25 @@ export function ViewerCompare({
     );
   }, [diffResult]);
 
-  // Handle synchronized scrolling - improved sync logic
+  // Handle synchronized scrolling - improved logic with dynamic listeners
   const handleEditor1Mount = useCallback(
     (editorInstance: any, monaco?: any) => {
-      // Call the base mount handler from the hook
+      // Base mount handler
       editor1.handleEditorDidMount(editorInstance, monaco);
-
-      // Set up scroll synchronization
-      const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
-        if (editor2.editorRef.current && syncScroll) {
-          // Prevent infinite loops by checking if this scroll was triggered by sync
-          if (!(editorInstance as any)._syncingScroll) {
-            (editor2.editorRef.current as any)._syncingScroll = true;
-            editor2.editorRef.current.setScrollPosition({
-              scrollTop: e.scrollTop,
-              scrollLeft: e.scrollLeft,
-            });
-            // Reset sync flag after a brief delay
-            setTimeout(() => {
-              if (editor2.editorRef.current) {
-                (editor2.editorRef.current as any)._syncingScroll = false;
-              }
-            }, 10);
-          }
-        }
-      });
-
-      return scrollDisposable;
+      // (Re)apply listeners when editor becomes available
+      updateScrollSync();
     },
-    [syncScroll, editor1, editor2]
+    [editor1, updateScrollSync]
   );
 
   const handleEditor2Mount = useCallback(
     (editorInstance: any, monaco?: any) => {
-      // Call the base mount handler from the hook
+      // Base mount handler
       editor2.handleEditorDidMount(editorInstance, monaco);
-
-      // Set up scroll synchronization
-      const scrollDisposable = editorInstance.onDidScrollChange((e: any) => {
-        if (editor1.editorRef.current && syncScroll) {
-          // Prevent infinite loops by checking if this scroll was triggered by sync
-          if (!(editorInstance as any)._syncingScroll) {
-            (editor1.editorRef.current as any)._syncingScroll = true;
-            editor1.editorRef.current.setScrollPosition({
-              scrollTop: e.scrollTop,
-              scrollLeft: e.scrollLeft,
-            });
-            // Reset sync flag after a brief delay
-            setTimeout(() => {
-              if (editor1.editorRef.current) {
-                (editor1.editorRef.current as any)._syncingScroll = false;
-              }
-            }, 10);
-          }
-        }
-      });
-
-      return scrollDisposable;
+      // (Re)apply listeners when editor becomes available
+      updateScrollSync();
     },
-    [syncScroll, editor1, editor2]
+    [editor2, updateScrollSync]
   );
 
   const renderDiffOperation = (op: DiffOperation, index: number) => {

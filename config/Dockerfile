@@ -1,5 +1,5 @@
-# Use the official Node.js 18 image as base
-FROM node:18-alpine AS base
+# Use the official Node.js 20 image as base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -31,8 +31,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
-RUN npm run build
+# Build the application (skip strict env validation during image build)
+RUN SKIP_ENV_VALIDATION=true npm run build
 
 # If using npm comment out above and use below instead
 # RUN npm run build
@@ -58,6 +58,9 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Include Prisma schema for runtime migrations
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
 
 # Copy the entrypoint script
 COPY --from=builder --chown=nextjs:nodejs /app/config/docker-entrypoint.sh ./docker-entrypoint.sh

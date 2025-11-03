@@ -20,7 +20,7 @@ if check_db; then
   echo "✅ Database connection established"
   echo "📦 Applying Prisma migrations..."
   if [ -f prisma/schema.prisma ]; then
-    if npx prisma migrate deploy --schema prisma/schema.prisma; then
+    if npx prisma db push --accept-data-loss --schema prisma/schema.prisma; then
       echo "✅ Database migrations completed successfully"
     else
       echo "⚠️ Prisma migrations failed; continuing without blocking startup"
@@ -42,7 +42,7 @@ else
     echo "✅ Database connection established"
     echo "📦 Applying Prisma migrations..."
     if [ -f prisma/schema.prisma ]; then
-      if npx prisma migrate deploy --schema prisma/schema.prisma; then
+      if npx prisma db push --accept-data-loss --schema prisma/schema.prisma; then
         echo "✅ Database migrations completed successfully"
       else
         echo "⚠️ Prisma migrations failed; continuing without blocking startup"
