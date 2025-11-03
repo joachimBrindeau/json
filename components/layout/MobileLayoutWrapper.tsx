@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Sidebar } from './sidebar';
-import { MobileAwareHeader } from './header-nav';
+import { MobileAwareHeader } from './HeaderNav';
 
 interface MobileLayoutWrapperProps {
   children: React.ReactNode;
