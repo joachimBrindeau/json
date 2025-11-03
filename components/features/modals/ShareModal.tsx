@@ -256,14 +256,13 @@ export function ShareModal({
 
         // Save directly via store to ensure upload happens even if parent wiring changes
         try {
-          // eslint-disable-next-line no-console
           console.log('[DEBUG] ShareModal: handleSave invoked with title', formData.title.trim());
         } catch {}
         try {
           const { useBackendStore } = await import('@/lib/store/backend');
           const storeState = useBackendStore.getState() as any;
           const { uploadJson, currentJson } = storeState;
-          // eslint-disable-next-line no-console
+
           console.log('[DEBUG] ShareModal: currentJson length', (currentJson || '').length);
           const blob = new Blob([currentJson || ''], { type: 'application/json' });
           const file = new File([blob], 'untitled.json', { type: 'application/json' });
@@ -274,7 +273,7 @@ export function ShareModal({
           onUpdated?.(formData.title.trim());
         } catch (e) {
           setIsSaving(false);
-          // eslint-disable-next-line no-console
+
           console.log('[DEBUG] ShareModal: save failed', e);
           showValidationErrorToast('Save failed', e instanceof Error ? e.message : 'Unknown error');
         }

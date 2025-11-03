@@ -228,7 +228,7 @@ export function ViewerActions({
       }
     });
   }, [value, currentJson, currentDocument?.title, shareId]);
-  
+
   const handleOpenExportModal = useCallback(() => {
     const source = value?.trim() ? value : currentJson;
     if (!source) {
@@ -600,7 +600,6 @@ export function ViewerActions({
               setIsSaving(true);
               try {
                 if (process.env.NODE_ENV === 'development') {
-                  // eslint-disable-next-line no-console
                   console.log('[DEBUG] ViewerActions: calling saveJson(title)');
                 }
               } catch {}
@@ -632,7 +631,7 @@ export function ViewerActions({
       <ExportModal
         open={exportModalOpen}
         onOpenChange={setExportModalOpen}
-        jsonData={value?.trim() ? JSON.parse(value) : (currentJson ? JSON.parse(currentJson) : null)}
+        jsonData={value?.trim() ? JSON.parse(value) : currentJson ? JSON.parse(currentJson) : null}
       />
     </>
   );

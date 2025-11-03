@@ -111,9 +111,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     return createApiResponse(
       {
         error: 'Validation failed',
-        details: error.issues
-          .map((e) => `${e.path.join('.')}: ${e.message}`)
-          .join(', '),
+        details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', '),
       },
       { status: 400 }
     );

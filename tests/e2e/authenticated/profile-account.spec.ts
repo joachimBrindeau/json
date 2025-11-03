@@ -64,23 +64,31 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       await profileHelper.layoutPage.goToProfile();
 
       // Look for detailed statistics
-      const statsBreakdown = profileHelper.layoutPage.page.locator('[data-testid="stats-breakdown"]');
+      const statsBreakdown = profileHelper.layoutPage.page.locator(
+        '[data-testid="stats-breakdown"]'
+      );
       if (await statsBreakdown.isVisible()) {
         // Should show documents by category
-        const categoryStats = profileHelper.layoutPage.page.locator('[data-testid="documents-by-category"]');
+        const categoryStats = profileHelper.layoutPage.page.locator(
+          '[data-testid="documents-by-category"]'
+        );
         if (await categoryStats.isVisible()) {
           await expect(categoryStats).toBeVisible();
         }
 
         // Should show average document size
-        const avgSize = profileHelper.layoutPage.page.locator('[data-testid="average-document-size"]');
+        const avgSize = profileHelper.layoutPage.page.locator(
+          '[data-testid="average-document-size"]'
+        );
         if (await avgSize.isVisible()) {
           const sizeText = await avgSize.textContent();
           expect(sizeText).toMatch(/\d+.*[KMGT]?B/);
         }
 
         // Should show most used view modes if tracked
-        const viewModeStats = profileHelper.layoutPage.page.locator('[data-testid="view-mode-preferences"]');
+        const viewModeStats = profileHelper.layoutPage.page.locator(
+          '[data-testid="view-mode-preferences"]'
+        );
         if (await viewModeStats.isVisible()) {
           await expect(viewModeStats).toBeVisible();
         }
@@ -89,7 +97,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
     test('should display library contributions', async ({ apiHelper }) => {
       // Ensure we have a published document
-      const contributions = await profileHelper.layoutPage.page.locator('[data-testid="public-contributions"]');
+      const contributions = await profileHelper.layoutPage.page.locator(
+        '[data-testid="public-contributions"]'
+      );
       if (await contributions.isVisible()) {
         await expect(contributions).toBeVisible();
 
@@ -101,7 +111,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         expect(count).toBeGreaterThanOrEqual(1);
 
         // Should show total views if available
-        const totalViews = profileHelper.layoutPage.page.locator('[data-testid="total-public-views"]');
+        const totalViews = profileHelper.layoutPage.page.locator(
+          '[data-testid="total-public-views"]'
+        );
         if (await totalViews.isVisible()) {
           const views = await totalViews.textContent();
           expect(views).toBeTruthy();
@@ -203,7 +215,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       // Should show progress indicator for large exports
       await exportButton.click();
 
-      const progressIndicator = profileHelper.layoutPage.page.locator('[data-testid="export-progress"]');
+      const progressIndicator = profileHelper.layoutPage.page.locator(
+        '[data-testid="export-progress"]'
+      );
       if (await progressIndicator.isVisible()) {
         await expect(progressIndicator).toBeVisible();
 
@@ -214,7 +228,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       }
 
       // Download should eventually start
-      const downloadPromise = profileHelper.layoutPage.page.waitForEvent('download', { timeout: 30000 });
+      const downloadPromise = profileHelper.layoutPage.page.waitForEvent('download', {
+        timeout: 30000,
+      });
       const download = await downloadPromise;
       expect(download.suggestedFilename()).toBeTruthy();
     });
@@ -297,7 +313,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
       await profileHelper.layoutPage.waitForNotification('Export failed', 10000);
 
       // Should not start download
-      const downloadPromise = profileHelper.layoutPage.page.waitForEvent('download', { timeout: 2000 });
+      const downloadPromise = profileHelper.layoutPage.page.waitForEvent('download', {
+        timeout: 2000,
+      });
       await expect(downloadPromise).rejects.toThrow();
     });
   });
@@ -333,14 +351,20 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should handle account deletion with published documents', async () => {
       await profileHelper.layoutPage.goToProfile();
 
-      const deleteAccountButton = profileHelper.layoutPage.page.locator('[data-testid="delete-account"]');
+      const deleteAccountButton = profileHelper.layoutPage.page.locator(
+        '[data-testid="delete-account"]'
+      );
       if (await deleteAccountButton.isVisible()) {
         await deleteAccountButton.click();
 
-        const deleteDialog = profileHelper.layoutPage.page.locator('[data-testid="delete-account-dialog"]');
+        const deleteDialog = profileHelper.layoutPage.page.locator(
+          '[data-testid="delete-account-dialog"]'
+        );
 
         // Should warn about published documents
-        const publishedWarning = profileHelper.layoutPage.page.locator('[data-testid="published-docs-warning"]');
+        const publishedWarning = profileHelper.layoutPage.page.locator(
+          '[data-testid="published-docs-warning"]'
+        );
         if (await publishedWarning.isVisible()) {
           const warningText = await publishedWarning.textContent();
           expect(warningText).toContain('published');
@@ -353,13 +377,17 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         );
         if (await publishedOptions.isVisible()) {
           // Option to keep published content anonymous
-          const keepPublished = profileHelper.layoutPage.page.locator('[data-testid="keep-published-anonymous"]');
+          const keepPublished = profileHelper.layoutPage.page.locator(
+            '[data-testid="keep-published-anonymous"]'
+          );
           if (await keepPublished.isVisible()) {
             await keepPublished.check();
           }
 
           // Or option to remove all published content
-          const removePublished = profileHelper.layoutPage.page.locator('[data-testid="remove-all-published"]');
+          const removePublished = profileHelper.layoutPage.page.locator(
+            '[data-testid="remove-all-published"]'
+          );
           if (await removePublished.isVisible()) {
             await removePublished.check();
           }
@@ -387,11 +415,15 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should validate account deletion requirements', async ({ page }) => {
       await profileHelper.layoutPage.goToProfile();
 
-      const deleteAccountButton = profileHelper.layoutPage.page.locator('[data-testid="delete-account"]');
+      const deleteAccountButton = profileHelper.layoutPage.page.locator(
+        '[data-testid="delete-account"]'
+      );
       if (await deleteAccountButton.isVisible()) {
         await deleteAccountButton.click();
 
-        const deleteDialog = profileHelper.layoutPage.page.locator('[data-testid="delete-account-dialog"]');
+        const deleteDialog = profileHelper.layoutPage.page.locator(
+          '[data-testid="delete-account-dialog"]'
+        );
 
         // Try to delete without confirmation
         const confirmDeleteButton = profileHelper.layoutPage.page.locator(
@@ -400,7 +432,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         await confirmDeleteButton.click();
 
         // Should show validation errors
-        const validationError = profileHelper.layoutPage.page.locator('[data-testid="delete-validation-error"]');
+        const validationError = profileHelper.layoutPage.page.locator(
+          '[data-testid="delete-validation-error"]'
+        );
         if (await validationError.isVisible()) {
           expect(await validationError.textContent()).toContain('confirmation');
         }
@@ -422,7 +456,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
           await confirmationInput.fill('DELETE');
 
           // Now should be able to proceed (but we'll cancel)
-          const cancelDelete = profileHelper.layoutPage.page.locator('[data-testid="cancel-delete"]');
+          const cancelDelete = profileHelper.layoutPage.page.locator(
+            '[data-testid="cancel-delete"]'
+          );
           await cancelDelete.click();
         }
       }
@@ -439,11 +475,15 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         });
       });
 
-      const deleteAccountButton = profileHelper.layoutPage.page.locator('[data-testid="delete-account"]');
+      const deleteAccountButton = profileHelper.layoutPage.page.locator(
+        '[data-testid="delete-account"]'
+      );
       if (await deleteAccountButton.isVisible()) {
         await deleteAccountButton.click();
 
-        const deleteDialog = profileHelper.layoutPage.page.locator('[data-testid="delete-account-dialog"]');
+        const deleteDialog = profileHelper.layoutPage.page.locator(
+          '[data-testid="delete-account-dialog"]'
+        );
 
         const confirmationInput = profileHelper.layoutPage.page.locator(
           '[data-testid="delete-confirmation-input"]'
@@ -465,7 +505,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
 
         // Dialog might still be open or closed depending on implementation
         if (await deleteDialog.isVisible()) {
-          const cancelDelete = profileHelper.layoutPage.page.locator('[data-testid="cancel-delete"]');
+          const cancelDelete = profileHelper.layoutPage.page.locator(
+            '[data-testid="cancel-delete"]'
+          );
           await cancelDelete.click();
         }
       }
@@ -474,14 +516,20 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should provide data export before account deletion', async () => {
       await profileHelper.layoutPage.goToProfile();
 
-      const deleteAccountButton = profileHelper.layoutPage.page.locator('[data-testid="delete-account"]');
+      const deleteAccountButton = profileHelper.layoutPage.page.locator(
+        '[data-testid="delete-account"]'
+      );
       if (await deleteAccountButton.isVisible()) {
         await deleteAccountButton.click();
 
-        const deleteDialog = profileHelper.layoutPage.page.locator('[data-testid="delete-account-dialog"]');
+        const deleteDialog = profileHelper.layoutPage.page.locator(
+          '[data-testid="delete-account-dialog"]'
+        );
 
         // Should offer data export before deletion
-        const exportBeforeDelete = profileHelper.layoutPage.page.locator('[data-testid="export-before-delete"]');
+        const exportBeforeDelete = profileHelper.layoutPage.page.locator(
+          '[data-testid="export-before-delete"]'
+        );
         if (await exportBeforeDelete.isVisible()) {
           await expect(exportBeforeDelete).toBeVisible();
 
@@ -535,10 +583,14 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should manage privacy settings', async () => {
       await profileHelper.layoutPage.goToProfile();
 
-      const privacySettings = profileHelper.layoutPage.page.locator('[data-testid="privacy-settings"]');
+      const privacySettings = profileHelper.layoutPage.page.locator(
+        '[data-testid="privacy-settings"]'
+      );
       if (await privacySettings.isVisible()) {
         // Profile visibility settings
-        const profileVisibility = profileHelper.layoutPage.page.locator('[data-testid="profile-visibility"]');
+        const profileVisibility = profileHelper.layoutPage.page.locator(
+          '[data-testid="profile-visibility"]'
+        );
         if (await profileVisibility.isVisible()) {
           await profileVisibility.selectOption('private');
         }
@@ -550,7 +602,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         }
 
         // Analytics tracking
-        const analyticsOptOut = profileHelper.layoutPage.page.locator('[data-testid="analytics-opt-out"]');
+        const analyticsOptOut = profileHelper.layoutPage.page.locator(
+          '[data-testid="analytics-opt-out"]'
+        );
         if (await analyticsOptOut.isVisible()) {
           await analyticsOptOut.check();
         }
@@ -567,7 +621,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
     test('should change password', async ({ page }) => {
       await profileHelper.layoutPage.goToProfile();
 
-      const changePasswordButton = profileHelper.layoutPage.page.locator('[data-testid="change-password"]');
+      const changePasswordButton = profileHelper.layoutPage.page.locator(
+        '[data-testid="change-password"]'
+      );
       if (await changePasswordButton.isVisible()) {
         await changePasswordButton.click();
 
@@ -575,7 +631,9 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         await expect(passwordForm).toBeVisible();
 
         // Fill current password
-        const currentPassword = profileHelper.layoutPage.page.locator('[data-testid="current-password"]');
+        const currentPassword = profileHelper.layoutPage.page.locator(
+          '[data-testid="current-password"]'
+        );
         await currentPassword.fill('TestPassword123!');
 
         // Fill new password
@@ -583,11 +641,15 @@ test.describe('Authenticated User - Profile and Account Management', () => {
         await newPassword.fill('NewTestPassword123!');
 
         // Confirm new password
-        const confirmPassword = profileHelper.layoutPage.page.locator('[data-testid="confirm-password"]');
+        const confirmPassword = profileHelper.layoutPage.page.locator(
+          '[data-testid="confirm-password"]'
+        );
         await confirmPassword.fill('NewTestPassword123!');
 
         // Submit password change
-        const submitPassword = profileHelper.layoutPage.page.locator('[data-testid="submit-password-change"]');
+        const submitPassword = profileHelper.layoutPage.page.locator(
+          '[data-testid="submit-password-change"]'
+        );
         await submitPassword.click();
 
         await profileHelper.layoutPage.waitForNotification('Password updated successfully');

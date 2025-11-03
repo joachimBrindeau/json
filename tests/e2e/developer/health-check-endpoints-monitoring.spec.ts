@@ -756,9 +756,7 @@ test.describe('Developer - Health Check Endpoints for API Monitoring', () => {
       ]);
 
       // Verify health checks remained accurate
-      const successfulHealthChecks = healthResults.filter(
-        (result: any) => result.success
-      );
+      const successfulHealthChecks = healthResults.filter((result: any) => result.success);
       expect(successfulHealthChecks.length).toBeGreaterThan(8); // At least 80% success rate
 
       successfulHealthChecks.forEach((healthCheck: any) => {

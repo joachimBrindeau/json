@@ -575,7 +575,9 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         // Test metadata inclusion checkbox
         if (optionElements.metadata > 0) {
-          const metadataByTestId = viewerPage.page.locator('[data-testid="include-metadata"]').first();
+          const metadataByTestId = viewerPage.page
+            .locator('[data-testid="include-metadata"]')
+            .first();
           if ((await metadataByTestId.count()) > 0) {
             await metadataByTestId.check();
           } else {
@@ -614,14 +616,14 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         // Verify customizations applied
         const customContent = readFileSync(customPath, 'utf8');
-        
+
         console.log('Exported content preview:', customContent.substring(0, 200));
 
         if (optionElements.indentation > 0) {
           // Verify 4-space indentation was applied
           // Check if content is formatted (not minified)
           const isFormatted = customContent.includes('\n');
-          
+
           if (isFormatted) {
             // If formatted, verify 4-space indentation
             expect(customContent).toContain('\n    '); // 4-space indentation
@@ -825,7 +827,9 @@ test.describe('Advanced User - Export Functionality with Different Formats (Stor
 
         if (response.success && response.id) {
           // Test export API endpoint
-          const exportResponse = await apiHelper.requestContext.get(`/api/json/${response.id}/export`);
+          const exportResponse = await apiHelper.requestContext.get(
+            `/api/json/${response.id}/export`
+          );
 
           if (exportResponse.ok()) {
             const exportData = await exportResponse.text();

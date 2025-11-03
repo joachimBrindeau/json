@@ -70,31 +70,31 @@ class RedisRateLimiter {
     try {
       // Use in-memory rate limiting only (Redis would require async)
       // Fallback to in-memory rate limiting
-        const userAttempts = this.memoryCache.get(key);
+      const userAttempts = this.memoryCache.get(key);
 
-        if (!userAttempts) {
-          this.memoryCache.set(key, {
-            count: 1,
-            resetTime: now + this.windowMs,
-          });
-          return true;
-        }
+      if (!userAttempts) {
+        this.memoryCache.set(key, {
+          count: 1,
+          resetTime: now + this.windowMs,
+        });
+        return true;
+      }
 
-        if (now > userAttempts.resetTime) {
-          this.memoryCache.set(key, {
-            count: 1,
-            resetTime: now + this.windowMs,
-          });
-          return true;
-        }
+      if (now > userAttempts.resetTime) {
+        this.memoryCache.set(key, {
+          count: 1,
+          resetTime: now + this.windowMs,
+        });
+        return true;
+      }
 
-        if (userAttempts.count >= this.maxAttempts) {
-          logger.warn(
-            { identifier, count: userAttempts.count, limit: this.maxAttempts },
-            'Rate limit exceeded (Memory)'
-          );
-          return false;
-        }
+      if (userAttempts.count >= this.maxAttempts) {
+        logger.warn(
+          { identifier, count: userAttempts.count, limit: this.maxAttempts },
+          'Rate limit exceeded (Memory)'
+        );
+        return false;
+      }
 
       userAttempts.count++;
       return true;
@@ -129,7 +129,7 @@ class RedisRateLimiter {
         keysToDelete.push(key);
       }
     });
-    keysToDelete.forEach(key => this.memoryCache.delete(key));
+    keysToDelete.forEach((key) => this.memoryCache.delete(key));
   }
 }
 

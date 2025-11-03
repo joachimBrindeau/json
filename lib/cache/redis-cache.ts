@@ -452,7 +452,7 @@ export const CacheInvalidation = {
   },
 };
 
-export default {
+const redisCache = {
   get: cacheGet,
   set: cacheSet,
   del: cacheDel,
@@ -465,3 +465,5 @@ export default {
   ttl: CacheTTL,
   invalidate: CacheInvalidation,
 };
+
+export default redisCache;

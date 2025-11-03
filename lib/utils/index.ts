@@ -17,3 +17,6 @@ export * from './worker-utils';
 
 // Error utilities
 export * from './error-utils';
+
+// Logger utilities
+export * from './logger';

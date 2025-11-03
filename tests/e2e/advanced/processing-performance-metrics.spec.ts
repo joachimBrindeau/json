@@ -237,99 +237,93 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
       await viewerPage.takeScreenshot('multi-view-performance');
     });
 
-    test(
-      'should measure and display JSON complexity impact on performance',
-      async () => {
-        test.setTimeout(PERFORMANCE_TIMEOUT);
-        const complexityVariations = [
-          {
-            name: 'Simple',
-            data: { simple: 'data', number: 42, array: [1, 2, 3] },
-            expectedComplexity: 'low',
+    test('should measure and display JSON complexity impact on performance', async () => {
+      test.setTimeout(PERFORMANCE_TIMEOUT);
+      const complexityVariations = [
+        {
+          name: 'Simple',
+          data: { simple: 'data', number: 42, array: [1, 2, 3] },
+          expectedComplexity: 'low',
+        },
+        {
+          name: 'Medium',
+          data: {
+            users: Array.from({ length: 100 }, (_, i) => ({
+              id: i,
+              name: `User ${i}`,
+              metadata: { created: new Date().toISOString() },
+            })),
           },
-          {
-            name: 'Medium',
-            data: {
-              users: Array.from({ length: 100 }, (_, i) => ({
-                id: i,
-                name: `User ${i}`,
-                metadata: { created: new Date().toISOString() },
-              })),
-            },
-            expectedComplexity: 'medium',
+          expectedComplexity: 'medium',
+        },
+        {
+          name: 'Complex',
+          data: {
+            nested: PerformanceTestGenerator.generateDeepObject(10),
+            wide: Object.fromEntries(
+              Array.from({ length: 500 }, (_, i) => [`prop_${i}`, `value_${i}`])
+            ),
+            array: PerformanceTestGenerator.generateLargeArray(1000),
           },
-          {
-            name: 'Complex',
-            data: {
-              nested: PerformanceTestGenerator.generateDeepObject(10),
-              wide: Object.fromEntries(
-                Array.from({ length: 500 }, (_, i) => [`prop_${i}`, `value_${i}`])
-              ),
-              array: PerformanceTestGenerator.generateLargeArray(1000),
-            },
-            expectedComplexity: 'high',
-          },
-        ];
+          expectedComplexity: 'high',
+        },
+      ];
 
-        const performanceResults = [];
+      const performanceResults = [];
 
-        for (const variation of complexityVariations) {
-          // Clear previous data
-          await viewerPage.navigateToViewer();
+      for (const variation of complexityVariations) {
+        // Clear previous data
+        await viewerPage.navigateToViewer();
 
-          const startTime = performance.now();
+        const startTime = performance.now();
 
-          await viewerPage.inputJSON(JSON.stringify(variation.data));
-          await viewerPage.waitForJSONProcessed();
+        await viewerPage.inputJSON(JSON.stringify(variation.data));
+        await viewerPage.waitForJSONProcessed();
 
-          const processingTime = performance.now() - startTime;
+        const processingTime = performance.now() - startTime;
 
-          expect(await viewerPage.hasJSONErrors()).toBe(false);
+        expect(await viewerPage.hasJSONErrors()).toBe(false);
 
-          const nodeCounts = await viewerPage.getNodeCounts();
-          const stats = await viewerPage.getJSONStats();
+        const nodeCounts = await viewerPage.getNodeCounts();
+        const stats = await viewerPage.getJSONStats();
 
-          const result = {
-            name: variation.name,
-            processingTime,
-            nodeCount: nodeCounts.total,
-            complexity: variation.expectedComplexity,
-            statsProcessingTime: stats.processingTime,
-          };
+        const result = {
+          name: variation.name,
+          processingTime,
+          nodeCount: nodeCounts.total,
+          complexity: variation.expectedComplexity,
+          statsProcessingTime: stats.processingTime,
+        };
 
-          performanceResults.push(result);
+        performanceResults.push(result);
 
-          console.log(
-            `${variation.name}: ${processingTime.toFixed(2)}ms, ${nodeCounts.total} nodes`
-          );
+        console.log(`${variation.name}: ${processingTime.toFixed(2)}ms, ${nodeCounts.total} nodes`);
 
-          await viewerPage.takeScreenshot(`complexity-${variation.name.toLowerCase()}-performance`);
-        }
+        await viewerPage.takeScreenshot(`complexity-${variation.name.toLowerCase()}-performance`);
+      }
 
-        // Validate that complexity correlates with processing time
-        const simpleTime = performanceResults.find((r) => r.name === 'Simple')?.processingTime || 0;
-        const complexTime =
-          performanceResults.find((r) => r.name === 'Complex')?.processingTime || 0;
+      // Validate that complexity correlates with processing time
+      const simpleTime = performanceResults.find((r) => r.name === 'Simple')?.processingTime || 0;
+      const complexTime = performanceResults.find((r) => r.name === 'Complex')?.processingTime || 0;
 
-        // Complex should take longer than simple (but not excessively)
-        expect(complexTime).toBeGreaterThan(simpleTime);
-        expect(complexTime).toBeLessThan(simpleTime * 50); // Not more than 50x slower
+      // Complex should take longer than simple (but not excessively)
+      expect(complexTime).toBeGreaterThan(simpleTime);
+      expect(complexTime).toBeLessThan(simpleTime * 50); // Not more than 50x slower
 
-        // Look for complexity impact indicators
-        const complexityImpactSelectors = [
-          '[data-testid*="complexity-impact"]',
-          'text=/complexity.*performance/i',
-          'text=/impact.*time/i',
-        ];
+      // Look for complexity impact indicators
+      const complexityImpactSelectors = [
+        '[data-testid*="complexity-impact"]',
+        'text=/complexity.*performance/i',
+        'text=/impact.*time/i',
+      ];
 
-        for (const selector of complexityImpactSelectors) {
-          if ((await viewerPage.page.locator(selector).count()) > 0) {
-            await viewerPage.takeScreenshot('complexity-impact-metrics');
-            break;
-          }
+      for (const selector of complexityImpactSelectors) {
+        if ((await viewerPage.page.locator(selector).count()) > 0) {
+          await viewerPage.takeScreenshot('complexity-impact-metrics');
+          break;
         }
       }
-    );
+    });
   });
 
   test.describe('System Resource Monitoring', () => {
@@ -573,90 +567,87 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
       expect(nodeCounts.total).toBeGreaterThan(5000);
     });
 
-    test(
-      'should show system limitation warnings for extreme datasets',
-      async () => {
-        test.setTimeout(PERFORMANCE_TIMEOUT);
-        const extremeDataset = {
-          warning_test: 'System limitations test',
-          extreme_data: {
-            massive_array: Array.from({ length: 100000 }, (_, i) => ({
+    test('should show system limitation warnings for extreme datasets', async () => {
+      test.setTimeout(PERFORMANCE_TIMEOUT);
+      const extremeDataset = {
+        warning_test: 'System limitations test',
+        extreme_data: {
+          massive_array: Array.from({ length: 100000 }, (_, i) => ({
+            id: i,
+            data: `Extreme item ${i}`,
+            large_content: 'x'.repeat(500),
+            nested: { level1: { level2: `value_${i}` } },
+          })),
+        },
+        wide_structure: Object.fromEntries(
+          Array.from({ length: 10000 }, (_, i) => [
+            `extreme_prop_${i}`,
+            {
               id: i,
-              data: `Extreme item ${i}`,
-              large_content: 'x'.repeat(500),
-              nested: { level1: { level2: `value_${i}` } },
-            })),
-          },
-          wide_structure: Object.fromEntries(
-            Array.from({ length: 10000 }, (_, i) => [
-              `extreme_prop_${i}`,
-              {
-                id: i,
-                content: `Property ${i} content`.repeat(10),
-                nested_array: Array.from({ length: 50 }, (_, j) => `item_${i}_${j}`),
-              },
-            ])
-          ),
-        };
+              content: `Property ${i} content`.repeat(10),
+              nested_array: Array.from({ length: 50 }, (_, j) => `item_${i}_${j}`),
+            },
+          ])
+        ),
+      };
 
-        const jsonString = JSON.stringify(extremeDataset);
-        const testFilePath = join(testFilesDir, 'extreme-limitations.json');
+      const jsonString = JSON.stringify(extremeDataset);
+      const testFilePath = join(testFilesDir, 'extreme-limitations.json');
 
-        writeFileSync(testFilePath, jsonString);
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
+      const startTime = Date.now();
 
-        try {
-          await viewerPage.uploadJSONFile(testFilePath);
+      try {
+        await viewerPage.uploadJSONFile(testFilePath);
 
-          const processingTime = Date.now() - startTime;
+        const processingTime = Date.now() - startTime;
 
-          // Should either process successfully or show meaningful warnings/errors
-          const hasErrors = await viewerPage.hasJSONErrors();
+        // Should either process successfully or show meaningful warnings/errors
+        const hasErrors = await viewerPage.hasJSONErrors();
 
-          if (!hasErrors) {
-            // Successfully processed extreme dataset
-            console.log(`Extreme dataset processed in ${processingTime}ms`);
+        if (!hasErrors) {
+          // Successfully processed extreme dataset
+          console.log(`Extreme dataset processed in ${processingTime}ms`);
 
-            // Should have warning indicators about size/performance
-            const warningSelectors = [
-              '[data-testid*="warning"]',
-              '[data-testid*="limitation"]',
-              'text=/warning|caution|large|extreme/i',
-              'text=/system.*limit/i',
-              'text=/performance.*impact/i',
-            ];
+          // Should have warning indicators about size/performance
+          const warningSelectors = [
+            '[data-testid*="warning"]',
+            '[data-testid*="limitation"]',
+            'text=/warning|caution|large|extreme/i',
+            'text=/system.*limit/i',
+            'text=/performance.*impact/i',
+          ];
 
-            for (const selector of warningSelectors) {
-              if ((await viewerPage.page.locator(selector).count()) > 0) {
-                const warningText = await viewerPage.page.locator(selector).first().textContent();
-                console.log(`System warning: ${warningText}`);
-                await viewerPage.takeScreenshot('system-limitation-warnings');
-                break;
-              }
+          for (const selector of warningSelectors) {
+            if ((await viewerPage.page.locator(selector).count()) > 0) {
+              const warningText = await viewerPage.page.locator(selector).first().textContent();
+              console.log(`System warning: ${warningText}`);
+              await viewerPage.takeScreenshot('system-limitation-warnings');
+              break;
             }
-
-            const nodeCounts = await viewerPage.getNodeCounts();
-            expect(nodeCounts.total).toBeGreaterThan(50000);
-          } else {
-            // Failed to process - should show informative error
-            const errorMessage = await viewerPage.getErrorMessage();
-            expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large|extreme/);
-
-            console.log(`System limitation encountered: ${errorMessage}`);
-            await viewerPage.takeScreenshot('extreme-dataset-limitation-error');
           }
-        } catch (error) {
-          // Extreme dataset might cause processing errors
-          console.log(
-            'Extreme dataset caused processing error - this demonstrates system limitations'
-          );
 
-          // Should still have functional UI
-          expect(await viewerPage.page.isVisible('body')).toBe(true);
+          const nodeCounts = await viewerPage.getNodeCounts();
+          expect(nodeCounts.total).toBeGreaterThan(50000);
+        } else {
+          // Failed to process - should show informative error
+          const errorMessage = await viewerPage.getErrorMessage();
+          expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large|extreme/);
+
+          console.log(`System limitation encountered: ${errorMessage}`);
+          await viewerPage.takeScreenshot('extreme-dataset-limitation-error');
         }
+      } catch (error) {
+        // Extreme dataset might cause processing errors
+        console.log(
+          'Extreme dataset caused processing error - this demonstrates system limitations'
+        );
+
+        // Should still have functional UI
+        expect(await viewerPage.page.isVisible('body')).toBe(true);
       }
-    );
+    });
 
     test('should provide performance comparison with baseline metrics', async () => {
       const baselineTests = [

@@ -232,152 +232,143 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
   });
 
   test.describe('Real-time Performance Monitoring', () => {
-    test(
-      'should provide real-time processing feedback',
-      async () => {
-        test.setTimeout(ANALYTICS_TIMEOUT);
-        const largeJson = PerformanceTestGenerator.generateLargeArray(25000);
-        const jsonString = JSON.stringify({ data: largeJson });
-        const testFilePath = join(testFilesDir, 'realtime-feedback.json');
+    test('should provide real-time processing feedback', async () => {
+      test.setTimeout(ANALYTICS_TIMEOUT);
+      const largeJson = PerformanceTestGenerator.generateLargeArray(25000);
+      const jsonString = JSON.stringify({ data: largeJson });
+      const testFilePath = join(testFilesDir, 'realtime-feedback.json');
 
-        writeFileSync(testFilePath, jsonString);
+      writeFileSync(testFilePath, jsonString);
 
-        // Start upload and monitor real-time feedback
-        const uploadPromise = viewerPage.uploadJSONFile(testFilePath);
+      // Start upload and monitor real-time feedback
+      const uploadPromise = viewerPage.uploadJSONFile(testFilePath);
 
-        // Should show immediate feedback
-        await expect(viewerPage.loadingSpinner).toBeVisible({ timeout: 3000 });
+      // Should show immediate feedback
+      await expect(viewerPage.loadingSpinner).toBeVisible({ timeout: 3000 });
 
-        // Look for real-time progress/status updates
-        const feedbackElements = await viewerPage.page
-          .locator(
-            '[data-testid*="progress"], [data-testid*="status"], text=/processing|analyzing|loading/i'
-          )
-          .count();
+      // Look for real-time progress/status updates
+      const feedbackElements = await viewerPage.page
+        .locator(
+          '[data-testid*="progress"], [data-testid*="status"], text=/processing|analyzing|loading/i'
+        )
+        .count();
 
-        if (feedbackElements > 0) {
-          // Monitor feedback changes
-          const feedbackTexts: string[] = [];
+      if (feedbackElements > 0) {
+        // Monitor feedback changes
+        const feedbackTexts: string[] = [];
 
-          for (let i = 0; i < 5; i++) {
-            const text = await viewerPage.page
-              .locator('[data-testid*="progress"]')
-              .first()
-              .textContent();
-            if (text) feedbackTexts.push(text);
-            // Wait for next feedback update
-            await viewerPage.page.waitForLoadState('networkidle');
-          }
-
-          // Take screenshot of real-time feedback
-          await viewerPage.takeScreenshot('realtime-processing-feedback');
-
-          if (feedbackTexts.length > 0) {
-            console.log(`Real-time feedback: ${feedbackTexts.join(' -> ')}`);
-          }
-        }
-
-        await uploadPromise;
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
-
-        // Feedback should be cleared after completion
-        expect(await viewerPage.loadingSpinner.isVisible()).toBe(false);
-      }
-    );
-
-    test(
-      'should show performance warnings for suboptimal operations',
-      async () => {
-        test.setTimeout(ANALYTICS_TIMEOUT);
-        // Create JSON that might trigger performance warnings
-        const problematicJson = {
-          metadata: { type: 'performance_warning_test' },
-          // Very wide object
-          wideObject: PerformanceTestGenerator.generateWideObject(15000),
-          // Deep nesting
-          deepNesting: PerformanceTestGenerator.generateDeepObject(150),
-          // Large array
-          largeArray: PerformanceTestGenerator.generateLargeArray(50000),
-        };
-
-        const jsonString = JSON.stringify(problematicJson);
-
-        await viewerPage.inputJSON(jsonString);
-        await viewerPage.waitForJSONProcessed();
-
-        // Look for performance warnings
-        const warningElements = await viewerPage.page
-          .locator('[data-testid*="warning"], .warning, text=/warning|slow|performance|optimize/i')
-          .count();
-
-        if (warningElements > 0) {
-          const warningText = await viewerPage.page
-            .locator('[data-testid*="warning"]')
+        for (let i = 0; i < 5; i++) {
+          const text = await viewerPage.page
+            .locator('[data-testid*="progress"]')
             .first()
             .textContent();
-          expect(warningText?.toLowerCase()).toMatch(/performance|slow|large|memory/);
-
-          await viewerPage.takeScreenshot('performance-warnings-display');
-
-          console.log(`Performance warning: ${warningText}`);
-        } else {
-          console.log('No performance warnings displayed (good optimization)');
+          if (text) feedbackTexts.push(text);
+          // Wait for next feedback update
+          await viewerPage.page.waitForLoadState('networkidle');
         }
 
-        // Should still process successfully despite potential performance issues
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
-      }
-    );
+        // Take screenshot of real-time feedback
+        await viewerPage.takeScreenshot('realtime-processing-feedback');
 
-    test(
-      'should display processing bottleneck identification',
-      async () => {
-        test.setTimeout(ANALYTICS_TIMEOUT);
-        const bottleneckJson = {
-          // Different types of potential bottlenecks
-          stringProcessing: new Array(10000)
-            .fill(0)
-            .map((_, i) => `Very long string content: ${'x'.repeat(500)}`),
-          numberProcessing: new Array(50000).fill(0).map(() => Math.PI * Math.random()),
-          objectProcessing: new Array(5000).fill(0).map((_, i) => ({
-            [`key_${i}`]: { nested: { deep: { value: i } } },
-          })),
-          arrayProcessing: new Array(1000)
-            .fill(0)
-            .map((_, i) =>
-              new Array(100).fill(0).map((_, j) => ({ id: `${i}-${j}`, data: Math.random() }))
-            ),
-        };
-
-        const jsonString = JSON.stringify(bottleneckJson);
-
-        const startTime = Date.now();
-        await viewerPage.inputJSON(jsonString);
-        await viewerPage.waitForJSONProcessed();
-        const totalTime = Date.now() - startTime;
-
-        console.log(`Total processing time for bottleneck test: ${totalTime}ms`);
-
-        // Look for bottleneck identification in UI
-        const bottleneckElements = await viewerPage.page
-          .locator(
-            '[data-testid*="bottleneck"], [data-testid*="slow"], text=/bottleneck|slow.*process/i'
-          )
-          .count();
-
-        if (bottleneckElements > 0) {
-          const bottleneckInfo = await viewerPage.page
-            .locator('[data-testid*="bottleneck"]')
-            .first()
-            .textContent();
-          console.log(`Bottleneck identified: ${bottleneckInfo}`);
-
-          await viewerPage.takeScreenshot('bottleneck-identification');
+        if (feedbackTexts.length > 0) {
+          console.log(`Real-time feedback: ${feedbackTexts.join(' -> ')}`);
         }
-
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
       }
-    );
+
+      await uploadPromise;
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+
+      // Feedback should be cleared after completion
+      expect(await viewerPage.loadingSpinner.isVisible()).toBe(false);
+    });
+
+    test('should show performance warnings for suboptimal operations', async () => {
+      test.setTimeout(ANALYTICS_TIMEOUT);
+      // Create JSON that might trigger performance warnings
+      const problematicJson = {
+        metadata: { type: 'performance_warning_test' },
+        // Very wide object
+        wideObject: PerformanceTestGenerator.generateWideObject(15000),
+        // Deep nesting
+        deepNesting: PerformanceTestGenerator.generateDeepObject(150),
+        // Large array
+        largeArray: PerformanceTestGenerator.generateLargeArray(50000),
+      };
+
+      const jsonString = JSON.stringify(problematicJson);
+
+      await viewerPage.inputJSON(jsonString);
+      await viewerPage.waitForJSONProcessed();
+
+      // Look for performance warnings
+      const warningElements = await viewerPage.page
+        .locator('[data-testid*="warning"], .warning, text=/warning|slow|performance|optimize/i')
+        .count();
+
+      if (warningElements > 0) {
+        const warningText = await viewerPage.page
+          .locator('[data-testid*="warning"]')
+          .first()
+          .textContent();
+        expect(warningText?.toLowerCase()).toMatch(/performance|slow|large|memory/);
+
+        await viewerPage.takeScreenshot('performance-warnings-display');
+
+        console.log(`Performance warning: ${warningText}`);
+      } else {
+        console.log('No performance warnings displayed (good optimization)');
+      }
+
+      // Should still process successfully despite potential performance issues
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+    });
+
+    test('should display processing bottleneck identification', async () => {
+      test.setTimeout(ANALYTICS_TIMEOUT);
+      const bottleneckJson = {
+        // Different types of potential bottlenecks
+        stringProcessing: new Array(10000)
+          .fill(0)
+          .map((_, i) => `Very long string content: ${'x'.repeat(500)}`),
+        numberProcessing: new Array(50000).fill(0).map(() => Math.PI * Math.random()),
+        objectProcessing: new Array(5000).fill(0).map((_, i) => ({
+          [`key_${i}`]: { nested: { deep: { value: i } } },
+        })),
+        arrayProcessing: new Array(1000)
+          .fill(0)
+          .map((_, i) =>
+            new Array(100).fill(0).map((_, j) => ({ id: `${i}-${j}`, data: Math.random() }))
+          ),
+      };
+
+      const jsonString = JSON.stringify(bottleneckJson);
+
+      const startTime = Date.now();
+      await viewerPage.inputJSON(jsonString);
+      await viewerPage.waitForJSONProcessed();
+      const totalTime = Date.now() - startTime;
+
+      console.log(`Total processing time for bottleneck test: ${totalTime}ms`);
+
+      // Look for bottleneck identification in UI
+      const bottleneckElements = await viewerPage.page
+        .locator(
+          '[data-testid*="bottleneck"], [data-testid*="slow"], text=/bottleneck|slow.*process/i'
+        )
+        .count();
+
+      if (bottleneckElements > 0) {
+        const bottleneckInfo = await viewerPage.page
+          .locator('[data-testid*="bottleneck"]')
+          .first()
+          .textContent();
+        console.log(`Bottleneck identified: ${bottleneckInfo}`);
+
+        await viewerPage.takeScreenshot('bottleneck-identification');
+      }
+
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+    });
   });
 
   test.describe('Performance Optimization Suggestions', () => {
@@ -517,62 +508,58 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
       }
     });
 
-    test(
-      'should benchmark against performance standards',
-      async () => {
-        test.setTimeout(ANALYTICS_TIMEOUT);
-        const benchmarkTests = [
-          { size: 'small', json: PerformanceTestGenerator.generateSizedJSON(1), expected: 50 },
-          { size: 'medium', json: PerformanceTestGenerator.generateSizedJSON(10), expected: 200 },
-          { size: 'large', json: PerformanceTestGenerator.generateSizedJSON(50), expected: 1000 },
-        ];
+    test('should benchmark against performance standards', async () => {
+      test.setTimeout(ANALYTICS_TIMEOUT);
+      const benchmarkTests = [
+        { size: 'small', json: PerformanceTestGenerator.generateSizedJSON(1), expected: 50 },
+        { size: 'medium', json: PerformanceTestGenerator.generateSizedJSON(10), expected: 200 },
+        { size: 'large', json: PerformanceTestGenerator.generateSizedJSON(50), expected: 1000 },
+      ];
 
-        const benchmarkResults: Array<{ size: string; time: number; withinBenchmark: boolean }> =
-          [];
+      const benchmarkResults: Array<{ size: string; time: number; withinBenchmark: boolean }> = [];
 
-        for (const benchmark of benchmarkTests) {
-          const jsonString = JSON.stringify(benchmark.json);
+      for (const benchmark of benchmarkTests) {
+        const jsonString = JSON.stringify(benchmark.json);
 
-          const startTime = Date.now();
-          await viewerPage.inputJSON(jsonString);
-          await viewerPage.waitForJSONProcessed();
-          const processingTime = Date.now() - startTime;
+        const startTime = Date.now();
+        await viewerPage.inputJSON(jsonString);
+        await viewerPage.waitForJSONProcessed();
+        const processingTime = Date.now() - startTime;
 
-          const withinBenchmark = processingTime <= benchmark.expected;
-          benchmarkResults.push({
-            size: benchmark.size,
-            time: processingTime,
-            withinBenchmark,
-          });
-
-          expect(await viewerPage.hasJSONErrors()).toBe(false);
-
-          await viewerPage.clearJSON();
-          // Wait for clear to complete
-          await viewerPage.page.waitForLoadState('networkidle');
-        }
-
-        // Log benchmark results
-        console.log('Benchmark Results:');
-        benchmarkResults.forEach((result) => {
-          const status = result.withinBenchmark ? '✓ PASS' : '✗ FAIL';
-          console.log(`${result.size}: ${result.time}ms ${status}`);
+        const withinBenchmark = processingTime <= benchmark.expected;
+        benchmarkResults.push({
+          size: benchmark.size,
+          time: processingTime,
+          withinBenchmark,
         });
 
-        // At least small and medium should meet benchmarks
-        expect(benchmarkResults[0].withinBenchmark).toBe(true); // small
-        expect(benchmarkResults[1].withinBenchmark).toBe(true); // medium
+        expect(await viewerPage.hasJSONErrors()).toBe(false);
 
-        // Look for benchmark display in UI
-        const benchmarkElements = await viewerPage.page
-          .locator('[data-testid*="benchmark"], text=/benchmark|standard/i')
-          .count();
-
-        if (benchmarkElements > 0) {
-          await viewerPage.takeScreenshot('benchmark-results');
-        }
+        await viewerPage.clearJSON();
+        // Wait for clear to complete
+        await viewerPage.page.waitForLoadState('networkidle');
       }
-    );
+
+      // Log benchmark results
+      console.log('Benchmark Results:');
+      benchmarkResults.forEach((result) => {
+        const status = result.withinBenchmark ? '✓ PASS' : '✗ FAIL';
+        console.log(`${result.size}: ${result.time}ms ${status}`);
+      });
+
+      // At least small and medium should meet benchmarks
+      expect(benchmarkResults[0].withinBenchmark).toBe(true); // small
+      expect(benchmarkResults[1].withinBenchmark).toBe(true); // medium
+
+      // Look for benchmark display in UI
+      const benchmarkElements = await viewerPage.page
+        .locator('[data-testid*="benchmark"], text=/benchmark|standard/i')
+        .count();
+
+      if (benchmarkElements > 0) {
+        await viewerPage.takeScreenshot('benchmark-results');
+      }
+    });
   });
 
   test.afterAll(async () => {

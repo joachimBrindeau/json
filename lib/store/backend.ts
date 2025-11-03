@@ -414,7 +414,6 @@ export const useBackendStore = create<BackendAppState>()(
           }
 
           try {
-            // eslint-disable-next-line no-console
             console.log('[DEBUG] uploadJson: POST /api/json/upload with title', title || '(none)');
           } catch {}
           const rawResponse = await apiClient.post<any>('/api/json/upload', formData);
@@ -425,7 +424,6 @@ export const useBackendStore = create<BackendAppState>()(
               : (rawResponse as UploadResponse);
 
           try {
-            // eslint-disable-next-line no-console
             console.log(
               '[DEBUG] uploadJson: response received for',
               result?.document?.id || '(unknown)'

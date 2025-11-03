@@ -147,25 +147,21 @@ test.describe('Smoke Tests @smoke', () => {
       // Avoid noisy logs; keep important ones
       const text = msg.text();
       if (/\[DEBUG\]|Upload|ShareModal|uploadJson|api\b|error|warn/i.test(text)) {
-        // eslint-disable-next-line no-console
         console.log('BROWSER:', msg.type(), text);
       }
     });
     page.on('pageerror', (err) => {
-      // eslint-disable-next-line no-console
       console.log('PAGEERROR:', err?.message || String(err));
     });
     page.on('request', (req) => {
       const url = req.url();
       if (req.method() === 'POST' && url.includes('/api/json/upload')) {
-        // eslint-disable-next-line no-console
         console.log('NETWORK: POST ->', url);
       }
     });
     page.on('response', (res) => {
       const url = res.url();
       if (url.includes('/api/json/upload')) {
-        // eslint-disable-next-line no-console
         console.log('NETWORK: RESP <-', res.request().method(), url, res.status());
       }
     });

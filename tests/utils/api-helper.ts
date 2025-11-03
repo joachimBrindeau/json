@@ -384,11 +384,7 @@ export class APIHelper {
   /**
    * Moderate content (admin/moderator only)
    */
-  async moderateContent(
-    id: string,
-    action: 'approve' | 'reject' | 'flag',
-    reason?: string
-  ) {
+  async moderateContent(id: string, action: 'approve' | 'reject' | 'flag', reason?: string) {
     const response = await this.request.post(`/api/json/${id}/moderate`, {
       data: {
         action,

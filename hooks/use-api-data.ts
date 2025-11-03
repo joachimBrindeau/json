@@ -126,7 +126,6 @@ export function useApiData<T, TRaw = T>(options: UseApiDataOptions<T, TRaw>): Us
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, refetch]);
 
   // Auto-refresh interval

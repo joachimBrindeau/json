@@ -97,85 +97,79 @@ test.describe('Advanced User - Large File Handling (Story 1)', () => {
       await viewerPage.takeScreenshot('large-realistic-dataset-processed');
     });
 
-    test(
-      'should handle 500MB JSON file with chunking',
-      async () => {
-        test.setTimeout(MAX_TEST_TIMEOUT);
-        const testJson = generateLargeTestJSON(500); // 500MB
-        const jsonString = JSON.stringify(testJson);
-        const testFilePath = join(testFilesDir, 'test-500mb.json');
+    test('should handle 500MB JSON file with chunking', async () => {
+      test.setTimeout(MAX_TEST_TIMEOUT);
+      const testJson = generateLargeTestJSON(500); // 500MB
+      const jsonString = JSON.stringify(testJson);
+      const testFilePath = join(testFilesDir, 'test-500mb.json');
 
-        // Create very large test file
-        writeFileSync(testFilePath, jsonString);
+      // Create very large test file
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
+      const startTime = Date.now();
 
-        // Upload very large file
-        await viewerPage.uploadJSONFile(testFilePath);
+      // Upload very large file
+      await viewerPage.uploadJSONFile(testFilePath);
 
-        const uploadTime = Date.now() - startTime;
+      const uploadTime = Date.now() - startTime;
 
-        // Should either process successfully or show chunked/streaming indicator
-        const hasErrors = await viewerPage.hasJSONErrors();
+      // Should either process successfully or show chunked/streaming indicator
+      const hasErrors = await viewerPage.hasJSONErrors();
 
-        if (!hasErrors) {
-          // Successfully processed
-          const nodeCounts = await viewerPage.getNodeCounts();
-          expect(nodeCounts.total).toBeGreaterThan(100);
+      if (!hasErrors) {
+        // Successfully processed
+        const nodeCounts = await viewerPage.getNodeCounts();
+        expect(nodeCounts.total).toBeGreaterThan(100);
 
-          // Should be reasonably fast (under 30 seconds)
-          expect(uploadTime).toBeLessThan(30_000);
+        // Should be reasonably fast (under 30 seconds)
+        expect(uploadTime).toBeLessThan(30_000);
 
-          // Take screenshot of large file handling
-          await viewerPage.takeScreenshot('large-file-500mb-processed');
-        } else {
-          // Check if it's a meaningful error (not just a failure)
-          const errorMessage = await viewerPage.getErrorMessage();
-          expect(errorMessage).toContain('memory'); // Should be memory-related error
-        }
+        // Take screenshot of large file handling
+        await viewerPage.takeScreenshot('large-file-500mb-processed');
+      } else {
+        // Check if it's a meaningful error (not just a failure)
+        const errorMessage = await viewerPage.getErrorMessage();
+        expect(errorMessage).toContain('memory'); // Should be memory-related error
       }
-    );
+    });
 
-    test(
-      'should handle 1GB JSON file with memory optimization',
-      async () => {
-        test.setTimeout(MAX_TEST_TIMEOUT);
-        // Generate extreme test JSON (approximately 1GB)
-        const extremeJson = PerformanceTestGenerator.generateExtremeJSON();
-        const jsonString = JSON.stringify(extremeJson);
-        const testFilePath = join(testFilesDir, 'test-1gb.json');
+    test('should handle 1GB JSON file with memory optimization', async () => {
+      test.setTimeout(MAX_TEST_TIMEOUT);
+      // Generate extreme test JSON (approximately 1GB)
+      const extremeJson = PerformanceTestGenerator.generateExtremeJSON();
+      const jsonString = JSON.stringify(extremeJson);
+      const testFilePath = join(testFilesDir, 'test-1gb.json');
 
-        // Create extreme test file
-        writeFileSync(testFilePath, jsonString);
+      // Create extreme test file
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
+      const startTime = Date.now();
 
-        // Attempt to upload extreme file
-        await viewerPage.uploadJSONFile(testFilePath);
+      // Attempt to upload extreme file
+      await viewerPage.uploadJSONFile(testFilePath);
 
-        const uploadTime = Date.now() - startTime;
+      const uploadTime = Date.now() - startTime;
 
-        // Should handle gracefully - either process or show appropriate message
-        const hasErrors = await viewerPage.hasJSONErrors();
+      // Should handle gracefully - either process or show appropriate message
+      const hasErrors = await viewerPage.hasJSONErrors();
 
-        if (!hasErrors) {
-          // Successfully handled
-          const stats = await viewerPage.getJSONStats();
-          expect(stats.nodeCount).toBeGreaterThan(1000);
+      if (!hasErrors) {
+        // Successfully handled
+        const stats = await viewerPage.getJSONStats();
+        expect(stats.nodeCount).toBeGreaterThan(1000);
 
-          // Memory management should keep processing time reasonable
-          expect(uploadTime).toBeLessThan(60_000); // 1 minute max
+        // Memory management should keep processing time reasonable
+        expect(uploadTime).toBeLessThan(60_000); // 1 minute max
 
-          await viewerPage.takeScreenshot('extreme-json-1gb-processed');
-        } else {
-          // Should show meaningful error about size/memory limits
-          const errorMessage = await viewerPage.getErrorMessage();
-          expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large/);
+        await viewerPage.takeScreenshot('extreme-json-1gb-processed');
+      } else {
+        // Should show meaningful error about size/memory limits
+        const errorMessage = await viewerPage.getErrorMessage();
+        expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large/);
 
-          await viewerPage.takeScreenshot('extreme-json-1gb-error');
-        }
+        await viewerPage.takeScreenshot('extreme-json-1gb-error');
       }
-    );
+    });
 
     test('should show loading indicators during large file processing', async () => {
       const largeJson = generateLargeTestJSON(50); // 50MB - large enough to see loading
@@ -298,45 +292,42 @@ test.describe('Advanced User - Large File Handling (Story 1)', () => {
       expect(await viewerPage.hasJSONErrors()).toBe(false);
     });
 
-    test(
-      'should gracefully handle memory limits and suggest alternatives',
-      async () => {
-        test.setTimeout(MAX_TEST_TIMEOUT);
-        // Try to create a JSON that might hit memory limits
-        const extremelyLargeArray = new Array(500000).fill(0).map((_, i) => ({
-          id: i,
-          data: `Very long string data that takes up memory: ${i}`.repeat(20),
-          nested: {
-            level1: { level2: { level3: `Deep data ${i}`.repeat(10) } },
-          },
-          array: new Array(50).fill(`Item ${i}`),
-        }));
+    test('should gracefully handle memory limits and suggest alternatives', async () => {
+      test.setTimeout(MAX_TEST_TIMEOUT);
+      // Try to create a JSON that might hit memory limits
+      const extremelyLargeArray = new Array(500000).fill(0).map((_, i) => ({
+        id: i,
+        data: `Very long string data that takes up memory: ${i}`.repeat(20),
+        nested: {
+          level1: { level2: { level3: `Deep data ${i}`.repeat(10) } },
+        },
+        array: new Array(50).fill(`Item ${i}`),
+      }));
 
-        const testJson = { extreme: extremelyLargeArray };
-        const jsonString = JSON.stringify(testJson);
-        const testFilePath = join(testFilesDir, 'test-memory-limit.json');
+      const testJson = { extreme: extremelyLargeArray };
+      const jsonString = JSON.stringify(testJson);
+      const testFilePath = join(testFilesDir, 'test-memory-limit.json');
 
-        writeFileSync(testFilePath, jsonString);
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
-        await viewerPage.uploadJSONFile(testFilePath);
-        const processingTime = Date.now() - startTime;
+      const startTime = Date.now();
+      await viewerPage.uploadJSONFile(testFilePath);
+      const processingTime = Date.now() - startTime;
 
-        // Should either process successfully or fail gracefully
-        const hasErrors = await viewerPage.hasJSONErrors();
+      // Should either process successfully or fail gracefully
+      const hasErrors = await viewerPage.hasJSONErrors();
 
-        if (hasErrors) {
-          // Error should be informative about memory/size limits
-          const errorMessage = await viewerPage.getErrorMessage();
-          expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large|performance/);
-        } else {
-          // If successful, should be reasonably fast
-          expect(processingTime).toBeLessThan(45_000);
-          const stats = await viewerPage.getJSONStats();
-          expect(stats.nodeCount).toBeGreaterThan(10000);
-        }
+      if (hasErrors) {
+        // Error should be informative about memory/size limits
+        const errorMessage = await viewerPage.getErrorMessage();
+        expect(errorMessage?.toLowerCase()).toMatch(/memory|size|limit|large|performance/);
+      } else {
+        // If successful, should be reasonably fast
+        expect(processingTime).toBeLessThan(45_000);
+        const stats = await viewerPage.getJSONStats();
+        expect(stats.nodeCount).toBeGreaterThan(10000);
       }
-    );
+    });
 
     test('should maintain responsiveness during large file processing', async () => {
       const largeJson = generateLargeTestJSON(75); // 75MB

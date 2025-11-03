@@ -479,18 +479,14 @@ test.describe('Developer - REST API Programmatic Sharing', () => {
 
       // Test CORS preflight request
       // Note: OPTIONS method may not be in typed HTTP methods, using type assertion
-      const preflightResponse = await apiHelper.apiCall(
-        'OPTIONS' as any,
-        '/api/json/create',
-        {
-          headers: {
-            Origin: 'https://example.com',
-            'Access-Control-Request-Method': 'POST',
-            'Access-Control-Request-Headers': 'Content-Type',
-          },
-          expectedStatus: 200,
-        }
-      );
+      const preflightResponse = await apiHelper.apiCall('OPTIONS' as any, '/api/json/create', {
+        headers: {
+          Origin: 'https://example.com',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content-Type',
+        },
+        expectedStatus: 200,
+      });
 
       expect(preflightResponse.status).toBe(200);
 

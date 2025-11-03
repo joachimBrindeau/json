@@ -266,8 +266,6 @@ export const TEST_USERS = {
     name: 'Active Contributor',
     role: 'user',
   },
-
-
 } as const;
 
 export type UserType = keyof typeof TEST_USERS;

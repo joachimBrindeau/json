@@ -247,7 +247,7 @@ export function downloadExportedData(result: ExportResult, options?: ExportOptio
       // Default UTF-8 encoding
       blobContent = [result.content];
     }
-    
+
     const blob = new Blob(blobContent, { type: result.mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

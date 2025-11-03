@@ -416,5 +416,4 @@ export class MainLayoutPage extends BasePage {
   get developersLink(): Locator {
     return this.page.getByRole('link', { name: /developers/i });
   }
-
 }

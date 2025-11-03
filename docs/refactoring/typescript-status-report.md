@@ -30,18 +30,18 @@ After completing several P0/P1 refactoring tasks (Redis caching, database optimi
 
 ## Error Breakdown by Type
 
-| Error Code | Count | Description | Priority |
-|------------|-------|-------------|----------|
-| **TS2339** | 107 | Property does not exist on type | P1 |
-| **TS2304** | 75 | Cannot find name | P1 |
-| **TS2345** | 65 | Argument type not assignable | P1 |
-| **TS7006** | 41 | Parameter implicitly has 'any' type | P2 |
-| **TS2322** | 23 | Type not assignable to type | P1 |
-| **TS2559** | 15 | Type has no properties in common (test timeout) | P1 |
-| **TS18046** | 13 | Variable is of type 'unknown' | P2 |
-| **TS2551** | 7 | Property does not exist (did you mean) | P1 |
-| **TS18048** | 7 | Variable is possibly 'undefined' | P1 |
-| Other | 18 | Various (private access, null checks, etc.) | P2 |
+| Error Code  | Count | Description                                     | Priority |
+| ----------- | ----- | ----------------------------------------------- | -------- |
+| **TS2339**  | 107   | Property does not exist on type                 | P1       |
+| **TS2304**  | 75    | Cannot find name                                | P1       |
+| **TS2345**  | 65    | Argument type not assignable                    | P1       |
+| **TS7006**  | 41    | Parameter implicitly has 'any' type             | P2       |
+| **TS2322**  | 23    | Type not assignable to type                     | P1       |
+| **TS2559**  | 15    | Type has no properties in common (test timeout) | P1       |
+| **TS18046** | 13    | Variable is of type 'unknown'                   | P2       |
+| **TS2551**  | 7     | Property does not exist (did you mean)          | P1       |
+| **TS18048** | 7     | Variable is possibly 'undefined'                | P1       |
+| Other       | 18    | Various (private access, null checks, etc.)     | P2       |
 
 ---
 
@@ -53,6 +53,7 @@ After completing several P0/P1 refactoring tasks (Redis caching, database optimi
 **Root Cause:** Missing implementations in helper classes
 
 #### A1: Missing Page Object Methods (80 errors)
+
 - [`MainLayoutPage.navigateToPublicLibrary`](tests/fixtures/pages/main-layout-page.ts) - 52 occurrences
 - [`MainLayoutPage.goToDevelopers`](tests/fixtures/pages/main-layout-page.ts) - 2 occurrences
 - [`MainLayoutPage.goToDashboard`](tests/fixtures/pages/main-layout-page.ts) - 1 occurrence
@@ -62,10 +63,12 @@ After completing several P0/P1 refactoring tasks (Redis caching, database optimi
 - Other missing methods - 22 occurrences
 
 **Affected Files:**
+
 - `tests/e2e/community/*.spec.ts` - 14 files
 - `tests/e2e/anonymous/*.spec.ts` - 2 files
 
 #### A2: Missing Helper Methods (27 errors)
+
 - [`AuthHelper.ensureAuthenticated()`](tests/helpers/auth-helper.ts) - 5 occurrences
 - [`DataGenerator.generateEcommerceJSON()`](tests/helpers/data-generator.ts) - 1 occurrence
 - [`DataGenerator.generateAnalyticsJSON()`](tests/helpers/data-generator.ts) - 2 occurrences
@@ -76,16 +79,19 @@ After completing several P0/P1 refactoring tasks (Redis caching, database optimi
 - [`APIHelper.downloadJSON()`](tests/helpers/api-helper.ts) - 1 occurrence
 
 **Affected Files:**
+
 - `tests/e2e/user-stories/*.spec.ts` - 3 files
 - `tests/e2e/community/*.spec.ts` - 2 files
 
 #### A3: Missing Test Fixtures (75 errors)
+
 - Undefined variable [`layoutPage`](tests/e2e/authenticated/profile-account.spec.ts:63) - 63 occurrences in 1 file
 - Undefined constant [`JSON_SAMPLES`](tests/fixtures/users.ts) - 3 occurrences
 - Undefined variable [`currentJSON`](tests/e2e/community/content-management-edge-cases.spec.ts:212) - 1 occurrence
 - Missing export - 8 occurrences
 
 **Affected Files:**
+
 - `tests/e2e/authenticated/profile-account.spec.ts` - 73 errors (single file!)
 
 ---
@@ -96,9 +102,11 @@ After completing several P0/P1 refactoring tasks (Redis caching, database optimi
 **Root Cause:** Playwright type signature mismatches
 
 #### B1: Test Timeout Signature (15 errors)
+
 Pattern: `test(title, callback, timeout_number)` should be `test(title, callback, { timeout })`
 
 **Affected Files:**
+
 - `tests/e2e/advanced/chunked-json-processing.spec.ts` - 3 occurrences
 - `tests/e2e/advanced/large-file-handling.spec.ts` - 3 occurrences
 - `tests/e2e/advanced/performance-analytics.spec.ts` - 4 occurrences
@@ -106,18 +114,22 @@ Pattern: `test(title, callback, timeout_number)` should be `test(title, callback
 - `tests/e2e/advanced/streaming-json-processing.spec.ts` - 3 occurrences
 
 #### B2: Count Assertion with Object (29 errors)
+
 Pattern: `.toHaveCount({ min: 3 })` should be `.toHaveCount(3)` or use comparison
 
 **Affected Files:**
+
 - `tests/e2e/developer/embed-*.spec.ts` - 13 occurrences
 - `tests/e2e/developer/embeddable-script-data-attributes.spec.ts` - 1 occurrence
 - `tests/e2e/developer/embedding-functionality.spec.ts` - 3 occurrences
 - `tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts` - 3 occurrences
 
 #### B3: Window Property Extensions (34 errors)
+
 Pattern: Custom properties on `window` object not typed
 
 **Examples:**
+
 - `window.embedCallbacks` - 3 occurrences
 - `window.currentTheme` - 2 occurrences
 - `window.capturedEvents` - 3 occurrences
@@ -126,6 +138,7 @@ Pattern: Custom properties on `window` object not typed
 - Other custom properties - 21 occurrences
 
 **Affected Files:**
+
 - `tests/e2e/developer/*.spec.ts` - 8 files
 - `tests/expand-collapse-simple.spec.ts` - 1 file
 
@@ -137,9 +150,11 @@ Pattern: Custom properties on `window` object not typed
 **Root Cause:** next-auth type mismatches in test mocks
 
 **Affected Files:**
+
 - [`lib/auth/__tests__/session-management.test.ts`](lib/auth/__tests__/session-management.test.ts:102) - 20 errors
 
 **Error Patterns:**
+
 - Session user type incompatibilities (empty objects missing required `id` field)
 - Trigger type mismatches (`"getSession"` not assignable to `"update"`)
 - Possibly undefined user checks
@@ -154,9 +169,11 @@ Pattern: Custom properties on `window` object not typed
 **Pattern:** `Argument of type '"content_creator"' is not assignable to parameter of type '"admin" | "developer" | ...`
 
 **Affected Files:**
+
 - `tests/e2e/community/*.spec.ts` - 9 files, 42 occurrences
 
 **Common Invalid Types:**
+
 - `"content_creator"` - 20+ occurrences
 - `"community_member_*"` - 10+ occurrences
 - Various test-specific user types - 30+ occurrences
@@ -169,10 +186,12 @@ Pattern: Custom properties on `window` object not typed
 **Root Cause:** Missing type annotations on function parameters
 
 **Affected Files:**
+
 - `tests/e2e/developer/*.spec.ts` - 10 files, 35 errors
 - Other test files - 6 errors
 
 **Common Patterns:**
+
 - Callback parameters: `(item) =>`, `(result) =>`, `(error) =>`
 - Array methods without types
 - Test helper parameters
@@ -185,6 +204,7 @@ Pattern: Custom properties on `window` object not typed
 **Root Cause:** Variables typed as `unknown` from catch blocks or API responses
 
 **Affected Files:**
+
 - `tests/e2e/advanced/streaming-json-processing.spec.ts` - 2 errors
 - `tests/bug-hunting.spec.ts` - 1 error
 - `tests/e2e/anonymous/file-upload.spec.ts` - 1 error
@@ -201,9 +221,11 @@ Pattern: Custom properties on `window` object not typed
 **Root Cause:** Undefined type name
 
 **Affected File:**
+
 - [`lib/middleware/rate-limit.ts`](lib/middleware/rate-limit.ts:184) - 3 errors
 
 **Pattern:**
+
 ```typescript
 error TS2304: Cannot find name 'SimpleRateLimiter'
 ```
@@ -217,46 +239,51 @@ Lines: 184, 185, 203
 **Impact:** P2 - Test code
 
 #### H1: Private Property Access (4 errors)
+
 - `APIHelper.request` (private) - 4 occurrences
 - Files: `tests/e2e/advanced/export-functionality.spec.ts`, `tests/e2e/advanced/streaming-json-processing.spec.ts`
 
 #### H2: Type Mismatch - Object Literal (3 errors)
+
 - Unknown properties in object literals - 3 occurrences
 - Files: `tests/e2e/authenticated/publishing.spec.ts`, `tests/unit/lib/store/shared-setters.test.ts`
 
 #### H3: Null/Undefined Checks (10 errors)
+
 - Possibly null/undefined without checks - 10 occurrences
 - Various test files
 
 #### H4: Array Type Inference (2 errors)
+
 - Implicit any[] type - 2 occurrences
 - File: `tests/e2e/developer/public-library-api-access.spec.ts`
 
 #### H5: Other (11 errors)
+
 - Module export issues, type suggestions, etc.
 
 ---
 
 ## Files by Error Count
 
-| File | Errors | Category |
-|------|--------|----------|
-| `tests/e2e/authenticated/profile-account.spec.ts` | 73 | Test fixtures |
-| `tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts` | 25 | Window props + assertions |
-| `tests/e2e/community/social-features-interaction.spec.ts` | 24 | User types + page objects |
-| `tests/e2e/developer/embeddable-script-data-attributes.spec.ts` | 21 | Window props + assertions |
-| `tests/e2e/community/community-browsing-discovery.spec.ts` | 20 | User types + page objects |
-| `lib/auth/__tests__/session-management.test.ts` | 20 | Session types |
-| Other files (40 files) | 188 | Various |
+| File                                                             | Errors | Category                  |
+| ---------------------------------------------------------------- | ------ | ------------------------- |
+| `tests/e2e/authenticated/profile-account.spec.ts`                | 73     | Test fixtures             |
+| `tests/e2e/developer/iframe-javascript-widget-embedding.spec.ts` | 25     | Window props + assertions |
+| `tests/e2e/community/social-features-interaction.spec.ts`        | 24     | User types + page objects |
+| `tests/e2e/developer/embeddable-script-data-attributes.spec.ts`  | 21     | Window props + assertions |
+| `tests/e2e/community/community-browsing-discovery.spec.ts`       | 20     | User types + page objects |
+| `lib/auth/__tests__/session-management.test.ts`                  | 20     | Session types             |
+| Other files (40 files)                                           | 188    | Various                   |
 
 ---
 
 ## Production vs Test Code
 
-| Type | Files | Errors | Percentage |
-|------|-------|--------|------------|
-| **Production Code** | 1 | 3 | 0.8% |
-| **Test Code** | 45 | 368 | 99.2% |
+| Type                | Files | Errors | Percentage |
+| ------------------- | ----- | ------ | ---------- |
+| **Production Code** | 1     | 3      | 0.8%       |
+| **Test Code**       | 45    | 368    | 99.2%      |
 
 ### Production Code Errors
 
@@ -269,15 +296,18 @@ Lines: 184, 185, 203
 ## Priority Classification
 
 ### P0 - Blocking Production (3 errors)
+
 - [`lib/middleware/rate-limit.ts`](lib/middleware/rate-limit.ts:184) - 3 errors
 
 ### P1 - High Priority Test Issues (260 errors)
+
 - Missing test helper methods - 107 errors
 - Playwright API mismatches - 78 errors
 - Session/Auth type issues - 20 errors
 - User type argument issues - 65 errors
 
 ### P2 - Low Priority Test Issues (108 errors)
+
 - Implicit any types - 41 errors
 - Unknown type errors - 13 errors
 - Window property extensions - 34 errors
@@ -287,17 +317,18 @@ Lines: 184, 185, 203
 
 ## Comparison with Baseline
 
-| Category | Baseline (Est.) | Current | Change | Status |
-|----------|-----------------|---------|--------|--------|
-| Route Handler Signatures | ~60 | 0 | -60 | ✅ Fixed (production) |
-| Playwright Test API | ~150 | 78 | -72 | 🔄 Partially improved |
-| Session Management | ~20 | 20 | 0 | ❌ No change |
-| Test Helpers | ~10 | 107 | +97 | ⚠️ Increased (discovery) |
-| Implicit Any | ~108 | 41 | -67 | ✅ Improved |
-| Zod v4 | Unknown | 0 | N/A | ✅ Fixed (production) |
-| **Total** | **368** | **371** | **+3** | **🔄 Stable** |
+| Category                 | Baseline (Est.) | Current | Change | Status                   |
+| ------------------------ | --------------- | ------- | ------ | ------------------------ |
+| Route Handler Signatures | ~60             | 0       | -60    | ✅ Fixed (production)    |
+| Playwright Test API      | ~150            | 78      | -72    | 🔄 Partially improved    |
+| Session Management       | ~20             | 20      | 0      | ❌ No change             |
+| Test Helpers             | ~10             | 107     | +97    | ⚠️ Increased (discovery) |
+| Implicit Any             | ~108            | 41      | -67    | ✅ Improved              |
+| Zod v4                   | Unknown         | 0       | N/A    | ✅ Fixed (production)    |
+| **Total**                | **368**         | **371** | **+3** | **🔄 Stable**            |
 
 **Analysis:**
+
 - Route handler issues were fixed in production code; test file errors remain
 - Test helper errors increased due to better discovery of missing implementations
 - Implicit any errors decreased significantly
@@ -308,11 +339,13 @@ Lines: 184, 185, 203
 ## Recommended Next Steps
 
 ### Phase 1: Fix Production Code (P0) - 30 minutes
+
 1. **Fix rate-limit.ts errors** (3 errors)
    - Add or import `SimpleRateLimiter` type definition
    - Likely a missing type export or import
 
 ### Phase 2: Fix Test Infrastructure (P1) - 6-8 hours
+
 2. **Implement missing test helper methods** (107 errors)
    - Add `AuthHelper.ensureAuthenticated()` and related methods
    - Add `DataGenerator` methods for test data
@@ -335,6 +368,7 @@ Lines: 184, 185, 203
    - Est: 1-2 hours
 
 ### Phase 3: Fix Playwright API Issues (P1) - 3-4 hours
+
 6. **Fix test timeout signatures** (15 errors)
    - Convert `test(title, fn, 180_000)` to `test(title, fn, { timeout: 180_000 })`
    - Search and replace across affected files
@@ -354,6 +388,7 @@ Lines: 184, 185, 203
    - Est: 1-2 hours
 
 ### Phase 4: Clean Up (P2) - 2-3 hours
+
 10. **Add explicit types** (41 errors)
     - Add type annotations to implicit any parameters
     - Est: 1-2 hours
@@ -370,13 +405,13 @@ Lines: 184, 185, 203
 
 ## Estimated Total Effort
 
-| Phase | Priority | Errors | Est. Time |
-|-------|----------|--------|-----------|
-| Phase 1: Production | P0 | 3 | 0.5 hours |
-| Phase 2: Test Infrastructure | P1 | 260 | 6-8 hours |
-| Phase 3: Playwright API | P1 | 78 | 3-4 hours |
-| Phase 4: Clean Up | P2 | 30 | 2-3 hours |
-| **Total** | | **371** | **11.5-15.5 hours** |
+| Phase                        | Priority | Errors  | Est. Time           |
+| ---------------------------- | -------- | ------- | ------------------- |
+| Phase 1: Production          | P0       | 3       | 0.5 hours           |
+| Phase 2: Test Infrastructure | P1       | 260     | 6-8 hours           |
+| Phase 3: Playwright API      | P1       | 78      | 3-4 hours           |
+| Phase 4: Clean Up            | P2       | 30      | 2-3 hours           |
+| **Total**                    |          | **371** | **11.5-15.5 hours** |
 
 ---
 

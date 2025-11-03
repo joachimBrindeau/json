@@ -26,6 +26,7 @@
 #### Routes by Category
 
 **1. Simple Routes (No Params) - 13 routes**
+
 - ✅ `app/api/health/route.ts` - GET
 - ✅ `app/api/json/route.ts` - POST
 - ✅ `app/api/json/upload/route.ts` - POST, OPTIONS
@@ -48,6 +49,7 @@
 - ✅ `app/api/auth/signup/route.ts`
 
 **2. Dynamic Routes with Single Param - 11 routes**
+
 - ✅ `app/api/json/[id]/route.ts` - GET, DELETE (✅ using `Promise<{ id: string }>`)
 - ✅ `app/api/json/[id]/content/route.ts` - GET, POST (✅ using `Promise<{ id: string }>`)
 - ✅ `app/api/json/[id]/publish/route.ts` - POST, DELETE (✅ using `Promise<{ id: string }>`)
@@ -57,10 +59,12 @@
 - ✅ `app/api/admin/users/[id]/route.ts` - GET (✅ using `Promise<{ id: string }>`)
 
 **3. Catch-All Routes - 2 routes**
+
 - ✅ `app/api/auth/[...nextauth]/route.ts` - GET, POST (NextAuth handler - no direct params usage)
 - ✅ `app/api/og/route.tsx` - Image generation route
 
 **4. Special Cases**
+
 - ✅ `app/api/json/analyze/route.ts`
 - ✅ `app/api/json/find-by-content/route.ts`
 
@@ -74,10 +78,7 @@ All routes follow the **correct Next.js 15 pattern**:
 
 ```typescript
 // ✅ CORRECT PATTERN - All routes use this
-export async function GET(
-  request: Request,
-  props: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params; // Properly awaited
   // ... handler logic
 }
@@ -86,6 +87,7 @@ export async function GET(
 ### Examples from Codebase
 
 **Example 1: `app/api/json/[id]/route.ts`**
+
 ```typescript
 export const GET = withAuth(
   async (request, session, { params }: { params: Promise<{ id: string }> }) => {
@@ -96,6 +98,7 @@ export const GET = withAuth(
 ```
 
 **Example 2: `app/api/json/stream/[id]/route.ts`**
+
 ```typescript
 export const GET = withAuth(
   async (request, session, { params }: { params: Promise<{ id: string }> }) => {
@@ -104,16 +107,14 @@ export const GET = withAuth(
   }
 );
 
-export async function HEAD(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function HEAD(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; // ✅ Correctly awaiting
   // ... rest of handler
 }
 ```
 
 **Example 3: `app/api/admin/users/[id]/route.ts`**
+
 ```typescript
 export async function GET(_request: NextRequest, context: RouteContext) {
   const params = await context.params; // ✅ Correctly awaiting
@@ -136,6 +137,7 @@ $ npx tsc --noEmit 2>&1 | grep "app/api.*route.ts"
 ### Test Files: ❌ ERRORS EXIST (SEPARATE CONCERN)
 
 The TypeScript errors in `typescript-fix-guide.md` Category A are for **test files**, not route implementations:
+
 - `app/api/auth/__tests__/*.test.ts` - Test files calling routes with old signature
 - Other `__tests__/*.test.ts` files
 
@@ -162,6 +164,7 @@ export const GET = withAuth(
 ### 2. No Legacy Patterns Found
 
 Search for old Next.js 14 patterns returned **zero results**:
+
 ```bash
 $ grep -r "{ params }: { params: {" app/api --include="*.ts" | grep -v "Promise"
 # Exit code: 1 (no matches)
@@ -170,6 +173,7 @@ $ grep -r "{ params }: { params: {" app/api --include="*.ts" | grep -v "Promise"
 ### 3. Consistent Implementation
 
 All dynamic routes consistently:
+
 - ✅ Use `Promise<Params>` type
 - ✅ Await params before accessing properties
 - ✅ Follow Next.js 15 best practices
@@ -187,12 +191,14 @@ All route handlers are correctly implemented and require no migration.
 The errors identified in Category A of `typescript-fix-guide.md` are **test file issues**:
 
 **Problem:** Tests are calling route handlers with the old 2-argument signature:
+
 ```typescript
 // ❌ OLD TEST CODE
 const response = await POST(request, { params: Promise.resolve({ id: '123' }) });
 ```
 
 **Solution:** Update test calls to match Next.js 15 expectations (routes extract params from URL):
+
 ```typescript
 // ✅ NEW TEST CODE
 const response = await POST(request); // Route extracts params from request.url
@@ -201,6 +207,7 @@ const response = await POST(request); // Route extracts params from request.url
 ### 3. Quality Gates
 
 Before closing this migration task:
+
 - ✅ All route handlers validated (DONE)
 - ✅ TypeScript check on routes passes (DONE)
 - ⏳ Update test files to match new signatures (SEPARATE TASK)
@@ -210,23 +217,25 @@ Before closing this migration task:
 
 ## Migration Complexity Assessment
 
-| Route Type | Count | Migration Needed | Complexity |
-|------------|-------|------------------|------------|
-| Simple (no params) | 13 | ✅ N/A - Already done | N/A |
-| Single dynamic param | 11 | ✅ N/A - Already done | N/A |
-| Catch-all routes | 2 | ✅ N/A - Already done | N/A |
-| Special cases | 5 | ✅ N/A - Already done | N/A |
-| **TOTAL** | **31** | **✅ 0 routes to migrate** | **N/A** |
+| Route Type           | Count  | Migration Needed           | Complexity |
+| -------------------- | ------ | -------------------------- | ---------- |
+| Simple (no params)   | 13     | ✅ N/A - Already done      | N/A        |
+| Single dynamic param | 11     | ✅ N/A - Already done      | N/A        |
+| Catch-all routes     | 2      | ✅ N/A - Already done      | N/A        |
+| Special cases        | 5      | ✅ N/A - Already done      | N/A        |
+| **TOTAL**            | **31** | **✅ 0 routes to migrate** | **N/A**    |
 
 ---
 
 ## Next Steps
 
 ### Phase 1: Route Migration ✅ COMPLETE
+
 - All routes already migrated
 - No action required
 
 ### Phase 2: Test Updates (Separate Task)
+
 See `docs/refactoring/typescript-fix-guide.md` Category A for test file migration strategy:
 
 1. Update test files in `app/api/auth/__tests__/`
@@ -309,5 +318,6 @@ app/api/user/stats/route.ts
 ```
 
 **Legend:**
+
 - ← Dynamic: Routes with `[id]` params (all using Promise pattern)
 - ← Catch-all: Routes with `[...slug]` params

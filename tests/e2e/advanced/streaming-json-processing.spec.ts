@@ -24,45 +24,42 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
   });
 
   test.describe('Streaming JSON Processing for Large Files', () => {
-    test(
-      'should process large files incrementally with streaming',
-      async () => {
-        test.setTimeout(STREAMING_TIMEOUT);
-        const streamingJson = generateLargeTestJSON(150); // 150MB for streaming test
-        const jsonString = JSON.stringify(streamingJson);
-        const testFilePath = join(testFilesDir, 'streaming-150mb.json');
+    test('should process large files incrementally with streaming', async () => {
+      test.setTimeout(STREAMING_TIMEOUT);
+      const streamingJson = generateLargeTestJSON(150); // 150MB for streaming test
+      const jsonString = JSON.stringify(streamingJson);
+      const testFilePath = join(testFilesDir, 'streaming-150mb.json');
 
-        writeFileSync(testFilePath, jsonString);
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
+      const startTime = Date.now();
 
-        // Upload file - should use streaming for large files
-        await viewerPage.uploadJSONFile(testFilePath);
+      // Upload file - should use streaming for large files
+      await viewerPage.uploadJSONFile(testFilePath);
 
-        const totalTime = Date.now() - startTime;
+      const totalTime = Date.now() - startTime;
 
-        // Should process successfully
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
+      // Should process successfully
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
 
-        // Streaming should make it faster than regular parsing
-        expect(totalTime).toBeLessThan(60_000); // Under 1 minute
+      // Streaming should make it faster than regular parsing
+      expect(totalTime).toBeLessThan(60_000); // Under 1 minute
 
-        // Verify content is available
-        const nodeCounts = await viewerPage.getNodeCounts();
-        expect(nodeCounts.total).toBeGreaterThan(1000);
+      // Verify content is available
+      const nodeCounts = await viewerPage.getNodeCounts();
+      expect(nodeCounts.total).toBeGreaterThan(1000);
 
-        // Take screenshot of streaming result
-        await viewerPage.takeScreenshot('streaming-json-processed');
+      // Take screenshot of streaming result
+      await viewerPage.takeScreenshot('streaming-json-processed');
 
-        // Check for streaming indicators in the UI
-        const streamingIndicators = await viewerPage.page
-          .locator('text=/stream|chunk|incremental/i')
-          .count();
-        if (streamingIndicators > 0) {
-          console.log('Streaming indicators found in UI');
-        }
+      // Check for streaming indicators in the UI
+      const streamingIndicators = await viewerPage.page
+        .locator('text=/stream|chunk|incremental/i')
+        .count();
+      if (streamingIndicators > 0) {
+        console.log('Streaming indicators found in UI');
       }
-    );
+    });
 
     test('should show progressive loading during streaming', async () => {
       const progressiveJson = PerformanceTestGenerator.generateLargeArray(75000); // Large array for progressive loading
@@ -158,49 +155,46 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
       await viewerPage.takeScreenshot('deep-streaming-processed');
     });
 
-    test(
-      'should handle streaming with mixed data types efficiently',
-      async () => {
-        test.setTimeout(STREAMING_TIMEOUT);
-        const mixedData = {
-          strings: new Array(10000).fill(0).map((_, i) => `String data ${i} - `.repeat(20)),
-          numbers: new Array(50000).fill(0).map(() => Math.random() * 1000000),
-          objects: new Array(5000).fill(0).map((_, i) => ({
-            id: i,
-            nested: {
-              level1: { level2: { data: `Complex nested data ${i}`.repeat(5) } },
-            },
-            array: new Array(20).fill(0).map((_, j) => ({ item: j, value: Math.random() })),
-          })),
-          booleans: new Array(1000).fill(0).map((_, i) => i % 2 === 0),
-          arrays: new Array(100)
-            .fill(0)
-            .map((_, i) => new Array(100).fill(0).map((_, j) => `Item ${i}-${j}`)),
-        };
+    test('should handle streaming with mixed data types efficiently', async () => {
+      test.setTimeout(STREAMING_TIMEOUT);
+      const mixedData = {
+        strings: new Array(10000).fill(0).map((_, i) => `String data ${i} - `.repeat(20)),
+        numbers: new Array(50000).fill(0).map(() => Math.random() * 1000000),
+        objects: new Array(5000).fill(0).map((_, i) => ({
+          id: i,
+          nested: {
+            level1: { level2: { data: `Complex nested data ${i}`.repeat(5) } },
+          },
+          array: new Array(20).fill(0).map((_, j) => ({ item: j, value: Math.random() })),
+        })),
+        booleans: new Array(1000).fill(0).map((_, i) => i % 2 === 0),
+        arrays: new Array(100)
+          .fill(0)
+          .map((_, i) => new Array(100).fill(0).map((_, j) => `Item ${i}-${j}`)),
+      };
 
-        const jsonString = JSON.stringify(mixedData);
-        const testFilePath = join(testFilesDir, 'mixed-streaming.json');
+      const jsonString = JSON.stringify(mixedData);
+      const testFilePath = join(testFilesDir, 'mixed-streaming.json');
 
-        writeFileSync(testFilePath, jsonString);
+      writeFileSync(testFilePath, jsonString);
 
-        const startTime = Date.now();
-        await viewerPage.uploadJSONFile(testFilePath);
-        const processingTime = Date.now() - startTime;
+      const startTime = Date.now();
+      await viewerPage.uploadJSONFile(testFilePath);
+      const processingTime = Date.now() - startTime;
 
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
 
-        // Mixed data streaming should be efficient
-        expect(processingTime).toBeLessThan(45_000); // Under 45 seconds
+      // Mixed data streaming should be efficient
+      expect(processingTime).toBeLessThan(45_000); // Under 45 seconds
 
-        // Verify all data types are handled
-        const nodeCounts = await viewerPage.getNodeCounts();
-        expect(nodeCounts.strings).toBeGreaterThan(1000);
-        expect(nodeCounts.numbers).toBeGreaterThan(1000);
-        expect(nodeCounts.objects).toBeGreaterThan(100);
-        expect(nodeCounts.arrays).toBeGreaterThan(50);
-        expect(nodeCounts.booleans).toBeGreaterThan(100);
-      }
-    );
+      // Verify all data types are handled
+      const nodeCounts = await viewerPage.getNodeCounts();
+      expect(nodeCounts.strings).toBeGreaterThan(1000);
+      expect(nodeCounts.numbers).toBeGreaterThan(1000);
+      expect(nodeCounts.objects).toBeGreaterThan(100);
+      expect(nodeCounts.arrays).toBeGreaterThan(50);
+      expect(nodeCounts.booleans).toBeGreaterThan(100);
+    });
 
     test('should handle streaming interruption gracefully', async () => {
       const largeJson = generateLargeTestJSON(100);
@@ -339,49 +333,46 @@ test.describe('Advanced User - Streaming JSON Processing (Story 2)', () => {
       expect(finalStatus).toBe(false);
     });
 
-    test(
-      'should handle concurrent streaming operations',
-      async ({ page, context }) => {
-        test.setTimeout(STREAMING_TIMEOUT);
-        // Open multiple tabs to test concurrent streaming
-        const page2 = await context.newPage();
-        const viewerPage2 = new JsonViewerPage(page2);
+    test('should handle concurrent streaming operations', async ({ page, context }) => {
+      test.setTimeout(STREAMING_TIMEOUT);
+      // Open multiple tabs to test concurrent streaming
+      const page2 = await context.newPage();
+      const viewerPage2 = new JsonViewerPage(page2);
 
-        const json1 = generateLargeTestJSON(50);
-        const json2 = generateLargeTestJSON(50);
+      const json1 = generateLargeTestJSON(50);
+      const json2 = generateLargeTestJSON(50);
 
-        const jsonString1 = JSON.stringify(json1);
-        const jsonString2 = JSON.stringify(json2);
+      const jsonString1 = JSON.stringify(json1);
+      const jsonString2 = JSON.stringify(json2);
 
-        const testFilePath1 = join(testFilesDir, 'concurrent-1.json');
-        const testFilePath2 = join(testFilesDir, 'concurrent-2.json');
+      const testFilePath1 = join(testFilesDir, 'concurrent-1.json');
+      const testFilePath2 = join(testFilesDir, 'concurrent-2.json');
 
-        writeFileSync(testFilePath1, jsonString1);
-        writeFileSync(testFilePath2, jsonString2);
+      writeFileSync(testFilePath1, jsonString1);
+      writeFileSync(testFilePath2, jsonString2);
 
-        await viewerPage.navigateToViewer();
-        await viewerPage2.navigateToViewer();
+      await viewerPage.navigateToViewer();
+      await viewerPage2.navigateToViewer();
 
-        // Start both uploads concurrently
-        const upload1Promise = viewerPage.uploadJSONFile(testFilePath1);
-        const upload2Promise = viewerPage2.uploadJSONFile(testFilePath2);
+      // Start both uploads concurrently
+      const upload1Promise = viewerPage.uploadJSONFile(testFilePath1);
+      const upload2Promise = viewerPage2.uploadJSONFile(testFilePath2);
 
-        // Both should complete successfully
-        await Promise.all([upload1Promise, upload2Promise]);
+      // Both should complete successfully
+      await Promise.all([upload1Promise, upload2Promise]);
 
-        expect(await viewerPage.hasJSONErrors()).toBe(false);
-        expect(await viewerPage2.hasJSONErrors()).toBe(false);
+      expect(await viewerPage.hasJSONErrors()).toBe(false);
+      expect(await viewerPage2.hasJSONErrors()).toBe(false);
 
-        // Both should have processed content
-        const stats1 = await viewerPage.getJSONStats();
-        const stats2 = await viewerPage2.getJSONStats();
+      // Both should have processed content
+      const stats1 = await viewerPage.getJSONStats();
+      const stats2 = await viewerPage2.getJSONStats();
 
-        expect(stats1.nodeCount).toBeGreaterThan(100);
-        expect(stats2.nodeCount).toBeGreaterThan(100);
+      expect(stats1.nodeCount).toBeGreaterThan(100);
+      expect(stats2.nodeCount).toBeGreaterThan(100);
 
-        await page2.close();
-      }
-    );
+      await page2.close();
+    });
   });
 
   test.describe('Streaming API Integration', () => {

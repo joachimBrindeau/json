@@ -7,8 +7,7 @@
 
 import jsf from 'json-schema-faker';
 import { faker } from '@faker-js/faker';
-// @ts-ignore - Using require for CommonJS module compatibility
-const Chance = require('chance');
+import Chance from 'chance';
 
 // Configure JSON Schema Faker
 jsf.extend('faker', () => faker);
