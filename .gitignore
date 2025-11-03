@@ -82,3 +82,12 @@ temp/
 
 # additional test artifacts
 /tests/downloads/
+
+
+# large test fixtures (not tracked; generated/obtained locally)
+# Files >100MB are blocked by GitHub; keep them local only
+/tests/test-files/large/.!74893!test-500mb.json
+/tests/test-files/large/test-500mb.json
+/tests/test-files/large/test-huge-warning.json
+/tests/test-files/streaming/streaming-150mb.json
+/tests/test-files/large/test-100mb.json
