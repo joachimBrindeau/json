@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -40,7 +40,7 @@ import { useLoginModal } from '@/hooks/use-login-modal';
 import { logger } from '@/lib/logger';
 import { IconDropdown, type DropdownAction } from '@/components/features/editor/IconDropdown';
 import { useToast } from '@/hooks/use-toast';
-import { validateJson } from '@/lib/utils/json-validators';
+import { validateJson, safeParseJson } from '@/lib/utils/json-validators';
 
 interface ViewerActionsProps {
   /** Editor value for format/minify operations */
@@ -380,6 +380,14 @@ export function ViewerActions({
     ...customMagicActions,
   ];
 
+
+      // Compute export data safely: do not parse during render unless valid
+      const exportSource = value?.trim() ? value : currentJson || '';
+      const parsedExportData = useMemo(() => {
+        if (!exportSource) return null;
+        return safeParseJson(exportSource);
+      }, [exportSource]);
+
   return (
     <>
       {/* Toolbar - visible on all breakpoints */}
@@ -631,7 +639,7 @@ export function ViewerActions({
       <ExportModal
         open={exportModalOpen}
         onOpenChange={setExportModalOpen}
-        jsonData={value?.trim() ? JSON.parse(value) : currentJson ? JSON.parse(currentJson) : null}
+        jsonData={parsedExportData}
       />
     </>
   );
