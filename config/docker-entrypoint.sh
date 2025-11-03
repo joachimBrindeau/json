@@ -11,7 +11,7 @@ echo "⏳ Waiting for database connection..."
 max_attempts=30
 attempt=0
 
-until npx prisma db execute --stdin <<< "SELECT 1" > /dev/null 2>&1; do
+until printf "SELECT 1" | npx prisma db execute --stdin > /dev/null 2>&1; do
   attempt=$((attempt + 1))
   if [ $attempt -ge $max_attempts ]; then
     echo "❌ Database connection timeout after ${max_attempts} attempts"
