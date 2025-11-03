@@ -22,19 +22,19 @@ export const LazyReactFlow = lazy(() =>
 );
 
 export const LazyPublishModal = lazy(() =>
-  import('@/components/features/modals/publish-modal').then((module) => ({
+  import('@/components/features/modals/PublishModal').then((module) => ({
     default: module.PublishModal,
   }))
 );
 
 export const LazyEmbedModal = lazy(() =>
-  import('@/components/features/modals/embed-modal').then((module) => ({
+  import('@/components/features/modals/EmbedModal').then((module) => ({
     default: module.EmbedModal,
   }))
 );
 
 export const LazyShareModal = lazy(() =>
-  import('@/components/features/modals/share-modal').then((module) => ({
+  import('@/components/features/modals/ShareModal').then((module) => ({
     default: module.ShareModal,
   }))
 );
