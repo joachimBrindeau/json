@@ -1,2 +1,2 @@
-export { HeaderNav } from './HeaderNav';
+export { HeaderNav, MobileAwareHeader } from './HeaderNav';
 
