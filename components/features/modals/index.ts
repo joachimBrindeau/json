@@ -14,13 +14,13 @@
  * - UnifiedShareModal: Alias for ShareModal (deprecated, use ShareModal)
  */
 
-// Primary modals
-export { LoginModal } from './login-modal';
-export { ShareModal } from './share-modal';
-export { EmbedModal } from './embed-modal';
-export { ExportModal } from './export-modal';
-export { PublishModal } from './publish-modal';
+// Primary modals (direct exports to avoid nested re-export issues)
+export { LoginModal } from './LoginModal';
+export { ShareModal } from './ShareModal';
+export { EmbedModal } from './EmbedModal';
+export { ExportModal } from './ExportModal';
+export { PublishModal } from './PublishModal';
 
 // Compatibility exports
-export { GlobalLoginModal } from './global-login-modal';
-export { ShareModal as UnifiedShareModal } from './share-modal';
+export { GlobalLoginModal } from './GlobalLoginModal';
+export { ShareModal as UnifiedShareModal } from './ShareModal';
