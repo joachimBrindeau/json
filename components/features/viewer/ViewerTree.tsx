@@ -7,6 +7,8 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { ChevronsDown, ChevronsUp } from 'lucide-react';
 import { ViewerTreeNode } from './ViewerTreeNode';
 import { useViewerTreeState } from './ViewerTreeState';
 import { useViewerTreeSearch } from './ViewerTreeSearch';
@@ -33,11 +35,11 @@ export const ViewerTree = ({
   onSearchChange,
   maxNodes,
 }: ViewerTreeProps) => {
-  const fullFlatten = Boolean(searchTerm && searchTerm.trim()) && !virtualized;
+  const fullFlatten = false;
   const { nodes, expandedNodes, toggleNode, expandAll, collapseAll } = useViewerTreeState(
     data,
-    Boolean(searchTerm && searchTerm.trim()) && !virtualized,
-    fullFlatten
+    false,
+    false
   );
   const { filteredNodes, matchCount } = useViewerTreeSearch(nodes, searchTerm);
 
@@ -155,11 +157,7 @@ export const ViewerTree = ({
   const [selectedNode, setSelectedNode] = useState<JsonNode | null>(null);
   const [showNodeDetails, setShowNodeDetails] = useState(false);
   // Expand all nodes while searching on non-virtualized lists so deep matches are visible
-  useEffect(() => {
-    if (!virtualized && enableSearch && searchTerm && searchTerm.trim()) {
-      expandAll();
-    }
-  }, [virtualized, enableSearch, searchTerm, expandAll]);
+
 
   const handleNodeDoubleClick = useCallback((node: JsonNode) => {
     setSelectedNode(node);
@@ -250,6 +248,27 @@ export const ViewerTree = ({
   if (virtualized) {
     return (
       <div className="viewer-tree h-full" style={{ position: 'relative' }}>
+        {/* Local actions: expand/collapse all */}
+        <div className="flex items-center justify-end gap-1 px-2 py-1 border-b bg-gray-50/50">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Expand all"
+            title="Expand all"
+            onClick={expandAll}
+          >
+            <ChevronsDown className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Collapse all"
+            title="Collapse all"
+            onClick={collapseAll}
+          >
+            <ChevronsUp className="h-4 w-4" />
+          </Button>
+        </div>
         {/* Invisible badge to expose match presence to E2E reliably */}
         <SearchSummaryBadge
           enableSearch={enableSearch}
@@ -298,6 +317,28 @@ export const ViewerTree = ({
   // Simple rendering for small datasets
   return (
     <div className="viewer-tree h-full flex flex-col" style={{ position: 'relative' }}>
+      {/* Local actions: expand/collapse all */}
+      <div className="flex items-center justify-end gap-1 px-2 py-1 border-b bg-gray-50/50">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Expand all"
+          title="Expand all"
+          onClick={expandAll}
+        >
+          <ChevronsDown className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Collapse all"
+          title="Collapse all"
+          onClick={collapseAll}
+        >
+          <ChevronsUp className="h-4 w-4" />
+        </Button>
+      </div>
+
       {/* Invisible badge to expose match presence to E2E reliably */}
       <SearchSummaryBadge
         enableSearch={enableSearch}

@@ -23,7 +23,7 @@ export const useViewerTreeState = (
 
   // Convert data to flat list of nodes
   const nodes = useMemo(() => {
-    const effectiveExpanded = forceExpandAll ? collectAllIds(data) : expandedNodes;
+    const effectiveExpanded = expandedNodes;
     return flattenToNodes(data, effectiveExpanded, 0, '', 'root', fullFlatten);
   }, [data, expandedNodes, forceExpandAll, fullFlatten]);
 

@@ -10,7 +10,7 @@ echo "🚀 JSON Viewer - Simple Production Deployment"
 echo "=============================================="
 
 # Configuration
-SERVER="joachim@92.154.51.116"
+SERVER="${SERVER:-klarc}"
 REMOTE_DIR="~/production/json-viewer-io"
 
 # Simple logging
@@ -95,10 +95,10 @@ fi
 echo "✅ Environment variables validated"
 
 # Stop, build, start (use config file directly with BuildKit)
-docker compose -f config/docker-compose.server.yml down --remove-orphans
+# Minimize downtime: build and recreate in-place without full stop
 npm ci
 npm run build
-DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build
+DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build --remove-orphans
 
 # Wait for health
 for i in {1..30}; do
