@@ -53,9 +53,9 @@ services:
       - json-viewer-network
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3456/api/health"]
       interval: 30s
