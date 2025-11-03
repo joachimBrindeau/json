@@ -91,3 +91,6 @@ temp/
 /tests/test-files/large/test-huge-warning.json
 /tests/test-files/streaming/streaming-150mb.json
 /tests/test-files/large/test-100mb.json
+/tests/
+/e2e/
+/docs/refactoring/
