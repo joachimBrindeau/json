@@ -3,7 +3,9 @@
  * Shared validation functions for JSON/YAML data
  */
 
-import yaml from 'js-yaml';
+// Use require to avoid needing @types/js-yaml
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const yamlLib: any = require('js-yaml');
 
 /**
  * Validates if a string contains valid JSON
@@ -38,7 +40,7 @@ export function safeParseJson<T = any>(json: string): T | null {
  */
 export function safeParseYaml<T = any>(text: string): T | null {
   try {
-    const res = yaml.load(text);
+    const res = yamlLib.load(text);
     return (res as T) ?? null;
   } catch {
     return null;
