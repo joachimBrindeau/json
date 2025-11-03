@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  // Ensure Docker-friendly output with standalone server
+  output: 'standalone',
+
   // Generate build ID based on timestamp for cache busting
   generateBuildId: async () => {
     // This ensures each build has a unique ID
