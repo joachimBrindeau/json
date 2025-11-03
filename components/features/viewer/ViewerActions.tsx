@@ -40,7 +40,7 @@ import { useLoginModal } from '@/hooks/use-login-modal';
 import { logger } from '@/lib/logger';
 import { IconDropdown, type DropdownAction } from '@/components/features/editor/IconDropdown';
 import { useToast } from '@/hooks/use-toast';
-import { validateJson, safeParseJson } from '@/lib/utils/json-validators';
+import { validateJson, safeParseData } from '@/lib/utils/json-validators';
 
 interface ViewerActionsProps {
   /** Editor value for format/minify operations */
@@ -385,7 +385,7 @@ export function ViewerActions({
       const exportSource = value?.trim() ? value : currentJson || '';
       const parsedExportData = useMemo(() => {
         if (!exportSource) return null;
-        return safeParseJson(exportSource);
+        return safeParseData(exportSource);
       }, [exportSource]);
 
   return (

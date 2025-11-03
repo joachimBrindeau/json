@@ -1,7 +1,9 @@
 /**
  * JSON Validation Utilities
- * Shared validation functions for JSON data
+ * Shared validation functions for JSON/YAML data
  */
+
+import yaml from 'js-yaml';
 
 /**
  * Validates if a string contains valid JSON
@@ -29,6 +31,28 @@ export function safeParseJson<T = any>(json: string): T | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Parses YAML safely, returning null on error
+ */
+export function safeParseYaml<T = any>(text: string): T | null {
+  try {
+    const res = yaml.load(text);
+    return (res as T) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try JSON first; if it fails, try YAML. Returns object or null.
+ */
+export function safeParseData<T = any>(text: string): T | null {
+  if (!text?.trim()) return null;
+  const asJson = safeParseJson<T>(text);
+  if (asJson !== null) return asJson;
+  return safeParseYaml<T>(text);
 }
 
 /**
