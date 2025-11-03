@@ -170,6 +170,7 @@ function buildEnvObject() {
 
 // Parse and validate environment variables at module load time
 function validateEnv() {
+  const skipValidation = process.env.SKIP_ENV_VALIDATION === 'true';
   try {
     const envObject = buildEnvObject();
 
@@ -177,6 +178,12 @@ function validateEnv() {
     if (!isServer) {
       const parsed = clientEnvSchema.parse(envObject);
       return parsed as any; // Type assertion for compatibility
+    }
+
+    // Allow skipping strict validation during image builds where .env is not available
+    if (skipValidation) {
+      // Return the raw env object without throwing; runtime container will validate with real env
+      return envObject as any;
     }
 
     // On the server, validate all environment variables
