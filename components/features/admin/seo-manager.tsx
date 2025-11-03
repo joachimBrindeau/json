@@ -1,0 +1,2 @@
+export { SeoManager } from './SeoManager';
+
