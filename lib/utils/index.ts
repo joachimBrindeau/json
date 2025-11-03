@@ -20,3 +20,6 @@ export * from './error-utils';
 
 // Logger utilities
 export * from './logger';
+
+// JSON Pointer helpers
+export * from './json-pointer';

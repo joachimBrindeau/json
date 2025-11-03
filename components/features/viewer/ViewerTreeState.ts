@@ -4,6 +4,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import type { JsonNode } from './types';
+import { encodePointerSegment } from '@/lib/utils/json-pointer';
+
 
 interface TreeState {
   nodes: JsonNode[];
@@ -65,11 +67,6 @@ export const useViewerTreeState = (
     collapseAll,
   };
 };
-
-// JSON Pointer encoding for safe IDs (RFC 6901 ~0 for ~, ~1 for /)
-function encodePointerSegment(seg: string): string {
-  return seg.replace(/~/g, '~0').replace(/\//g, '~1');
-}
 
 // Helper function to flatten JSON to nodes (IDs use JSON Pointer-like scheme)
 function flattenToNodes(

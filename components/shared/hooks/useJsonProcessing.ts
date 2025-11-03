@@ -3,6 +3,8 @@
 import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
 
+import { encodePointerSegment } from '@/lib/utils/json-pointer';
+
 export interface JsonNode {
   id: string;
   key: string;
@@ -258,9 +260,6 @@ export const useJsonProcessing = (
       nodeCount++;
       maxDepth = Math.max(maxDepth, level);
 
-      // JSON Pointer segment encoder
-      const encodePointerSegment = (seg: string): string =>
-        String(seg).replace(/~/g, '~0').replace(/\//g, '~1');
 
       let children: JsonNode[] = [];
       let childCount = 0;

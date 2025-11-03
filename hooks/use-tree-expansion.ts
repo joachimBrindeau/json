@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { encodePointerSegment } from '@/lib/utils/json-pointer';
 
 export interface UseTreeExpansionOptions {
   initialExpanded?: Set<string>;
@@ -9,6 +10,21 @@ export interface TreeExpansionApi {
   toggle: (id: string) => void;
   expandAll: (data: unknown) => void;
   collapseAll: () => void;
+}
+
+// Pure helper (exported for unit tests)
+export function collectAllPointerIds(data: unknown): Set<string> {
+  const all = new Set<string>();
+  const visit = (value: any, pointer = 'root') => {
+    all.add(pointer);
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) visit(value[i], `${pointer}/${i}`);
+    } else if (value && typeof value === 'object') {
+      for (const k of Object.keys(value)) visit((value as any)[k], `${pointer}/${encodePointerSegment(k)}`);
+    }
+  };
+  visit(data);
+  return all;
 }
 
 export function useTreeExpansion(options: UseTreeExpansionOptions = {}): TreeExpansionApi {
@@ -25,21 +41,10 @@ export function useTreeExpansion(options: UseTreeExpansionOptions = {}): TreeExp
   }, []);
 
   const expandAll = useCallback((data: unknown) => {
-    const all = new Set<string>();
-    const visit = (value: any, path = 'root') => {
-      all.add(path);
-      if (Array.isArray(value)) {
-        for (let i = 0; i < value.length; i++) visit(value[i], `${path}.${i}`);
-      } else if (value && typeof value === 'object') {
-        for (const k of Object.keys(value)) visit((value as any)[k], path ? `${path}.${k}` : k);
-      }
-    };
-    visit(data);
-    setExpanded(all);
+    setExpanded(collectAllPointerIds(data));
   }, []);
 
   const collapseAll = useCallback(() => setExpanded(new Set()), []);
 
   return { expanded, toggle, expandAll, collapseAll };
 }
-
