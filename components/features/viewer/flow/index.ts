@@ -37,7 +37,6 @@ export { FlowHandle } from './FlowHandle';
 export { FlowCollapseButton } from './FlowCollapseButton';
 
 // Hooks
-export { useFlowCollapse } from './hooks/useFlowCollapse';
 export { useFlowParser } from './hooks/useFlowParser';
 export { useFlowNodes } from './hooks/useFlowNodes';
 export { useNodeDetailsModal } from './hooks/useNodeDetailsModal';
@@ -51,4 +50,3 @@ export * from './utils/flow-utils';
 export * from './utils/flow-types';
 export * from './utils/flow-type-guards';
 export * from './utils/flow-constants';
-

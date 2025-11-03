@@ -31,8 +31,7 @@ interface WorkerMessageData {
 
 // Generic worker message handler factory
 export const createWorkerMessageHandler =
-  (callbacks: Map<string, WorkerCallback>) =>
-  (e: MessageEvent<WorkerMessageData>) => {
+  (callbacks: Map<string, WorkerCallback>) => (e: MessageEvent<WorkerMessageData>) => {
     const { type, data, error, stats, valid } = e.data;
 
     // Extract operation name from message type (e.g., 'parse-success' -> 'parse')

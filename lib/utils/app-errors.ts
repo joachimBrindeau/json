@@ -234,12 +234,10 @@ export class DatabaseError extends AppError {
  */
 export class ExternalServiceError extends AppError {
   constructor(service: string, message?: string, metadata?: ErrorMetadata) {
-    super(
-      message || `External service '${service}' error`,
-      ErrorCode.EXTERNAL_SERVICE_ERROR,
-      502,
-      { service, ...metadata }
-    );
+    super(message || `External service '${service}' error`, ErrorCode.EXTERNAL_SERVICE_ERROR, 502, {
+      service,
+      ...metadata,
+    });
   }
 }
 
@@ -248,15 +246,10 @@ export class ExternalServiceError extends AppError {
  */
 export class InvalidJsonError extends AppError {
   constructor(details?: string, metadata?: ErrorMetadata) {
-    super(
-      'Invalid JSON format',
-      ErrorCode.INVALID_JSON,
-      400,
-      {
-        validationErrors: details ? [{ field: 'content', message: details }] : undefined,
-        ...metadata,
-      }
-    );
+    super('Invalid JSON format', ErrorCode.INVALID_JSON, 400, {
+      validationErrors: details ? [{ field: 'content', message: details }] : undefined,
+      ...metadata,
+    });
   }
 }
 

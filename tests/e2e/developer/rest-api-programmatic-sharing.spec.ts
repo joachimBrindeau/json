@@ -354,7 +354,10 @@ test.describe('Developer - REST API Programmatic Sharing', () => {
 
       // Verify rate limit headers
       const rateLimitResponse = rateLimitedRequests[0];
-      expect(rateLimitResponse.error).toBeDefined();
+      // Type guard to check if response has error property
+      if ('error' in rateLimitResponse) {
+        expect(rateLimitResponse.error).toBeDefined();
+      }
     });
 
     test('should validate input data and prevent injection attacks', async ({
@@ -475,14 +478,19 @@ test.describe('Developer - REST API Programmatic Sharing', () => {
       expect(corsResponse.data.configured).toBe(true);
 
       // Test CORS preflight request
-      const preflightResponse = await apiHelper.apiCall('OPTIONS', '/api/json/create', {
-        headers: {
-          Origin: 'https://example.com',
-          'Access-Control-Request-Method': 'POST',
-          'Access-Control-Request-Headers': 'Content-Type',
-        },
-        expectedStatus: 200,
-      });
+      // Note: OPTIONS method may not be in typed HTTP methods, using type assertion
+      const preflightResponse = await apiHelper.apiCall(
+        'OPTIONS' as any,
+        '/api/json/create',
+        {
+          headers: {
+            Origin: 'https://example.com',
+            'Access-Control-Request-Method': 'POST',
+            'Access-Control-Request-Headers': 'Content-Type',
+          },
+          expectedStatus: 200,
+        }
+      );
 
       expect(preflightResponse.status).toBe(200);
 

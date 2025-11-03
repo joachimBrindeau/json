@@ -1,6 +1,6 @@
 import { test, expect } from '../../utils/base-test';
 import { JSON_SAMPLES } from '../../fixtures/json-samples';
-import { config } from '@/lib/config';
+import { config } from '../../../lib/config';
 
 test.describe('Developer - Embedding Functionality', () => {
   test.describe('Iframe Embedding', () => {
@@ -30,9 +30,7 @@ test.describe('Developer - Embedding Functionality', () => {
 
       // Verify iframe code structure
       expect(embedCode).toContain('<iframe');
-      expect(embedCode).toContain(
-        `src="${config.testing.baseUrl}/embed/${jsonId}`
-      );
+      expect(embedCode).toContain(`src="${config.testing.baseUrl}/embed/${jsonId}`);
       expect(embedCode).toContain('width="800"');
       expect(embedCode).toContain('height="600"');
       expect(embedCode).toContain('theme=light');
@@ -77,7 +75,8 @@ test.describe('Developer - Embedding Functionality', () => {
 
       // Verify JSON content is displayed
       await expect(iframe.locator('[data-testid="tree-view"]')).toBeVisible();
-      await expect(iframe.locator('.json-node')).toHaveCount({ min: 10 });
+      const jsonNodeCount = await iframe.locator('.json-node').count();
+      expect(jsonNodeCount).toBeGreaterThanOrEqual(10);
 
       // Verify specific data from the API response sample
       await expect(iframe.locator('text="success"')).toBeVisible();
@@ -203,9 +202,9 @@ test.describe('Developer - Embedding Functionality', () => {
       await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`);
 
       // Wait for iframe to load
-      await page.waitForFunction(() => {
-        return document.getElementById('json-embed')?.contentDocument?.readyState === 'complete';
-      });
+      const iframe = page.locator('#json-embed');
+      await iframe.waitFor({ state: 'attached' });
+      await page.waitForTimeout(1000); // Allow iframe to fully load
 
       // Send command to iframe
       await page.evaluate(() => {
@@ -499,10 +498,12 @@ test.describe('Developer - Embedding Functionality', () => {
 
       // Test expand/collapse methods
       await page.click('button:text("Collapse All")');
-      await expect(page.locator('.tree-node.collapsed')).toHaveCount({ min: 1 });
+      const collapsedCount = await page.locator('.tree-node.collapsed').count();
+      expect(collapsedCount).toBeGreaterThanOrEqual(1);
 
       await page.click('button:text("Expand All")');
-      await expect(page.locator('.tree-node.expanded')).toHaveCount({ min: 1 });
+      const expandedCount = await page.locator('.tree-node.expanded').count();
+      expect(expandedCount).toBeGreaterThanOrEqual(1);
 
       // Test theme switching
       await page.click('button:text("Dark Theme")');
@@ -599,7 +600,7 @@ test.describe('Developer - Embedding Functionality', () => {
         alertTriggered = true;
       });
 
-      await page.waitForTimeout(2000); // Wait to see if any alerts fire
+      await page.waitForLoadState('networkidle'); // Wait for content rendering to complete
       expect(alertTriggered).toBe(false);
     });
 

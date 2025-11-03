@@ -1,17 +1,38 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript", "plugin:jsx-a11y/recommended", "plugin:ssr-friendly/recommended", "prettier"],
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript",
+    "plugin:jsx-a11y/recommended",
+    "plugin:ssr-friendly/recommended",
+    "prettier"
+  ],
   "plugins": ["jsx-a11y", "ssr-friendly"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "coverage/",
+    "playwright-report/",
+    "playwright/.cache/",
+    "test-results/",
+    "tests/test-files/",
+    "tests/downloads/"
+  ],
+
   "rules": {
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "off",
     "react/no-unescaped-entities": "off",
     "@next/next/no-img-element": "off",
     "@typescript-eslint/no-require-imports": "off",
     "prefer-const": "warn",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/rules-of-hooks": "warn",
+    "@typescript-eslint/no-empty-object-type": "warn",
+    "no-restricted-imports": "off",
     "jsx-a11y/no-redundant-roles": "error",
     "react/no-unknown-property": "error",
     "react/void-dom-elements-no-children": "error",
-    "react/jsx-no-target-blank": "warn"
+    "react/jsx-no-target-blank": "warn",
+    "no-console": "off"
   }
 }

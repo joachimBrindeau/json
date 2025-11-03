@@ -1,6 +1,6 @@
 import { test, expect } from '../../utils/base-test';
 import { JSON_SAMPLES } from '../../fixtures/json-samples';
-import { config } from '@/lib/config';
+import { config } from '../../../lib/config';
 
 test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
   test.describe('Iframe Embedding Implementation', () => {
@@ -38,9 +38,7 @@ test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
 
       // Validate embed code structure
       expect(embedCode).toContain('<iframe');
-      expect(embedCode).toContain(
-        `src="${config.testing.baseUrl}/embed/${jsonId}`
-      );
+      expect(embedCode).toContain(`src="${config.testing.baseUrl}/embed/${jsonId}`);
       expect(embedCode).toContain('width="800"');
       expect(embedCode).toContain('height="600"');
       expect(embedCode).toContain('theme=dark');
@@ -542,10 +540,12 @@ test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
 
       // Test widget API methods
       await page.click('button:text("Collapse All")');
-      await expect(page.locator('#json-widget .tree-node.collapsed')).toHaveCount({ min: 1 });
+      const collapsedCount = await page.locator('#json-widget .tree-node.collapsed').count();
+      expect(collapsedCount).toBeGreaterThanOrEqual(1);
 
       await page.click('button:text("Expand All")');
-      await expect(page.locator('#json-widget .tree-node.expanded')).toHaveCount({ min: 1 });
+      const expandedCount = await page.locator('#json-widget .tree-node.expanded').count();
+      expect(expandedCount).toBeGreaterThanOrEqual(1);
 
       // Test theme switching
       await page.click('button:text("Dark Theme")');
@@ -1157,7 +1157,8 @@ test.describe('Developer - Iframe and JavaScript Widget Embedding', () => {
 
       // Test iframe interactions
       await iframe.locator('[data-testid="toolbar"] [data-testid="expand-all"]').click();
-      await expect(iframe.locator('.tree-node.expanded')).toHaveCount({ min: 1 });
+      const expandedCount = await iframe.locator('.tree-node.expanded').count();
+      expect(expandedCount).toBeGreaterThanOrEqual(1);
 
       console.log(`Cross-browser test completed for ${browserName}:`, compatibilityResults);
     });

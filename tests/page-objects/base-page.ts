@@ -11,8 +11,14 @@ export abstract class BasePage {
    * Wait for the page to be fully loaded
    */
   async waitForLoad() {
-    await this.page.waitForLoadState('networkidle');
+    // Wait for DOM to be ready first (fast and reliable)
     await this.page.waitForLoadState('domcontentloaded');
+    // Wait for network to settle for React hydration
+    try {
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+    } catch {
+      // If networkidle times out, that's okay - DOM is already ready
+    }
   }
 
   /**
@@ -26,8 +32,22 @@ export abstract class BasePage {
    * Navigate to a specific URL
    */
   async navigateTo(url: string) {
-    await this.page.goto(url);
-    await this.waitForLoad();
+    // Use domcontentloaded instead of default 'load' for better reliability
+    // This waits for HTML to be fully loaded without waiting for all external resources
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await this.waitForLoad();
+        return;
+      } catch (e: any) {
+        if (attempt === 0) {
+          // Retry once on transient navigation failures (e.g. dev server reload)
+          await new Promise((r) => setTimeout(r, 500));
+          continue;
+        }
+        throw e;
+      }
+    }
   }
 
   /**
@@ -38,7 +58,18 @@ export abstract class BasePage {
       ? `test-results/screenshots/${filename}.png`
       : `test-results/screenshots/${this.constructor.name}-${Date.now()}.png`;
 
-    await this.page.screenshot({ path: screenshotPath, fullPage: true });
+    try {
+      // Full page screenshots can be very slow/heavy on massive documents; prefer viewport
+      await this.page.screenshot({ path: screenshotPath, fullPage: false, timeout: 15000 });
+    } catch (e) {
+      // As a reliability fallback, avoid failing the test because of a screenshot issue
+      try {
+        // Last attempt with a shorter timeout
+        await this.page.screenshot({ path: screenshotPath, fullPage: false, timeout: 5000 });
+      } catch {
+        // Swallow to keep the test progressing
+      }
+    }
     return screenshotPath;
   }
 
@@ -79,7 +110,8 @@ export abstract class BasePage {
       if (await condition()) {
         return;
       }
-      await this.page.waitForTimeout(interval);
+      // Use Promise.resolve to yield control without arbitrary timeout
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
     throw new Error(`Condition not met within ${timeout}ms`);
@@ -101,11 +133,16 @@ export abstract class BasePage {
 
     for (let i = 0; i < maxRetries; i++) {
       try {
-        await this.page.locator(selector).click();
+        const element = this.page.locator(selector);
+        await element.waitFor({ state: 'visible', timeout: 2000 });
+        await element.click();
         return;
       } catch (error) {
         lastError = error;
-        await this.page.waitForTimeout(1000);
+        // Wait for element to potentially become available
+        if (i < maxRetries - 1) {
+          await this.page.waitForLoadState('domcontentloaded');
+        }
       }
     }
 

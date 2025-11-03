@@ -284,9 +284,7 @@ export function mapPrismaError(error: unknown): AppError {
  *   prisma.user.findUniqueOrThrow({ where: { id } })
  * );
  */
-export async function withPrismaErrorHandling<T>(
-  operation: () => Promise<T>
-): Promise<T> {
+export async function withPrismaErrorHandling<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation();
   } catch (error) {

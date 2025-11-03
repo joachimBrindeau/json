@@ -25,38 +25,39 @@ export interface ExportResult {
 export function jsonToCsv(data: JsonValue): string {
   if (Array.isArray(data)) {
     if (data.length === 0) return '';
-    
+
     // Get headers from first object
-    const headers = Object.keys(data[0]);
+    const headers = Object.keys(data[0] as any);
     const csvRows = [headers.join(',')];
-    
+
     // Add data rows
-    data.forEach(item => {
-      const values = headers.map(header => {
-        const value = item[header];
+    data.forEach((item) => {
+      const values = headers.map((header) => {
+        const value = (item as any)[header];
         if (value === null || value === undefined) return '';
         if (typeof value === 'object') return JSON.stringify(value);
-        if (typeof value === 'string' && value.includes(',')) return `"${value.replace(/"/g, '""')}"`;
+        if (typeof value === 'string' && value.includes(','))
+          return `"${value.replace(/"/g, '""')}"`;
         return String(value);
       });
       csvRows.push(values.join(','));
     });
-    
+
     return csvRows.join('\n');
   } else if (typeof data === 'object' && data !== null) {
     // Convert object to key-value CSV
     const entries = Object.entries(data);
     const csvRows = ['Key,Value'];
-    
+
     entries.forEach(([key, value]) => {
       const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
       const escapedValue = valueStr.includes(',') ? `"${valueStr.replace(/"/g, '""')}"` : valueStr;
       csvRows.push(`${key},${escapedValue}`);
     });
-    
+
     return csvRows.join('\n');
   }
-  
+
   return 'Value\n' + String(data);
 }
 
@@ -68,26 +69,26 @@ export function jsonToXml(data: JsonValue, rootElement = 'root'): string {
     if (obj === null || obj === undefined) {
       return parentKey ? `<${parentKey}></${parentKey}>` : '<null></null>';
     }
-    
+
     if (typeof obj !== 'object') {
       return parentKey ? `<${parentKey}>${escapeXml(String(obj))}</${parentKey}>` : String(obj);
     }
-    
+
     if (Array.isArray(obj)) {
       const items = obj.map((item, index) => objectToXml(item, `item_${index}`));
       return parentKey ? `<${parentKey}>${items.join('')}</${parentKey}>` : items.join('');
     }
-    
+
     const entries = Object.entries(obj);
     const xmlElements = entries.map(([key, value]) => objectToXml(value, key));
-    
+
     if (parentKey) {
       return `<${parentKey}>${xmlElements.join('')}</${parentKey}>`;
     }
-    
+
     return xmlElements.join('');
   }
-  
+
   function escapeXml(str: string): string {
     return str
       .replace(/&/g, '&amp;')
@@ -96,7 +97,7 @@ export function jsonToXml(data: JsonValue, rootElement = 'root'): string {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;');
   }
-  
+
   const xmlContent = objectToXml(data, rootElement);
   return `<?xml version="1.0" encoding="UTF-8"?>\n${xmlContent}`;
 }
@@ -107,45 +108,59 @@ export function jsonToXml(data: JsonValue, rootElement = 'root'): string {
 export function jsonToYaml(data: JsonValue, indent = 2): string {
   function toYaml(obj: JsonValue, depth = 0): string {
     const indentStr = ' '.repeat(depth * indent);
-    
+
     if (obj === null || obj === undefined) {
       return 'null';
     }
-    
+
     if (typeof obj === 'boolean' || typeof obj === 'number') {
       return String(obj);
     }
-    
+
     if (typeof obj === 'string') {
       // Check if string needs quotes
-      if (obj.includes('\n') || obj.includes(':') || obj.includes('#') || obj.includes('[') || obj.includes(']')) {
+      if (
+        obj.includes('\n') ||
+        obj.includes(':') ||
+        obj.includes('#') ||
+        obj.includes('[') ||
+        obj.includes(']')
+      ) {
         return `"${obj.replace(/"/g, '\\"')}"`;
       }
       return obj;
     }
-    
+
     if (Array.isArray(obj)) {
       if (obj.length === 0) return '[]';
-      return obj.map(item => `${indentStr}- ${toYaml(item, depth + 1).replace(/^\s+/, '')}`).join('\n');
+      return obj
+        .map((item) => `${indentStr}- ${toYaml(item, depth + 1).replace(/^\s+/, '')}`)
+        .join('\n');
     }
-    
+
     if (typeof obj === 'object') {
       const entries = Object.entries(obj);
       if (entries.length === 0) return '{}';
-      
-      return entries.map(([key, value]) => {
-        const yamlValue = toYaml(value, depth + 1);
-        if (typeof value === 'object' && value !== null && (Array.isArray(value) || Object.keys(value).length > 0)) {
-          return `${indentStr}${key}:\n${yamlValue}`;
-        } else {
-          return `${indentStr}${key}: ${yamlValue}`;
-        }
-      }).join('\n');
+
+      return entries
+        .map(([key, value]) => {
+          const yamlValue = toYaml(value, depth + 1);
+          if (
+            typeof value === 'object' &&
+            value !== null &&
+            (Array.isArray(value) || Object.keys(value).length > 0)
+          ) {
+            return `${indentStr}${key}:\n${yamlValue}`;
+          } else {
+            return `${indentStr}${key}: ${yamlValue}`;
+          }
+        })
+        .join('\n');
     }
-    
+
     return String(obj);
   }
-  
+
   return toYaml(data);
 }
 
@@ -157,43 +172,48 @@ export function exportData(data: JsonValue, options: ExportOptions): ExportResul
   let content: string;
   let filename: string;
   let mimeType: string;
-  
+
   // Add metadata if requested
-  const exportData = options.includeMetadata ? {
-    ...data,
-    __export_metadata: {
-      timestamp: new Date().toISOString(),
-      source: 'json-viewer',
-      format: options.format,
-      options: options
-    }
-  } : data;
-  
+  const exportData = options.includeMetadata
+    ? {
+        ...(data as any),
+        __export_metadata: {
+          timestamp: new Date().toISOString(),
+          source: 'json-viewer',
+          format: options.format,
+          options: options,
+        },
+      }
+    : data;
+
   switch (options.format) {
     case 'csv':
       content = jsonToCsv(exportData);
       filename = `export-${timestamp}.csv`;
       mimeType = 'text/csv';
       break;
-      
+
     case 'xml':
       content = jsonToXml(exportData);
       filename = `export-${timestamp}.xml`;
       mimeType = 'application/xml';
       break;
-      
+
     case 'yaml':
       content = jsonToYaml(exportData, options.indent || 2);
       filename = `export-${timestamp}.yml`;
       mimeType = 'application/x-yaml';
       break;
-      
+
     case 'txt':
-      content = typeof exportData === 'string' ? exportData : JSON.stringify(exportData, null, options.indent || 2);
+      content =
+        typeof exportData === 'string'
+          ? exportData
+          : JSON.stringify(exportData, null, options.indent || 2);
       filename = `export-${timestamp}.txt`;
       mimeType = 'text/plain';
       break;
-      
+
     case 'json':
     default:
       if (options.minify) {
@@ -205,16 +225,30 @@ export function exportData(data: JsonValue, options: ExportOptions): ExportResul
       mimeType = 'application/json';
       break;
   }
-  
+
   return { content, filename, mimeType };
 }
 
 /**
  * Download exported content as a file
  */
-export function downloadExportedData(result: ExportResult): void {
+export function downloadExportedData(result: ExportResult, options?: ExportOptions): void {
   try {
-    const blob = new Blob([result.content], { type: result.mimeType });
+    // Apply encoding if specified
+    let blobContent: BlobPart[];
+    if (options?.encoding === 'utf16') {
+      // Convert string to UTF-16LE encoded Uint16Array
+      const utf16Array = new Uint16Array(result.content.length);
+      for (let i = 0; i < result.content.length; i++) {
+        utf16Array[i] = result.content.charCodeAt(i);
+      }
+      blobContent = [utf16Array];
+    } else {
+      // Default UTF-8 encoding
+      blobContent = [result.content];
+    }
+    
+    const blob = new Blob(blobContent, { type: result.mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -224,7 +258,10 @@ export function downloadExportedData(result: ExportResult): void {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (error) {
-    logger.error({ err: error, filename: result.filename, mimeType: result.mimeType }, 'Failed to download exported data');
+    logger.error(
+      { err: error, filename: result.filename, mimeType: result.mimeType },
+      'Failed to download exported data'
+    );
     throw error;
   }
 }

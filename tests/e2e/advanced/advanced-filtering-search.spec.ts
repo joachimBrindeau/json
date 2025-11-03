@@ -271,11 +271,9 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
       await viewerPage.inputJSON(JSON.stringify(typedDataJson));
       await viewerPage.waitForJSONProcessed();
 
-      // Look for type-based filtering UI
+      // Look for type-based filtering UI (avoid invalid mixed selector syntax)
       const typeFilterElements = await viewerPage.page
-        .locator(
-          '[data-testid*="filter"], [data-testid*="type"], text=/filter.*type|type.*filter/i'
-        )
+        .locator('[data-testid*="filter"], [data-testid*="type"]')
         .count();
 
       if (typeFilterElements > 0) {
@@ -284,7 +282,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
           .locator('[data-testid*="filter-string"], [data-type="string"]')
           .first()
           .click();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for filter to apply
+        await viewerPage.page.waitForLoadState('networkidle');
 
         const visibleStrings = await viewerPage.stringNodes.count();
         expect(visibleStrings).toBeGreaterThan(0);
@@ -296,7 +295,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
           .locator('[data-testid*="filter-number"], [data-type="number"]')
           .first()
           .click();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for filter to apply
+        await viewerPage.page.waitForLoadState('networkidle');
 
         const visibleNumbers = await viewerPage.numberNodes.count();
         expect(visibleNumbers).toBeGreaterThan(0);
@@ -340,7 +340,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for path-based filtering capabilities
       const pathFilterElements = await viewerPage.page
-        .locator('[data-testid*="path"], [data-path], text=/path|\.|\//')
+        .locator('[data-testid*="path"], [data-path]')
         .count();
 
       if (pathFilterElements > 0) {
@@ -469,10 +469,12 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
       const multiSearchStart = Date.now();
 
       await viewerPage.searchInJSON('item_10000');
-      await viewerPage.page.waitForTimeout(500);
+      // Wait for search results to render
+      await viewerPage.page.waitForLoadState('networkidle');
 
       await viewerPage.searchInJSON('category_5');
-      await viewerPage.page.waitForTimeout(500);
+      // Wait for search results to render
+      await viewerPage.page.waitForLoadState('networkidle');
 
       await viewerPage.searchInJSON('unique');
 
@@ -505,9 +507,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for pagination controls
       const paginationElements = await viewerPage.page
-        .locator(
-          '[data-testid*="pagination"], .pagination, text=/page|next|previous|\d+.*of.*\d+/i'
-        )
+        .locator('[data-testid*="pagination"], .pagination')
         .count();
 
       if (paginationElements > 0) {
@@ -518,7 +518,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
         const nextButton = viewerPage.page.locator('[data-testid*="next"], text=/next/i').first();
         if (await nextButton.isVisible()) {
           await nextButton.click();
-          await viewerPage.page.waitForTimeout(500);
+          // Wait for pagination to navigate
+          await viewerPage.page.waitForLoadState('networkidle');
           await viewerPage.takeScreenshot('search-pagination-page-2');
         }
       } else {
@@ -554,8 +555,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
         const startTime = Date.now();
         await viewerPage.searchInput.fill(query);
 
-        // Wait for debounced search (typical debounce is 300-500ms)
-        await viewerPage.page.waitForTimeout(600);
+        // Wait for debounced search to complete
+        await viewerPage.page.waitForLoadState('networkidle');
 
         const searchTime = Date.now() - startTime;
         searchTimes.push(searchTime);
@@ -646,9 +647,7 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
 
       // Look for navigation controls
       const navElements = await viewerPage.page
-        .locator(
-          '[data-testid*="search-nav"], [data-testid*="result-nav"], text=/\d+.*of.*\d+|previous|next/i'
-        )
+        .locator('[data-testid*="search-nav"], [data-testid*="result-nav"]')
         .count();
 
       if (navElements > 0) {
@@ -661,7 +660,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
           .first();
         if (await nextResultBtn.isVisible()) {
           await nextResultBtn.click();
-          await viewerPage.page.waitForTimeout(300);
+          // Wait for navigation to next result
+          await viewerPage.page.waitForLoadState('networkidle');
           await viewerPage.takeScreenshot('next-search-result');
         }
 
@@ -670,7 +670,8 @@ test.describe('Advanced User - Advanced Filtering & Deep Search (Story 4)', () =
           .first();
         if (await prevResultBtn.isVisible()) {
           await prevResultBtn.click();
-          await viewerPage.page.waitForTimeout(300);
+          // Wait for navigation to previous result
+          await viewerPage.page.waitForLoadState('networkidle');
         }
       } else {
         // Verify search found multiple results

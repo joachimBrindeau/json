@@ -1,13 +1,11 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { validateTags } from '@/lib/tags/tag-utils';
 import { publishLimiter } from '@/lib/middleware/rate-limit';
 import { success } from '@/lib/api/responses';
-import { withValidationHandler, withDatabaseHandler } from '@/lib/api/middleware';
-import { AuthenticationError, ValidationError, RateLimitError } from '@/lib/utils/app-errors';
+import { withAuth } from '@/lib/api/utils';
+import { ValidationError, RateLimitError } from '@/lib/utils/app-errors';
 
 const publishSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(200),
@@ -25,95 +23,84 @@ const createSlug = (title: string, shareId: string): string =>
 
 /**
  * POST publish document to public library
- * Now using withValidationHandler for automatic Zod error handling
  */
-export const POST = withValidationHandler(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Authentication required');
+export const POST = withAuth(
+  async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+    // Apply rate limiting
+    const rateLimitKey = session.user.id;
+    if (!publishLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = publishLimiter.getResetTime(rateLimitKey);
+      throw new RateLimitError(
+        resetTime ? Math.ceil((resetTime.getTime() - Date.now()) / 1000) : undefined,
+        'Publishing limit reached. Please wait before publishing more documents.',
+        {
+          resetTime: resetTime?.toISOString(),
+          remaining: publishLimiter.getRemainingAttempts(rateLimitKey),
+        }
+      );
+    }
+
+    const { id } = await params;
+    // Zod validation errors automatically handled by middleware
+    const data = publishSchema.parse(await request.json());
+
+    // Validate and normalize tags
+    const { validTags, invalidTags } = validateTags(data.tags);
+
+    if (invalidTags.length > 0) {
+      throw new ValidationError('Invalid tags', [
+        { field: 'tags', message: `Invalid tags: ${invalidTags.join(', ')}` },
+      ]);
+    }
+
+    // Remove duplicates after normalization
+    const uniqueTags = Array.from(new Set(validTags));
+
+    // Prisma errors automatically handled by middleware
+    const document = await prisma.jsonDocument.update({
+      where: {
+        shareId: id,
+        userId: session.user.id,
+        visibility: 'private', // Only allow publishing private documents
+      },
+      data: {
+        visibility: 'public',
+        publishedAt: new Date(),
+        title: data.title,
+        description: data.description,
+        richContent: data.richContent,
+        tags: uniqueTags, // Store normalized, unique tags
+        category: data.category,
+        slug: createSlug(data.title, id),
+      },
+      select: { shareId: true, title: true, slug: true, publishedAt: true, tags: true },
+    });
+
+    return success({ document });
   }
-
-  // Apply rate limiting
-  const rateLimitKey = session.user.id;
-  if (!publishLimiter.isAllowed(rateLimitKey)) {
-    const resetTime = publishLimiter.getResetTime(rateLimitKey);
-    throw new RateLimitError(
-      resetTime ? Math.ceil((resetTime.getTime() - Date.now()) / 1000) : undefined,
-      'Publishing limit reached. Please wait before publishing more documents.',
-      {
-        resetTime: resetTime?.toISOString(),
-        remaining: publishLimiter.getRemainingAttempts(rateLimitKey),
-      }
-    );
-  }
-
-  const { id } = await params;
-  // Zod validation errors automatically handled by middleware
-  const data = publishSchema.parse(await request.json());
-
-  // Validate and normalize tags
-  const { validTags, invalidTags } = validateTags(data.tags);
-
-  if (invalidTags.length > 0) {
-    throw new ValidationError('Invalid tags', [
-      { field: 'tags', message: `Invalid tags: ${invalidTags.join(', ')}` },
-    ]);
-  }
-
-  // Remove duplicates after normalization
-  const uniqueTags = Array.from(new Set(validTags));
-
-  // Prisma errors automatically handled by middleware
-  const document = await prisma.jsonDocument.update({
-    where: {
-      shareId: id,
-      userId: session.user.id,
-      visibility: 'private', // Only allow publishing private documents
-    },
-    data: {
-      visibility: 'public',
-      publishedAt: new Date(),
-      title: data.title,
-      description: data.description,
-      richContent: data.richContent,
-      tags: uniqueTags, // Store normalized, unique tags
-      category: data.category,
-      slug: createSlug(data.title, id),
-    },
-    select: { shareId: true, title: true, slug: true, publishedAt: true, tags: true },
-  });
-
-  return success({ document });
-});
+);
 
 /**
  * DELETE unpublish document from public library
- * Now using withDatabaseHandler for automatic Prisma error handling
  */
-export const DELETE = withDatabaseHandler(async (
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new AuthenticationError('Authentication required');
+export const DELETE = withAuth(
+  async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+
+    // Prisma errors automatically handled by middleware
+    await prisma.jsonDocument.update({
+      where: {
+        shareId: id,
+        userId: session.user.id,
+        visibility: 'public', // Only allow unpublishing public documents
+      },
+      data: {
+        visibility: 'private',
+        publishedAt: null,
+        slug: null,
+      },
+    });
+
+    return success({});
   }
-
-  const { id } = await params;
-
-  // Prisma errors automatically handled by middleware
-  await prisma.jsonDocument.update({
-    where: {
-      shareId: id,
-      userId: session.user.id,
-      visibility: 'public', // Only allow unpublishing public documents
-    },
-    data: {
-      visibility: 'private',
-      publishedAt: null,
-      slug: null,
-    },
-  });
-
-  return success({});
-});
+);

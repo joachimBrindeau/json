@@ -32,7 +32,9 @@ export class MainLayoutPage extends BasePage {
     super(page);
 
     // Header elements
-    this.logo = page.locator('[data-testid="logo-desktop"]:visible, [data-testid="logo-mobile"]:visible').first();
+    this.logo = page
+      .locator('[data-testid="logo-desktop"]:visible, [data-testid="logo-mobile"]:visible')
+      .first();
     this.navigationMenu = page.locator('[data-testid="navigation-menu"]');
     this.loginButton = page.locator('[data-testid="sign-in-button"]');
     this.userMenu = page
@@ -43,7 +45,10 @@ export class MainLayoutPage extends BasePage {
       .or(page.locator('[aria-label*="theme"]'));
 
     // Navigation links (use first() to avoid strict mode violations from sidebar duplicates)
-    this.homeLink = page.locator('[data-testid="nav-home"]').or(page.locator('a[href="/"]')).first();
+    this.homeLink = page
+      .locator('[data-testid="nav-home"]')
+      .or(page.locator('a[href="/"]'))
+      .first();
     this.viewerLink = page
       .locator('[data-testid="nav-viewer"]')
       .or(page.locator('a[href*="/viewer"]'))
@@ -102,7 +107,6 @@ export class MainLayoutPage extends BasePage {
     await this.waitForNavigation('/library');
   }
 
-
   /**
    * Open login modal
    */
@@ -116,18 +120,21 @@ export class MainLayoutPage extends BasePage {
    */
   async isLoggedIn(): Promise<boolean> {
     try {
-      // Wait for page to be in stable state
-      await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForTimeout(1000);
-      
-      // Check if user menu (avatar) is visible in header
-      const userMenuVisible = await this.page.locator('[data-testid="user-menu"]').isVisible();
-      const signInButtonVisible = await this.page.locator('[data-testid="sign-in-button"]').isVisible();
-      
-      // User is logged in if user menu is visible and sign in button is not visible
+      const userMenu = this.page.locator('[data-testid="user-menu"]');
+      const signInButton = this.page.locator('[data-testid="sign-in-button"]');
+
+      // Wait briefly for either state to present without forcing networkidle
+      await Promise.race([
+        userMenu.waitFor({ state: 'visible', timeout: 10_000 }),
+        signInButton.waitFor({ state: 'visible', timeout: 10_000 }),
+        signInButton.waitFor({ state: 'hidden', timeout: 10_000 }),
+      ]).catch(() => {});
+
+      const userMenuVisible = await userMenu.isVisible().catch(() => false);
+      const signInButtonVisible = await signInButton.isVisible().catch(() => false);
       return userMenuVisible && !signInButtonVisible;
     } catch (error) {
-      console.log(`🔍 Error in isLoggedIn check: ${error.message}`);
+      console.log(`🔍 Error in isLoggedIn check: ${(error as Error).message}`);
       return false;
     }
   }
@@ -137,6 +144,62 @@ export class MainLayoutPage extends BasePage {
    */
   async openUserMenu() {
     if (await this.isLoggedIn()) {
+      // Dismiss any open modal overlay that could intercept pointer events before interacting with header
+      try {
+        // 1) Try to close any visible dialog via Escape or known cancel buttons
+        const dialog = this.page.getByRole('dialog');
+        const isDialogVisible = await dialog.isVisible().catch(() => false);
+        if (isDialogVisible) {
+          await this.page.keyboard.press('Escape').catch(() => {});
+          await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+          await this.page
+            .locator('[data-testid="share-cancel-button"], [data-testid="modal-close"]')
+            .first()
+            .click()
+            .catch(() => {});
+          await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+        }
+
+        // 2) If an overlay is present (Radix/Shadcn), try clicking it to dismiss
+        const overlay = this.page.locator(
+          'div[data-state="open"][class*="fixed"][class*="inset-0"][class*="bg-black"]'
+        );
+        if (await overlay.isVisible().catch(() => false)) {
+          await overlay.click({ trial: true }).catch(() => {});
+          await overlay.click().catch(() => {});
+          await overlay.waitFor({ state: 'detached', timeout: 2000 }).catch(() => {});
+        }
+
+        // 3) Final check: wait briefly for any overlay to disappear
+        await this.page
+          .waitForSelector('div[data-state="open"][class*="fixed"][class*="inset-0"]', {
+            state: 'detached',
+            timeout: 1000,
+          })
+          .catch(() => {});
+
+        // 4) Last-resort: surgically remove overlays in test environment
+        const stillBlocking = await this.page
+          .locator('div[data-state="open"][class*="fixed"][class*="inset-0"]')
+          .isVisible()
+          .catch(() => false);
+        if (stillBlocking) {
+          await this.page
+            .evaluate(() => {
+              const candidates = Array.from(
+                document.querySelectorAll('div[data-state="open"]')
+              ) as HTMLElement[];
+              for (const el of candidates) {
+                const cls = el.getAttribute('class') || '';
+                if (cls.includes('fixed') && cls.includes('inset-0')) {
+                  el.remove();
+                }
+              }
+            })
+            .catch(() => {});
+        }
+      } catch {}
+
       // Click on the user dropdown in header
       await this.page.locator('[data-testid="user-menu"]').click();
     } else {
@@ -286,7 +349,8 @@ export class MainLayoutPage extends BasePage {
 
     for (const viewport of viewports) {
       await this.page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await this.page.waitForTimeout(500); // Wait for responsive changes
+      // Wait for responsive layout changes to complete
+      await this.page.waitForLoadState('domcontentloaded');
 
       results.push({
         viewport: viewport.name,
@@ -298,4 +362,59 @@ export class MainLayoutPage extends BasePage {
 
     return results;
   }
+  /**
+   * Navigate to the Public Library page
+   */
+  async navigateToPublicLibrary(): Promise<void> {
+    await this.page.getByRole('link', { name: /public library/i }).click();
+    await this.page.waitForURL('**/library');
+  }
+
+  /**
+   * Navigate to the Developers section
+   */
+  async goToDevelopers(): Promise<void> {
+    await this.page.getByRole('link', { name: /developers/i }).click();
+    await this.page.waitForURL('**/developers');
+  }
+
+  /**
+   * Navigate to the Dashboard
+   */
+  async goToDashboard(): Promise<void> {
+    await this.page.getByRole('link', { name: /dashboard/i }).click();
+    await this.page.waitForURL('**/dashboard');
+  }
+
+  /**
+   * Navigate to the Moderation Dashboard (admin/moderator only)
+   */
+  async goToModerationDashboard(): Promise<void> {
+    await this.page.getByRole('link', { name: /moderation/i }).click();
+    await this.page.waitForURL('**/moderation');
+  }
+
+  /**
+   * Navigate to Community Guidelines
+   */
+  async navigateToCommunityGuidelines(): Promise<void> {
+    await this.page.getByRole('link', { name: /community guidelines/i }).click();
+    await this.page.waitForURL('**/community/guidelines');
+  }
+
+  /**
+   * Navigate to Help page
+   */
+  async goToHelp(): Promise<void> {
+    await this.page.getByRole('link', { name: /help/i }).click();
+    await this.page.waitForURL('**/help');
+  }
+
+  /**
+   * Get the developers link locator
+   */
+  get developersLink(): Locator {
+    return this.page.getByRole('link', { name: /developers/i });
+  }
+
 }

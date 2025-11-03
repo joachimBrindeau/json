@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server';
 import { checkDBHealth } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { error as errorResponse } from '@/lib/api/responses';
+import { success, error as errorResponse } from '@/lib/api/responses';
 import { config } from '@/lib/config';
 
 export async function GET() {
   try {
     const health = await checkDBHealth();
 
-    return NextResponse.json(
+    const isHealthy = health.postgres && health.redis;
+    return success(
       {
         status: 'ok',
         timestamp: new Date().toISOString(),
@@ -20,30 +20,27 @@ export async function GET() {
         environment: config.nodeEnv,
       },
       {
-        status: health.postgres && health.redis ? 200 : 503,
+        status: isHealthy ? 200 : 503,
       }
     );
   } catch (error) {
     logger.error(
       {
         err: error,
-        environment: config.nodeEnv
+        environment: config.nodeEnv,
       },
       'Health check failed'
     );
 
-    return errorResponse(
-      error instanceof Error ? error.message : 'Health check failed',
-      {
-        status: 503,
-        data: {
-          timestamp: new Date().toISOString(),
-          services: {
-            database: 'unhealthy',
-            redis: 'unhealthy',
-          },
-        }
-      }
-    );
+    return errorResponse(error instanceof Error ? error.message : 'Health check failed', {
+      status: 503,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        services: {
+          database: 'unhealthy',
+          redis: 'unhealthy',
+        },
+      },
+    });
   }
 }

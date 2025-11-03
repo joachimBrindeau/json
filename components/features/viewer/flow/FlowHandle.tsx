@@ -26,16 +26,16 @@ interface FlowHandleProps extends Pick<HandleProps, 'id' | 'type'> {
   isChain?: boolean;
 }
 
-const FlowHandleComponent = ({ 
-  id, 
-  type, 
-  direction = 'horizontal', 
+const FlowHandleComponent = ({
+  id,
+  type,
+  direction = 'horizontal',
   style = {},
   isChain = false,
 }: FlowHandleProps) => {
   const position = POSITION_MAP[direction][type];
   const chainStyle = isChain ? { left: sizes.arrayNodeSize / 2 } : {};
-  
+
   return (
     <Handle
       id={id}
@@ -47,4 +47,3 @@ const FlowHandleComponent = ({
 };
 
 export const FlowHandle = memo(FlowHandleComponent);
-

@@ -6,8 +6,4 @@
 export { DocumentCard } from './DocumentCard';
 export { DocumentSkeleton } from './DocumentSkeleton';
 export { JsonPreview } from './JsonPreview';
-export {
-  getCategoryIcon,
-  complexityColors,
-  type BaseDocument,
-} from './document-constants';
+export { getCategoryIcon, complexityColors, type BaseDocument } from './document-constants';

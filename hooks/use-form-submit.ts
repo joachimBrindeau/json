@@ -54,7 +54,7 @@ export function useFormSubmit<T>(
     onError,
     resetOnSuccess = false,
     showSuccessToast = true,
-    showErrorToast = true
+    showErrorToast = true,
   } = options;
 
   const { toast } = useToast();
@@ -125,7 +125,18 @@ export function useFormSubmit<T>(
         throw error;
       }
     },
-    [submitFn, successMessage, errorMessage, onSuccess, onError, resetOnSuccess, showSuccessToast, showErrorToast, toast, reset]
+    [
+      submitFn,
+      successMessage,
+      errorMessage,
+      onSuccess,
+      onError,
+      resetOnSuccess,
+      showSuccessToast,
+      showErrorToast,
+      toast,
+      reset,
+    ]
   );
 
   return {

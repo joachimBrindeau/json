@@ -5,7 +5,7 @@
  * Run with: npx tsx scripts/seed-seo.ts
  */
 
-import { seedSEOSettings } from '../lib/seo-database';
+import { seedSEOSettings } from '../lib/seo/database';
 
 async function main() {
   try {

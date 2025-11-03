@@ -1,0 +1,269 @@
+{
+  "metadata": {
+    "generated": "1908-04-16T01:30:49.0Z",
+    "totalRecords": 2446,
+    "version": "4997753740.686.897688"
+  },
+  "records": [
+    {
+      "id": "3e45e054-182f-4fd6-ba59-6aa4006b7caa",
+      "timestamp": "1933-11-15T21:47:45.0Z",
+      "value": 184.64210230623758,
+      "status": "archived",
+      "tags": [
+        "xiphias",
+        "viduo",
+        "cresco",
+        "ustulo",
+        "comes"
+      ]
+    },
+    {
+      "id": "53178eca-9f6b-40d7-b158-a8347795e2b3",
+      "timestamp": "1939-11-11T02:32:59.0Z",
+      "value": 557.3446070924772,
+      "status": "archived",
+      "tags": [
+        "vilis",
+        "sol",
+        "depulso",
+        "abutor",
+        "spero"
+      ]
+    },
+    {
+      "id": "14bb9103-726a-4f2d-b669-920173ca7723",
+      "timestamp": "1907-01-23T07:46:55.0Z",
+      "value": -298.86444664808255,
+      "status": "active",
+      "tags": [
+        "nemo",
+        "sit",
+        "decor",
+        "commodi",
+        "solio"
+      ]
+    },
+    {
+      "id": "74049ebe-cb03-4465-a589-bd2b3a891e69",
+      "timestamp": "1897-08-05T10:26:29.0Z",
+      "value": 184.8342273441608,
+      "status": "pending",
+      "tags": [
+        "argentum",
+        "bis",
+        "vinculum",
+        "clibanus",
+        "corrigo"
+      ]
+    },
+    {
+      "id": "c5d7bfbd-b01f-4c4d-8a93-2e119ba2dd07",
+      "timestamp": "1912-08-29T04:44:33.0Z",
+      "value": -341.4417844370039,
+      "status": "inactive",
+      "tags": [
+        "territo",
+        "caritas",
+        "depulso",
+        "tenetur",
+        "eum"
+      ]
+    },
+    {
+      "id": "8b608a7d-a685-4fcb-9e6b-992cc5256031",
+      "timestamp": "1890-10-08T09:54:18.0Z",
+      "value": 661.7506879266039,
+      "status": "pending",
+      "tags": [
+        "numquam",
+        "valens",
+        "repellat",
+        "caute",
+        "facere"
+      ]
+    },
+    {
+      "id": "d3be876c-7cb3-4582-a9f8-73879f9aee60",
+      "timestamp": "1896-03-25T23:40:59.0Z",
+      "value": -533.667093419336,
+      "status": "pending",
+      "tags": [
+        "patruus",
+        "aggero",
+        "antiquus",
+        "auctor",
+        "voluntarius"
+      ]
+    },
+    {
+      "id": "6d79f986-8685-4239-8b89-c4ae787e9f2c",
+      "timestamp": "1928-08-11T11:40:13.0Z",
+      "value": -664.2447794416094,
+      "status": "archived",
+      "tags": [
+        "brevis",
+        "culpo",
+        "sordeo",
+        "beatae",
+        "tam"
+      ]
+    },
+    {
+      "id": "d80f02ab-2fed-49fe-a660-5fc4361b2343",
+      "timestamp": "1938-05-24T21:19:17.0Z",
+      "value": 675.6215635893623,
+      "status": "archived",
+      "tags": [
+        "amiculum",
+        "defessus",
+        "dens",
+        "bibo",
+        "sui"
+      ]
+    },
+    {
+      "id": "e96bea00-a985-4585-afa5-c2f6a2fe7db4",
+      "timestamp": "1893-08-07T05:58:48.0Z",
+      "value": -72.57570354334212,
+      "status": "pending",
+      "tags": [
+        "perferendis",
+        "creator",
+        "consectetur",
+        "viscus",
+        "tantillus"
+      ]
+    },
+    {
+      "id": "ff9e165d-0831-4c39-b476-9918cf2475f0",
+      "timestamp": "1890-10-15T03:01:13.0Z",
+      "value": 355.04117248765556,
+      "status": "inactive",
+      "tags": [
+        "ago",
+        "claustrum",
+        "curatio",
+        "architecto",
+        "ara"
+      ]
+    },
+    {
+      "id": "083fc722-d1c9-43bd-a4ad-8dece86c4647",
+      "timestamp": "1936-09-11T18:22:52.0Z",
+      "value": -774.8499260384076,
+      "status": "active",
+      "tags": [
+        "voluptatem",
+        "dedico",
+        "succurro",
+        "conqueror",
+        "fugiat"
+      ]
+    },
+    {
+      "id": "34def289-a937-4033-853d-65b93ccbcfb7",
+      "timestamp": "1916-01-19T05:22:28.0Z",
+      "value": -669.9040622613666,
+      "status": "active",
+      "tags": [
+        "certe",
+        "cresco",
+        "velut",
+        "via",
+        "vinum"
+      ]
+    },
+    {
+      "id": "757dba60-a599-4480-8ce2-216143821ee7",
+      "timestamp": "1955-05-02T20:13:46.0Z",
+      "value": -761.5583237613395,
+      "status": "pending",
+      "tags": [
+        "virtus",
+        "culpa",
+        "demo",
+        "aliquam",
+        "aperte"
+      ]
+    },
+    {
+      "id": "c283cb1e-9fe0-43bd-96de-78d8af996948",
+      "timestamp": "1959-10-12T15:46:45.0Z",
+      "value": -967.0141836354331,
+      "status": "pending",
+      "tags": [
+        "cupio",
+        "vesco",
+        "verbum",
+        "comprehendo",
+        "degenero"
+      ]
+    },
+    {
+      "id": "717a75c8-75ec-406a-9ae8-12cfa29c4afa",
+      "timestamp": "1932-11-11T21:02:41.0Z",
+      "value": -149.7605407108398,
+      "status": "active",
+      "tags": [
+        "dedico",
+        "amiculum",
+        "stultus",
+        "vinum",
+        "incidunt"
+      ]
+    },
+    {
+      "id": "06234622-cf84-4882-9d2a-3259a071f09f",
+      "timestamp": "1901-12-13T20:11:14.0Z",
+      "value": -998.7294378638161,
+      "status": "pending",
+      "tags": [
+        "commemoro",
+        "adstringo",
+        "delinquo",
+        "ver",
+        "attonbitus"
+      ]
+    },
+    {
+      "id": "4cdd9fd6-4b28-4d84-abfa-87ee07357bf2",
+      "timestamp": "1928-07-09T19:49:05.0Z",
+      "value": 387.17495336344837,
+      "status": "pending",
+      "tags": [
+        "pariatur",
+        "somniculosus",
+        "venio",
+        "acidus",
+        "repellendus"
+      ]
+    },
+    {
+      "id": "45dc2f16-7d9c-45ab-b166-a55b075f39d2",
+      "timestamp": "1941-04-03T05:21:27.0Z",
+      "value": -986.4993056815036,
+      "status": "inactive",
+      "tags": [
+        "denuo",
+        "adicio",
+        "vitae",
+        "aeneus",
+        "utrimque"
+      ]
+    },
+    {
+      "id": "3d360cc3-2789-4f5c-b62c-7efb1135fa49",
+      "timestamp": "1922-12-06T02:05:47.0Z",
+      "value": 45.1419529752925,
+      "status": "inactive",
+      "tags": [
+        "sint",
+        "votum",
+        "tot",
+        "supellex",
+        "ulciscor"
+      ]
+    }
+  ]
+}

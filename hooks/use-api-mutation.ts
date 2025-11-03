@@ -66,7 +66,7 @@ export function useApiMutation<TData, TVariables = void>(
     onSuccess,
     onError,
     successMessage,
-    showSuccessToast: shouldShowSuccessToast = true
+    showSuccessToast: shouldShowSuccessToast = true,
   } = options;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -139,10 +139,7 @@ export function useApiPost<TData, TVariables = unknown>(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { apiClient } = require('@/lib/api/client');
-  return useApiMutation<TData, TVariables>(
-    (data) => apiClient.post(url, data),
-    options
-  );
+  return useApiMutation<TData, TVariables>((data) => apiClient.post(url, data), options);
 }
 
 export function useApiPut<TData, TVariables = unknown>(
@@ -151,13 +148,10 @@ export function useApiPut<TData, TVariables = unknown>(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { apiClient } = require('@/lib/api/client');
-  return useApiMutation<TData, TVariables>(
-    (data) => {
-      const endpoint = typeof url === 'function' ? url(data) : url;
-      return apiClient.put(endpoint, data);
-    },
-    options
-  );
+  return useApiMutation<TData, TVariables>((data) => {
+    const endpoint = typeof url === 'function' ? url(data) : url;
+    return apiClient.put(endpoint, data);
+  }, options);
 }
 
 export function useApiDelete<TData, TVariables = string>(
@@ -166,13 +160,10 @@ export function useApiDelete<TData, TVariables = string>(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { apiClient } = require('@/lib/api/client');
-  return useApiMutation<TData, TVariables>(
-    (vars) => {
-      const endpoint = typeof url === 'function' ? url(vars) : url;
-      return apiClient.delete(endpoint);
-    },
-    options
-  );
+  return useApiMutation<TData, TVariables>((vars) => {
+    const endpoint = typeof url === 'function' ? url(vars) : url;
+    return apiClient.delete(endpoint);
+  }, options);
 }
 
 export function useApiPatch<TData, TVariables = unknown>(
@@ -181,11 +172,8 @@ export function useApiPatch<TData, TVariables = unknown>(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { apiClient } = require('@/lib/api/client');
-  return useApiMutation<TData, TVariables>(
-    (data) => {
-      const endpoint = typeof url === 'function' ? url(data) : url;
-      return apiClient.patch(endpoint, data);
-    },
-    options
-  );
+  return useApiMutation<TData, TVariables>((data) => {
+    const endpoint = typeof url === 'function' ? url(data) : url;
+    return apiClient.patch(endpoint, data);
+  }, options);
 }

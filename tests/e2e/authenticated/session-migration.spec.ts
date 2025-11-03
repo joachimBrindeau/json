@@ -201,8 +201,8 @@ test.describe('Authenticated User - Session Management and Data Migration', () =
         }
       }
 
-      // Verify no scripts executed
-      await page.waitForTimeout(1000);
+      // Verify no scripts executed - network should be idle
+      await page.waitForLoadState('networkidle');
       // Test passes if no XSS alert appeared
     });
 

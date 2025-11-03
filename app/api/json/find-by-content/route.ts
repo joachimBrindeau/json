@@ -1,14 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { success, badRequest, internalServerError } from '@/lib/api/responses';
+import { withAuth } from '@/lib/api/utils';
+import { tagSuggestLimiter } from '@/lib/middleware/rate-limit';
+import { RateLimitError } from '@/lib/utils/app-errors';
 
 export const runtime = 'nodejs';
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+export const POST = withAuth(async (request, session) => {
+  // Rate limit: identify by userId if present, else IP
+  const rateKey =
+    session?.user?.id ||
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    'anonymous';
+  if (!tagSuggestLimiter.isAllowed(rateKey)) {
+    const reset = tagSuggestLimiter.getResetTime(rateKey);
+    throw new RateLimitError(
+      reset ? Math.ceil((reset.getTime() - Date.now()) / 1000) : undefined,
+      'Too many content-lookup requests. Please slow down.',
+      {
+        resetTime: reset?.toISOString(),
+        remaining: tagSuggestLimiter.getRemainingAttempts(rateKey),
+      }
+    );
+  }
+
   let contentHash: string | undefined;
   let content: string | undefined;
 
@@ -27,16 +45,16 @@ export async function POST(request: NextRequest) {
       return badRequest('Invalid JSON content');
     }
 
-    // Find documents that belong to the current user (if authenticated) or are anonymous
-    const whereCondition = session?.user?.email
-      ? {
-          OR: [{ userId: session.user.email }, { isAnonymous: true }],
-        }
-      : { isAnonymous: true };
+    // Find documents that belong to the current user (if authenticated) or anonymous (when unauthenticated)
+    // Note: userId must be matched against session.user.id, not email
+    const whereCondition = session?.user?.id ? { userId: session.user.id } : { isAnonymous: true };
 
-    // Find all candidate documents and compare their content
-    const documents = await prisma.jsonDocument.findMany({
-      where: whereCondition,
+    // First try checksum match (fast path)
+    const byHash = await prisma.jsonDocument.findFirst({
+      where: {
+        ...whereCondition,
+        checksum: contentHash,
+      },
       select: {
         id: true,
         shareId: true,
@@ -53,41 +71,42 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Find the first document with matching content
-    for (const doc of documents) {
-      try {
-        // Deep comparison of JSON content
-        if (JSON.stringify(doc.content) === JSON.stringify(parsedContent)) {
-          return success({
-            document: {
-              id: doc.id,
-              shareId: doc.shareId,
-              title: doc.title,
-              content: doc.content,
-              size: doc.size,
-              nodeCount: doc.nodeCount,
-              maxDepth: doc.maxDepth,
-              complexity: doc.complexity,
-              createdAt: doc.createdAt,
-              userId: doc.userId,
-              isAnonymous: doc.isAnonymous,
-            },
-          });
-        }
-      } catch {
-        // Skip this document if JSON comparison fails
-        continue;
-      }
+    if (byHash) {
+      return success({ document: byHash });
     }
 
-    // No matching document found
+    // Fallback: JSON structural equality
+    const byContent = await prisma.jsonDocument.findFirst({
+      where: {
+        ...whereCondition,
+        content: parsedContent as any,
+      },
+      select: {
+        id: true,
+        shareId: true,
+        title: true,
+        content: true,
+        size: true,
+        nodeCount: true,
+        maxDepth: true,
+        complexity: true,
+        createdAt: true,
+        userId: true,
+        isAnonymous: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
     return success({
-      document: null,
+      document: byContent ?? null,
     });
   } catch (error) {
-    logger.error({ err: error, userId: session?.user?.email, contentHash }, 'Find by content error');
+    logger.error(
+      { err: error, userId: session?.user?.email, contentHash },
+      'Find by content error'
+    );
     return internalServerError('Failed to search for existing content', {
       details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
-}
+});

@@ -42,6 +42,29 @@ test.describe('Anonymous User - Basic JSON Viewer', () => {
     expect(await viewerPage.hasJSONErrors()).toBe(false);
   });
 
+  test('should parse and display realistic user data', async ({ dataGenerator }) => {
+    // Use realistic data generator
+    const realisticUser = dataGenerator.generateRealisticUser();
+    const jsonString = JSON.stringify(realisticUser, null, 2);
+
+    // Input JSON
+    await viewerPage.inputJSON(jsonString);
+
+    // Wait for processing
+    await viewerPage.waitForJSONProcessed();
+
+    // Verify JSON structure is displayed
+    const nodeCounts = await viewerPage.getNodeCounts();
+    expect(nodeCounts.total).toBeGreaterThan(0);
+    expect(nodeCounts.objects).toBeGreaterThan(0);
+
+    // Verify no errors
+    expect(await viewerPage.hasJSONErrors()).toBe(false);
+
+    // Take screenshot with realistic data
+    await viewerPage.takeScreenshot('realistic-user-data');
+  });
+
   test('should handle all view modes', async ({ dataGenerator }) => {
     const complexJson = dataGenerator.generateComplexJSON();
     const jsonString = JSON.stringify(complexJson, null, 2);
@@ -94,8 +117,8 @@ test.describe('Anonymous User - Basic JSON Viewer', () => {
     // Search for a specific term
     await viewerPage.searchInJSON('user1');
 
-    // Wait a moment for search to complete
-    await viewerPage.page.waitForTimeout(1000);
+    // Wait for search results to be processed
+    await viewerPage.page.waitForLoadState('networkidle');
 
     // Clear search
     await viewerPage.clearSearch();

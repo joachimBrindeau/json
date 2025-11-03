@@ -5,16 +5,12 @@
  */
 
 import { NextRequest } from 'next/server';
+import { createHash } from 'crypto';
 import { withAuth, validateRequest, handleApiError, withCors } from '@/lib/api/utils';
 import { fileUploadSchema, jsonAnalysisOptionsSchema } from '@/lib/api/validators';
 import { success, badRequest, unprocessableEntity } from '@/lib/api/responses';
 import { prisma } from '@/lib/db';
-import {
-  analyzeJsonStream,
-  chunkJsonData,
-  createPerformanceMonitor,
-  JsonCache,
-} from '@/lib/json';
+import { analyzeJsonStream, chunkJsonData, createPerformanceMonitor, JsonCache } from '@/lib/json';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -36,15 +32,13 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
     // Check file size using environment variable
     const maxSize = parseInt(process.env.MAX_JSON_SIZE_MB || '2048') * 1024 * 1024;
     if (file.size > maxSize) {
-      return unprocessableEntity(
-        `File size exceeds ${maxSize / (1024 * 1024)}MB limit`
-      );
+      return unprocessableEntity(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
     }
 
     // Read and validate JSON content
     const content = await file.text();
     let parsedContent: unknown;
-    
+
     try {
       parsedContent = JSON.parse(content);
     } catch {
@@ -61,7 +55,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
     const analysis = await analyzeJsonStream(parsedContent as string | object, analysisOptions);
 
     // Create chunks for large JSONs
-    const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent) : [];
+    const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent as any) : [];
 
     // Save to database with transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -69,7 +63,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
       const document = await tx.jsonDocument.create({
         data: {
           title: title || file.name,
-          content: parsedContent,
+          content: parsedContent as any,
           size: BigInt(analysis.size),
           nodeCount: analysis.nodeCount,
           maxDepth: analysis.maxDepth,
@@ -92,7 +86,7 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
           data: chunks.map((chunk) => ({
             documentId: document.id,
             chunkIndex: chunk.index,
-            content: chunk.content,
+            content: chunk.content as any,
             size: chunk.size,
             path: chunk.path,
             checksum: chunk.checksum,
@@ -108,9 +102,12 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
           parseTime: Math.round(performance.duration),
           memoryUsage: performance.memoryUsage ? BigInt(performance.memoryUsage) : null,
           userAgent: req.headers.get('user-agent') || undefined,
-          ipHash: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
-            ? createHash('sha256').update(req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '').digest('hex')
-            : undefined,
+          ipHash:
+            req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+              ? createHash('sha256')
+                  .update(req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '')
+                  .digest('hex')
+              : undefined,
         },
       });
 
@@ -156,20 +153,20 @@ const uploadHandler = withAuth(async (req: NextRequest, session) => {
 });
 
 // Apply CORS middleware and export
-export const POST = withCors(uploadHandler, {
+export const POST = withCors(uploadHandler as any, {
   methods: ['POST', 'OPTIONS'],
   headers: ['Content-Type'],
 });
 
 // Handle OPTIONS for CORS using the utility
-export const OPTIONS = withCors(async () => new Response(null), {
+export const OPTIONS = withCors(async () => new Response(null) as any, {
   methods: ['POST', 'OPTIONS'],
   headers: ['Content-Type'],
 });
 
 /**
  * Key improvements over the original:
- * 
+ *
  * 1. Uses withAuth() for authentication instead of manual session checking
  * 2. Uses standardized success() and error responses
  * 3. Uses handleApiError() for consistent error handling and logging

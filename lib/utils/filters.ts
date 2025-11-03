@@ -84,8 +84,8 @@ export function sortByDate<T extends Record<string, unknown>>(
   direction: 'asc' | 'desc' = 'desc'
 ): T[] {
   return [...items].sort((a, b) => {
-    const dateA = new Date(a[dateField]);
-    const dateB = new Date(b[dateField]);
+    const dateA = new Date(a[dateField] as any);
+    const dateB = new Date(b[dateField] as any);
 
     // Handle invalid dates
     if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
@@ -150,14 +150,17 @@ export function groupBy<T extends Record<string, unknown>>(
   items: T[],
   field: keyof T
 ): Record<string, T[]> {
-  return items.reduce((groups, item) => {
-    const key = String(item[field]);
-    if (!groups[key]) {
-      groups[key] = [];
-    }
-    groups[key].push(item);
-    return groups;
-  }, {} as Record<string, T[]>);
+  return items.reduce(
+    (groups, item) => {
+      const key = String(item[field]);
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    },
+    {} as Record<string, T[]>
+  );
 }
 
 /**
@@ -216,7 +219,7 @@ export function filterByDateRange<T extends Record<string, unknown>>(
   endDate?: Date
 ): T[] {
   return items.filter((item) => {
-    const itemDate = new Date(item[dateField]);
+    const itemDate = new Date(item[dateField] as any);
     if (isNaN(itemDate.getTime())) return false;
 
     if (startDate && itemDate < startDate) return false;
@@ -338,11 +341,14 @@ export function countBy<T extends Record<string, unknown>>(
   items: T[],
   field: keyof T
 ): Record<string, number> {
-  return items.reduce((counts, item) => {
-    const key = String(item[field]);
-    counts[key] = (counts[key] || 0) + 1;
-    return counts;
-  }, {} as Record<string, number>);
+  return items.reduce(
+    (counts, item) => {
+      const key = String(item[field]);
+      counts[key] = (counts[key] || 0) + 1;
+      return counts;
+    },
+    {} as Record<string, number>
+  );
 }
 
 /**

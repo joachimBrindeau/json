@@ -1,14 +1,5 @@
-import { Metadata } from 'next';
-import { generateDatabaseSEOMetadata } from '@/lib/seo/database';
+import { createMetadataGenerator, createSimpleLayout } from '@/lib/seo/metadata-layout-factory';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return await generateDatabaseSEOMetadata('edit');
-}
+export const generateMetadata = createMetadataGenerator('edit');
 
-export default function EditLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
-}
+export default createSimpleLayout('Edit');

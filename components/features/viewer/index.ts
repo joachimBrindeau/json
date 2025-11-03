@@ -40,4 +40,3 @@ export type { ViewMode, JsonNode, JsonStats, ParseResult } from './types';
 export { Viewer as UltraJsonViewer } from './Viewer';
 export { ViewerCompare as JsonCompare } from './ViewerCompare';
 export { ViewerActions as JsonActionButtons } from './ViewerActions';
-

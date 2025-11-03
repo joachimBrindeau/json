@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
-import { config } from '../lib/config';
+
+const isCI = !!process.env.CI;
+// Use a single source of truth for test server URL
+const SERVER_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3456';
+const baseURL = SERVER_URL;
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -9,22 +13,24 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: config.build.isCI,
+  forbidOnly: true,
   /* Retry on CI only */
-  retries: config.build.isCI ? 2 : 0,
+  retries: 0,
+  /* Fail fast after first failure to surface breakages early */
+  maxFailures: 1,
   /* Opt out of parallel tests on CI. */
-  workers: config.build.isCI ? 1 : undefined,
+  workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    config.build.isCI ? ['github'] : ['list'],
+    isCI ? ['github'] : ['list'],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: config.testing.baseUrl,
+    baseURL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -91,7 +97,7 @@ export default defineConfig({
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
         // Mobile-specific launch options
         launchOptions: {
@@ -117,26 +123,27 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:3456',
-  //   reuseExistingServer: true, // Always reuse existing server
-  //   timeout: 180_000,
-  //   stdout: 'pipe',
-  //   stderr: 'pipe',
-  // },
+  /* Run a production server for tests to avoid dev-time vendor chunk issues */
+  webServer: {
+    command: "bash -lc 'npm run -s build && next start -p 3456'",
+    url: SERVER_URL,
+    reuseExistingServer: true,
+    timeout: 180_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    env: { NEXT_PUBLIC_APP_URL: SERVER_URL, PLAYWRIGHT: '1', TURBOPACK: '0' },
+  },
 
   /* Global setup and teardown */
   globalSetup: require.resolve('../tests/utils/global-setup.ts'),
   globalTeardown: require.resolve('../tests/utils/global-teardown.ts'),
 
   /* Test timeout */
-  timeout: 60_000,
+  timeout: 30_000,
 
   /* Expect timeout */
   expect: {
-    timeout: 10_000,
+    timeout: 5_000,
     /* Take screenshot on expect failure */
     toHaveScreenshot: { threshold: 0.2 },
   },

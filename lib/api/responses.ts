@@ -192,21 +192,23 @@ export function error(
 }
 
 /**
+ * Common error response options interface
+ */
+interface ErrorOptions {
+  details?: string;
+  code?: string;
+  headers?: Record<string, string>;
+  metadata?: Record<string, unknown>;
+}
+
+/**
  * Creates a 400 Bad Request error response
  */
 export function badRequest(
   message: string = 'Bad request',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 400,
-  });
+  return error(message, { ...options, status: 400 });
 }
 
 /**
@@ -214,20 +216,12 @@ export function badRequest(
  */
 export function unauthorized(
   message: string = 'Authentication required',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
   return error(message, {
     ...options,
     status: 401,
-    headers: {
-      'WWW-Authenticate': 'Bearer',
-      ...options.headers,
-    },
+    headers: { 'WWW-Authenticate': 'Bearer', ...options.headers },
   });
 }
 
@@ -236,17 +230,9 @@ export function unauthorized(
  */
 export function forbidden(
   message: string = 'Access denied',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 403,
-  });
+  return error(message, { ...options, status: 403 });
 }
 
 /**
@@ -254,17 +240,9 @@ export function forbidden(
  */
 export function notFound(
   message: string = 'Resource not found',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 404,
-  });
+  return error(message, { ...options, status: 404 });
 }
 
 /**
@@ -272,17 +250,9 @@ export function notFound(
  */
 export function conflict(
   message: string = 'Resource already exists',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 409,
-  });
+  return error(message, { ...options, status: 409 });
 }
 
 /**
@@ -290,17 +260,9 @@ export function conflict(
  */
 export function unprocessableEntity(
   message: string = 'Validation failed',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 422,
-  });
+  return error(message, { ...options, status: 422 });
 }
 
 /**
@@ -333,17 +295,9 @@ export function tooManyRequests(
  */
 export function internalServerError(
   message: string = 'Internal server error',
-  options: {
-    details?: string;
-    code?: string;
-    headers?: Record<string, string>;
-    metadata?: Record<string, unknown>;
-  } = {}
+  options: ErrorOptions = {}
 ): NextResponse {
-  return error(message, {
-    ...options,
-    status: 500,
-  });
+  return error(message, { ...options, status: 500 });
 }
 
 /**
@@ -432,7 +386,7 @@ export function stream(
   const responseHeaders: Record<string, string> = {
     'Content-Type': contentType,
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
+    Connection: 'keep-alive',
     ...headers,
   };
 
@@ -456,25 +410,25 @@ export function jsonStream(
     headers?: Record<string, string>;
   } = {}
 ): NextResponse {
-  const stream = new ReadableStream({
+  const readableStream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder();
-      
+
       try {
         const jsonString = JSON.stringify(data, null, 2);
         const chunks = [];
-        
+
         // Split into manageable chunks
         const chunkSize = 64 * 1024; // 64KB chunks
         for (let i = 0; i < jsonString.length; i += chunkSize) {
           chunks.push(jsonString.slice(i, i + chunkSize));
         }
-        
+
         // Send chunks
-        chunks.forEach(chunk => {
+        chunks.forEach((chunk) => {
           controller.enqueue(encoder.encode(chunk));
         });
-        
+
         controller.close();
       } catch (streamError) {
         controller.error(streamError);
@@ -482,7 +436,7 @@ export function jsonStream(
     },
   });
 
-  return this.stream(stream, {
+  return stream(readableStream, {
     contentType: 'application/json',
     ...options,
   });
@@ -492,7 +446,7 @@ export function jsonStream(
  * Creates a file download response
  */
 export function download(
-  data: string | Buffer | Uint8Array,
+  data: string | Buffer,
   options: {
     filename: string;
     contentType?: string;
@@ -511,11 +465,11 @@ export function download(
   // Add content length if possible
   if (typeof data === 'string') {
     responseHeaders['Content-Length'] = new TextEncoder().encode(data).length.toString();
-  } else if (data instanceof Buffer || data instanceof Uint8Array) {
+  } else if (data instanceof Buffer) {
     responseHeaders['Content-Length'] = data.length.toString();
   }
 
-  return new NextResponse(data, {
+  return new NextResponse(data as BodyInit, {
     status: 200,
     headers: responseHeaders,
   });
@@ -538,7 +492,7 @@ export function serverSentEvents(
   const responseHeaders = {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
+    Connection: 'keep-alive',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Cache-Control',
     ...headers,
@@ -568,11 +522,11 @@ export function serverSentEvents(
 export function formatSSEData(data: unknown, event?: string): string {
   const encoder = new TextEncoder();
   let formatted = '';
-  
+
   if (event) {
     formatted += `event: ${event}\n`;
   }
-  
+
   formatted += `data: ${JSON.stringify(data)}\n\n`;
   return formatted;
 }
@@ -670,15 +624,3 @@ export function withCommonHeaders(
 
   return response;
 }
-
-/**
- * Export all response types for TypeScript
- */
-export type {
-  ApiSuccessResponse,
-  ApiErrorResponse,
-  ApiResponse,
-  PaginatedResponse,
-  StreamResponse,
-  DownloadResponse,
-};

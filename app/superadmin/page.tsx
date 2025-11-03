@@ -1,19 +1,21 @@
-import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { isSuperAdmin } from '@/lib/auth/admin'
-import { SuperAdminDashboard } from '@/components/features/admin/super-admin-dashboard'
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { isSuperAdmin } from '@/lib/auth/admin';
+import { SuperAdminDashboard } from '@/components/features/admin/super-admin-dashboard';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Superadmin Dashboard - JSON Viewer',
   description: 'Administrative dashboard for system management',
-  robots: 'noindex,nofollow'
-}
+  robots: 'noindex,nofollow',
+};
 
 export default async function SuperAdminPage() {
-  const isAdmin = await isSuperAdmin()
-  
+  const isAdmin = await isSuperAdmin();
+
   if (!isAdmin) {
-    redirect('/')
+    redirect('/');
   }
 
   return (
@@ -23,9 +25,9 @@ export default async function SuperAdminPage() {
           <h1 className="text-3xl font-bold">Superadmin Dashboard</h1>
           <p className="mt-2 text-muted-foreground">System administration and analytics</p>
         </div>
-        
+
         <SuperAdminDashboard />
       </div>
     </div>
-  )
+  );
 }

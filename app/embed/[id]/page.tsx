@@ -8,8 +8,10 @@ import { TabsNav } from '@/components/layout/tabs-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Download, ExternalLink } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useClipboard } from '@/hooks/use-clipboard';
+import { useDownload } from '@/hooks/use-download';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { logger } from '@/lib/logger';
 
 interface EmbedPageProps {
@@ -26,16 +28,23 @@ export default function EmbedPage({ params }: EmbedPageProps) {
   const [currentDate, setCurrentDate] = useState<string>('');
   const [dateISO, setDateISO] = useState<string>('');
   const searchParams = useSearchParams();
-  const { toast } = useToast();
+
+  const { copy } = useClipboard({
+    successDescription: 'JSON copied to clipboard',
+  });
+
+  const { download } = useDownload({
+    successDescription: 'JSON file downloaded',
+  });
 
   // Parse URL parameters
-  const theme = searchParams.get('theme') || 'auto';
-  const height = parseInt(searchParams.get('height') || '400');
-  const showCopy = searchParams.get('copy') !== 'false';
-  const showDownload = searchParams.get('download') === 'true';
-  const borderRadius = parseInt(searchParams.get('radius') || '8');
-  const viewMode = searchParams.get('view') || 'smart'; // smart, editor, flow, tree, list, tabs
-  const showTabs = searchParams.get('tabs') === 'true' || viewMode === 'tabs';
+  const theme = searchParams?.get('theme') || 'auto';
+  const height = parseInt(searchParams?.get('height') || '400');
+  const showCopy = searchParams?.get('copy') !== 'false';
+  const showDownload = searchParams?.get('download') === 'true';
+  const borderRadius = parseInt(searchParams?.get('radius') || '8');
+  const viewMode = searchParams?.get('view') || 'smart'; // smart, editor, flow, tree, list, tabs
+  const showTabs = searchParams?.get('tabs') === 'true' || viewMode === 'tabs';
 
   // Tab state for full tabbed viewer
   const [activeTab, setActiveTab] = useState(() => {
@@ -52,7 +61,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
       setShareId(resolvedParams.id);
     };
     getParams();
-    
+
     // Set client-specific values after hydration
     if (typeof window !== 'undefined') {
       setHostname(window.location.hostname.replace('www.', ''));
@@ -139,32 +148,11 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     applyTheme();
   }, [theme]);
 
-  const handleCopyJson = async () => {
-    try {
-      await navigator.clipboard.writeText(jsonData);
-      toast({
-        title: 'Copied!',
-        description: 'JSON copied to clipboard',
-      });
-    } catch {
-      toast({
-        title: 'Copy failed',
-        description: 'Unable to copy to clipboard',
-        variant: 'destructive',
-      });
-    }
-  };
+  const handleCopyJson = () => copy(jsonData);
 
   const handleDownload = () => {
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title.toLowerCase().replace(/\s+/g, '-')}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const filename = `${title.toLowerCase().replace(/\s+/g, '-')}.json`;
+    download(jsonData, filename, 'application/json');
   };
 
   const openFullView = () => {
@@ -262,7 +250,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
         style={{ height: `${height}px`, borderRadius: `${borderRadius}px` }}
       >
         <div className="flex items-center gap-2 text-gray-600">
-          <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+          <LoadingSpinner size="sm" />
           <span>Loading JSON...</span>
         </div>
       </div>
@@ -386,8 +374,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
           </span>
           <span className="text-gray-400 dark:text-gray-600">•</span>
           <span>
-            {hostname}{' '}
-            {currentDate && `• ${currentDate}`}
+            {hostname} {currentDate && `• ${currentDate}`}
           </span>
         </div>
         <a

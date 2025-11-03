@@ -1,6 +1,6 @@
 /**
  * useFlowParser - Hook for parsing JSON into flow nodes and edges
- * 
+ *
  * Single Responsibility: JSON parsing and layout
  */
 
@@ -44,4 +44,3 @@ export const useFlowParser = (json: unknown): ParsedFlowData => {
     }
   }, [json]);
 };
-

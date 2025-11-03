@@ -112,7 +112,9 @@ export const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 };
 
-export const detectJsonFormat = (jsonString: string): {
+export const detectJsonFormat = (
+  jsonString: string
+): {
   isMinified: boolean;
   indentation: number;
   lineCount: number;
@@ -121,10 +123,10 @@ export const detectJsonFormat = (jsonString: string): {
   const lines = jsonString.split('\n');
   const lineCount = lines.length;
   const isMinified = lineCount === 1;
-  
+
   let indentation = 0;
   let hasTrailingComma = false;
-  
+
   if (!isMinified) {
     // Detect indentation
     for (const line of lines) {
@@ -137,11 +139,11 @@ export const detectJsonFormat = (jsonString: string): {
         }
       }
     }
-    
+
     // Check for trailing commas
     hasTrailingComma = /,\s*[}\]]/.test(jsonString);
   }
-  
+
   return {
     isMinified,
     indentation: indentation || 2,
@@ -178,24 +180,24 @@ export const useJsonProcessing = (
     }
 
     const startTime = performance.now();
-    
+
     try {
       const parsed = typeof content === 'string' ? JSON.parse(content) : content;
       const parseTime = performance.now() - startTime;
-      
+
       if (enablePerformanceMonitoring) {
         performanceRef.current = parseTime;
       }
 
       const contentString = typeof content === 'string' ? content : JSON.stringify(content);
       const size = contentString.length;
-      
+
       const stats: JsonStats = {
         nodeCount: 0,
         maxDepth: 0,
         size,
         parseTime,
-        type: getValueType(parsed),
+        type: getValueType(parsed) as any,
         keys: Array.isArray(parsed)
           ? parsed.length
           : typeof parsed === 'object' && parsed !== null
@@ -319,9 +321,9 @@ export const useJsonProcessing = (
   // Search functionality
   const createSearchFilter = useCallback((searchTerm: string) => {
     if (!searchTerm) return () => true;
-    
+
     const lowercaseSearch = searchTerm.toLowerCase();
-    
+
     return (node: JsonNode) => {
       return (
         node.key.toLowerCase().includes(lowercaseSearch) ||
@@ -346,14 +348,14 @@ export const useJsonProcessing = (
 
     const { size, parseTime, nodeCount } = validation.stats;
     const sizeMB = size / (1024 * 1024);
-    
+
     const isLarge = sizeMB > 5 || nodeCount > 1000;
     const isVeryLarge = sizeMB > 50 || nodeCount > 10000;
     const shouldVirtualize = sizeMB > 10 || nodeCount > 5000;
-    
+
     let performanceLevel: 'excellent' | 'good' | 'warning' | 'critical' = 'excellent';
     const recommendations: string[] = [];
-    
+
     if (sizeMB > 100 || parseTime > 5000) {
       performanceLevel = 'critical';
       recommendations.push('Consider using virtual scrolling');
@@ -365,7 +367,7 @@ export const useJsonProcessing = (
       performanceLevel = 'good';
       recommendations.push('Performance optimizations available');
     }
-    
+
     return {
       parseTime,
       isLarge,
@@ -377,37 +379,40 @@ export const useJsonProcessing = (
   }, [validation.stats, enablePerformanceMonitoring]);
 
   // Copy and download utilities
-  const copyToClipboard = useCallback(async (data: any = validation.parsedData) => {
-    if (!data) throw new Error('No data to copy');
-    
-    const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-    await navigator.clipboard.writeText(jsonString);
-  }, [validation.parsedData]);
+  const copyToClipboard = useCallback(
+    async (data: any = validation.parsedData) => {
+      if (!data) throw new Error('No data to copy');
 
-  const downloadAsJson = useCallback((
-    data: any = validation.parsedData,
-    filename = `json-data-${Date.now()}.json`
-  ) => {
-    if (!data) throw new Error('No data to download');
-    
-    const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [validation.parsedData]);
+      const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+    },
+    [validation.parsedData]
+  );
+
+  const downloadAsJson = useCallback(
+    (data: any = validation.parsedData, filename = `json-data-${Date.now()}.json`) => {
+      if (!data) throw new Error('No data to download');
+
+      const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    [validation.parsedData]
+  );
 
   // Format detection
   const formatInfo = useMemo(() => {
     if (!validation.isValid || typeof content !== 'string') {
       return null;
     }
-    
+
     return detectJsonFormat(content);
   }, [content, validation.isValid]);
 
@@ -416,29 +421,29 @@ export const useJsonProcessing = (
     isValid: validation.isValid,
     error: validation.error,
     parsedData: validation.parsedData,
-    
+
     // Structure
     flatNodes: structureAnalysis.flatNodes,
     treeStructure: structureAnalysis.treeStructure,
-    
+
     // Statistics
     stats: structureAnalysis.stats,
-    
+
     // Performance
     performance: performanceMetrics,
-    
+
     // Processing state
     isProcessing,
     processingProgress,
-    
+
     // Utilities
     createSearchFilter,
     copyToClipboard,
     downloadAsJson,
-    
+
     // Format info
     formatInfo,
-    
+
     // Helper functions (exported for reuse)
     formatValue: formatJsonValue,
     getTypeColor,

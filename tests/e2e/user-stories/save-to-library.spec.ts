@@ -8,34 +8,44 @@ test.describe('User Story: Save JSON to Library', () => {
     await authHelper.ensureAuthenticated();
   });
 
-  test('should save simple JSON to personal library', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should save simple JSON to personal library', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const testJson = dataGenerator.generateSimpleJSON();
     const jsonString = stringifyJSON(testJson);
 
     // Save to library using helper
     const result = await libraryActionHelper.saveToLibrary(jsonString, {
-      title: 'Test Simple JSON Document'
+      title: 'Test Simple JSON Document',
     });
-    
+
     expect(result.success).toBe(true);
   });
 
-  test('should save complex nested JSON with custom metadata', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should save complex nested JSON with custom metadata', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const complexJson = dataGenerator.generateComplexJSON();
     const jsonString = stringifyJSON(complexJson);
 
     // Save with comprehensive metadata
     const result = await libraryActionHelper.saveToLibrary(jsonString, {
       title: 'Complex Nested JSON Structure',
-      description: 'Complex JSON with nested objects, arrays, and various data types for testing purposes',
+      description:
+        'Complex JSON with nested objects, arrays, and various data types for testing purposes',
       tags: 'complex, nested, testing, structure',
-      category: 'Test Data'
+      category: 'Test Data',
     });
-    
+
     expect(result.success).toBe(true);
   });
 
-  test('should save large JSON file and handle processing efficiently', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should save large JSON file and handle processing efficiently', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const largeJson = dataGenerator.generateLargeJSON(200, 3, 50); // Moderate size for testing
     const jsonString = stringifyJSON(largeJson);
 
@@ -47,9 +57,9 @@ test.describe('User Story: Save JSON to Library', () => {
 
     // Save large document with progress handling
     const result = await libraryActionHelper.saveLargeDocument(jsonString, {
-      title: 'Large JSON Dataset'
+      title: 'Large JSON Dataset',
     });
-    
+
     expect(result.success).toBe(true);
   });
 
@@ -61,7 +71,10 @@ test.describe('User Story: Save JSON to Library', () => {
     expect(saveDisabled).toBe(true);
   });
 
-  test('should handle save operation cancellation', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should handle save operation cancellation', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const testJson = dataGenerator.generateSimpleJSON();
     const jsonString = stringifyJSON(testJson);
 
@@ -75,16 +88,18 @@ test.describe('User Story: Save JSON to Library', () => {
     expect(cancelled).toBe(true);
   });
 
-  test('should save API response JSON with appropriate categorization', async ({ libraryActionHelper }) => {
+  test('should save API response JSON with appropriate categorization', async ({
+    libraryActionHelper,
+  }) => {
     const apiJson = JSON_SAMPLES.apiResponse.content;
     const jsonString = stringifyJSON(apiJson);
 
     // Save with API Response category
     const result = await libraryActionHelper.saveToLibrary(jsonString, {
       title: 'User API Response Sample',
-      category: 'API Response'
+      category: 'API Response',
     });
-    
+
     expect(result.success).toBe(true);
   });
 
@@ -96,9 +111,9 @@ test.describe('User Story: Save JSON to Library', () => {
     // Save configuration
     const result = await libraryActionHelper.saveToLibrary(jsonString, {
       title: documentTitle,
-      category: 'Configuration'
+      category: 'Configuration',
     });
-    
+
     expect(result.success).toBe(true);
 
     // Verify document was saved in library
@@ -106,18 +121,26 @@ test.describe('User Story: Save JSON to Library', () => {
     expect(found).toBe(true);
   });
 
-  test('should handle duplicate save attempts gracefully', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should handle duplicate save attempts gracefully', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const testJson = dataGenerator.generateSimpleJSON();
     const jsonString = stringifyJSON(testJson);
     const documentTitle = 'Duplicate Test Document';
 
     // Test duplicate save handling
-    const duplicateResult = await libraryActionHelper.attemptDuplicateSave(jsonString, documentTitle);
+    const duplicateResult = await libraryActionHelper.attemptDuplicateSave(
+      jsonString,
+      documentTitle
+    );
     expect(duplicateResult).toBeDefined();
     expect(duplicateResult.message).toBeTruthy();
   });
 
-  test('should preserve JSON formatting when saving to library', async ({ libraryActionHelper }) => {
+  test('should preserve JSON formatting when saving to library', async ({
+    libraryActionHelper,
+  }) => {
     const formattedJson = `{
   "user": {
     "name": "John Doe",
@@ -129,19 +152,25 @@ test.describe('User Story: Save JSON to Library', () => {
 }`;
 
     // Test formatting preservation
-    const formattingPreserved = await libraryActionHelper.testFormattingPreservation(formattedJson, 'Formatted JSON Test');
+    const formattingPreserved = await libraryActionHelper.testFormattingPreservation(
+      formattedJson,
+      'Formatted JSON Test'
+    );
     expect(formattingPreserved).toBe(true);
   });
 
-  test('should provide feedback on save progress for large documents', async ({ dataGenerator, libraryActionHelper }) => {
+  test('should provide feedback on save progress for large documents', async ({
+    dataGenerator,
+    libraryActionHelper,
+  }) => {
     const largeJson = dataGenerator.generateLargeJSON(500, 4, 100);
     const jsonString = stringifyJSON(largeJson);
 
     // Test large document save with progress feedback
     const result = await libraryActionHelper.saveLargeDocument(jsonString, {
-      title: 'Large Document Progress Test'
+      title: 'Large Document Progress Test',
     });
-    
+
     expect(result.success).toBe(true);
   });
 });

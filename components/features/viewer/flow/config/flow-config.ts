@@ -2,8 +2,14 @@
  * Flow view configuration - centralized constants and settings
  */
 
-import { NodeTypes, EdgeTypes, FitViewOptions, DefaultEdgeOptions, Node, MarkerType } from '@xyflow/react';
-import { FlowRootNode } from '../nodes/FlowRootNode';
+import {
+  NodeTypes,
+  EdgeTypes,
+  FitViewOptions,
+  DefaultEdgeOptions,
+  Node,
+  MarkerType,
+} from '@xyflow/react';
 import { FlowObjectNode } from '../nodes/FlowObjectNode';
 import { FlowArrayNode } from '../nodes/FlowArrayNode';
 import { FlowPrimitiveNode } from '../nodes/FlowPrimitiveNode';
@@ -16,10 +22,9 @@ import { NodeType } from '../utils/flow-types';
  * Single source of truth for all node components
  */
 export const FLOW_NODE_TYPES: NodeTypes = {
-  [NodeType.Root]: FlowRootNode,
-  [NodeType.Object]: FlowObjectNode,
-  [NodeType.Array]: FlowArrayNode,
-  [NodeType.Primitive]: FlowPrimitiveNode,
+  [NodeType.Object]: FlowObjectNode as any,
+  [NodeType.Array]: FlowArrayNode as any,
+  [NodeType.Primitive]: FlowPrimitiveNode as any,
 };
 
 /**
@@ -80,8 +85,6 @@ export const FLOW_DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions = {
  */
 export const getMinimapNodeColor = (node: Node): string => {
   switch (node.type) {
-    case NodeType.Root:
-      return '#2563eb'; // blue-600 (darker for root)
     case NodeType.Object:
       return '#3b82f6'; // blue-500
     case NodeType.Array:
@@ -92,4 +95,3 @@ export const getMinimapNodeColor = (node: Node): string => {
       return '#6b7280'; // gray-500
   }
 };
-

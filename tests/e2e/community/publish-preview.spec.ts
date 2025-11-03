@@ -15,7 +15,7 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
   test.describe('Preview Published Content Appearance', () => {
     test('should preview API response example before publishing', async ({
       dataGenerator,
-      publishHelper
+      publishHelper,
     }) => {
       // Create comprehensive API response
       const apiData = dataGenerator.generateAPIResponseJSON();
@@ -29,11 +29,12 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       await publishHelper.openPublishModal();
       const metadata = {
         title: 'Production User Management API Response',
-        description: 'Comprehensive example of a production-ready user management API response showcasing pagination, user profiles, and metadata patterns. This response demonstrates REST API best practices including proper status handling, structured error responses, and efficient data organization.',
+        description:
+          'Comprehensive example of a production-ready user management API response showcasing pagination, user profiles, and metadata patterns. This response demonstrates REST API best practices including proper status handling, structured error responses, and efficient data organization.',
         category: 'API Response',
-        tags: 'api, rest, users, pagination, production, best-practices, authentication, json, response, management'
+        tags: 'api, rest, users, pagination, production, best-practices, authentication, json, response, management',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
 
       // Open preview and validate
@@ -44,7 +45,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       expect(validationPassed).toBe(true);
     });
 
-    test('should preview configuration template with proper formatting', async ({ publishHelper }) => {
+    test('should preview configuration template with proper formatting', async ({
+      publishHelper,
+    }) => {
       const configData = JSON_SAMPLES.configuration.content;
       const jsonString = JSON.stringify(configData, null, 2);
 
@@ -73,9 +76,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         category: 'Configuration',
         tags: 'configuration, template, production, database, cache, auth, deployment, environment, setup, devops',
         difficulty: 'advanced',
-        language: 'json'
+        language: 'json',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
 
       // Preview and validate formatting
@@ -84,9 +87,11 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
       const validationPassed = await publishHelper.validatePreviewContent(metadata);
       expect(validationPassed).toBe(true);
-      
+
       // Check markdown rendering if the preview modal shows formatted content
-      const previewModal = publishHelper.libraryPage.page.locator('[data-testid="publish-preview-modal"]');
+      const previewModal = publishHelper.libraryPage.page.locator(
+        '[data-testid="publish-preview-modal"]'
+      );
       if (await previewModal.isVisible()) {
         const previewDescription = previewModal.locator('[data-testid="preview-description"]');
         if (await previewDescription.isVisible()) {
@@ -101,7 +106,10 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       }
     });
 
-    test('should preview with different view modes and themes', async ({ dataGenerator, publishHelper }) => {
+    test('should preview with different view modes and themes', async ({
+      dataGenerator,
+      publishHelper,
+    }) => {
       const complexData = dataGenerator.generateComplexJSON();
       const jsonString = JSON.stringify(complexData, null, 2);
 
@@ -115,9 +123,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         title: 'Complex Data Structure Example',
         description: 'Comprehensive example with nested data, arrays, and complex relationships',
         category: 'Example',
-        tags: 'complex, nested, example, data, structure'
+        tags: 'complex, nested, example, data, structure',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
       const previewOpened = await publishHelper.openPreview();
       expect(previewOpened).toBe(true);
@@ -126,14 +134,14 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       const treeViewWorked = await publishHelper.testPreviewOptions({ viewMode: 'tree' });
       const listViewWorked = await publishHelper.testPreviewOptions({ viewMode: 'list' });
       const rawViewWorked = await publishHelper.testPreviewOptions({ viewMode: 'raw' });
-      
+
       // At least one view mode should work
       expect(treeViewWorked || listViewWorked || rawViewWorked).toBe(true);
 
       // Test theme switching
       const darkThemeWorked = await publishHelper.testPreviewOptions({ theme: 'dark' });
       const lightThemeWorked = await publishHelper.testPreviewOptions({ theme: 'light' });
-      
+
       // At least one theme should work
       expect(darkThemeWorked || lightThemeWorked).toBe(true);
     });
@@ -155,9 +163,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         title: 'Initial Title',
         description: 'Initial description',
         category: 'Example',
-        tags: 'initial, tags'
+        tags: 'initial, tags',
       };
-      
+
       await publishHelper.fillPublishMetadata(initialMetadata);
       await publishHelper.openPreview();
 
@@ -170,9 +178,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         title: 'Updated Title After Preview',
         description: 'Updated description after seeing the preview and making improvements',
         category: 'Example',
-        tags: 'updated, preview, tags'
+        tags: 'updated, preview, tags',
       };
-      
+
       await publishHelper.fillPublishMetadata(updatedMetadata);
       await publishHelper.openPreview();
 
@@ -193,7 +201,7 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
       // Try to preview without filling required fields
       const previewOpened = await publishHelper.openPreview();
-      
+
       if (!previewOpened) {
         // Should show validation errors
         const errors = await publishHelper.validatePublicationRequirements();
@@ -203,11 +211,12 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       // Fill minimum required fields
       const minimalMetadata = {
         title: 'Minimal Example',
-        description: 'This is a minimal example with basic data structure for demonstration purposes.'
+        description:
+          'This is a minimal example with basic data structure for demonstration purposes.',
       };
-      
+
       await publishHelper.fillPublishMetadata(minimalMetadata);
-      
+
       // Now preview should work
       const previewWorked = await publishHelper.openPreview();
       expect(previewWorked).toBe(true);
@@ -221,7 +230,7 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
     test('should show estimated view statistics in preview', async ({
       dataGenerator,
-      publishHelper
+      publishHelper,
     }) => {
       // Create content similar to existing popular content
       const popularData = dataGenerator.generateAPIResponseJSON();
@@ -235,11 +244,12 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
       const metadata = {
         title: 'API Response Best Practices',
-        description: 'Comprehensive API response example showing pagination, error handling, and data structure best practices for REST APIs.',
+        description:
+          'Comprehensive API response example showing pagination, error handling, and data structure best practices for REST APIs.',
         category: 'API Response',
-        tags: 'api, rest, best-practices, pagination, error-handling, json, response, backend, development, tutorial'
+        tags: 'api, rest, best-practices, pagination, error-handling, json, response, backend, development, tutorial',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
       await publishHelper.openPreview();
 
@@ -266,9 +276,10 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
       const metadata = {
         title: 'Complex Data Structure Guide',
-        description: 'Comprehensive guide showing complex JSON data structures with nested objects, arrays, and real-world patterns for modern applications.',
+        description:
+          'Comprehensive guide showing complex JSON data structures with nested objects, arrays, and real-world patterns for modern applications.',
         category: 'Example',
-        tags: 'complex, nested, guide, json, structure, patterns, development, example, tutorial, advanced'
+        tags: 'complex, nested, guide, json, structure, patterns, development, example, tutorial, advanced',
       };
 
       // Use complete workflow with preview-first approach
@@ -276,7 +287,10 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
       expect(result.success).toBe(true);
     });
 
-    test('should handle preview with publishing errors', async ({ dataGenerator, publishHelper }) => {
+    test('should handle preview with publishing errors', async ({
+      dataGenerator,
+      publishHelper,
+    }) => {
       const testData = dataGenerator.generateSimpleJSON();
       const jsonString = JSON.stringify(testData, null, 2);
 
@@ -290,15 +304,15 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         title: 'Test Title',
         description: 'Test description',
         category: 'Example',
-        tags: 'test, example'
+        tags: 'test, example',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
       await publishHelper.openPreview();
 
       // Attempt to publish from preview
       const result = await publishHelper.publishFromPreview();
-      
+
       // Either should succeed or handle errors gracefully
       expect(result).toBeDefined();
       if (!result.success && result.error) {
@@ -320,9 +334,9 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
         title: 'Draft Publication Example',
         description: 'This is a draft that will be saved for later completion and publishing',
         category: 'Example',
-        tags: 'draft, example, work-in-progress'
+        tags: 'draft, example, work-in-progress',
       };
-      
+
       await publishHelper.fillPublishMetadata(metadata);
       await publishHelper.openPreview();
 
@@ -332,14 +346,14 @@ test.describe('Content Creator - Publish Preview Functionality', () => {
 
       // Navigate to library to verify draft (if draft functionality is implemented)
       await publishHelper.libraryPage.navigateToLibrary();
-      
+
       const draftFilter = publishHelper.libraryPage.page.locator('[data-testid="drafts-filter"]');
       if (await draftFilter.isVisible()) {
         await draftFilter.click();
 
         const draftItems = publishHelper.libraryPage.page.locator('[data-testid="draft-item"]');
         const draftCount = await draftItems.count();
-        
+
         if (draftCount > 0) {
           const ourDraft = draftItems.filter({ hasText: 'Draft Publication Example' });
           await expect(ourDraft).toBeVisible();

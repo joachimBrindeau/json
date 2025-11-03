@@ -208,7 +208,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Clear for next test
         await viewerPage.clearJSON();
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for clear to complete
+        await viewerPage.page.waitForLoadState('networkidle');
       }
 
       // Processing times should scale reasonably
@@ -234,6 +235,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
     test(
       'should provide real-time processing feedback',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const largeJson = PerformanceTestGenerator.generateLargeArray(25000);
         const jsonString = JSON.stringify({ data: largeJson });
         const testFilePath = join(testFilesDir, 'realtime-feedback.json');
@@ -263,7 +265,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
               .first()
               .textContent();
             if (text) feedbackTexts.push(text);
-            await viewerPage.page.waitForTimeout(1000);
+            // Wait for next feedback update
+            await viewerPage.page.waitForLoadState('networkidle');
           }
 
           // Take screenshot of real-time feedback
@@ -279,13 +282,13 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Feedback should be cleared after completion
         expect(await viewerPage.loadingSpinner.isVisible()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
 
     test(
       'should show performance warnings for suboptimal operations',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         // Create JSON that might trigger performance warnings
         const problematicJson = {
           metadata: { type: 'performance_warning_test' },
@@ -323,13 +326,13 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
         // Should still process successfully despite potential performance issues
         expect(await viewerPage.hasJSONErrors()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
 
     test(
       'should display processing bottleneck identification',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const bottleneckJson = {
           // Different types of potential bottlenecks
           stringProcessing: new Array(10000)
@@ -373,8 +376,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         }
 
         expect(await viewerPage.hasJSONErrors()).toBe(false);
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
   });
 
@@ -424,7 +426,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
       const baselineTime = Date.now() - startTime;
 
       await viewerPage.clearJSON();
-      await viewerPage.page.waitForTimeout(500);
+      // Wait for clear to complete
+      await viewerPage.page.waitForLoadState('networkidle');
 
       // Optimized measurement (smaller, structured data)
       const optimizedJson = {
@@ -488,7 +491,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         });
 
         await viewerPage.clearJSON();
-        await viewerPage.page.waitForTimeout(200);
+        // Wait for clear to complete
+        await viewerPage.page.waitForLoadState('networkidle');
       }
 
       // Log performance comparison
@@ -516,6 +520,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
     test(
       'should benchmark against performance standards',
       async () => {
+        test.setTimeout(ANALYTICS_TIMEOUT);
         const benchmarkTests = [
           { size: 'small', json: PerformanceTestGenerator.generateSizedJSON(1), expected: 50 },
           { size: 'medium', json: PerformanceTestGenerator.generateSizedJSON(10), expected: 200 },
@@ -543,7 +548,8 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
           expect(await viewerPage.hasJSONErrors()).toBe(false);
 
           await viewerPage.clearJSON();
-          await viewerPage.page.waitForTimeout(300);
+          // Wait for clear to complete
+          await viewerPage.page.waitForLoadState('networkidle');
         }
 
         // Log benchmark results
@@ -565,8 +571,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
         if (benchmarkElements > 0) {
           await viewerPage.takeScreenshot('benchmark-results');
         }
-      },
-      ANALYTICS_TIMEOUT
+      }
     );
   });
 
@@ -577,6 +582,7 @@ test.describe('Advanced User - Performance Analytics & Processing Times (Story 3
 
 // Helper function for complex structure generation (added to PerformanceTestGenerator)
 declare module '../../../lib/performance-test-generator' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace PerformanceTestGenerator {
     function generateComplexStructure(complexity: number): any;
   }

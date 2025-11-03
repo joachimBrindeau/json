@@ -300,7 +300,15 @@ export interface ExportOptions {
  * Convert page input/output formats
  */
 export type InputFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'js';
-export type OutputFormat = 'json' | 'yaml' | 'xml' | 'csv' | 'toml' | 'properties' | 'typescript' | 'javascript';
+export type OutputFormat =
+  | 'json'
+  | 'yaml'
+  | 'xml'
+  | 'csv'
+  | 'toml'
+  | 'properties'
+  | 'typescript'
+  | 'javascript';
 
 /**
  * Monaco editor change event

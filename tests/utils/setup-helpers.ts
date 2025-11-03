@@ -20,21 +20,23 @@ export class SetupHelpers {
   /**
    * Setup authenticated test environment
    */
-  async setupAuthenticatedTest(options: {
-    userType?: UserType;
-    navigateTo?: string;
-    createTestData?: boolean;
-    waitForReady?: boolean;
-    clearStorage?: boolean;
-    testDocuments?: number;
-  } = {}) {
+  async setupAuthenticatedTest(
+    options: {
+      userType?: UserType;
+      navigateTo?: string;
+      createTestData?: boolean;
+      waitForReady?: boolean;
+      clearStorage?: boolean;
+      testDocuments?: number;
+    } = {}
+  ) {
     const {
       userType = 'regular',
       navigateTo = '/',
       createTestData = false,
       waitForReady = true,
       clearStorage = true,
-      testDocuments = 0
+      testDocuments = 0,
     } = options;
 
     console.log(`🔧 Setting up authenticated test for user type: ${userType}`);
@@ -46,7 +48,7 @@ export class SetupHelpers {
 
     // Login user
     await this.authHelper.login(userType);
-    
+
     // Verify authentication
     const assertions = new CommonAssertions(this.page);
     await assertions.assertAuthenticated();
@@ -65,7 +67,7 @@ export class SetupHelpers {
     const testData: any = {};
     if (createTestData) {
       testData.user = TestFactories.createFixtureUser(userType);
-      
+
       if (testDocuments > 0) {
         testData.documents = [];
         for (let i = 0; i < testDocuments; i++) {
@@ -73,14 +75,14 @@ export class SetupHelpers {
             title: `Test Document ${i + 1}`,
             userId: testData.user.id,
           });
-          
+
           const uploadResult = await this.apiHelper.uploadJSON(doc.content, {
             title: doc.title,
             description: doc.description,
             tags: doc.tags,
             isPublic: doc.isPublic,
           });
-          
+
           testData.documents.push({ ...doc, ...uploadResult });
         }
       }
@@ -93,17 +95,19 @@ export class SetupHelpers {
   /**
    * Setup anonymous test environment
    */
-  async setupAnonymousTest(options: {
-    navigateTo?: string;
-    waitForReady?: boolean;
-    clearStorage?: boolean;
-    createSessionData?: boolean;
-  } = {}) {
+  async setupAnonymousTest(
+    options: {
+      navigateTo?: string;
+      waitForReady?: boolean;
+      clearStorage?: boolean;
+      createSessionData?: boolean;
+    } = {}
+  ) {
     const {
       navigateTo = '/',
       waitForReady = true,
       clearStorage = true,
-      createSessionData = false
+      createSessionData = false,
     } = options;
 
     console.log('🔧 Setting up anonymous test environment');
@@ -140,17 +144,19 @@ export class SetupHelpers {
   /**
    * Setup large data test environment for performance testing
    */
-  async setupLargeDataTest(options: {
-    dataSize?: 'small' | 'medium' | 'large' | 'extreme';
-    userType?: UserType;
-    preloadData?: boolean;
-    monitorPerformance?: boolean;
-  } = {}) {
+  async setupLargeDataTest(
+    options: {
+      dataSize?: 'small' | 'medium' | 'large' | 'extreme';
+      userType?: UserType;
+      preloadData?: boolean;
+      monitorPerformance?: boolean;
+    } = {}
+  ) {
     const {
       dataSize = 'medium',
       userType = 'regular',
       preloadData = true,
-      monitorPerformance = true
+      monitorPerformance = true,
     } = options;
 
     console.log(`🔧 Setting up large data test - size: ${dataSize}`);
@@ -195,22 +201,26 @@ export class SetupHelpers {
   /**
    * Setup library test environment with predefined documents
    */
-  async setupLibraryTest(options: {
-    userType?: UserType;
-    publicDocuments?: number;
-    privateDocuments?: number;
-    categories?: string[];
-    tags?: string[];
-  } = {}) {
+  async setupLibraryTest(
+    options: {
+      userType?: UserType;
+      publicDocuments?: number;
+      privateDocuments?: number;
+      categories?: string[];
+      tags?: string[];
+    } = {}
+  ) {
     const {
       userType = 'regular',
       publicDocuments = 5,
       privateDocuments = 3,
       categories = ['test', 'sample', 'demo'],
-      tags = ['json', 'test', 'example']
+      tags = ['json', 'test', 'example'],
     } = options;
 
-    console.log(`🔧 Setting up library test with ${publicDocuments} public, ${privateDocuments} private docs`);
+    console.log(
+      `🔧 Setting up library test with ${publicDocuments} public, ${privateDocuments} private docs`
+    );
 
     // Setup authenticated environment
     const userData = await this.setupAuthenticatedTest({ userType });
@@ -279,18 +289,15 @@ export class SetupHelpers {
   /**
    * Cleanup test data and environment
    */
-  async cleanupTestData(options: {
-    clearStorage?: boolean;
-    logout?: boolean;
-    clearCookies?: boolean;
-    documentIds?: string[];
-  } = {}) {
-    const {
-      clearStorage = true,
-      logout = true,
-      clearCookies = true,
-      documentIds = []
-    } = options;
+  async cleanupTestData(
+    options: {
+      clearStorage?: boolean;
+      logout?: boolean;
+      clearCookies?: boolean;
+      documentIds?: string[];
+    } = {}
+  ) {
+    const { clearStorage = true, logout = true, clearCookies = true, documentIds = [] } = options;
 
     console.log('🧹 Cleaning up test data...');
 
@@ -307,7 +314,7 @@ export class SetupHelpers {
       }
 
       // Logout if requested and user is logged in
-      if (logout && await this.authHelper.isLoggedIn()) {
+      if (logout && (await this.authHelper.isLoggedIn())) {
         await this.authHelper.logout();
       }
 
@@ -336,9 +343,11 @@ export class SetupHelpers {
     // Wait for React to hydrate
     await this.page.waitForFunction(
       () => {
-        return window.React !== undefined || 
-               document.querySelector('[data-reactroot]') !== null ||
-               document.querySelector('main') !== null;
+        return (
+          window.React !== undefined ||
+          document.querySelector('[data-reactroot]') !== null ||
+          document.querySelector('main') !== null
+        );
       },
       { timeout }
     );
@@ -357,8 +366,11 @@ export class SetupHelpers {
     // Wait for network to be idle
     await this.page.waitForLoadState('networkidle', { timeout });
 
-    // Additional wait for any async operations
-    await this.page.waitForTimeout(1000);
+    // Additional wait for any async operations to complete
+    await Promise.race([
+      this.page.waitForLoadState('domcontentloaded'),
+      this.page.waitForFunction(() => document.readyState === 'complete', { timeout: 2000 }),
+    ]).catch(() => {});
 
     console.log('✅ Application ready');
   }
@@ -421,7 +433,7 @@ export class SetupHelpers {
       },
       startTrace: async () => {
         await client.send('Tracing.start', {
-          categories: ['blink.user_timing'],
+          categories: ['blink.user_timing'] as any,
           options: 'sampling-frequency=10000',
         });
       },
@@ -435,11 +447,13 @@ export class SetupHelpers {
   /**
    * Setup network interception for testing offline/error scenarios
    */
-  async setupNetworkInterception(options: {
-    blockPatterns?: string[];
-    slowNetwork?: boolean;
-    offlineMode?: boolean;
-  } = {}) {
+  async setupNetworkInterception(
+    options: {
+      blockPatterns?: string[];
+      slowNetwork?: boolean;
+      offlineMode?: boolean;
+    } = {}
+  ) {
     const { blockPatterns = [], slowNetwork = false, offlineMode = false } = options;
 
     if (offlineMode) {
@@ -456,7 +470,7 @@ export class SetupHelpers {
     // Simulate slow network
     if (slowNetwork) {
       await this.page.route('**/*', async (route) => {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         route.continue();
       });
     }
@@ -517,7 +531,12 @@ export class SetupHelpers {
  * Quick setup for anonymous viewer tests
  */
 export async function quickSetupAnonymous(page: Page, authHelper: AuthHelper) {
-  const setupHelper = new SetupHelpers(page, page.context(), authHelper, new APIHelper(page.context().request));
+  const setupHelper = new SetupHelpers(
+    page,
+    page.context(),
+    authHelper,
+    new APIHelper(page.context().request)
+  );
   return await setupHelper.setupAnonymousTest();
 }
 
@@ -567,29 +586,28 @@ export async function waitForJsonProcessing(page: Page, timeout = 10000) {
   );
 
   // Wait for JSON viewer to be visible
-  await page.waitForSelector(
-    '[data-testid="json-viewer"], .json-viewer, .tree-view',
-    { timeout }
-  );
+  await page.waitForSelector('[data-testid="json-viewer"], .json-viewer, .tree-view', { timeout });
 
-  // Additional small wait for stabilization
-  await page.waitForTimeout(500);
+  // Wait for viewer to be ready
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
 }
 
 /**
  * Create a test environment with specific browser settings
  */
-export async function createTestEnvironment(options: {
-  viewport?: { width: number; height: number };
-  userAgent?: string;
-  locale?: string;
-  timezone?: string;
-} = {}) {
+export async function createTestEnvironment(
+  options: {
+    viewport?: { width: number; height: number };
+    userAgent?: string;
+    locale?: string;
+    timezone?: string;
+  } = {}
+) {
   const {
     viewport = { width: 1280, height: 720 },
     userAgent,
     locale = 'en-US',
-    timezone = 'America/New_York'
+    timezone = 'America/New_York',
   } = options;
 
   return {

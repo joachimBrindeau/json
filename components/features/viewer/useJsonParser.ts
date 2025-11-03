@@ -16,9 +16,12 @@ export const useJsonParser = (jsonString: string): ParseResult => {
     }
 
     try {
+      const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const data = JSON.parse(jsonString);
+      const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const parseTime = end - start;
       const size = jsonString.length;
-      
+
       const stats = {
         size,
         type: Array.isArray(data) ? 'array' : typeof data,
@@ -27,6 +30,7 @@ export const useJsonParser = (jsonString: string): ParseResult => {
           : typeof data === 'object' && data !== null
             ? Object.keys(data).length
             : 0,
+        parseTime,
       };
 
       return {
@@ -43,4 +47,3 @@ export const useJsonParser = (jsonString: string): ParseResult => {
     }
   }, [jsonString]);
 };
-

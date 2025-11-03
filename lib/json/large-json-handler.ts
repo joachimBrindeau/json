@@ -94,7 +94,7 @@ export class LargeJsonHandler {
           __loadChunk: (index: number) => this.loadChunk(chunks, index),
           __totalChunks: chunks.length,
           __originalSize: size,
-        },
+        } as any,
         isChunked: true,
         stats: {
           size,
@@ -144,12 +144,12 @@ export class LargeJsonHandler {
     return new Promise((resolve, reject) => {
       try {
         let currentDepth = 0;
-        
+
         const parsed = JSON.parse(jsonString, (key, value) => {
           // Track depth to prevent stack overflow
           if (key === '') currentDepth = 0;
           else currentDepth++;
-          
+
           if (currentDepth > maxDepth) {
             return { __truncated: `... (max depth ${maxDepth} exceeded)` };
           }
@@ -158,11 +158,11 @@ export class LargeJsonHandler {
           if (Array.isArray(value) && value.length > maxArrayItems) {
             const truncated = [
               ...value.slice(0, maxArrayItems),
-              { 
+              {
                 __truncated: `... ${value.length - maxArrayItems} more items`,
                 __loadMore: true,
                 __totalLength: value.length,
-                __loadedLength: maxArrayItems
+                __loadedLength: maxArrayItems,
               },
             ];
             return truncated;
@@ -276,7 +276,7 @@ export class LargeJsonHandler {
   // Count total nodes for better performance decisions
   private countNodes(data: JsonValue, maxCount = 10000, currentCount = 0): number {
     if (currentCount >= maxCount) return currentCount;
-    
+
     if (Array.isArray(data)) {
       let count = currentCount + 1;
       for (let i = 0; i < Math.min(data.length, 100); i++) {
@@ -301,7 +301,7 @@ export class LargeJsonHandler {
       }
       return Math.min(count, maxCount);
     }
-    
+
     return currentCount + 1;
   }
 
@@ -327,15 +327,20 @@ export class LargeJsonHandler {
     return analysis;
   }
 
-  private analyzeStructureRecursive(data: JsonValue, analysis: Record<string, unknown>, depth: number, visited: Set<JsonValue>): void {
+  private analyzeStructureRecursive(
+    data: JsonValue,
+    analysis: Record<string, unknown>,
+    depth: number,
+    visited: Set<JsonValue>
+  ): void {
     if (depth > 10 || visited.has(data)) return;
-    
+
     if (data && typeof data === 'object') {
       visited.add(data);
-      
+
       if (Array.isArray(data)) {
         if (data.length > 1000) analysis.hasLargearrays = true;
-        
+
         // Check homogeneity in arrays
         if (data.length > 0) {
           const firstType = typeof data[0];
@@ -346,7 +351,7 @@ export class LargeJsonHandler {
             }
           }
         }
-        
+
         // Recursive analysis on sample items
         for (let i = 0; i < Math.min(data.length, 5); i++) {
           this.analyzeStructureRecursive(data[i], analysis, depth + 1, visited);
@@ -354,7 +359,7 @@ export class LargeJsonHandler {
       } else {
         const keys = Object.keys(data);
         if (keys.length > 500) analysis.hasLargeObjects = true;
-        
+
         // Recursive analysis on sample properties
         for (let i = 0; i < Math.min(keys.length, 5); i++) {
           this.analyzeStructureRecursive(data[keys[i]], analysis, depth + 1, visited);
@@ -369,7 +374,7 @@ export class LargeJsonHandler {
     }
 
     let maxChildDepth = currentDepth;
-    
+
     if (Array.isArray(data)) {
       for (let i = 0; i < Math.min(data.length, 10); i++) {
         const childDepth = this.calculateDepth(data[i], maxDepth, currentDepth + 1);
@@ -382,7 +387,7 @@ export class LargeJsonHandler {
         maxChildDepth = Math.max(maxChildDepth, childDepth);
       }
     }
-    
+
     return maxChildDepth;
   }
 

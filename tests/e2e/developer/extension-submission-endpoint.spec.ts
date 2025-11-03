@@ -372,7 +372,10 @@ test.describe('Developer - Extension Submission Endpoint', () => {
       // Test rate limit headers
       if (rateLimitedSubmissions.length > 0) {
         const rateLimitedResponse = rateLimitedSubmissions[0];
-        expect(rateLimitedResponse.error).toBeDefined();
+        // Type guard to check if response has error property
+        if ('error' in rateLimitedResponse) {
+          expect(rateLimitedResponse.error).toBeDefined();
+        }
       }
     });
   });

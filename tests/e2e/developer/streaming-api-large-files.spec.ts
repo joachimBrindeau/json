@@ -196,9 +196,7 @@ test.describe('Developer - Streaming API for Large Files', () => {
 
       const testData = generateLargeJSON(1000, 5, 100);
       const jsonString = JSON.stringify(testData);
-      const originalChecksum = createHash('sha256')
-        .update(jsonString)
-        .digest('hex');
+      const originalChecksum = createHash('sha256').update(jsonString).digest('hex');
 
       const initResponse = await apiHelper.apiCall('POST', '/api/json/stream/upload/init', {
         data: {

@@ -237,7 +237,7 @@ test.describe('Community - Social Features and Interaction', () => {
 
           // Upvote the comment
           await upvoteButton.click();
-          await page.waitForTimeout(500);
+          await page.waitForLoadState('networkidle'); // Wait for vote registration completion
 
           // Should increase vote count
           const newVotes = parseInt((await voteCount.textContent()) || '0');
@@ -365,7 +365,7 @@ test.describe('Community - Social Features and Interaction', () => {
       if (await searchInput.isVisible()) {
         await searchInput.fill('Enhanced API Guide');
         await searchInput.press('Enter');
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle'); // Wait for search results
       }
 
       const enhancedCard = page
@@ -794,7 +794,7 @@ test.describe('Community - Social Features and Interaction', () => {
             // Test filtering
             if (await publishedFilter.isVisible()) {
               await publishedFilter.click();
-              await page.waitForTimeout(1000);
+              await page.waitForLoadState('networkidle'); // Wait for filter application
 
               // Should show only published content activities
               const filteredActivities = feedSection.locator('[data-testid="activity-item"]');

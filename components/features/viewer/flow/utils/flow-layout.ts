@@ -9,11 +9,6 @@ import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-util
  * Single Responsibility: Height calculation only
  */
 const calculateNodeHeight = (flowNode: SeaNode): number => {
-  // Root node has fixed height
-  if (flowNode.type === NodeType.Root) {
-    return 80; // Fixed height for root node
-  }
-
   if (isArraySeaNode(flowNode)) {
     return sizes.arrayNodeSize;
   }
@@ -55,9 +50,9 @@ export const getLayoutedSeaNodes = (flowNodes: SeaNode[], edges: Edge[]): SeaNod
   // Configure graph layout
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({
-    rankdir: 'LR',           // Left-to-Right layout
-    nodesep: sizes.nodeGap,  // Horizontal spacing between nodes
-    ranksep: sizes.nodeGap,  // Vertical spacing between ranks
+    rankdir: 'LR', // Left-to-Right layout
+    nodesep: sizes.nodeGap, // Horizontal spacing between nodes
+    ranksep: sizes.nodeGap, // Vertical spacing between ranks
   });
 
   // Add all nodes to dagre graph with their dimensions

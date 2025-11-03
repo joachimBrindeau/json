@@ -54,17 +54,24 @@ function estimateNodeCount(obj: any, maxDepth = 10, currentDepth = 0): number {
   if (currentDepth > maxDepth) return 1;
 
   if (Array.isArray(obj)) {
-    return 1 + obj.reduce((sum: number, item: any) =>
-      sum + estimateNodeCount(item, maxDepth, currentDepth + 1), 0
+    return (
+      1 +
+      obj.reduce(
+        (sum: number, item: any) => sum + estimateNodeCount(item, maxDepth, currentDepth + 1),
+        0
+      )
     );
   }
 
   if (obj && typeof obj === 'object') {
-    return 1 + Object.values(obj).reduce((sum: number, value: any) =>
-      sum + estimateNodeCount(value, maxDepth, currentDepth + 1), 0
+    return (
+      1 +
+      Object.values(obj).reduce(
+        (sum: number, value: any) => sum + estimateNodeCount(value, maxDepth, currentDepth + 1),
+        0
+      )
     );
   }
 
   return 1;
 }
-

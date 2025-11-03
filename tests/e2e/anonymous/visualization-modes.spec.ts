@@ -57,7 +57,11 @@ test.describe('Anonymous User - Visualization Modes', () => {
         // Take screenshot of tree view
         await viewerPage.takeScreenshot('tree-view-display');
       } else {
-        test.skip('Tree view not available');
+        // Fail fast if tree view not available
+        expect(
+          await viewerPage.treeViewButton.isVisible(),
+          'Tree view must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -81,7 +85,11 @@ test.describe('Anonymous User - Visualization Modes', () => {
         // Take screenshot of list view
         await viewerPage.takeScreenshot('list-view-display');
       } else {
-        test.skip('List view not available');
+        // Fail fast if list view not available
+        expect(
+          await viewerPage.listViewButton.isVisible(),
+          'List view must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -107,7 +115,11 @@ test.describe('Anonymous User - Visualization Modes', () => {
         // Take screenshot of flow view
         await viewerPage.takeScreenshot('flow-view-display');
       } else {
-        test.skip('Sea/Flow view not available');
+        // Fail fast if flow view not available
+        expect(
+          await viewerPage.flowViewButton.isVisible(),
+          'Sea/Flow view must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -125,7 +137,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
 
       if (await editorViewButton.isVisible()) {
         await editorViewButton.click();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Verify editor is visible and functional
         await expect(viewerPage.jsonTextArea).toBeVisible();
@@ -181,7 +193,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
         if (await mode.button.isVisible()) {
           const startTime = Date.now();
           await mode.button.click();
-          await viewerPage.page.waitForTimeout(2000); // Allow time for rendering
+          await viewerPage.page.waitForLoadState('networkidle');
           const endTime = Date.now();
 
           // Should render within reasonable time
@@ -206,7 +218,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
       ) {
         // Switch from tree to list
         await viewerPage.switchToTreeView();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Monitor for loading states during switch
         const switchPromise = viewerPage.switchToListView();
@@ -242,7 +254,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
       for (const mode of viewModes) {
         if (await mode.button.isVisible()) {
           await mode.switch();
-          await viewerPage.page.waitForTimeout(500);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Verify data is still present
           const currentNodeCount = await viewerPage.getNodeCounts();
@@ -299,7 +311,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
         for (let i = 0; i < 3; i++) {
           for (const switchMode of availableModes) {
             await switchMode();
-            await viewerPage.page.waitForTimeout(200);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Should not crash or show errors
             expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -325,10 +337,10 @@ test.describe('Anonymous User - Visualization Modes', () => {
         // Switch to different view and back
         if (await viewerPage.listViewButton.isVisible()) {
           await viewerPage.switchToListView();
-          await viewerPage.page.waitForTimeout(500);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           await viewerPage.switchToTreeView();
-          await viewerPage.page.waitForTimeout(500);
+          await viewerPage.page.waitForLoadState('networkidle');
 
           // Expansion state should be preserved (or at least not cause errors)
           expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -430,7 +442,7 @@ test.describe('Anonymous User - Visualization Modes', () => {
       for (const shortcut of shortcuts) {
         // Try keyboard shortcut (Ctrl/Cmd + number)
         await viewerPage.page.keyboard.press(`Control+${shortcut.key}`);
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // If shortcut worked, verify view switched
         // This is optional as not all implementations have keyboard shortcuts

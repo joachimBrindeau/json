@@ -222,19 +222,19 @@ export function useAnalytics() {
       window.gtag('event', event, {
         event_category: category,
         event_label: label,
-        value: value
+        value: value,
       });
     }
   };
 
   const trackJSONAction = (action: string, size?: number, processingTime?: number) => {
     trackEvent(action, 'JSON_Tool', undefined, size);
-    
+
     if (processingTime && window.gtag) {
       window.gtag('event', 'timing_complete', {
         name: 'json_processing',
         value: processingTime,
-        event_category: 'Performance'
+        event_category: 'Performance',
       });
     }
   };

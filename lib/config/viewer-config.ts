@@ -198,30 +198,18 @@ export type PerformanceLevel = 'excellent' | 'good' | 'warning' | 'critical';
  * @param nodeCount - Total number of nodes in JSON structure
  * @returns Performance level indicator
  */
-export function getPerformanceLevel(
-  sizeMB: number,
-  nodeCount: number
-): PerformanceLevel {
+export function getPerformanceLevel(sizeMB: number, nodeCount: number): PerformanceLevel {
   const { performance } = VIEWER_CONFIG;
 
-  if (
-    sizeMB > performance.criticalSizeMB ||
-    nodeCount > performance.criticalNodeCount
-  ) {
+  if (sizeMB > performance.criticalSizeMB || nodeCount > performance.criticalNodeCount) {
     return 'critical';
   }
 
-  if (
-    sizeMB > performance.warningSizeMB ||
-    nodeCount > performance.warningNodeCount
-  ) {
+  if (sizeMB > performance.warningSizeMB || nodeCount > performance.warningNodeCount) {
     return 'warning';
   }
 
-  if (
-    sizeMB > performance.goodSizeMB ||
-    nodeCount > performance.goodNodeCount
-  ) {
+  if (sizeMB > performance.goodSizeMB || nodeCount > performance.goodNodeCount) {
     return 'good';
   }
 
@@ -238,8 +226,5 @@ export function getPerformanceLevel(
 export function shouldVirtualize(sizeMB: number, nodeCount: number): boolean {
   const { performance } = VIEWER_CONFIG;
 
-  return (
-    sizeMB > performance.largeFileSizeMB ||
-    nodeCount > performance.virtualizeNodeCount
-  );
+  return sizeMB > performance.largeFileSizeMB || nodeCount > performance.virtualizeNodeCount;
 }

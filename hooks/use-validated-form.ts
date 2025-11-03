@@ -38,7 +38,7 @@ import { z } from 'zod';
  * Configuration options for validated forms
  */
 interface ValidatedFormOptions<TSchema extends z.ZodType>
-  extends Omit<UseFormProps<z.infer<TSchema>>, 'resolver'> {
+  extends Omit<UseFormProps<any>, 'resolver'> {
   /**
    * When to validate the form
    * @default 'onChange' - Validate on every change for immediate feedback
@@ -98,8 +98,8 @@ export function useValidatedForm<TSchema extends z.ZodType>(
     ...restOptions
   } = options;
 
-  return useForm<z.infer<TSchema>>({
-    resolver: zodResolver(schema),
+  return useForm<any>({
+    resolver: zodResolver(schema as any),
     mode,
     reValidateMode,
     shouldFocusError,

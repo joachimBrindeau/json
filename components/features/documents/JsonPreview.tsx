@@ -9,9 +9,8 @@ interface JsonPreviewProps {
  */
 export function JsonPreview({ content }: JsonPreviewProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const previewText = typeof content === 'string'
-    ? content
-    : content ? JSON.stringify(content, null, 2) : '';
+  const previewText =
+    typeof content === 'string' ? content : content ? JSON.stringify(content, null, 2) : '';
 
   const lines = previewText.split('\n');
   const preview = isExpanded ? lines : lines.slice(0, 5);

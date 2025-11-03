@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useBackendStore } from '@/lib/store/backend';
 import { useApiData } from './use-api-data';
@@ -21,34 +21,49 @@ interface UserStatsResponse {
 
 export function useLibraryStats(): LibraryStats {
   const { data: session } = useSession();
-  const { setLibraryUpdateCallback } = useBackendStore();
+  const setLibraryUpdateCallback = useBackendStore((state) => state.setLibraryUpdateCallback);
+
+  const transform = useCallback(
+    (rawData: UserStatsResponse) => ({
+      totalJsons: rawData.total || 0,
+      totalSize: rawData.totalSize || 0,
+    }),
+    []
+  );
 
   const { data, loading, refetch } = useApiData<LibraryStatsData, UserStatsResponse>({
     endpoint: '/api/user/stats',
     errorMessage: 'Failed to load library stats',
     enabled: !!session,
     showToast: false,
-    transform: (rawData) => ({
-      totalJsons: rawData.total || 0,
-      totalSize: rawData.totalSize || 0,
-    }),
-    dependencies: [session],
+    transform,
+    // Don't pass session as dependency - it changes on every render
+    // The enabled flag is sufficient to control when to fetch
   });
 
-  // Memoize the refetch callback for the backend store
-  const handleLibraryUpdate = useCallback(() => {
-    refetch();
+  // Use a ref to store the latest refetch function
+  const refetchRef = useRef(refetch);
+
+  // Update the ref when refetch changes
+  useEffect(() => {
+    refetchRef.current = refetch;
   }, [refetch]);
 
+  // Create a stable callback that calls the latest refetch
+  const stableRefetch = useCallback(() => {
+    refetchRef.current();
+  }, []);
+
   // Register for updates from backend store
+  // Only set the callback once when session becomes available
   useEffect(() => {
     if (session) {
-      setLibraryUpdateCallback(handleLibraryUpdate);
+      setLibraryUpdateCallback(stableRefetch);
       return () => {
         setLibraryUpdateCallback(() => {});
       };
     }
-  }, [setLibraryUpdateCallback, handleLibraryUpdate, session]);
+  }, [session, setLibraryUpdateCallback, stableRefetch]);
 
   return {
     totalJsons: data?.totalJsons || 0,

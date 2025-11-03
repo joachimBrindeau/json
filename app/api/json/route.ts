@@ -1,38 +1,68 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import {
-  analyzeJsonStream,
-  chunkJsonData,
-  createPerformanceMonitor,
-  JsonCache,
-} from '@/lib/json';
+import { analyzeJsonStream, chunkJsonData, createPerformanceMonitor, JsonCache } from '@/lib/json';
 import { logger } from '@/lib/logger';
 import { success, created, badRequest, error, internalServerError } from '@/lib/api/responses';
 import { config } from '@/lib/config';
+import { sanitizeString, withAuth } from '@/lib/api/utils';
+import { publishLimiter } from '@/lib/middleware/rate-limit';
+import { RateLimitError, ValidationError } from '@/lib/utils/app-errors';
+import { z } from 'zod';
 
 export const runtime = 'nodejs';
+
+const createJsonSchema = z.object({
+  title: z.string().trim().min(1, 'Title is required').max(200).optional(),
+  content: z.union([z.string(), z.record(z.string(), z.any()), z.array(z.any())]),
+});
+
 export const maxDuration = 60;
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, session) => {
   const monitor = createPerformanceMonitor();
 
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
     const userId = session?.user?.id || null;
-    
-    // Parse JSON body
-    const body = await request.json();
-    const { title, content } = body;
 
-    if (!content) {
+    // Parse and validate body
+    const raw = await request.json();
+    const parsedBody = createJsonSchema.safeParse(raw);
+    if (!parsedBody.success) {
+      return badRequest(parsedBody.error.issues[0]?.message || 'Invalid request payload');
+    }
+    const { title, content } = parsedBody.data;
+
+    // Validate content presence
+    if (
+      content === undefined ||
+      content === null ||
+      (typeof content === 'string' && content.trim() === '')
+    ) {
       return badRequest('No content provided');
     }
 
+    // Sanitize title if provided
+    const safeTitle = title ? sanitizeString(title).slice(0, 200) : undefined;
+
     // Validate JSON content
+    // Rate limit JSON create via API: prefer user-based key, fallback to IP
+    const rateKey =
+      (session?.user?.id as string | undefined) ||
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'anonymous';
+    if (!publishLimiter.isAllowed(rateKey)) {
+      const reset = publishLimiter.getResetTime(rateKey);
+      throw new RateLimitError(
+        reset ? Math.ceil((reset.getTime() - Date.now()) / 1000) : undefined,
+        'Creation rate limit reached. Please try again later.',
+        {
+          resetTime: reset?.toISOString(),
+          remaining: publishLimiter.getRemainingAttempts(rateKey),
+        }
+      );
+    }
+
     let parsedContent: unknown;
     try {
       parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
@@ -45,7 +75,9 @@ export async function POST(request: NextRequest) {
 
     // Check size limit using centralized config
     if (jsonString.length > config.performance.maxJsonSizeBytes) {
-      return error(`JSON size exceeds ${config.performance.maxJsonSizeMB}MB limit`, { status: 413 });
+      return error(`JSON size exceeds ${config.performance.maxJsonSizeMB}MB limit`, {
+        status: 413,
+      });
     }
 
     // Generate content hash for deduplication
@@ -54,22 +86,25 @@ export async function POST(request: NextRequest) {
     // Check for existing document with same hash
     const existingDoc = await prisma.jsonDocument.findFirst({
       where: { checksum },
-      select: { shareId: true, visibility: true, userId: true }
+      select: { shareId: true, visibility: true, userId: true },
     });
 
     if (existingDoc) {
       // If document exists and is public, or belongs to the same user, return it
       if (existingDoc.visibility === 'public' || existingDoc.userId === userId) {
-        return success({
-          shareId: existingDoc.shareId,
-          isExisting: true
-        }, { message: 'Document already exists' });
+        return success(
+          {
+            shareId: existingDoc.shareId,
+            isExisting: true,
+          },
+          { message: 'Document already exists' }
+        );
       }
     }
 
     // Analyze JSON structure
     const analysis = await analyzeJsonStream(jsonString);
-    
+
     // Generate unique share ID
     const shareId = createHash('sha256')
       .update(`${Date.now()}-${Math.random()}-${checksum}`)
@@ -83,8 +118,8 @@ export async function POST(request: NextRequest) {
     const document = await prisma.jsonDocument.create({
       data: {
         shareId,
-        title: title || 'Untitled JSON',
-        content: parsedContent,
+        title: safeTitle || 'Untitled JSON',
+        content: parsedContent as any,
         checksum,
         size: BigInt(jsonString.length),
         visibility: 'private', // Default to private
@@ -94,9 +129,9 @@ export async function POST(request: NextRequest) {
           chunks: chunks.length,
           createdAt: new Date().toISOString(),
           userAgent: request.headers.get('user-agent') || 'unknown',
-          source: 'api'
-        }
-      }
+          source: 'api',
+        } as any,
+      },
     });
 
     // Skip chunk storage for now
@@ -105,22 +140,24 @@ export async function POST(request: NextRequest) {
     await JsonCache.set(shareId, {
       content: jsonString,
       metadata: document.metadata as any,
-      title: document.title
+      title: document.title,
     });
 
-    monitor.end('json_create_success');
+    monitor.end();
 
-    return created({
-      shareId: document.shareId,
-      title: document.title,
-      size: Number(document.size),
-      analysis
-    }, { message: 'JSON document created successfully' });
-
+    return created(
+      {
+        shareId: document.shareId,
+        title: document.title,
+        size: Number(document.size),
+        analysis,
+      },
+      { message: 'JSON document created successfully' }
+    );
   } catch (error) {
-    monitor.end('json_create_error');
+    monitor.end();
     logger.error({ err: error }, 'JSON creation error');
 
     return internalServerError('Failed to create JSON document');
   }
-}
+});

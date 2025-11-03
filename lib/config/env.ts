@@ -5,40 +5,40 @@
  * This file consolidates all process.env usage across the application.
  */
 
+// Load environment variables from .env file
+// This is required for Playwright tests and other contexts where Next.js doesn't auto-load .env
+import 'dotenv/config';
+
 import { z } from 'zod';
 
 // Check if we're on the server
 const isServer = typeof window === 'undefined';
 
-// Server-only environment schema
-const serverEnvSchema = z.object({
+// Check if we're in test mode
+const isTest = process.env.NODE_ENV === 'test';
+
+// Shared environment schema for fields common to both server and client
+const sharedEnvSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // Database
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL URL'),
-
-  // Redis
-  REDIS_URL: z.string().url('REDIS_URL must be a valid Redis URL').default('redis://localhost:6379'),
-
-  // NextAuth
-  NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL'),
-  NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
-
-  // OAuth Providers
-  GITHUB_CLIENT_ID: z.string().min(1, 'GITHUB_CLIENT_ID is required'),
-  GITHUB_CLIENT_SECRET: z.string().min(1, 'GITHUB_CLIENT_SECRET is required'),
-  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
-
   // Public URLs (accessible in browser)
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
-  NEXT_PUBLIC_WEBSOCKET_URL: z.string().url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL').optional(),
+  NEXT_PUBLIC_APP_URL: z
+    .string()
+    .url('NEXT_PUBLIC_APP_URL must be a valid URL')
+    .default('https://json-viewer.io'),
+  NEXT_PUBLIC_WEBSOCKET_URL: z
+    .string()
+    .url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL')
+    .optional(),
   NEXT_PUBLIC_BUILD_ID: z.string().optional(),
 
   // Performance Settings
   MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
-  JSON_STREAMING_CHUNK_SIZE: z.string().regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number').default('1048576'),
+  JSON_STREAMING_CHUNK_SIZE: z
+    .string()
+    .regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number')
+    .default('1048576'),
 
   // Analytics & Tracking (optional)
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
@@ -54,126 +54,133 @@ const serverEnvSchema = z.object({
 
   // Build & CI
   BUILD_ID: z.string().optional(),
-  CI: z.string().optional().transform(val => val === 'true' || val === '1'),
+  CI: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true' || val === '1'),
 
   // Playwright Testing
   PLAYWRIGHT_BASE_URL: z.string().url().optional(),
   BASE_URL: z.string().url().optional(),
 });
 
-// Client-safe environment schema (only NEXT_PUBLIC_ variables)
-const clientEnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+// Server-only environment schema (extends shared)
+const serverEnvSchema = sharedEnvSchema.extend({
+  // Database (optional in test mode)
+  DATABASE_URL: isTest
+    ? z.string().optional().default('postgresql://test:test@localhost:5432/test')
+    : z.string().url('DATABASE_URL must be a valid PostgreSQL URL'),
 
-  // Public URLs (accessible in browser)
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').default('https://json-viewer.io'),
-  NEXT_PUBLIC_WEBSOCKET_URL: z.string().url('NEXT_PUBLIC_WEBSOCKET_URL must be a valid WebSocket URL').optional(),
-  NEXT_PUBLIC_BUILD_ID: z.string().optional(),
+  // Redis (optional in test mode)
+  REDIS_URL: z
+    .string()
+    .url('REDIS_URL must be a valid Redis URL')
+    .default('redis://localhost:6379'),
 
-  // Performance Settings
-  MAX_JSON_SIZE_MB: z.string().regex(/^\d+$/, 'MAX_JSON_SIZE_MB must be a number').default('2048'),
-  JSON_STREAMING_CHUNK_SIZE: z.string().regex(/^\d+$/, 'JSON_STREAMING_CHUNK_SIZE must be a number').default('1048576'),
+  // NextAuth (optional in test mode)
+  NEXTAUTH_URL: isTest
+    ? z.string().optional().default('http://localhost:3456')
+    : z.string().url('NEXTAUTH_URL must be a valid URL'),
+  NEXTAUTH_SECRET: isTest
+    ? z.string().optional().default('test-secret-with-at-least-32-chars-for-testing-purposes')
+    : z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
 
-  // Analytics & Tracking (optional)
-  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
-  NEXT_PUBLIC_FB_PIXEL_ID: z.string().optional(),
-  NEXT_PUBLIC_HOTJAR_ID: z.string().optional(),
+  // OAuth Providers (optional in test mode)
+  GITHUB_CLIENT_ID: isTest
+    ? z.string().optional().default('test-github-client-id')
+    : z.string().min(1, 'GITHUB_CLIENT_ID is required'),
+  GITHUB_CLIENT_SECRET: isTest
+    ? z.string().optional().default('test-github-client-secret')
+    : z.string().min(1, 'GITHUB_CLIENT_SECRET is required'),
+  GOOGLE_CLIENT_ID: isTest
+    ? z.string().optional().default('test-google-client-id')
+    : z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  GOOGLE_CLIENT_SECRET: isTest
+    ? z.string().optional().default('test-google-client-secret')
+    : z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
 
-  // SEO Verification (optional)
-  GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
-  YANDEX_VERIFICATION: z.string().optional(),
-  BING_VERIFICATION: z.string().optional(),
-  FACEBOOK_APP_ID: z.string().optional(),
-
-  // Build & CI
-  BUILD_ID: z.string().optional(),
-  CI: z.string().optional().transform(val => val === 'true' || val === '1'),
-
-  // Playwright Testing
-  PLAYWRIGHT_BASE_URL: z.string().url().optional(),
-  BASE_URL: z.string().url().optional(),
+  // Admin
+  SUPERADMIN_EMAILS: z
+    .string()
+    .optional()
+    .transform((val) => val?.split(',').map((email) => email.trim()) || []),
 });
+
+// Client-safe environment schema (only shared/public variables)
+const clientEnvSchema = sharedEnvSchema;
+
+/**
+ * Build environment object from process.env
+ * Shared logic for both client and server validation
+ */
+function buildEnvObject() {
+  return {
+    // Node Environment
+    NODE_ENV: process.env.NODE_ENV,
+
+    // Database (server only, but included for consistency)
+    DATABASE_URL: process.env.DATABASE_URL,
+
+    // Redis (server only)
+    REDIS_URL: process.env.REDIS_URL,
+
+    // NextAuth (server only)
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+
+    // OAuth Providers (server only)
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+
+    // Admin (server only)
+    SUPERADMIN_EMAILS: process.env.SUPERADMIN_EMAILS,
+
+    // Public URLs (client + server)
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+    NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
+
+    // Performance (client + server)
+    MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
+    JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
+
+    // Analytics (client + server)
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
+    NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
+
+    // SEO (client + server)
+    GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
+    NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
+    BING_VERIFICATION: process.env.BING_VERIFICATION,
+    FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
+
+    // Build (client + server)
+    BUILD_ID: process.env.BUILD_ID,
+    CI: process.env.CI,
+
+    // Testing (client + server)
+    PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
+    BASE_URL: process.env.BASE_URL,
+  };
+}
 
 // Parse and validate environment variables at module load time
 function validateEnv() {
   try {
+    const envObject = buildEnvObject();
+
     // On the client, only validate public environment variables
     if (!isServer) {
-      const parsed = clientEnvSchema.parse({
-        NODE_ENV: process.env.NODE_ENV,
-        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-        NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
-        NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
-        MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
-        JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
-        NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-        NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
-        NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
-        GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
-        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-        YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
-        BING_VERIFICATION: process.env.BING_VERIFICATION,
-        FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
-        BUILD_ID: process.env.BUILD_ID,
-        CI: process.env.CI,
-        PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
-        BASE_URL: process.env.BASE_URL,
-      });
+      const parsed = clientEnvSchema.parse(envObject);
       return parsed as any; // Type assertion for compatibility
     }
 
     // On the server, validate all environment variables
-    const parsed = serverEnvSchema.parse({
-      // Node Environment
-      NODE_ENV: process.env.NODE_ENV,
-
-      // Database
-      DATABASE_URL: process.env.DATABASE_URL,
-
-      // Redis
-      REDIS_URL: process.env.REDIS_URL,
-
-      // NextAuth
-      NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-
-      // OAuth Providers
-      GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
-      GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
-      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-
-      // Public URLs
-      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-      NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
-      NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
-
-      // Performance
-      MAX_JSON_SIZE_MB: process.env.MAX_JSON_SIZE_MB,
-      JSON_STREAMING_CHUNK_SIZE: process.env.JSON_STREAMING_CHUNK_SIZE,
-
-      // Analytics
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-      NEXT_PUBLIC_FB_PIXEL_ID: process.env.NEXT_PUBLIC_FB_PIXEL_ID,
-      NEXT_PUBLIC_HOTJAR_ID: process.env.NEXT_PUBLIC_HOTJAR_ID,
-
-      // SEO
-      GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
-      NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-      YANDEX_VERIFICATION: process.env.YANDEX_VERIFICATION,
-      BING_VERIFICATION: process.env.BING_VERIFICATION,
-      FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
-
-      // Build
-      BUILD_ID: process.env.BUILD_ID,
-      CI: process.env.CI,
-
-      // Testing
-      PLAYWRIGHT_BASE_URL: process.env.PLAYWRIGHT_BASE_URL,
-      BASE_URL: process.env.BASE_URL,
-    });
-
+    const parsed = serverEnvSchema.parse(envObject);
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -212,6 +219,7 @@ export const config = {
   auth: {
     url: env.NEXTAUTH_URL,
     secret: env.NEXTAUTH_SECRET,
+    superadminEmails: env.SUPERADMIN_EMAILS,
     providers: {
       github: {
         clientId: env.GITHUB_CLIENT_ID,
@@ -310,5 +318,5 @@ export const {
 } = env;
 
 // Type exports
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof serverEnvSchema>;
 export type Config = typeof config;

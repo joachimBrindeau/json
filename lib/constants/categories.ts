@@ -12,14 +12,13 @@ export const DOCUMENT_CATEGORIES = [
   'Example',
 ] as const;
 
-export type DocumentCategory = typeof DOCUMENT_CATEGORIES[number];
+export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 
 /**
  * Check if a string is a valid document category
  */
 export function isValidCategory(category: unknown): category is DocumentCategory {
-  return typeof category === 'string' &&
-    DOCUMENT_CATEGORIES.includes(category as DocumentCategory);
+  return typeof category === 'string' && DOCUMENT_CATEGORIES.includes(category as DocumentCategory);
 }
 
 /**

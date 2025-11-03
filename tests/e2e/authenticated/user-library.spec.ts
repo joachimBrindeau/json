@@ -117,7 +117,8 @@ test.describe('Authenticated User - Integration Tests', () => {
       if (await searchInput.isVisible()) {
         await searchInput.fill('personal');
         await viewerPage.page.keyboard.press('Enter');
-        await viewerPage.page.waitForTimeout(500);
+        // Wait for search results to appear
+        await viewerPage.page.waitForLoadState('networkidle');
       }
 
       // Verify no errors occurred

@@ -1,38 +1,49 @@
 import { prisma } from '@/lib/db';
 import { generateSEOMetadata, PAGE_SEO, DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import { Metadata } from 'next';
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 
 /**
- * Cached database SEO fetcher (15 minutes cache)
+ * Cached database SEO fetcher with Next.js unstable_cache
+ * This provides longer-term caching across multiple renders and requests,
+ * preventing simultaneous database queries during SSR of multiple layouts
  */
-export const getSEOSettingsFromDatabase = cache(async (pageKey: string) => {
-  try {
-    const settings = await prisma.seoSettings.findFirst({
-      where: {
-        pageKey,
-        isActive: true,
-      },
-      orderBy: {
-        priority: 'desc', // Highest priority first (for A/B testing)
-      },
-    });
+export const getSEOSettingsFromDatabase = unstable_cache(
+  async (pageKey: string) => {
+    try {
+      const settings = await prisma.seoSettings.findFirst({
+        where: {
+          pageKey,
+          isActive: true,
+        },
+        orderBy: {
+          priority: 'desc', // Highest priority first (for A/B testing)
+        },
+      });
 
-    return settings;
-  } catch (error) {
-    logger.warn({ err: error, pageKey }, 'SEO database error, using fallbacks');
-    return null;
+      return settings;
+    } catch (error) {
+      logger.warn({ err: error, pageKey }, 'SEO database error, using fallbacks');
+      return null;
+    }
+  },
+  ['seo-settings'], // cache key prefix
+  {
+    revalidate: 60, // Revalidate every 60 seconds
+    tags: ['seo-settings'], // Allow manual cache invalidation
   }
-});
+);
 
 /**
  * Generate metadata with database fallback to hardcoded values
  */
-export async function generateDatabaseSEOMetadata(pageKey: keyof typeof PAGE_SEO): Promise<Metadata> {
+export async function generateDatabaseSEOMetadata(
+  pageKey: keyof typeof PAGE_SEO
+): Promise<Metadata> {
   // Try to get from database first
   const dbSettings = await getSEOSettingsFromDatabase(pageKey);
-  
+
   if (dbSettings) {
     return generateSEOMetadata({
       title: dbSettings.title,
@@ -48,10 +59,10 @@ export async function generateDatabaseSEOMetadata(pageKey: keyof typeof PAGE_SEO
   return generateSEOMetadata({
     title: fallbackConfig.title,
     description: fallbackConfig.description,
-    keywords: fallbackConfig.keywords,
+    keywords: fallbackConfig.keywords as any,
     ogImage: fallbackConfig.ogImage,
     canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/${pageKey === 'home' ? '' : pageKey}`,
-    noIndex: fallbackConfig.noIndex,
+    noIndex: (fallbackConfig as any).noIndex,
   });
 }
 
@@ -98,13 +109,15 @@ export async function upsertSEOSettings(
         },
         update: data,
       }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database operation timeout')), 500) // Much shorter timeout
-      )
+      new Promise(
+        (_, reject) => setTimeout(() => reject(new Error('Database operation timeout')), 500) // Much shorter timeout
+      ),
     ]);
   } catch (error) {
     logger.error({ err: error, pageKey, data }, 'Failed to upsert SEO settings');
-    throw new Error(`SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -114,10 +127,7 @@ export async function upsertSEOSettings(
 export async function getAllSEOSettings() {
   try {
     return await prisma.seoSettings.findMany({
-      orderBy: [
-        { pageKey: 'asc' },
-        { priority: 'desc' },
-      ],
+      orderBy: [{ pageKey: 'asc' }, { priority: 'desc' }],
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to fetch all SEO settings');
@@ -176,7 +186,7 @@ export async function seedSEOSettings() {
 
   try {
     for (const settings of defaultSettings) {
-      await upsertSEOSettings(settings.pageKey, settings);
+      await upsertSEOSettings(settings.pageKey, settings as any);
     }
     logger.info({ count: defaultSettings.length }, 'SEO settings seeded successfully');
   } catch (error) {

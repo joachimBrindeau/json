@@ -1,3 +1,13 @@
+/**
+ * Data Generator Utility
+ *
+ * Enhanced with JSON Schema Faker for realistic data generation.
+ * Combines custom generators with schema-based generation.
+ */
+
+import { generate, schemas, generateFromSchema } from './json-schema-generator';
+import { advancedSchemas } from './advanced-schemas';
+
 export class DataGenerator {
   /**
    * Generate simple JSON objects for basic testing
@@ -509,5 +519,100 @@ export class DataGenerator {
       'null', // Valid JSON but just null
       'undefined', // Not valid JSON
     ];
+  }
+
+  // ============================================================================
+  // JSON Schema Faker Methods (New - More Realistic Data)
+  // ============================================================================
+
+  /**
+   * Generate realistic user data using JSON Schema Faker
+   */
+  generateRealisticUser() {
+    return generate.user();
+  }
+
+  /**
+   * Generate multiple realistic users
+   */
+  generateRealisticUsers(count: number = 10) {
+    return generate.users(count);
+  }
+
+  /**
+   * Generate realistic product data
+   */
+  generateRealisticProduct() {
+    return generate.product();
+  }
+
+  /**
+   * Generate multiple realistic products
+   */
+  generateRealisticProducts(count: number = 10) {
+    return generate.products(count);
+  }
+
+  /**
+   * Generate realistic API response with pagination
+   */
+  generateRealisticAPIResponse() {
+    return generate.apiResponse();
+  }
+
+  /**
+   * Generate deeply nested structure for tree view testing
+   */
+  generateRealisticDeepNesting() {
+    return generate.deeplyNested();
+  }
+
+  /**
+   * Generate mixed types for type detection testing
+   */
+  generateRealisticMixedTypes() {
+    return generate.mixedTypes();
+  }
+
+  /**
+   * Generate social media post
+   */
+  generateSocialPost() {
+    return generateFromSchema(advancedSchemas.socialPost);
+  }
+
+  /**
+   * Generate financial transaction
+   */
+  generateTransaction() {
+    return generateFromSchema(advancedSchemas.transaction);
+  }
+
+  /**
+   * Generate IoT sensor data
+   */
+  generateSensorData() {
+    return generateFromSchema(advancedSchemas.sensorData);
+  }
+
+  /**
+   * Generate configuration object
+   */
+  generateConfiguration() {
+    return generateFromSchema(advancedSchemas.configuration);
+  }
+
+  /**
+   * Generate large dataset for performance testing
+   */
+  generateLargeRealisticDataset() {
+    return generateFromSchema(advancedSchemas.largeDataset);
+  }
+
+  /**
+   * Generate custom JSON from a schema
+   */
+  generateFromCustomSchema(schema: any) {
+    return generateFromSchema(schema);
   }
 }

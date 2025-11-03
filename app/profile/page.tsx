@@ -13,7 +13,21 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { MainLayout } from '@/components/layout/main-layout';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { User, Mail, Calendar, FileJson, Download, LogOut, Settings, Trash2, Link2, Plus, Github, Chrome, Key } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Calendar,
+  FileJson,
+  Download,
+  LogOut,
+  Settings,
+  Trash2,
+  Link2,
+  Plus,
+  Github,
+  Chrome,
+  Key,
+} from 'lucide-react';
 import { DebugAvatar } from '@/components/debug/debug-avatar';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
@@ -46,7 +60,9 @@ export default function ProfilePage() {
 
   const fetchLinkedAccounts = async () => {
     try {
-      const data = await apiClient.get<{ accounts: any[]; hasPassword: boolean }>('/api/user/accounts');
+      const data = await apiClient.get<{ accounts: any[]; hasPassword: boolean }>(
+        '/api/user/accounts'
+      );
       setLinkedAccounts(data.accounts || []);
       setHasPassword(data.hasPassword || false);
     } catch (error) {
@@ -226,10 +242,13 @@ export default function ProfilePage() {
                       <Badge variant="secondary">Active</Badge>
                     </div>
                   )}
-                  
+
                   {/* OAuth Accounts */}
                   {linkedAccounts.map((account) => (
-                    <div key={account.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div
+                      key={account.id}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         {account.provider === 'github' ? (
                           <Github className="h-4 w-4 text-muted-foreground" />
@@ -246,29 +265,21 @@ export default function ProfilePage() {
                       <Badge variant="secondary">Linked</Badge>
                     </div>
                   ))}
-                  
+
                   {/* Add more auth methods */}
                   <div className="pt-2">
                     <div className="text-sm text-muted-foreground mb-2">
                       Add more ways to sign in:
                     </div>
                     <div className="flex gap-2">
-                      {!linkedAccounts.some(a => a.provider === 'github') && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => signIn('github')}
-                        >
+                      {!linkedAccounts.some((a) => a.provider === 'github') && (
+                        <Button variant="outline" size="sm" onClick={() => signIn('github')}>
                           <Github className="h-4 w-4 mr-2" />
                           Link GitHub
                         </Button>
                       )}
-                      {!linkedAccounts.some(a => a.provider === 'google') && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => signIn('google')}
-                        >
+                      {!linkedAccounts.some((a) => a.provider === 'google') && (
+                        <Button variant="outline" size="sm" onClick={() => signIn('google')}>
                           <Chrome className="h-4 w-4 mr-2" />
                           Link Google
                         </Button>

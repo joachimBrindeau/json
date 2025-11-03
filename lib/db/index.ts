@@ -2,9 +2,4 @@
  * Database utilities exports
  */
 
-export {
-  isPrismaError,
-  mapPrismaError,
-  withPrismaErrorHandling,
-  safePrismaQuery,
-} from './errors';
+export { isPrismaError, mapPrismaError, withPrismaErrorHandling, safePrismaQuery } from './errors';

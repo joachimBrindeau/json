@@ -614,7 +614,7 @@ test.describe('Content Creator - Publishing Workflow', () => {
         await layoutPage.waitForNotification('Published successfully');
 
         // Small delay between publications
-        await libraryPage.page.waitForTimeout(500);
+        await libraryPage.page.waitForLoadState('networkidle'); // Wait for publication completion
       }
 
       // Verify all categories were used

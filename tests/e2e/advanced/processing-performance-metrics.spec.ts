@@ -240,6 +240,7 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
     test(
       'should measure and display JSON complexity impact on performance',
       async () => {
+        test.setTimeout(PERFORMANCE_TIMEOUT);
         const complexityVariations = [
           {
             name: 'Simple',
@@ -327,8 +328,7 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
             break;
           }
         }
-      },
-      PERFORMANCE_TIMEOUT
+      }
     );
   });
 
@@ -576,6 +576,7 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
     test(
       'should show system limitation warnings for extreme datasets',
       async () => {
+        test.setTimeout(PERFORMANCE_TIMEOUT);
         const extremeDataset = {
           warning_test: 'System limitations test',
           extreme_data: {
@@ -654,8 +655,7 @@ test.describe('Advanced User - Processing Performance Metrics (Story 9)', () => 
           // Should still have functional UI
           expect(await viewerPage.page.isVisible('body')).toBe(true);
         }
-      },
-      PERFORMANCE_TIMEOUT
+      }
     );
 
     test('should provide performance comparison with baseline metrics', async () => {

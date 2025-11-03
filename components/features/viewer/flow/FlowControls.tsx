@@ -1,6 +1,6 @@
 /**
  * FlowControls - Custom control panel for React Flow
- * 
+ *
  * Provides navigation and interaction controls:
  * - Fit View: Fit all nodes in viewport
  * - Center Root: Center on root node
@@ -11,24 +11,24 @@
 
 import { useReactFlow, Panel } from '@xyflow/react';
 import { Maximize, Home, ZoomIn, ZoomOut } from 'lucide-react';
-import { NodeType } from './utils/flow-types';
 
 export function FlowControls() {
   const { fitView, zoomIn, zoomOut, setCenter, getNodes } = useReactFlow();
 
   const handleFitView = () => {
-    fitView({ 
-      padding: 0.2, 
+    fitView({
+      padding: 0.2,
       duration: 800,
       maxZoom: 1.5,
     });
   };
 
   const handleCenterRoot = () => {
-    const rootNode = getNodes().find(n => n.type === NodeType.Root);
+    // Find the first root node (node with isRootNode === true)
+    const rootNode = getNodes().find((n) => n.data?.isRootNode === true);
     if (rootNode) {
-      const x = rootNode.position.x + ((rootNode.width || 0) / 2);
-      const y = rootNode.position.y + ((rootNode.height || 0) / 2);
+      const x = rootNode.position.x + (rootNode.width || 0) / 2;
+      const y = rootNode.position.y + (rootNode.height || 0) / 2;
       setCenter(x, y, { zoom: 1.2, duration: 800 });
     }
   };
@@ -42,8 +42,8 @@ export function FlowControls() {
   };
 
   return (
-    <Panel 
-      position="top-left" 
+    <Panel
+      position="top-left"
       className="flex flex-col gap-1 bg-white dark:bg-gray-950 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800"
     >
       <button
@@ -54,7 +54,7 @@ export function FlowControls() {
         <Maximize className="h-4 w-4" />
         <span className="text-sm">Fit View</span>
       </button>
-      
+
       <button
         onClick={handleCenterRoot}
         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors flex items-center gap-2"
@@ -72,7 +72,7 @@ export function FlowControls() {
         >
           <ZoomIn className="h-4 w-4" />
         </button>
-        
+
         <button
           onClick={handleZoomOut}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
@@ -84,4 +84,3 @@ export function FlowControls() {
     </Panel>
   );
 }
-

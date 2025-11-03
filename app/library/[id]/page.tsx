@@ -12,8 +12,12 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 export default function LibraryViewerPage() {
   const params = useParams();
+  const idParam = (params as Record<string, string | string[]> | null)?.id;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam || '';
   const { toast } = useToast();
-  const { currentJson, shareId, loadJson } = useBackendStore();
+  const currentJson = useBackendStore((s) => s.currentJson);
+  const shareId = useBackendStore((s) => s.shareId);
+  const loadJson = useBackendStore((s) => s.loadJson);
   const [loading, setLoading] = useState(true);
   const [jsonContent, setJsonContent] = useState('');
   const [createdAt, setCreatedAt] = useState<Date | null>(null);
@@ -22,8 +26,6 @@ export default function LibraryViewerPage() {
 
   useEffect(() => {
     const loadJsonContent = async () => {
-      const id = params.id as string;
-
       if (!id) {
         setLoading(false);
         return;
@@ -62,14 +64,14 @@ export default function LibraryViewerPage() {
     };
 
     loadJsonContent();
-  }, [params.id, shareId, currentJson, loadJson, toast]);
+  }, [id, shareId, currentJson, loadJson, toast]);
 
   // Update local content when global state changes
   useEffect(() => {
-    if (currentJson && shareId === params.id) {
+    if (currentJson && shareId === id) {
       setJsonContent(currentJson);
     }
-  }, [currentJson, shareId, params.id]);
+  }, [currentJson, shareId, id]);
 
   if (loading) {
     return (
@@ -91,7 +93,9 @@ export default function LibraryViewerPage() {
           <div className="text-center">
             <FileJson className="h-12 w-12 mx-auto mb-4 text-destructive" />
             <h2 className="text-2xl font-bold mb-2">JSON Not Found</h2>
-            <p className="text-muted-foreground">This JSON document is invalid or has been removed.</p>
+            <p className="text-muted-foreground">
+              This JSON document is invalid or has been removed.
+            </p>
           </div>
         </div>
       </MainLayout>
@@ -106,7 +110,7 @@ export default function LibraryViewerPage() {
           <div className="mb-4">
             <h1 className="text-2xl font-bold">JSON Document</h1>
             <p className="text-muted-foreground">
-              ID: {params.id} • Created {createdAt?.toLocaleDateString() || 'Recently'}
+              ID: {id} • Created {createdAt?.toLocaleDateString() || 'Recently'}
             </p>
           </div>
         </div>
@@ -118,9 +122,9 @@ export default function LibraryViewerPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-hidden">
-          <Viewer 
-            content={jsonContent} 
-            maxNodes={50000} 
+          <Viewer
+            content={jsonContent}
+            maxNodes={50000}
             virtualizeThreshold={1000}
             initialViewMode={activeTab as 'tree' | 'list' | 'flow'}
             searchTerm={searchTerm}

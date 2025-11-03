@@ -14,15 +14,15 @@ import React, { useCallback } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
-  Controls,
   Background,
+  BackgroundVariant,
   MiniMap,
   Node,
   ConnectionMode,
   Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { NodeDetailsModal } from '@/components/features/modals/node-details-modal';
+import { NodeDetailsModal } from '@/components/features/viewer/node-details/NodeDetailsModal';
 import { cn } from '@/lib/utils';
 import {
   FLOW_NODE_TYPES,
@@ -36,25 +36,27 @@ import {
 import { useFlowParser } from './hooks/useFlowParser';
 import { useFlowNodes } from './hooks/useFlowNodes';
 import { useNodeDetailsModal } from './hooks/useNodeDetailsModal';
-import { FlowControls } from './FlowControls';
-import { FlowStatsPanel } from './FlowStatsPanel';
-import { FlowLegendPanel } from './FlowLegendPanel';
-
 interface JsonFlowViewProps {
   json: unknown;
   className?: string;
   onNodeClick?: (node: Node) => void;
+  searchTerm?: string;
 }
 
 /**
  * Inner component - orchestrates flow rendering with hooks
  */
-function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) {
+function JsonFlowViewInner({ json, className, onNodeClick, searchTerm = '' }: JsonFlowViewProps) {
   // Parse JSON into nodes and edges
   const { nodes: parsedNodes, edges: parsedEdges } = useFlowParser(json);
 
   // Manage node state with collapse functionality
-  const { nodes, edges, onNodesChange, onEdgesChange } = useFlowNodes(parsedNodes, parsedEdges);
+  const { nodes, edges, onNodesChange, onEdgesChange } = useFlowNodes(
+    parsedNodes,
+    parsedEdges,
+    undefined,
+    searchTerm
+  );
 
   // Manage node details modal
   const { selectedNode, isOpen, openModal, closeModal } = useNodeDetailsModal();
@@ -85,7 +87,7 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
 
       // Prevent duplicate connections
       const isDuplicate = edges.some(
-        edge =>
+        (edge) =>
           edge.source === connection.source &&
           edge.target === connection.target &&
           edge.sourceHandle === connection.sourceHandle &&
@@ -110,7 +112,7 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
           connectionMode={ConnectionMode.Loose}
-          isValidConnection={isValidConnection}
+          isValidConnection={isValidConnection as any}
           fitView
           fitViewOptions={FLOW_FIT_VIEW_OPTIONS}
           minZoom={FLOW_ZOOM_CONFIG.minZoom}
@@ -118,25 +120,16 @@ function JsonFlowViewInner({ json, className, onNodeClick }: JsonFlowViewProps) 
           defaultViewport={FLOW_DEFAULT_VIEWPORT}
           defaultEdgeOptions={FLOW_DEFAULT_EDGE_OPTIONS}
         >
-          <Background variant="dots" gap={12} size={1} />
-          <Controls
-            showZoom
-            showFitView
-            showInteractive
-            className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
-          />
+          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <MiniMap
             nodeColor={getMinimapNodeColor}
             className="!bg-white dark:!bg-gray-950 !shadow-lg !border !border-gray-200 dark:!border-gray-800"
             maskColor="rgb(0, 0, 0, 0.1)"
           />
-          <FlowControls />
-          <FlowStatsPanel />
-          <FlowLegendPanel />
         </ReactFlow>
       </div>
 
-      <NodeDetailsModal open={isOpen} onOpenChange={closeModal} node={selectedNode} />
+      <NodeDetailsModal open={isOpen} onOpenChange={closeModal} node={selectedNode as any} />
     </>
   );
 }

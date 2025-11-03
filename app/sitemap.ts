@@ -46,6 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/minify`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/compare`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -79,13 +85,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Only try to get dynamic content if database is available
   if (!config.database.url || !prisma) {
-    logger.warn({ staticPagesCount: staticPages.length }, 'Database not available for sitemap, returning static pages only');
+    logger.warn(
+      { staticPagesCount: staticPages.length },
+      'Database not available for sitemap, returning static pages only'
+    );
     return staticPages;
   }
 
   try {
     const queries = [];
-    
+
     // Get public documents for dynamic sitemap
     queries.push(
       prisma.jsonDocument.findMany({
@@ -111,11 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     queries.push(
       prisma.jsonDocument.findMany({
         where: {
-          OR: [
-            { visibility: 'public' },
-            { visibility: 'unlisted' }
-          ],
-          shareId: { not: null },
+          OR: [{ visibility: 'public' }, { visibility: 'unlisted' }],
         },
         select: {
           shareId: true,
@@ -129,12 +134,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
     );
 
-    const [publicDocuments, sharedDocuments] = await Promise.race([
+    const [publicDocuments, sharedDocuments] = (await Promise.race([
       Promise.all(queries),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database timeout')), 1000)
-      )
-    ]) as [unknown[], unknown[]];
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 1000)),
+    ])) as [unknown[], unknown[]];
 
     const dynamicPages: MetadataRoute.Sitemap = [];
 
@@ -168,16 +171,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    logger.info({
-      staticPagesCount: staticPages.length,
-      dynamicPagesCount: dynamicPages.length
-    }, 'Sitemap generation completed successfully');
+    logger.info(
+      {
+        staticPagesCount: staticPages.length,
+        dynamicPagesCount: dynamicPages.length,
+      },
+      'Sitemap generation completed successfully'
+    );
     return [...staticPages, ...dynamicPages];
   } catch (error) {
-    logger.error({
-      err: error,
-      staticPagesCount: staticPages.length
-    }, 'Error generating sitemap, falling back to static pages');
+    logger.error(
+      {
+        err: error,
+        staticPagesCount: staticPages.length,
+      },
+      'Error generating sitemap, falling back to static pages'
+    );
     return staticPages; // Return static pages as fallback
   }
 }

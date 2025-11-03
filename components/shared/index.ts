@@ -14,13 +14,13 @@ export {
   CompactNodeRenderer,
   ListNodeRenderer,
   TreeNodeRenderer,
-  useNodeRenderer
+  useNodeRenderer,
 } from './node-renderer';
 export type {
   NodeRendererProps,
   CompactNodeRendererProps,
   ListNodeRendererProps,
-  TreeNodeRendererProps
+  TreeNodeRendererProps,
 } from './node-renderer';
 
 // Empty States
@@ -50,14 +50,9 @@ export {
   formatFileSize,
   detectJsonFormat,
 } from './hooks/useJsonProcessing';
-export type { 
-  JsonNode, 
-  JsonStats, 
-  JsonValidationResult, 
-  UseJsonProcessingOptions 
-} from './hooks/useJsonProcessing';
-
-// Re-export commonly used types and utilities
 export type {
-  ViewerMode,
-} from './json-viewer-base';
+  JsonNode,
+  JsonStats,
+  JsonValidationResult,
+  UseJsonProcessingOptions,
+} from './hooks/useJsonProcessing';

@@ -1,17 +1,9 @@
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BulkCheckbox } from '@/components/ui/bulk-operations';
-import {
-  Eye,
-  User,
-  Calendar,
-  Hash,
-  ChevronRight,
-  Trash2,
-  Globe,
-  Lock,
-} from 'lucide-react';
+import { Eye, User, Calendar, Hash, ChevronRight, Trash2, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { formatRelativeTime, formatCount } from '@/lib/utils/formatters';
@@ -48,14 +40,11 @@ export function DocumentCard({
   showDeleteButton = false,
   dateField = 'publishedAt',
   testId = 'document-card',
-}: DocumentCardProps) {
-  const dateValue = document[dateField];
+}: DocumentCardProps): React.ReactElement {
+  const dateValue = document[dateField] as string | undefined;
 
-  return (
-    <Card
-      className="h-full flex flex-col hover:shadow-lg transition-all duration-200 hover:scale-[1.02] group relative"
-      data-testid={testId}
-    >
+  const cardContent = (
+    <>
       {showBulkSelect && onSelect && (
         <BulkCheckbox
           id={document.id}
@@ -114,7 +103,10 @@ export function DocumentCard({
             </div>
           </div>
           {document.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2" data-testid="card-description">
+            <p
+              className="text-sm text-muted-foreground line-clamp-2"
+              data-testid="card-description"
+            >
               {document.description}
             </p>
           )}
@@ -122,7 +114,7 @@ export function DocumentCard({
             <div className="mt-2 text-xs text-muted-foreground border-l-2 border-blue-200 pl-3">
               <div
                 className="prose prose-xs max-w-none line-clamp-3"
-                dangerouslySetInnerHTML={{ __html: document.richContent }}
+                dangerouslySetInnerHTML={{ __html: document.richContent as string }}
               />
             </div>
           )}
@@ -131,7 +123,7 @@ export function DocumentCard({
         {/* Preview */}
         {(document.preview || document.content) && (
           <div className="mb-4 flex-1">
-            <JsonPreview content={document.preview || document.content || ''} />
+            <JsonPreview content={(document.preview || document.content || '') as string} />
           </div>
         )}
 
@@ -179,13 +171,22 @@ export function DocumentCard({
             </div>
             <Badge
               variant="outline"
-              className={cn("text-xs", complexityColors[document.complexity.toLowerCase()] || '')}
+              className={cn('text-xs', complexityColors[document.complexity.toLowerCase()] || '')}
             >
               {document.complexity}
             </Badge>
           </div>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <Card
+      className="h-full flex flex-col hover:shadow-lg transition-all duration-200 hover:scale-[1.02] group relative"
+      data-testid={testId}
+    >
+      {cardContent}
     </Card>
   );
 }

@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { requireSuperAdmin } from '@/lib/auth/admin'
-import { prisma } from '@/lib/db'
-import { logger } from '@/lib/logger'
-import { success, forbidden, notFound, internalServerError } from '@/lib/api/responses'
+import { NextRequest, NextResponse } from 'next/server';
+import { requireSuperAdmin } from '@/lib/auth/admin';
+import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+import { success, forbidden, notFound, internalServerError } from '@/lib/api/responses';
 
 interface RouteContext {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
-    await requireSuperAdmin()
+    await requireSuperAdmin();
 
-    const params = await context.params
-    const userId = params.id
+    const params = await context.params;
+    const userId = params.id;
 
     // Fetch comprehensive user data
     const user = await prisma.user.findUnique({
@@ -33,7 +33,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             provider: true,
             providerAccountId: true,
             type: true,
-          }
+          },
         },
         documents: {
           select: {
@@ -47,32 +47,32 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             tags: true,
           },
           orderBy: {
-            updatedAt: 'desc'
+            updatedAt: 'desc',
           },
-          take: 10 // Latest 10 documents
+          take: 10, // Latest 10 documents
         },
         _count: {
           select: {
             documents: true,
             sessions: true,
-          }
-        }
-      }
-    })
+          },
+        },
+      },
+    });
 
     if (!user) {
-      return notFound('User not found')
+      return notFound('User not found');
     }
 
     // Calculate statistics
-    const totalSize = user.documents.reduce((sum: number, doc) => sum + Number(doc.size || 0), 0)
-    const publicDocuments = user.documents.filter(doc => doc.visibility === 'public').length
-    const privateDocuments = user.documents.filter(doc => doc.visibility === 'private').length
-    const totalViews = user.documents.reduce((sum: number, doc) => sum + (doc.viewCount || 0), 0)
+    const totalSize = user.documents.reduce((sum: number, doc) => sum + Number(doc.size || 0), 0);
+    const publicDocuments = user.documents.filter((doc) => doc.visibility === 'public').length;
+    const privateDocuments = user.documents.filter((doc) => doc.visibility === 'private').length;
+    const totalViews = user.documents.reduce((sum: number, doc) => sum + (doc.viewCount || 0), 0);
 
     // Extract unique tags
-    const allTags = user.documents.flatMap(doc => doc.tags || [])
-    const uniqueTags = [...new Set(allTags)]
+    const allTags = user.documents.flatMap((doc) => doc.tags || []);
+    const uniqueTags = [...new Set(allTags)];
 
     // Get most recent session for last login (use expires as proxy for last activity)
     const latestSession = await prisma.session.findFirst({
@@ -80,8 +80,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       orderBy: { expires: 'desc' },
       select: {
         expires: true,
-      }
-    })
+      },
+    });
 
     const enrichedUser = {
       id: user.id,
@@ -94,7 +94,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       lastLogin: latestSession?.expires.toISOString() || null,
 
       // OAuth accounts
-      accounts: user.accounts.map(account => ({
+      accounts: user.accounts.map((account) => ({
         provider: account.provider,
         providerAccountId: account.providerAccountId,
         type: account.type,
@@ -112,7 +112,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       },
 
       // Recent documents
-      recentDocuments: user.documents.map(doc => ({
+      recentDocuments: user.documents.map((doc) => ({
         id: doc.id,
         title: doc.title || 'Untitled',
         visibility: doc.visibility,
@@ -125,17 +125,16 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
       // Tag usage
       tags: uniqueTags,
-    }
+    };
 
-    return success({ user: enrichedUser })
-
+    return success({ user: enrichedUser });
   } catch (error: unknown) {
-    logger.error({ err: error }, 'Admin user details API error')
+    logger.error({ err: error }, 'Admin user details API error');
 
     if (error instanceof Error && error.message === 'Unauthorized: Superadmin access required') {
-      return forbidden('Unauthorized access')
+      return forbidden('Unauthorized access');
     }
 
-    return internalServerError('Failed to fetch user details')
+    return internalServerError('Failed to fetch user details');
   }
 }

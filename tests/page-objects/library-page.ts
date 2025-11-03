@@ -66,8 +66,12 @@ export class LibraryPage extends BasePage {
     this.emptyState = page.locator('[data-testid="empty-state"]').or(page.locator('.empty-state'));
 
     // JSON items (support both saved documents table rows and library cards)
-    this.jsonItems = page.locator('[data-testid="json-item"], .json-item, [data-testid="library-card"], .library-card');
-    this.jsonTitles = page.locator('[data-testid="json-title"], .json-title, [data-testid="card-title"], .card-title');
+    this.jsonItems = page.locator(
+      '[data-testid="json-item"], .json-item, [data-testid="library-card"], .library-card'
+    );
+    this.jsonTitles = page.locator(
+      '[data-testid="json-title"], .json-title, [data-testid="card-title"], .card-title'
+    );
     this.jsonDates = page.locator('[data-testid="json-date"], .json-date');
     this.jsonSizes = page.locator('[data-testid="json-size"], .json-size');
     this.jsonTypes = page.locator('[data-testid="json-type"], .json-type');
@@ -90,8 +94,12 @@ export class LibraryPage extends BasePage {
 
     // Pagination (support both public and saved documents pagination)
     this.pagination = page.locator('[data-testid="pagination"], [data-testid="search-pagination"]');
-    this.prevPageButton = page.locator('[data-testid="prev-page"], button:has-text("Previous"), button:has-text("Prev")');
-    this.nextPageButton = page.locator('[data-testid="next-page"], button:has-text("Next"), button:has-text("Load More")');
+    this.prevPageButton = page.locator(
+      '[data-testid="prev-page"], button:has-text("Previous"), button:has-text("Prev")'
+    );
+    this.nextPageButton = page.locator(
+      '[data-testid="next-page"], button:has-text("Next"), button:has-text("Load More")'
+    );
     this.pageNumbers = page.locator('[data-testid="page-number"], .page-number');
     this.itemsPerPageSelect = page.locator('[data-testid="items-per-page"]');
 
@@ -114,7 +122,8 @@ export class LibraryPage extends BasePage {
    * Navigate to library page
    */
   async navigateToLibrary() {
-    await this.navigateTo('/saved');
+    // The personal saved items live at "/save" (not "/saved")
+    await this.navigateTo('/save');
   }
 
   /**
@@ -149,31 +158,31 @@ export class LibraryPage extends BasePage {
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      
+
       // Try both saved documents format (json-title) and library format (card-title)
       const titleSelector = '[data-testid="json-title"], [data-testid="card-title"]';
       const dateSelector = '[data-testid="json-date"]';
       const sizeSelector = '[data-testid="json-size"]';
-      
+
       const title = await item.locator(titleSelector).first().textContent();
-      
+
       // Handle optional date and size fields gracefully
       let date = '';
       let size = '';
-      
+
       try {
         const dateEl = item.locator(dateSelector).first();
-        if (await dateEl.count() > 0) {
-          date = await dateEl.textContent() || '';
+        if ((await dateEl.count()) > 0) {
+          date = (await dateEl.textContent()) || '';
         }
       } catch (e) {
         // Date field not found, leave empty
       }
-      
+
       try {
         const sizeEl = item.locator(sizeSelector).first();
-        if (await sizeEl.count() > 0) {
-          size = await sizeEl.textContent() || '';
+        if ((await sizeEl.count()) > 0) {
+          size = (await sizeEl.textContent()) || '';
         }
       } catch (e) {
         // Size field not found, leave empty
@@ -427,12 +436,17 @@ export class LibraryPage extends BasePage {
    * Wait for items to load
    */
   async waitForItemsToLoad() {
-    // Wait for either items to appear or empty state
+    // Wait for either items to appear or an empty state indicator
     await Promise.race([
-      this.jsonItems.first().waitFor({ state: 'visible' }),
+      // Item list container becomes visible
+      this.jsonItemsList.waitFor({ state: 'visible' }),
+      // At least one item is attached to the DOM (visibility can be flaky with animations)
+      this.jsonItems.first().waitFor({ state: 'attached' }),
+      // Known empty state markers
       this.emptyState.waitFor({ state: 'visible' }),
-      // Also look for library specific empty states
       this.page.locator('[data-testid="empty-search-results"]').waitFor({ state: 'visible' }),
+      // Fallback: text-based empty state on /save page
+      this.page.getByText(/No\s+Shared\s+JSONs/i).waitFor({ state: 'visible' }),
     ]);
   }
 
@@ -456,15 +470,15 @@ export class LibraryPage extends BasePage {
 
     // Check navigation button states (with error handling for missing buttons)
     try {
-      if (await this.nextPageButton.count() > 0) {
+      if ((await this.nextPageButton.count()) > 0) {
         info.hasNext = await this.nextPageButton.isEnabled();
       }
     } catch (e) {
       info.hasNext = false;
     }
-    
+
     try {
-      if (await this.prevPageButton.count() > 0) {
+      if ((await this.prevPageButton.count()) > 0) {
         info.hasPrev = await this.prevPageButton.isEnabled();
       }
     } catch (e) {

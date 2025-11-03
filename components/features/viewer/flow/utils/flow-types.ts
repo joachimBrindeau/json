@@ -5,7 +5,6 @@ import { Node } from '@xyflow/react';
  * @see https://www.w3schools.com/js/js_json_datatypes.asp
  */
 export enum NodeType {
-  Root = 'root',
   Object = 'object',
   Array = 'array',
   /**
@@ -35,18 +34,11 @@ export enum EdgeType {
 }
 
 type SharedNodeData = {
-  depth: number; // The depth starts from 0. (depth of root node is 0)
+  depth: number; // The depth starts from 0
   stringifiedJson: string;
   parentNodePathIds: string[]; // e.g. [], ['n0'], ['n0', 'n3', 'n5'], ...
-  isCollapsed?: boolean; // Track if node's children are collapsed
-  onToggleCollapse?: (nodeId: string) => void; // Callback to toggle collapse state
-};
-
-export type RootNodeData = SharedNodeData & {
-  dataType: JsonDataType.Object | JsonDataType.Array;
-  label: string; // e.g., "JSON Root", "root", or filename
-  childType: 'object' | 'array'; // Type of the actual root data
-  childCount: number; // Number of top-level properties or items
+  collapsedBranches?: Set<string>; // Set of collapsed branch IDs (format: "parentId:childId")
+  onToggleCollapse?: (parentId: string, childId: string) => void; // Callback to toggle branch collapse state
 };
 
 export type ObjectNodeData = SharedNodeData & {
@@ -76,9 +68,8 @@ export type PrimitiveNodeData = SharedNodeData & {
   value: string | number | boolean | null;
 };
 
-export type RootSeaNode = Node<RootNodeData, NodeType.Root>;
 export type ObjectSeaNode = Node<ObjectNodeData, NodeType.Object>;
 export type ArraySeaNode = Node<ArrayNodeData, NodeType.Array>;
 export type PrimitiveSeaNode = Node<PrimitiveNodeData, NodeType.Primitive>;
 
-export type SeaNode = RootSeaNode | ObjectSeaNode | ArraySeaNode | PrimitiveSeaNode;
+export type SeaNode = ObjectSeaNode | ArraySeaNode | PrimitiveSeaNode;

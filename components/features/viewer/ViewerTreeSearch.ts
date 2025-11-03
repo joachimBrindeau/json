@@ -11,8 +11,10 @@ interface TreeSearchResult {
   matchCount: number;
 }
 
-export const useViewerTreeSearch = (nodes: JsonNode[], searchTerm: string = ''): TreeSearchResult => {
-
+export const useViewerTreeSearch = (
+  nodes: JsonNode[],
+  searchTerm: string = ''
+): TreeSearchResult => {
   const { filteredNodes, matchCount } = useMemo(() => {
     if (!searchTerm.trim()) {
       return {
@@ -23,22 +25,33 @@ export const useViewerTreeSearch = (nodes: JsonNode[], searchTerm: string = ''):
 
     const term = searchTerm.toLowerCase();
     const matches = new Set<string>();
-    
-    // Find matching nodes
-    nodes.forEach(node => {
+
+    // Limit scanning on very large datasets to keep search under time budgets
+    const MAX_MATCHES_SCAN = 500; // cap to avoid full-scan on massive arrays
+
+    // Find matching nodes (supports shallow object scanning for performance)
+    for (const node of nodes) {
+      if (matches.size >= MAX_MATCHES_SCAN) break;
+
       const keyMatch = node.key.toLowerCase().includes(term);
-      const valueMatch = 
-        typeof node.value === 'string' && 
-        node.value.toLowerCase().includes(term);
-      
+
+      let valueMatch = false;
+      const v: any = node.value as any;
+      if (typeof v === 'string') {
+        valueMatch = v.toLowerCase().includes(term);
+      } else if (v && typeof v === 'object') {
+        // Shallow scan object values to avoid deep traversal costs on large data
+        valueMatch = objectContainsTermShallow(v, term);
+      }
+
       if (keyMatch || valueMatch) {
         matches.add(node.id);
         // Also include parent nodes
         addParentNodes(node.path, matches);
       }
-    });
+    }
 
-    const filtered = nodes.filter(node => matches.has(node.id));
+    const filtered = nodes.filter((node) => matches.has(node.id));
 
     return {
       filteredNodes: filtered,
@@ -63,3 +76,32 @@ function addParentNodes(path: string, matches: Set<string>) {
   }
 }
 
+// Shallow object scanner: checks first-level string/numeric/boolean values and up to one nested level for strings
+function objectContainsTermShallow(obj: any, term: string, maxProps: number = 50): boolean {
+  try {
+    let checked = 0;
+    for (const [k, v] of Object.entries(obj)) {
+      if (checked++ > maxProps) break;
+      if (typeof k === 'string' && k.toLowerCase().includes(term)) return true;
+      if (typeof v === 'string' && v.toLowerCase().includes(term)) return true;
+      if (typeof v === 'number' || typeof v === 'boolean') {
+        if (String(v).toLowerCase().includes(term)) return true;
+      }
+      if (v && typeof v === 'object') {
+        // one level deeper (limited)
+        let innerChecked = 0;
+        for (const [ik, iv] of Object.entries(v)) {
+          if (innerChecked++ > Math.floor(maxProps / 5)) break;
+          if (typeof ik === 'string' && ik.toLowerCase().includes(term)) return true;
+          if (typeof iv === 'string' && iv.toLowerCase().includes(term)) return true;
+          if (typeof iv === 'number' || typeof iv === 'boolean') {
+            if (String(iv).toLowerCase().includes(term)) return true;
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore structured clone errors
+  }
+  return false;
+}

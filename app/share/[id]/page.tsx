@@ -9,12 +9,14 @@ export default function SharePage() {
 
   useEffect(() => {
     // Redirect to viewer page
-    if (params.id && typeof params.id === 'string') {
-      router.replace(`/library/${params.id}`);
+    const idParam = (params as Record<string, string | string[]> | null)?.id;
+    const id = Array.isArray(idParam) ? idParam[0] : idParam;
+    if (typeof id === 'string' && id) {
+      router.replace(`/library/${id}`);
     } else {
       router.replace('/');
     }
-  }, [params.id, router]);
+  }, [params, router]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">

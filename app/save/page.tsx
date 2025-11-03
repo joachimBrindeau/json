@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
+import { useApiData } from '@/hooks/use-api-data';
+import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-states';
 import {
   Select,
   SelectContent,
@@ -116,7 +119,9 @@ const DocumentRow = memo(function DocumentRow({
   }, [document.shareId, onLoad]);
 
   const shareUrl = useMemo(() => {
-    return typeof window !== 'undefined' ? `${window.location.origin}/library/${document.shareId}` : '';
+    return typeof window !== 'undefined'
+      ? `${window.location.origin}/library/${document.shareId}`
+      : '';
   }, [document.shareId]);
 
   const copyUrl = useCallback(async () => {
@@ -135,9 +140,9 @@ const DocumentRow = memo(function DocumentRow({
           onClick={handleLoad}
         >
           {document.visibility === 'public' ? (
-            <Globe className="h-4 w-4 text-green-500" title="Published to public library" />
+            <Globe className="h-4 w-4 text-green-500" aria-label="Published to public library" />
           ) : (
-            <Lock className="h-4 w-4 text-muted-foreground" title="Private" />
+            <Lock className="h-4 w-4 text-muted-foreground" aria-label="Private" />
           )}
           <span className="truncate max-w-48" data-testid="json-title">
             {document.title}
@@ -150,16 +155,23 @@ const DocumentRow = memo(function DocumentRow({
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground" data-testid="json-date">
+        <div
+          className="flex items-center gap-1 text-sm text-muted-foreground"
+          data-testid="json-date"
+        >
           <Calendar className="h-3 w-3" />
           {formatDate(document.createdAt)}
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" data-testid="json-size">{formatSize(document.size)}</Badge>
+        <Badge variant="outline" data-testid="json-size">
+          {formatSize(document.size)}
+        </Badge>
       </TableCell>
       <TableCell>
-        <code className="text-xs bg-muted px-2 py-1 rounded">{document.shareId.substring(0, 12)}...</code>
+        <code className="text-xs bg-muted px-2 py-1 rounded">
+          {document.shareId.substring(0, 12)}...
+        </code>
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -193,7 +205,10 @@ const DocumentRow = memo(function DocumentRow({
                       await apiClient.delete(`/api/json/${document.shareId}/publish`);
                       onPublished?.();
                     } catch (error) {
-                      logger.error({ err: error, shareId: document.shareId }, 'Failed to unpublish document');
+                      logger.error(
+                        { err: error, shareId: document.shareId },
+                        'Failed to unpublish document'
+                      );
                     }
                   }}
                   className="text-orange-600"
@@ -203,7 +218,11 @@ const DocumentRow = memo(function DocumentRow({
                 </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive" data-testid="delete-json">
+            <DropdownMenuItem
+              onClick={handleDeleteClick}
+              className="text-destructive"
+              data-testid="delete-json"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </DropdownMenuItem>
@@ -274,89 +293,178 @@ const SortableTableHead = memo(function SortableTableHead({
 });
 
 function LibraryPageComponent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
-  const [documents, setDocuments] = useState<LibraryDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filters, setFilters] = useState<FilterState>({});
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const { loadFromShareId } = useAppStore();
 
-  // Load documents from API
-  const loadDocuments = useCallback(async () => {
-    if (!session) {
-      setDocuments([]);
-      setLoading(false);
-      return;
+  // Build API query params
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams({
+      page: currentPage.toString(),
+      limit: ITEMS_PER_PAGE.toString(),
+      sort:
+        sortField === 'createdAt' && sortOrder === 'desc'
+          ? 'recent'
+          : sortField === 'createdAt' && sortOrder === 'asc'
+            ? 'recent'
+            : sortField === 'title'
+              ? 'title'
+              : sortField === 'size'
+                ? 'size'
+                : 'recent',
+    });
+
+    if (searchQuery.trim()) {
+      params.set('search', searchQuery.trim());
     }
 
+    return params.toString();
+  }, [currentPage, sortField, sortOrder, searchQuery]);
+
+  // Use API data hook
+  interface SavedResponse {
+    documents?: LibraryDocument[];
+    pagination?: {
+      totalPages: number;
+      total: number;
+    };
+  }
+
+  const { data, loading, error, refetch } = useApiData<SavedResponse>({
+    endpoint: `/api/saved?${queryParams}`,
+    errorMessage: 'Failed to load your library',
+    enabled: status === 'authenticated',
+  });
+
+  const documents = data?.documents || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  // Merge in the just-saved document immediately so the table reflects it without waiting for API re-fetch
+  const storeCurrentDocument = useBackendStore((s) => s.currentDocument);
+  const lastSavedMeta = useBackendStore((s) => s.lastSavedMeta);
+  const effectiveDocuments = useMemo(() => {
+    const list: LibraryDocument[] = [...(documents || [])];
     try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: ITEMS_PER_PAGE.toString(),
-        sort: sortField === 'createdAt' && sortOrder === 'desc' ? 'recent' :
-              sortField === 'createdAt' && sortOrder === 'asc' ? 'recent' :
-              sortField === 'title' ? 'title' :
-              sortField === 'size' ? 'size' : 'recent',
-      });
-
-      if (searchQuery.trim()) {
-        params.set('search', searchQuery.trim());
+      if (status === 'authenticated') {
+        if (storeCurrentDocument) {
+          const exists = list.some(
+            (d) =>
+              d.id === (storeCurrentDocument as any).id ||
+              d.shareId === (storeCurrentDocument as any).shareId
+          );
+          if (!exists) {
+            list.unshift({
+              id: (storeCurrentDocument as any).id,
+              shareId: (storeCurrentDocument as any).shareId,
+              title: (storeCurrentDocument as any).title || 'Untitled JSON',
+              description: undefined,
+              richContent: undefined,
+              size: (storeCurrentDocument as any).size || 0,
+              nodeCount: (storeCurrentDocument as any).nodeCount || 0,
+              maxDepth: (storeCurrentDocument as any).maxDepth || 0,
+              complexity: (storeCurrentDocument as any).complexity || 'unknown',
+              visibility: 'private',
+              publishedAt: undefined,
+              createdAt: (storeCurrentDocument as any).createdAt || new Date(),
+              updatedAt:
+                (storeCurrentDocument as any).updatedAt ||
+                (storeCurrentDocument as any).createdAt ||
+                new Date(),
+            } as LibraryDocument);
+          }
+        } else if (lastSavedMeta) {
+          const exists = list.some(
+            (d) => d.id === lastSavedMeta.id || d.shareId === lastSavedMeta.shareId
+          );
+          if (!exists) {
+            list.unshift({
+              id: lastSavedMeta.id,
+              shareId: lastSavedMeta.shareId,
+              title: lastSavedMeta.title || 'Untitled JSON',
+              description: undefined,
+              richContent: undefined,
+              size: lastSavedMeta.size || 0,
+              nodeCount: lastSavedMeta.nodeCount || 0,
+              maxDepth: lastSavedMeta.maxDepth || 0,
+              complexity: lastSavedMeta.complexity || 'unknown',
+              visibility: lastSavedMeta.visibility || 'private',
+              publishedAt: undefined,
+              createdAt: (lastSavedMeta as any).createdAt || new Date(),
+              updatedAt:
+                (lastSavedMeta as any).updatedAt || (lastSavedMeta as any).createdAt || new Date(),
+            } as LibraryDocument);
+          }
+        }
       }
+    } catch {}
+    return list;
+  }, [documents, status, storeCurrentDocument, lastSavedMeta]);
 
-      interface SavedResponse {
-        documents?: LibraryDocument[];
-        pagination?: {
-          totalPages: number;
-          total: number;
-        };
-      }
-
-      const data = await apiClient.get<SavedResponse>(`/api/saved?${params}`);
-      setDocuments(data.documents || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotalCount(data.pagination?.total || 0);
-    } catch (err) {
-      logger.error({ err, currentPage, sortField, sortOrder }, 'Failed to load documents');
-      setError('Failed to load your library');
-    } finally {
-      setLoading(false);
-    }
-  }, [session, currentPage, sortField, sortOrder, searchQuery]);
-
-  useEffect(() => {
-    loadDocuments();
-  }, [loadDocuments]);
+  const totalCount = data?.pagination?.total || 0;
 
   // Register for library updates
   useEffect(() => {
-    setLibraryUpdateCallback(loadDocuments);
+    setLibraryUpdateCallback(refetch);
     return () => {
       setLibraryUpdateCallback(() => {});
     };
-  }, [loadDocuments, setLibraryUpdateCallback]);
+  }, [refetch, setLibraryUpdateCallback]);
+
+  // Robustness: if initial fetch races with recent save, do a couple of quick re-fetches
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    // Only apply when we currently have no documents; avoids unnecessary extra fetches
+    if ((documents?.length || 0) > 0) return;
+
+    const t1 = setTimeout(() => refetch(), 1000);
+    const t2 = setTimeout(() => refetch(), 3000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [status, documents?.length, refetch]);
+  // Debug: log fetch state to help diagnose race conditions in tests
+  useEffect(() => {
+    try {
+      logger.debug(
+        {
+          status,
+          haveData: data !== null,
+          docCount: documents?.length || 0,
+          loading,
+          error: !!error,
+        },
+        'Library page fetch state'
+      );
+    } catch {}
+  }, [status, data, documents?.length, loading, error]);
+
+  // Ensure we fetch once when auth becomes ready even if initial effect missed it
+  useEffect(() => {
+    if (status === 'authenticated' && data === null && !loading && !error) {
+      refetch();
+    }
+  }, [status, data, loading, error, refetch]);
 
   // Delete document handler
-  const handleDelete = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(`/api/json/${id}`);
-      // Refresh the library
-      loadDocuments();
-    } catch (err) {
-      logger.error({ err, documentId: id }, 'Failed to delete document');
-      setError('Failed to delete document');
-    }
-  }, [loadDocuments]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await apiClient.delete(`/api/json/${id}`);
+        // Refresh the library
+        refetch();
+      } catch (err) {
+        logger.error({ err, documentId: id }, 'Failed to delete document');
+      }
+    },
+    [refetch]
+  );
 
   // Load document into editor
   const handleLoad = useCallback(
@@ -368,7 +476,6 @@ function LibraryPageComponent() {
         }
       } catch (err) {
         logger.error({ err, shareId }, 'Failed to load document');
-        setError('Failed to load document');
       }
     },
     [loadFromShareId]
@@ -376,7 +483,7 @@ function LibraryPageComponent() {
 
   // Client-side filtering (API handles search and pagination)
   const processedDocuments = useMemo(() => {
-    let result = [...documents];
+    let result = [...effectiveDocuments];
 
     // Apply client-side size filters if needed
     if (filters.minSize !== undefined) {
@@ -395,7 +502,7 @@ function LibraryPageComponent() {
     }
 
     return result;
-  }, [documents, filters]);
+  }, [effectiveDocuments, filters]);
 
   // Pagination
   const computedTotalPages = Math.ceil(processedDocuments.length / ITEMS_PER_PAGE);
@@ -441,53 +548,52 @@ function LibraryPageComponent() {
   }, [filters]);
 
   if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <Database className="h-16 w-16 mx-auto mb-4 text-muted-foreground animate-pulse" />
-          <p className="text-muted-foreground">Loading your shared JSONs...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState message="Loading your shared JSONs..." size="lg" />;
   }
 
   if (error) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <Card className="max-w-md w-full p-8">
-          <div className="text-center">
-            <div className="text-2xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Library</h3>
-            <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <Button onClick={loadDocuments} className="gap-2">
-              <Database className="h-4 w-4" />
-              Try Again
-            </Button>
-          </div>
-        </Card>
+      <EmptyState
+        icon={<Database className="h-12 w-12" />}
+        title="Error Loading Library"
+        description={typeof error === 'string' ? error : 'Failed to load your library'}
+        action={{
+          label: 'Try Again',
+          onClick: refetch,
+          variant: 'default',
+        }}
+      />
+    );
+  }
+
+  // Show loading while auth status is being determined
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingState message="Loading your library..." />
       </div>
     );
   }
 
-  if (documents.length === 0 && !loading && !error) {
+  // If authenticated but no documents, show empty state ONLY after first fetch completed (data !== null)
+  if (
+    status === 'authenticated' &&
+    data !== null &&
+    effectiveDocuments.length === 0 &&
+    !loading &&
+    !error
+  ) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <Card className="max-w-md w-full p-8" data-testid="empty-state">
-          <div className="text-center">
-            <FileJson className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h2 className="text-xl font-semibold mb-2">No Shared JSONs Yet</h2>
-            <p className="text-muted-foreground mb-6">
-              Create and share your first JSON to see it appear in your library.
-            </p>
-            <Link href="/">
-              <Button className="gap-2" data-testid="create-new">
-                <Plus className="h-4 w-4" />
-                Create New JSON
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </div>
+      <EmptyState
+        icon={<FileJson className="h-16 w-16" />}
+        title="No Shared JSONs Yet"
+        description="Create and share your first JSON to see it appear in your library."
+        action={{
+          label: 'Create New JSON',
+          onClick: () => (window.location.href = '/'),
+          variant: 'default',
+        }}
+      />
     );
   }
 
@@ -638,7 +744,10 @@ function LibraryPageComponent() {
       {/* Table */}
       <div className="flex-1 overflow-auto px-6">
         {processedDocuments.length === 0 ? (
-          <div className="flex items-center justify-center h-full" data-testid="empty-search-results">
+          <div
+            className="flex items-center justify-center h-full"
+            data-testid="empty-search-results"
+          >
             <div className="text-center text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No results found</p>
@@ -690,7 +799,7 @@ function LibraryPageComponent() {
                     document={doc}
                     onDelete={handleDelete}
                     onLoad={handleLoad}
-                    onPublished={loadDocuments}
+                    onPublished={refetch}
                   />
                 ))}
               </TableBody>

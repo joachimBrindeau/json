@@ -154,7 +154,7 @@ test.describe('Community - Browsing and Discovery', () => {
 
       // Should show only API Response examples
       const filteredCards = page.locator('[data-testid="library-card"]');
-      await page.waitForTimeout(1000); // Wait for filtering
+      await page.waitForLoadState('networkidle'); // Wait for filtering
 
       const cardCount = await filteredCards.count();
       expect(cardCount).toBeGreaterThan(0);
@@ -168,14 +168,14 @@ test.describe('Community - Browsing and Discovery', () => {
 
       // Test Configuration category
       await categoryFilter.selectOption('Configuration');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for category filter
 
       const configCards = await page.locator('[data-testid="library-card"]').count();
       expect(configCards).toBeGreaterThan(0);
 
       // Test "All Categories" option
       await categoryFilter.selectOption('');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for category reset
 
       const allCards = await page.locator('[data-testid="library-card"]').count();
       expect(allCards).toBeGreaterThanOrEqual(cardCount + configCards - 1);
@@ -187,7 +187,7 @@ test.describe('Community - Browsing and Discovery', () => {
       // Sort by popularity (most views first)
       const sortSelect = page.locator('[data-testid="sort-select"]');
       await sortSelect.selectOption('popularity');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for sort operation
 
       const cards = page.locator('[data-testid="library-card"]');
       const cardCount = await cards.count();
@@ -217,7 +217,7 @@ test.describe('Community - Browsing and Discovery', () => {
 
       const sortSelect = page.locator('[data-testid="sort-select"]');
       await sortSelect.selectOption('newest');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for date sort
 
       const cards = page.locator('[data-testid="library-card"]');
       const cardCount = await cards.count();
@@ -317,7 +317,7 @@ test.describe('Community - Browsing and Discovery', () => {
           await nextButton.click();
 
           // Should navigate to page 2
-          await page.waitForTimeout(1000);
+          await page.waitForLoadState('networkidle'); // Wait for pagination
           expect(await currentPage.textContent()).toContain('2');
 
           // Should show different content
@@ -330,7 +330,7 @@ test.describe('Community - Browsing and Discovery', () => {
       const pageSizeSelect = page.locator('[data-testid="page-size-select"]');
       if (await pageSizeSelect.isVisible()) {
         await pageSizeSelect.selectOption('24');
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle'); // Wait for page size change
 
         const cards = await page.locator('[data-testid="library-card"]').count();
         expect(cards).toBeLessThanOrEqual(24);
@@ -355,7 +355,7 @@ test.describe('Community - Browsing and Discovery', () => {
         await categoryFilter.selectOption('Database Schema');
       }
 
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for category filter application
 
       const cards = page.locator('[data-testid="library-card"]');
       const cardCount = await cards.count();
@@ -521,13 +521,13 @@ test.describe('Community - Browsing and Discovery', () => {
       if (expandableNodes > 0) {
         const firstExpandable = viewerPage.expandableNodes.first();
         await firstExpandable.click();
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('networkidle'); // Wait for node expansion
         // Node should expand
       }
 
       // Should be able to search within JSON
       await viewerPage.searchInput.fill('data');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle'); // Wait for search highlighting
       // Should highlight search results
 
       // Should be able to copy content (if allowed)
@@ -649,7 +649,7 @@ test.describe('Community - Browsing and Discovery', () => {
 
       // Should still be interactive
       await viewerPage.searchInput.fill('Item 50');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle'); // Wait for search in large dataset
 
       // Should find the search result
       const searchResults = page.locator('[data-testid="search-result"]');

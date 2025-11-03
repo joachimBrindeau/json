@@ -24,6 +24,7 @@ export interface JsonStats {
   type: string;
   keys: number;
   depth?: number;
+  parseTime?: number;
 }
 
 export interface ParseResult {
@@ -31,4 +32,3 @@ export interface ParseResult {
   error: string | null;
   stats: JsonStats | null;
 }
-

@@ -1,6 +1,6 @@
 /**
  * Edge factory - centralized edge creation logic
- * 
+ *
  * Creates ReactFlow edges with consistent styling and configuration.
  * Follows the Factory pattern for edge creation.
  */
@@ -28,10 +28,10 @@ export type ChainEdgeParams = {
 
 /**
  * Creates a default edge connecting two nodes
- * 
+ *
  * @param params - Edge parameters (source, target, sourceHandle)
  * @returns ReactFlow Edge object with default styling
- * 
+ *
  * @bugfix Uses nanoid() for edge IDs to prevent edge persistence bugs
  * @see https://stackoverflow.com/questions/70114700/react-flow-renderer-edges-remain-in-ui-without-any-parents
  */
@@ -51,9 +51,9 @@ export const createDefaultEdge = ({ source, target, sourceHandle }: DefaultEdgeP
 
 /**
  * Creates a chain edge for connecting array items sequentially
- * 
+ *
  * Chain edges connect array items vertically using top/bottom anchors.
- * 
+ *
  * @param params - Edge parameters (source, target)
  * @returns ReactFlow Edge object configured for chain connections
  */
@@ -64,7 +64,7 @@ export const createChainEdge = ({ source, target }: ChainEdgeParams): Edge => {
     source,
     target,
     sourceHandle: 'bottom', // Use bottom anchor for source
-    targetHandle: 'top',    // Use top anchor for target
+    targetHandle: 'top', // Use top anchor for target
   };
 };
 
@@ -73,4 +73,3 @@ export const createChainEdge = ({ source, target }: ChainEdgeParams): Edge => {
  * Used for identifying chain edges in the flow
  */
 export const addPrefixChain = (v: string): string => `chain-${v}`;
-

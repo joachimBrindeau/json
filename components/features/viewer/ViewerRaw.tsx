@@ -29,4 +29,3 @@ export const ViewerRaw = ({ data, height = 600 }: ViewerRawProps) => {
     </ScrollArea>
   );
 };
-

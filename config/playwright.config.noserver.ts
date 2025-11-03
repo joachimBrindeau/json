@@ -1,14 +1,18 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests',
-  globalSetup: './tests/utils/global-setup.ts',
-  globalTeardown: './tests/utils/global-teardown.ts',
+  testDir: '../tests',
+  globalSetup: '../tests/utils/global-setup.ts',
+  globalTeardown: '../tests/utils/global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 5,
-  reporter: [['html'], ['junit', { outputFile: './test-results/results.xml' }], ['json', { outputFile: './test-results/results.json' }]],
+  reporter: [
+    ['html'],
+    ['junit', { outputFile: './test-results/results.xml' }],
+    ['json', { outputFile: './test-results/results.json' }],
+  ],
   use: {
     baseURL: 'http://localhost:3456',
     trace: 'on-first-retry',
@@ -46,5 +50,3 @@ export default defineConfig({
   outputDir: './test-results/',
   testIgnore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
 });
-
-import devices from '@playwright/test';

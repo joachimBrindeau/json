@@ -9,7 +9,8 @@ let redis: Redis | undefined;
 
 if (typeof window === 'undefined') {
   // Only create Redis instance on server
-  redis = globalForRedis.redis ?? 
+  redis =
+    globalForRedis.redis ??
     new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
       maxRetriesPerRequest: 3,
       lazyConnect: true,

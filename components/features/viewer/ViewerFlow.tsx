@@ -8,24 +8,22 @@ import dynamic from 'next/dynamic';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
-const FlowView = dynamic(
-  () => import('./flow/FlowView').then(m => ({ default: m.FlowView })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
-      </div>
-    ),
-  }
-);
+const FlowView = dynamic(() => import('./flow/FlowView').then((m) => ({ default: m.FlowView })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <LoadingSpinner />
+    </div>
+  ),
+});
 
 interface ViewerFlowProps {
   data: any;
   height?: number;
+  searchTerm?: string;
 }
 
-export const ViewerFlow = ({ data, height = 600 }: ViewerFlowProps) => {
+export const ViewerFlow = ({ data, height, searchTerm }: ViewerFlowProps) => {
   return (
     <ErrorBoundary
       level="component"
@@ -37,10 +35,9 @@ export const ViewerFlow = ({ data, height = 600 }: ViewerFlowProps) => {
       enableRetry
       maxRetries={2}
     >
-    <div style={{ height }} className="w-full">
-      <FlowView json={data} />
-    </div>
+      <div style={height ? { height } : undefined} className={height ? 'w-full' : 'w-full h-full'}>
+        <FlowView json={data} searchTerm={searchTerm} />
+      </div>
     </ErrorBoundary>
   );
 };
-

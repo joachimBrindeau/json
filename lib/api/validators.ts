@@ -18,10 +18,7 @@ export const documentIdSchema = z
   .max(50, 'Document ID is too long');
 
 // User ID validation
-export const userIdSchema = z
-  .string()
-  .min(1, 'User ID is required')
-  .max(50, 'User ID is too long');
+export const userIdSchema = z.string().min(1, 'User ID is required').max(50, 'User ID is too long');
 
 // Title validation
 export const titleSchema = z
@@ -31,11 +28,7 @@ export const titleSchema = z
   .trim();
 
 // Description validation
-export const descriptionSchema = z
-  .string()
-  .max(1000, 'Description is too long')
-  .trim()
-  .optional();
+export const descriptionSchema = z.string().max(1000, 'Description is too long').trim().optional();
 
 // Tag validation
 export const tagSchema = z
@@ -43,7 +36,7 @@ export const tagSchema = z
   .min(1, 'Tag cannot be empty')
   .max(50, 'Tag is too long')
   .regex(/^[a-zA-Z0-9-_\s]+$/, 'Tag contains invalid characters')
-  .transform(tag => tag.trim().toLowerCase());
+  .transform((tag) => tag.trim().toLowerCase());
 
 // Email validation
 export const emailSchema = z
@@ -51,7 +44,7 @@ export const emailSchema = z
   .email('Invalid email format')
   .min(1, 'Email is required')
   .max(100, 'Email is too long')
-  .transform(email => email.toLowerCase().trim());
+  .transform((email) => email.toLowerCase().trim());
 
 // Password validation
 export const passwordSchema = z
@@ -89,7 +82,7 @@ export const searchQuerySchema = z
   .max(100, 'Search query is too long')
   .trim()
   .optional()
-  .transform(query => query || undefined);
+  .transform((query) => query || undefined);
 
 export const sortFieldSchema = z.enum([
   'recent',
@@ -97,7 +90,7 @@ export const sortFieldSchema = z.enum([
   'size',
   'updated',
   'created',
-  'popularity'
+  'popularity',
 ]);
 
 /**
@@ -105,28 +98,23 @@ export const sortFieldSchema = z.enum([
  */
 
 // JSON content validation (checks for valid JSON structure)
-export const jsonContentSchema = z
-  .unknown()
-  .refine(
-    (data) => {
-      try {
-        if (typeof data === 'string') {
-          JSON.parse(data);
-        }
-        return true;
-      } catch {
-        return false;
+export const jsonContentSchema = z.unknown().refine(
+  (data) => {
+    try {
+      if (typeof data === 'string') {
+        JSON.parse(data);
       }
-    },
-    { message: 'Invalid JSON format' }
-  );
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: 'Invalid JSON format' }
+);
 
 // File upload validation
 export const fileUploadSchema = z.object({
-  file: z.any().refine(
-    (file) => file instanceof File,
-    { message: 'Invalid file' }
-  ),
+  file: z.any().refine((file) => file instanceof File, { message: 'Invalid file' }),
   title: titleSchema.optional(),
 });
 
@@ -134,14 +122,22 @@ export const fileUploadSchema = z.object({
 export const jsonMetadataSchema = z.object({
   originalFilename: z.string().optional(),
   uploadedAt: z.string().datetime().optional(),
-  largeArrays: z.array(z.object({
-    path: z.string(),
-    length: z.number(),
-  })).optional(),
-  deepObjects: z.array(z.object({
-    path: z.string(),
-    depth: z.number(),
-  })).optional(),
+  largeArrays: z
+    .array(
+      z.object({
+        path: z.string(),
+        length: z.number(),
+      })
+    )
+    .optional(),
+  deepObjects: z
+    .array(
+      z.object({
+        path: z.string(),
+        depth: z.number(),
+      })
+    )
+    .optional(),
   paths: z.array(z.string()).optional(),
 });
 
@@ -151,10 +147,7 @@ export const jsonMetadataSchema = z.object({
 
 // JSON upload request
 export const jsonUploadRequestSchema = z.object({
-  file: z.any().refine(
-    (file) => file instanceof File,
-    { message: 'File is required' }
-  ),
+  file: z.any().refine((file) => file instanceof File, { message: 'File is required' }),
   title: titleSchema.optional(),
   description: descriptionSchema,
   tags: z.array(tagSchema).max(10, 'Too many tags').optional(),
@@ -184,8 +177,13 @@ export const libraryQuerySchema = z.object({
   sort: sortFieldSchema.default('recent'),
   tags: z
     .string()
-    .transform((tags) => 
-      tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+    .transform((tags) =>
+      tags
+        ? tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : []
     )
     .pipe(z.array(tagSchema))
     .optional(),
@@ -206,11 +204,7 @@ export const publicLibraryQuerySchema = libraryQuerySchema.extend({
 export const userRegistrationSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .max(100, 'Name is too long')
-    .trim(),
+  name: z.string().min(1, 'Name is required').max(100, 'Name is too long').trim(),
 });
 
 // User login
@@ -308,7 +302,11 @@ export const extensionSubmissionSchema = z.object({
 
 // JSON analysis options
 export const jsonAnalysisOptionsSchema = z.object({
-  maxChunkSize: z.number().min(1024).max(10 * 1024 * 1024).default(1024 * 1024), // 1MB default
+  maxChunkSize: z
+    .number()
+    .min(1024)
+    .max(10 * 1024 * 1024)
+    .default(1024 * 1024), // 1MB default
   trackPaths: z.boolean().default(true),
   findLargeArrays: z.boolean().default(true),
   maxDepthAnalysis: z.number().min(1).max(100).default(50),
@@ -317,7 +315,11 @@ export const jsonAnalysisOptionsSchema = z.object({
 
 // Streaming options
 export const streamingOptionsSchema = z.object({
-  chunkSize: z.number().min(1024).max(1024 * 1024).default(64 * 1024), // 64KB
+  chunkSize: z
+    .number()
+    .min(1024)
+    .max(1024 * 1024)
+    .default(64 * 1024), // 64KB
   compression: z.enum(['none', 'gzip', 'deflate']).default('gzip'),
   format: z.enum(['json', 'jsonl', 'csv']).default('json'),
 });
@@ -343,11 +345,7 @@ export const healthCheckSchema = z.object({
  */
 
 // Generic ID validator that accepts multiple formats
-export const genericIdSchema = z.union([
-  shareIdSchema,
-  documentIdSchema,
-  userIdSchema,
-]);
+export const genericIdSchema = z.union([shareIdSchema, documentIdSchema, userIdSchema]);
 
 // File size and type validation
 export const fileValidationSchema = z.object({
@@ -378,38 +376,28 @@ export const urlSchema = z
  */
 
 // Validates that a string is a valid JSON path
-export const jsonPathSchema = z
-  .string()
-  .refine(
-    (path) => {
-      // Basic JSON path validation (can be extended)
-      return /^(\$\.?|\$\[|\.)[\w\[\]\.'"$-]*$/.test(path) || path === '$';
-    },
-    { message: 'Invalid JSON path format' }
-  );
+export const jsonPathSchema = z.string().refine(
+  (path) => {
+    // Basic JSON path validation (can be extended)
+    return /^(\$\.?|\$\[|\.)[\w\[\]\.'"$-]*$/.test(path) || path === '$';
+  },
+  { message: 'Invalid JSON path format' }
+);
 
 // Validates ISO date strings
-export const isoDateSchema = z
-  .string()
-  .refine(
-    (date) => {
-      return !isNaN(Date.parse(date));
-    },
-    { message: 'Invalid date format' }
-  );
+export const isoDateSchema = z.string().refine(
+  (date) => {
+    return !isNaN(Date.parse(date));
+  },
+  { message: 'Invalid date format' }
+);
 
 // Validates hex color codes
-export const hexColorSchema = z
-  .string()
-  .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format');
+export const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format');
 
 // Validates semantic version strings
 export const semverSchema = z
   .string()
   .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9-]+)?(\+[a-zA-Z0-9-]+)?$/, 'Invalid semantic version format');
 
-export {
-  z as zod,
-  type ZodSchema,
-  type ZodError,
-} from 'zod';
+export { z as zod, type ZodSchema, type ZodError } from 'zod';

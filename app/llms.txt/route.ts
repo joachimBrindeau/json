@@ -55,10 +55,10 @@ We provide a free, powerful online JSON toolkit that helps developers worldwide:
   try {
     // Get SEO settings from database to build dynamic page descriptions
     const seoSettings = await getAllSEOSettings();
-    
+
     if (seoSettings.length > 0) {
       llmsContent += `### Main Application Pages\n`;
-      
+
       for (const setting of seoSettings) {
         const pageUrl = setting.pageKey === 'home' ? baseUrl : `${baseUrl}/${setting.pageKey}`;
         llmsContent += `
@@ -128,7 +128,6 @@ This service is designed to be:
 Last updated: ${currentDate}
 Service status: Active and continuously improved
 `;
-
   } catch (error) {
     logger.error({ err: error }, 'Error generating llms.txt, using fallback content');
 

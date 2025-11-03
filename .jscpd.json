@@ -1,0 +1,21 @@
+{
+  "reporters": ["json", "markdown"],
+  "output": "coverage/jscpd",
+  "minLines": 15,
+  "threshold": 1,
+  "gitignore": true,
+  "noSymlinks": true,
+  "absolute": false,
+  "pattern": "**/*.{ts,tsx,js,jsx}",
+  "ignore": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.snap",
+    "**/*.md",
+    "lib/api/examples/**"
+  ]
+}

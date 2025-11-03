@@ -6,14 +6,13 @@ export const OPTIMIZED_MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptio
   // Core performance settings
   automaticLayout: true,
   scrollBeyondLastLine: false,
-  
+
   // Disable expensive features for large files
   minimap: { enabled: false },
   renderLineHighlight: 'none', // Reduce rendering overhead
   renderWhitespace: 'none',
   renderControlCharacters: false,
-  renderIndentGuides: false,
-  
+
   // Optimize scrolling and rendering
   scrollbar: {
     vertical: 'visible',
@@ -22,37 +21,37 @@ export const OPTIMIZED_MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptio
     verticalScrollbarSize: 10,
     horizontalScrollbarSize: 10,
   },
-  
+
   // Font and layout
   fontSize: 14,
   fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", monospace',
   lineHeight: 20,
   letterSpacing: 0,
-  
+
   // Editor behavior
   wordWrap: 'off', // Start with wrap off for better performance
   tabSize: 2,
   insertSpaces: true,
   formatOnPaste: false, // Disable auto-format for performance
   formatOnType: false,
-  
+
   // Line numbers and folding
   lineNumbers: 'on',
   folding: true,
   foldingStrategy: 'indentation',
   showFoldingControls: 'mouseover', // Only show on hover
-  
+
   // Disable expensive features
   suggestOnTriggerCharacters: false,
   quickSuggestions: false,
   parameterHints: { enabled: false },
   hover: { enabled: false },
-  
+
   // Bracket matching
   autoClosingBrackets: 'always',
   autoClosingQuotes: 'always',
   bracketPairColorization: { enabled: false }, // Disable for performance
-  
+
   // Other optimizations
   dragAndDrop: false,
   links: false,
@@ -64,7 +63,7 @@ export const OPTIMIZED_MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptio
   cursorBlinking: 'solid', // Reduce animation
   smoothScrolling: false, // Disable smooth scrolling for performance
   mouseWheelZoom: false,
-  
+
   // Accessibility (can be disabled for performance)
   accessibilitySupport: 'off',
   accessibilityPageSize: 10,
@@ -95,9 +94,11 @@ export const LARGE_FILE_OPTIONS: Partial<editor.IStandaloneEditorConstructionOpt
 };
 
 // Get optimized options based on content size
-export function getOptimizedMonacoOptions(contentSize: number): editor.IStandaloneEditorConstructionOptions {
+export function getOptimizedMonacoOptions(
+  contentSize: number
+): editor.IStandaloneEditorConstructionOptions {
   const sizeInKB = contentSize / 1024;
-  
+
   if (sizeInKB < 100) {
     // Small file: enable all features
     return SMALL_FILE_OPTIONS as editor.IStandaloneEditorConstructionOptions;
@@ -139,30 +140,30 @@ export async function loadJsonProgressive(
 ): Promise<void> {
   const chunks = chunkJson(json);
   const model = editor.getModel();
-  
+
   if (!model) return;
-  
+
   // Clear editor first
   editor.setValue('');
-  
+
   let loaded = '';
   for (let i = 0; i < chunks.length; i++) {
     loaded += chunks[i];
-    
+
     // Use requestAnimationFrame for smooth updates
-    await new Promise(resolve => requestAnimationFrame(resolve));
-    
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
     // Update editor
     editor.setValue(loaded);
-    
+
     // Report progress
     if (onProgress) {
       onProgress(loaded.length, json.length);
     }
-    
+
     // Allow UI to breathe
     if (i % 5 === 0) {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
 }
@@ -180,7 +181,7 @@ export async function formatJsonWithWorker(json: string): Promise<string> {
       }
       return;
     }
-    
+
     // For large JSON, use Web Worker
     const workerCode = `
       self.onmessage = function(e) {
@@ -193,10 +194,10 @@ export async function formatJsonWithWorker(json: string): Promise<string> {
         }
       };
     `;
-    
+
     const blob = new Blob([workerCode], { type: 'application/javascript' });
     const worker = new Worker(URL.createObjectURL(blob));
-    
+
     worker.onmessage = (e) => {
       if (e.data.success) {
         resolve(e.data.data);
@@ -205,12 +206,12 @@ export async function formatJsonWithWorker(json: string): Promise<string> {
       }
       worker.terminate();
     };
-    
+
     worker.onerror = (error) => {
       reject(error);
       worker.terminate();
     };
-    
+
     worker.postMessage(json);
   });
 }

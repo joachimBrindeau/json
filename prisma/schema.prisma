@@ -92,13 +92,16 @@ model JsonDocument {
   accessedAt  DateTime        @default(now()) @map("accessed_at") @db.Timestamptz(6)
   analytics   JsonAnalytics[]
   chunks      JsonChunk[]
-  user        User?           @relation(fields: [userId], references: [id])
+  user        User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([size])
   @@index([complexity])
   @@index([createdAt])
+  @@index([updatedAt])
   @@index([shareId])
   @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, updatedAt])
   @@index([expiresAt])
   @@index([isAnonymous])
   @@index([content], map: "json_content_gin", type: Gin)

@@ -35,7 +35,11 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
         // Close share modal
         await viewerPage.page.keyboard.press('Escape');
       } else {
-        test.skip('Share functionality not available');
+        // Fail fast if share functionality not available
+        expect(
+          await viewerPage.shareButton.isVisible(),
+          'Share functionality must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -317,7 +321,11 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
 
         await viewerPage.takeScreenshot('theme-reverted');
       } else {
-        test.skip('Theme toggle not available');
+        // Fail fast if theme toggle not available
+        expect(
+          await layoutPage.themeToggle.isVisible(),
+          'Theme toggle must be available for this test'
+        ).toBe(true);
       }
     });
 
@@ -333,10 +341,10 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
       if (await layoutPage.themeToggle.isVisible()) {
         // Switch themes multiple times
         await layoutPage.toggleTheme();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         await layoutPage.toggleTheme();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // JSON content should remain intact
         const finalNodeCount = await viewerPage.getNodeCounts();
@@ -362,11 +370,11 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
         for (const mode of viewModes) {
           if (await mode.button.isVisible()) {
             await mode.switch();
-            await viewerPage.page.waitForTimeout(300);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Toggle theme in this view mode
             await layoutPage.toggleTheme();
-            await viewerPage.page.waitForTimeout(300);
+            await viewerPage.page.waitForLoadState('networkidle');
 
             // Should not cause errors
             expect(await viewerPage.hasJSONErrors()).toBe(false);
@@ -405,7 +413,7 @@ test.describe('Anonymous User - Sharing & Analytics', () => {
 
       if (await autoThemeOption.isVisible()) {
         await autoThemeOption.click();
-        await viewerPage.page.waitForTimeout(500);
+        await viewerPage.page.waitForLoadState('networkidle');
 
         // Should adapt to system theme
         const currentTheme = await layoutPage.isDarkMode();

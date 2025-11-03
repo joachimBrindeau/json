@@ -11,7 +11,7 @@ test.describe('User Story: Share Functionality', () => {
     const jsonString = stringifyJSON(testJson);
 
     const result = await shareHelper.createShare(jsonString);
-    
+
     expect(result.success).toBe(true);
     expect(result.url).toBeTruthy();
     expect(result.url).toMatch(/https?:\/\/.+/); // Should be a valid URL format
@@ -60,7 +60,10 @@ test.describe('User Story: Share Functionality', () => {
     expect(nodeCount).toBeGreaterThan(0);
   });
 
-  test('should maintain view mode preferences in shared links', async ({ dataGenerator, shareHelper }) => {
+  test('should maintain view mode preferences in shared links', async ({
+    dataGenerator,
+    shareHelper,
+  }) => {
     const testJson = dataGenerator.generateDeeplyNestedJSON();
     const jsonString = stringifyJSON(testJson);
 
@@ -68,7 +71,7 @@ test.describe('User Story: Share Functionality', () => {
     await shareHelper.viewerPage.inputJSON(jsonString);
     await shareHelper.viewerPage.waitForJSONProcessed();
     await shareHelper.viewerPage.switchToTreeView();
-    await shareHelper.page.waitForTimeout(1000);
+    await shareHelper.page.waitForLoadState('networkidle'); // Wait for tree view rendering
 
     // Create share link
     await shareHelper.clickShareButton();
@@ -90,7 +93,7 @@ test.describe('User Story: Share Functionality', () => {
     const result = await shareHelper.createShare(jsonString);
     expect(result.success).toBe(true);
     expect(result.url).toBeTruthy();
-    
+
     // Verify large JSON URL is accessible
     const urlWorks = await shareHelper.testShareUrl(result.url);
     expect(urlWorks).toBe(true);
@@ -110,13 +113,17 @@ test.describe('User Story: Share Functionality', () => {
     // Test embed code option if available
     await shareHelper.clickShareButton();
     await shareHelper.waitForShareModal();
-    
-    const embedOption = shareHelper.page.locator('[data-testid="embed-option"], button:has-text("Embed"), .embed-btn');
+
+    const embedOption = shareHelper.page.locator(
+      '[data-testid="embed-option"], button:has-text("Embed"), .embed-btn'
+    );
     if (await embedOption.isVisible({ timeout: 2000 })) {
       await embedOption.click();
-      await shareHelper.page.waitForTimeout(1000);
+      await shareHelper.page.waitForLoadState('networkidle'); // Wait for embed code generation
 
-      const embedCode = shareHelper.page.locator('[data-testid="embed-code"], textarea, .embed-code');
+      const embedCode = shareHelper.page.locator(
+        '[data-testid="embed-code"], textarea, .embed-code'
+      );
       if (await embedCode.isVisible()) {
         const code = await embedCode.inputValue();
         expect(code).toBeTruthy();
@@ -131,7 +138,7 @@ test.describe('User Story: Share Functionality', () => {
 
     // Test creating share with expiration
     const expirationOptions = ['1 hour', '24 hours', '7 days', '30 days', 'Never'];
-    
+
     for (const expiration of expirationOptions) {
       try {
         const result = await shareHelper.createShare(jsonString, { expiration });
@@ -148,22 +155,28 @@ test.describe('User Story: Share Functionality', () => {
   test('should provide password protection for shared links', async ({ shareHelper }) => {
     const sensitiveJson = {
       apiKeys: {
-        production: "prod_key_123",
-        staging: "stage_key_456"
+        production: 'prod_key_123',
+        staging: 'stage_key_456',
       },
       database: {
-        host: "db.example.com",
-        credentials: "sensitive_data"
-      }
+        host: 'db.example.com',
+        credentials: 'sensitive_data',
+      },
     };
 
     // Test creating password-protected share
-    const result = await shareHelper.createShare(stringifyJSON(sensitiveJson), { password: 'test123' });
+    const result = await shareHelper.createShare(stringifyJSON(sensitiveJson), {
+      password: 'test123',
+    });
     expect(result.success).toBe(true);
     expect(result.url).toBeTruthy();
   });
 
-  test('should show share analytics and view counts', async ({ dataGenerator, authHelper, shareHelper }) => {
+  test('should show share analytics and view counts', async ({
+    dataGenerator,
+    authHelper,
+    shareHelper,
+  }) => {
     // Ensure authenticated for analytics
     await authHelper.ensureAuthenticated();
 
@@ -198,7 +211,11 @@ test.describe('User Story: Share Functionality', () => {
     }
   });
 
-  test('should handle share link deletion and revocation', async ({ dataGenerator, authHelper, shareHelper }) => {
+  test('should handle share link deletion and revocation', async ({
+    dataGenerator,
+    authHelper,
+    shareHelper,
+  }) => {
     await authHelper.ensureAuthenticated();
 
     const testJson = dataGenerator.generateSimpleJSON();

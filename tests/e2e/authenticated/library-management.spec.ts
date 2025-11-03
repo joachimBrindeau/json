@@ -34,10 +34,7 @@ test.describe('Authenticated User - Library Management', () => {
       await viewerPage.waitForJSONProcessed();
 
       // Save to library
-      const saveButton = viewerPage.page
-        .locator('[data-testid="save-button"]')
-        .or(viewerPage.page.locator('button:has-text("Save")'));
-
+      const saveButton = viewerPage.page.locator('[data-testid="save-button"]');
       await expect(saveButton).toBeVisible();
       await saveButton.click();
 
@@ -351,9 +348,7 @@ test.describe('Authenticated User - Library Management', () => {
       expect(items.length).toBe(0);
 
       // Should show empty search results message
-      const emptySearchMessage = libraryPage.page
-        .locator('[data-testid="no-search-results"]')
-        .or(libraryPage.page.locator('.empty-search-results'));
+      const emptySearchMessage = libraryPage.page.locator('[data-testid="no-search-results"]');
 
       if (await emptySearchMessage.isVisible()) {
         const messageText = await emptySearchMessage.textContent();
@@ -438,10 +433,8 @@ test.describe('Authenticated User - Library Management', () => {
         const data = sortTestData[i];
         await apiHelper.uploadJSON(data.content, { title: data.title });
 
-        // Add delay to ensure different timestamps
-        if (data.delay && i < sortTestData.length - 1) {
-          await libraryPage.page.waitForTimeout(data.delay);
-        }
+        // Note: Timestamps are naturally different due to sequential API calls
+        // Removed artificial delay - database timestamps provide ordering
       }
     });
 
