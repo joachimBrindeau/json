@@ -62,7 +62,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
 
         {/* Preload Monaco Editor for faster loading */}
-        <script src="/monaco-preload.js" defer />
+        <script src="/scripts/monaco-preload.js" defer />
 
         <script
           type="application/ld+json"

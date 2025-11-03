@@ -91,18 +91,13 @@ export function ShareModal({
     <Lock className="h-4 w-4 text-muted-foreground" />
   );
 
-  const modalDescription = (
-    <>
-      {isPublic
-        ? 'Make your JSON discoverable in the public library'
-        : 'Share a private link to your JSON'}
-      {(didSave || (shareId && !isSaving)) && (
-        <span className="ml-2 text-green-700" data-testid="share-success-inline">
-          Your JSON is saved and ready to share!
-        </span>
-      )}
-    </>
-  );
+  const modalDescription =
+    (isPublic
+      ? 'Make your JSON discoverable in the public library'
+      : 'Share a private link to your JSON') +
+    ((didSave || (shareId && !isSaving))
+      ? ' Your JSON is saved and ready to share!'
+      : '');
 
   // Get primary action label based on state
   const getPrimaryActionLabel = () => {
