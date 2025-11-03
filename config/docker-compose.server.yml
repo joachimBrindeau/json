@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: json_viewer_user
       POSTGRES_PASSWORD: json_viewer_secure_pass
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_v2:/var/lib/postgresql/data
     networks:
       - json-viewer-network
     command: >
@@ -68,7 +68,7 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data_v2:
     driver: local
   redis_data:
     driver: local

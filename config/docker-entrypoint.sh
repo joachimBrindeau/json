@@ -8,7 +8,7 @@ echo "🔄 Running database migrations (best-effort)..."
 
 # Helper to check DB readiness
 check_db() {
-  printf "SELECT 1" | npx prisma db execute --stdin > /dev/null 2>&1
+  printf "SELECT 1" | npx prisma db execute --stdin --url "$DATABASE_URL" > /dev/null 2>&1
 }
 
 # Try to wait for database, but give up after a while and continue
@@ -19,10 +19,14 @@ attempt=0
 if check_db; then
   echo "✅ Database connection established"
   echo "📦 Applying Prisma migrations..."
-  if npx prisma migrate deploy; then
-    echo "✅ Database migrations completed successfully"
+  if [ -f prisma/schema.prisma ]; then
+    if npx prisma migrate deploy --schema prisma/schema.prisma; then
+      echo "✅ Database migrations completed successfully"
+    else
+      echo "⚠️ Prisma migrations failed; continuing without blocking startup"
+    fi
   else
-    echo "⚠️ Prisma migrations failed; continuing without blocking startup"
+    echo "ℹ️ Prisma schema not found; skipping migrations"
   fi
 else
   until check_db; do
@@ -37,10 +41,14 @@ else
   if [ $attempt -lt $max_attempts ]; then
     echo "✅ Database connection established"
     echo "📦 Applying Prisma migrations..."
-    if npx prisma migrate deploy; then
-      echo "✅ Database migrations completed successfully"
+    if [ -f prisma/schema.prisma ]; then
+      if npx prisma migrate deploy --schema prisma/schema.prisma; then
+        echo "✅ Database migrations completed successfully"
+      else
+        echo "⚠️ Prisma migrations failed; continuing without blocking startup"
+      fi
     else
-      echo "⚠️ Prisma migrations failed; continuing without blocking startup"
+      echo "ℹ️ Prisma schema not found; skipping migrations"
     fi
   fi
 fi

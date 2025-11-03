@@ -25,6 +25,7 @@ deploy() {
     # 1. Upload code
     log "Uploading code..."
     rsync -av --delete \
+        --exclude .env \
         --exclude node_modules \
         --exclude .next \
         --exclude .git \
