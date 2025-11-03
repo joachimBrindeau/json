@@ -30,6 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# logs
+/logs
+
 # profiling
 *.cpuprofile
 *.heapprofile
@@ -47,4 +50,35 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# test artifacts
+/test-results/
+/playwright-report/
+
 /lib/generated/prisma
+*.bak
+
+
+# editors / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS-specific
+Thumbs.db
+
+# additional logs and debug artifacts
+*.log
+/.augment-logs/
+
+# caches / temp
+.turbo/
+.cache/
+.parcel-cache/
+tmp/
+temp/
+
+# distribution builds
+/dist/
+
+# additional test artifacts
+/tests/downloads/
