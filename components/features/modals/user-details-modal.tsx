@@ -1,0 +1,2 @@
+export { UserDetailsModal } from './UserDetailsModal';
+
