@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
 import { SearchBar } from '@/components/shared/search-bar';
 
+import { useTreeExpansion } from '@/hooks/use-tree-expansion';
+
 export interface ViewerMode {
   type: 'tree' | 'flow' | 'list' | 'raw';
   label: string;
@@ -238,7 +240,7 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(
   }) => {
     const [viewMode, setViewMode] = useState<ViewerMode['type']>(initialViewMode);
     const [internalSearchTerm, setInternalSearchTerm] = useState('');
-    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
+    const { expanded: expandedNodes, toggle: toggleNode } = useTreeExpansion();
 
     const listRef = useRef<List>(null);
     const { toast } = useToast();
@@ -289,18 +291,6 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(
       [onViewModeChange]
     );
 
-    // Handle node expansion
-    const toggleNode = useCallback((nodeId: string) => {
-      setExpandedNodes((prev) => {
-        const next = new Set(prev);
-        if (next.has(nodeId)) {
-          next.delete(nodeId);
-        } else {
-          next.add(nodeId);
-        }
-        return next;
-      });
-    }, []);
 
     // Handle copy with toast feedback
     const handleCopy = useCallback(async () => {

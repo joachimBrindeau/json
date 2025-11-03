@@ -243,14 +243,24 @@ export const useJsonProcessing = (
     let maxDepth = 0;
     let totalSize = 0;
 
-    function createNode(value: any, key: string, level: number, path: string): JsonNode {
-      const id = path || 'root';
+    function createNode(
+      value: any,
+      key: string,
+      level: number,
+      displayPath: string,
+      pointerId: string
+    ): JsonNode {
+      const id = pointerId || 'root';
       const type = getValueType(value);
       const size = estimateSize(value);
 
       totalSize += size;
       nodeCount++;
       maxDepth = Math.max(maxDepth, level);
+
+      // JSON Pointer segment encoder
+      const encodePointerSegment = (seg: string): string =>
+        String(seg).replace(/~/g, '~0').replace(/\//g, '~1');
 
       let children: JsonNode[] = [];
       let childCount = 0;
@@ -260,14 +270,28 @@ export const useJsonProcessing = (
         childCount = entries.length;
 
         if (expandedNodes.has(id) && entries.length <= 1000) {
-          children = entries.map(([k, v]) => createNode(v, k, level + 1, `${path}.${k}`));
+          children = entries.map(([k, v]) =>
+            createNode(
+              v,
+              k,
+              level + 1,
+              `${displayPath}.${k}`,
+              `${id}/${encodePointerSegment(k)}`
+            )
+          );
         }
       } else if (type === 'array') {
         childCount = value.length;
 
         if (expandedNodes.has(id) && value.length <= 1000) {
           children = value.map((item: any, index: number) =>
-            createNode(item, `[${index}]`, level + 1, `${path}[${index}]`)
+            createNode(
+              item,
+              `[${index}]`,
+              level + 1,
+              `${displayPath}[${index}]`,
+              `${id}/${index}`
+            )
           );
         }
       }
@@ -278,7 +302,7 @@ export const useJsonProcessing = (
         value: type === 'object' || type === 'array' ? undefined : value,
         type,
         level,
-        path,
+        path: displayPath,
         children,
         size,
         childCount,
@@ -287,7 +311,7 @@ export const useJsonProcessing = (
       return node;
     }
 
-    const rootNode = createNode(validation.parsedData, 'root', 0, 'root');
+    const rootNode = createNode(validation.parsedData, 'root', 0, 'root', 'root');
 
     // Flatten for list view
     function flattenTree(node: JsonNode, result: JsonNode[] = []): JsonNode[] {

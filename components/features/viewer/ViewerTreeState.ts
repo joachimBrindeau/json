@@ -24,7 +24,7 @@ export const useViewerTreeState = (
   // Convert data to flat list of nodes
   const nodes = useMemo(() => {
     const effectiveExpanded = expandedNodes;
-    return flattenToNodes(data, effectiveExpanded, 0, '', 'root', fullFlatten);
+    return flattenToNodes(data, effectiveExpanded, 0, '', 'root', fullFlatten, 'root');
   }, [data, expandedNodes, forceExpandAll, fullFlatten]);
 
   const toggleNode = useCallback((nodeId: string) => {
@@ -41,13 +41,12 @@ export const useViewerTreeState = (
 
   const expandAll = useCallback(() => {
     const allIds = new Set<string>();
-    const collect = (value: any, path = '') => {
-      const nodeId = path || 'root';
-      allIds.add(nodeId);
+    const collect = (value: any, pointer = 'root') => {
+      allIds.add(pointer);
       if (Array.isArray(value)) {
-        value.forEach((item, index) => collect(item, path ? `${path}.${index}` : `${index}`));
+        value.forEach((item, index) => collect(item, `${pointer}/${index}`));
       } else if (value && typeof value === 'object') {
-        Object.entries(value).forEach(([k, v]) => collect(v, path ? `${path}.${k}` : k));
+        Object.entries(value).forEach(([k, v]) => collect(v, `${pointer}/${encodePointerSegment(k)}`));
       }
     };
     collect(data);
@@ -67,31 +66,23 @@ export const useViewerTreeState = (
   };
 };
 
-// Helper to collect all node IDs for full expansion
-function collectAllIds(value: any, path = '', acc: Set<string> = new Set()): Set<string> {
-  const nodeId = path || 'root';
-  acc.add(nodeId);
-  if (Array.isArray(value)) {
-    value.forEach((item, index) =>
-      collectAllIds(item, path ? `${path}.${index}` : `${index}`, acc)
-    );
-  } else if (value && typeof value === 'object') {
-    Object.entries(value).forEach(([k, v]) => collectAllIds(v, path ? `${path}.${k}` : k, acc));
-  }
-  return acc;
+// JSON Pointer encoding for safe IDs (RFC 6901 ~0 for ~, ~1 for /)
+function encodePointerSegment(seg: string): string {
+  return seg.replace(/~/g, '~0').replace(/\//g, '~1');
 }
 
-// Helper function to flatten JSON to nodes
+// Helper function to flatten JSON to nodes (IDs use JSON Pointer-like scheme)
 function flattenToNodes(
   data: any,
   expandedNodes: Set<string>,
   level = 0,
-  path = '',
+  displayPath = '',
   key = 'root',
-  fullFlatten = false
+  fullFlatten = false,
+  pointerId = 'root'
 ): JsonNode[] {
   const nodes: JsonNode[] = [];
-  const nodeId = path || 'root';
+  const nodeId = pointerId;
 
   const getType = (value: any): JsonNode['type'] => {
     if (value === null) return 'null';
@@ -113,7 +104,7 @@ function flattenToNodes(
     value: data,
     type,
     level,
-    path,
+    path: displayPath,
     childCount,
     // Avoid expensive deep serialization for large datasets
     size:
@@ -134,15 +125,35 @@ function flattenToNodes(
   if (shouldRecurse) {
     if (Array.isArray(data)) {
       data.forEach((item, index) => {
-        const childPath = path ? `${path}.${index}` : `${index}`;
+        const childDisplayPath = displayPath ? `${displayPath}.${index}` : `${index}`;
+        const childPointerId = `${nodeId}/${index}`;
         nodes.push(
-          ...flattenToNodes(item, expandedNodes, level + 1, childPath, `[${index}]`, fullFlatten)
+          ...flattenToNodes(
+            item,
+            expandedNodes,
+            level + 1,
+            childDisplayPath,
+            `[${index}]`,
+            fullFlatten,
+            childPointerId
+          )
         );
       });
     } else if (data && typeof data === 'object') {
       Object.entries(data).forEach(([k, v]) => {
-        const childPath = path ? `${path}.${k}` : k;
-        nodes.push(...flattenToNodes(v, expandedNodes, level + 1, childPath, k, fullFlatten));
+        const childDisplayPath = displayPath ? `${displayPath}.${k}` : k;
+        const childPointerId = `${nodeId}/${encodePointerSegment(String(k))}`;
+        nodes.push(
+          ...flattenToNodes(
+            v,
+            expandedNodes,
+            level + 1,
+            childDisplayPath,
+            k,
+            fullFlatten,
+            childPointerId
+          )
+        );
       });
     }
   }

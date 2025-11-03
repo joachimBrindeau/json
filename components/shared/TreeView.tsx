@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useMemo, memo, useCallback } from 'react';
+import React, { useMemo, memo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TreePine as TreeIcon } from 'lucide-react';
+
+import { useTreeExpansion } from '@/hooks/use-tree-expansion';
 
 interface TreeViewProps {
   content: string;
@@ -13,7 +15,7 @@ interface TreeViewProps {
 
 // Optimized tree view for large datasets
 export const TreeView = memo(({ content, maxItems = 100, maxProperties = 50 }: TreeViewProps) => {
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const { expanded: expandedKeys, toggle: toggleExpand } = useTreeExpansion({ initialExpanded: new Set() });
 
   const treeData = useMemo(() => {
     try {
@@ -23,17 +25,6 @@ export const TreeView = memo(({ content, maxItems = 100, maxProperties = 50 }: T
     }
   }, [content]);
 
-  const toggleExpand = useCallback((key: string) => {
-    setExpandedKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
 
   const renderTreeNode = useCallback(
     (value: any, key: string, path = ''): React.ReactElement => {

@@ -46,8 +46,8 @@ export const useViewerTreeSearch = (
 
       if (keyMatch || valueMatch) {
         matches.add(node.id);
-        // Also include parent nodes
-        addParentNodes(node.path, matches);
+        // Also include parent nodes (by ID hierarchy)
+        addParentIds(node.id, matches);
       }
     }
 
@@ -65,13 +65,13 @@ export const useViewerTreeSearch = (
   };
 };
 
-// Helper to add parent nodes to matches
-function addParentNodes(path: string, matches: Set<string>) {
-  const parts = path.split('.');
+// Helper to add parent node IDs (JSON Pointer-like: root/seg/...)
+function addParentIds(id: string, matches: Set<string>) {
+  const parts = id.split('/');
   for (let i = 0; i < parts.length; i++) {
-    const parentPath = parts.slice(0, i + 1).join('.');
-    if (parentPath) {
-      matches.add(parentPath);
+    const parentId = parts.slice(0, i + 1).join('/');
+    if (parentId) {
+      matches.add(parentId);
     }
   }
 }
