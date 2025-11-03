@@ -54,30 +54,53 @@ export async function linkOAuthAccount(
 
     if (!isLinked) {
       // Link the OAuth account to existing user
-      await prisma.account.create({
-        data: {
-          userId: existingUser.id,
-          type: account.type,
-          provider: account.provider,
-          providerAccountId: account.providerAccountId,
-          refresh_token: account.refresh_token,
-          access_token: account.access_token,
-          expires_at: account.expires_at,
-          token_type: account.token_type,
-          scope: account.scope,
-          id_token: account.id_token,
-          session_state: account.session_state,
-        },
-      });
+      // Use upsert to handle race conditions where account might be created concurrently
+      try {
+        await prisma.account.create({
+          data: {
+            userId: existingUser.id,
+            type: account.type,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            refresh_token: account.refresh_token,
+            access_token: account.access_token,
+            expires_at: account.expires_at,
+            token_type: account.token_type,
+            scope: account.scope,
+            id_token: account.id_token,
+            session_state: account.session_state,
+          },
+        });
 
-      logger.info(
-        {
-          userId: existingUser.id,
-          provider: account.provider,
-          email,
-        },
-        'Linked OAuth account to existing user'
-      );
+        logger.info(
+          {
+            userId: existingUser.id,
+            provider: account.provider,
+            email,
+          },
+          'Linked OAuth account to existing user'
+        );
+      } catch (createError: unknown) {
+        // Handle unique constraint violation (race condition)
+        if (
+          createError &&
+          typeof createError === 'object' &&
+          'code' in createError &&
+          createError.code === 'P2002'
+        ) {
+          logger.info(
+            {
+              userId: existingUser.id,
+              provider: account.provider,
+              email,
+            },
+            'OAuth account already linked (race condition)'
+          );
+        } else {
+          // Re-throw other errors
+          throw createError;
+        }
+      }
     }
 
     // Update user info with OAuth provider data

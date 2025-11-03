@@ -61,6 +61,56 @@ export function ViewerCompare({
   const editor1 = useMonacoEditor(json1.length);
   const editor2 = useMonacoEditor(json2.length);
 
+
+  // Scroll sync disposables and updater
+  const scrollDisposable1Ref = useRef<any>(null);
+  const scrollDisposable2Ref = useRef<any>(null);
+
+  const updateScrollSync = useCallback(() => {
+    const e1 = editor1.editorRef.current as any;
+    const e2 = editor2.editorRef.current as any;
+
+    // Clean up previous listeners
+    if (scrollDisposable1Ref.current) {
+      try { scrollDisposable1Ref.current.dispose?.(); } catch {}
+      scrollDisposable1Ref.current = null;
+    }
+    if (scrollDisposable2Ref.current) {
+      try { scrollDisposable2Ref.current.dispose?.(); } catch {}
+      scrollDisposable2Ref.current = null;
+    }
+
+    if (!e1 || !e2 || !syncScroll) return;
+
+    // Attach listeners that respect current syncScroll state
+    scrollDisposable1Ref.current = e1.onDidScrollChange((ev: any) => {
+      if (!(e1 as any)._syncingScroll && syncScroll) {
+        (e2 as any)._syncingScroll = true;
+        e2.setScrollPosition({ scrollTop: ev.scrollTop, scrollLeft: ev.scrollLeft });
+        setTimeout(() => { (e2 as any)._syncingScroll = false; }, 10);
+      }
+    });
+
+    scrollDisposable2Ref.current = e2.onDidScrollChange((ev: any) => {
+      if (!(e2 as any)._syncingScroll && syncScroll) {
+        (e1 as any)._syncingScroll = true;
+        e1.setScrollPosition({ scrollTop: ev.scrollTop, scrollLeft: ev.scrollLeft });
+        setTimeout(() => { (e1 as any)._syncingScroll = false; }, 10);
+      }
+    });
+  }, [syncScroll, editor1.editorRef, editor2.editorRef]);
+
+  // Re-apply listeners when toggle changes
+  useEffect(() => {
+    updateScrollSync();
+    return () => {
+      try { scrollDisposable1Ref.current?.dispose?.(); } catch {}
+      try { scrollDisposable2Ref.current?.dispose?.(); } catch {}
+      scrollDisposable1Ref.current = null;
+      scrollDisposable2Ref.current = null;
+    };
+  }, [updateScrollSync]);
+
   // Update local state when initialJson1 changes (from store)
   useEffect(() => {
     if (initialJson1 !== json1) {

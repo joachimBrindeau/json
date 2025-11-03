@@ -59,9 +59,35 @@ export const authOptions: NextAuthOptions = {
   callbacks: authCallbacks,
   pages: {
     signIn: undefined, // Use default NextAuth pages
-    error: undefined,
+    error: undefined, // Use default NextAuth error page
+  },
+  // Handle OAuth errors gracefully
+  events: {
+    async signIn({ user, account, isNewUser }) {
+      if (isNewUser && account?.provider) {
+        logger.info(
+          {
+            email: user.email,
+            provider: account.provider,
+            userId: user.id,
+          },
+          'New OAuth user signed up'
+        );
+      }
+    },
+    async signInError({ error, provider }) {
+      logger.error(
+        {
+          err: error,
+          provider,
+        },
+        'OAuth sign-in error'
+      );
+    },
   },
   session: SESSION_CONFIG,
   secret: config.auth.secret,
-  debug: false,
+  debug: config.isDevelopment,
+  // Enable trust host for proper OAuth redirects
+  trustHost: true,
 };

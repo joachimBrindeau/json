@@ -1,5 +1,5 @@
-# Use the official Node.js 18 image as base
-FROM node:18-alpine AS base
+# Use the official Node.js 20 image as base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -31,8 +31,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
-RUN npm run build
+# Build the application (skip strict env validation during image build)
+RUN SKIP_ENV_VALIDATION=true npm run build
 
 # If using npm comment out above and use below instead
 # RUN npm run build

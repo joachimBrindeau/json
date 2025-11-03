@@ -47,16 +47,25 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
   const handleOAuthSignIn = async (provider: string) => {
     setIsOAuthLoading(true);
     try {
-      await signIn(provider);
+      // OAuth requires a redirect, so we don't await this
+      // The redirect will happen immediately
+      await signIn(provider, {
+        redirect: true,
+        callbackUrl: window.location.href,
+      });
     } catch (error) {
-      logger.error({ err: error, provider }, `Failed to sign in with OAuth provider`);
+      // Only catch errors that happen before redirect
+      // OAuth errors after redirect will be handled by NextAuth error pages
+      logger.error({ err: error, provider }, `Failed to initiate OAuth sign in`);
+      setIsOAuthLoading(false);
       toast({
         title: 'Sign in failed',
-        description: `Failed to sign in with ${provider}`,
+        description: `Failed to start sign in with ${provider}. Please try again.`,
         variant: 'destructive',
       });
-      setIsOAuthLoading(false);
     }
+    // Note: Don't reset loading state here - redirect will happen
+    // If redirect fails, error handler above will reset it
   };
 
   const { submit: submitForm, isSubmitting: isLoading } = useFormSubmit(

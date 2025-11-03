@@ -41,6 +41,13 @@ export const githubProvider = GitHubProvider({
    * See: lib/auth/account-linking.ts for the linking implementation
    */
   allowDangerousEmailAccountLinking: true,
+  // Explicitly request user:email scope to ensure email is available
+  // GitHub default scope includes user:email, but being explicit is better
+  authorization: {
+    params: {
+      scope: 'read:user user:email',
+    },
+  },
 });
 
 /**
@@ -80,7 +87,7 @@ export const googleProvider = GoogleProvider({
   authorization: {
     params: {
       scope: 'openid email profile',
-      prompt: 'consent',
+      prompt: 'select_account',
       access_type: 'offline',
       response_type: 'code',
     },

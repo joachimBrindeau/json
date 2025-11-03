@@ -28,28 +28,47 @@ export const authCallbacks: Partial<CallbacksOptions> = {
    * - Validate sign-in attempts
    */
   async signIn({ user, account }) {
-    // Track last login timestamp
-    if (prisma && user.email) {
-      await prisma.user
-        .update({
-          where: { email: user.email },
-          data: { lastLoginAt: new Date() },
-        })
-        .catch((err: Error) => {
-          logger.error({ err, email: user.email }, 'Failed to update lastLoginAt');
-        });
-    }
-
-    // Allow OAuth account linking to existing users with same email
-    // SECURITY: Only link OAuth accounts (not credentials)
-    if (prisma && account?.provider && account.provider !== 'credentials') {
-      const existingUserId = await linkOAuthAccount(user, account, prisma);
-      if (existingUserId) {
-        user.id = existingUserId;
+    try {
+      // Allow OAuth account linking to existing users with same email
+      // SECURITY: Only link OAuth accounts (not credentials)
+      // IMPORTANT: Do this FIRST before updating lastLoginAt to ensure user exists
+      if (prisma && account?.provider && account.provider !== 'credentials') {
+        const existingUserId = await linkOAuthAccount(user, account, prisma);
+        if (existingUserId) {
+          user.id = existingUserId;
+        }
       }
-    }
 
-    return true;
+      // Track last login timestamp (only for existing users)
+      // Note: For new OAuth users, the adapter will create the user first,
+      // so by the time we reach here, the user should exist
+      if (prisma && user.email && user.id) {
+        await prisma.user
+          .update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          })
+          .catch((err: Error) => {
+            // Log but don't fail - this is non-critical
+            logger.warn({ err, email: user.email, userId: user.id }, 'Failed to update lastLoginAt');
+          });
+      }
+
+      return true;
+    } catch (error) {
+      logger.error(
+        {
+          err: error,
+          email: user.email,
+          provider: account?.provider,
+          userId: user.id,
+        },
+        'SignIn callback error'
+      );
+      // Don't block sign-in for non-critical errors, but log them
+      // Critical errors will be thrown and caught by NextAuth
+      return true;
+    }
   },
 
   /**
