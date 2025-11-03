@@ -94,10 +94,8 @@ fi
 
 echo "✅ Environment variables validated"
 
-# Stop, build, start (use config file directly with BuildKit)
-# Minimize downtime: build and recreate in-place without full stop
-npm ci
-npm run build
+# Stop, build, start (Docker-only build with BuildKit)
+# Minimize downtime: build and recreate in-place without host Node
 DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build --remove-orphans
 
 # Wait for health
