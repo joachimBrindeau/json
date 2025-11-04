@@ -15,7 +15,11 @@
     "playwright/.cache/",
     "test-results/",
     "tests/test-files/",
-    "tests/downloads/"
+    "tests/downloads/",
+    "app/n8n-addons-extension/**",
+    "**/dist/**",
+    "**/*.js",
+    "**/n8n-addons-extension/**"
   ],
 
   "rules": {
