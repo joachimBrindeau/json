@@ -24,6 +24,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { useBackendStore } from '@/lib/store/backend';
+import { SaveModal } from '@/components/features/modals';
 
 import {
   toastPatterns,
@@ -220,6 +221,34 @@ export function ViewerActions({
     setExportModalOpen(true);
   }, [value, currentJson]);
 
+  // Quick share - copy link immediately for existing documents
+  const handleQuickShare = useCallback(async () => {
+    if (!currentDocument?.shareId) {
+      // No document yet - need to save first
+      if (!currentJson) {
+        toastPatterns.validation.noJson('share');
+        return;
+      }
+      // Open save modal first
+      setSaveModalOpen(true);
+      return;
+    }
+
+    // Quick copy link
+    const shareUrl = `${window.location.origin}/library/${currentDocument.shareId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      showSuccessToast('Link copied!', {
+        description: 'Share link copied to clipboard',
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to copy link');
+      // Fallback to opening modal
+      setShareModalOpen(true);
+    }
+  }, [currentDocument, currentJson]);
+
+  // Share with settings - opens modal for existing documents
   const handleShare = useCallback(
     async (type: 'public' | 'private' = 'public') => {
       if (!currentJson) {
@@ -227,23 +256,18 @@ export function ViewerActions({
         return;
       }
 
+      // If document doesn't exist, need to save first
+      if (!currentDocument) {
+        setSaveModalOpen(true);
+        return;
+      }
+
       setIsSharing(true);
       setShareType(type);
-
-      try {
-        await shareJson();
-        // Only open modal after shareJson completes successfully
-        setShareModalOpen(true);
-      } catch (error) {
-        logger.error({ err: error }, 'Share error in ViewerActions');
-        // Even if sharing fails, still open the modal - it can handle creating/saving the JSON
-        setShareModalOpen(true);
-        showInfoToast('Opening share dialog...');
-      } finally {
-        setIsSharing(false);
-      }
+      setShareModalOpen(true);
+      setIsSharing(false);
     },
-    [currentJson, shareJson]
+    [currentJson, currentDocument]
   );
 
   const handleNativeShare = useCallback(async () => {
