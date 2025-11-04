@@ -1,4 +1,4 @@
-import type { PAGE_SEO } from '@/lib/seo';
+import type { PAGE_SEO } from './constants';
 
 /**
  * Type definitions for SEO infrastructure
