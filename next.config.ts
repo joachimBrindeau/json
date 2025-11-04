@@ -300,6 +300,12 @@ const nextConfig: NextConfig = {
       use: 'ignore-loader',
     });
 
+    // Fix TipTap package resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@tiptap/extensions': require.resolve('@tiptap/extensions'),
+    };
+
     // Use Next.js defaults for splitChunks to avoid asset misclassification issues
     // (We intentionally disable our custom splitChunks to prevent CSS being emitted as <script> tags.)
 
