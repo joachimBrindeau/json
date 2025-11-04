@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   TwitterShareButton,
@@ -33,51 +35,71 @@ export function SocialShareButtons({
   description = 'Interactive JSON visualization - explore JSON data in a beautiful format',
   showLabel = true,
 }: SocialShareButtonsProps) {
+  const [showMore, setShowMore] = useState(false);
+  
+  // Top 3 most common platforms
+  const primaryPlatforms = (
+    <>
+      <TwitterShareButton url={url} title={title} className="hover:opacity-80 transition-opacity">
+        <TwitterIcon size={32} round />
+      </TwitterShareButton>
+      <FacebookShareButton url={url} className="hover:opacity-80 transition-opacity">
+        <FacebookIcon size={32} round />
+      </FacebookShareButton>
+      <LinkedinShareButton
+        url={url}
+        title={title}
+        summary={description}
+        className="hover:opacity-80 transition-opacity"
+      >
+        <LinkedinIcon size={32} round />
+      </LinkedinShareButton>
+    </>
+  );
+
+  // Additional platforms in dropdown
+  const additionalPlatforms = (
+    <>
+      <WhatsappShareButton
+        url={url}
+        title={title}
+        className="hover:opacity-80 transition-opacity"
+      >
+        <WhatsappIcon size={32} round />
+      </WhatsappShareButton>
+      <TelegramShareButton
+        url={url}
+        title={title}
+        className="hover:opacity-80 transition-opacity"
+      >
+        <TelegramIcon size={32} round />
+      </TelegramShareButton>
+      <EmailShareButton
+        url={url}
+        subject={title}
+        body={`${description}\n\nView it here: ${url}`}
+        className="hover:opacity-80 transition-opacity"
+      >
+        <EmailIcon size={32} round />
+      </EmailShareButton>
+    </>
+  );
+
   return (
     <div className="space-y-2">
       {showLabel && <Label>Share on social media</Label>}
-      <div className="flex flex-wrap gap-2">
-        <TwitterShareButton url={url} title={title} className="hover:opacity-80 transition-opacity">
-          <TwitterIcon size={32} round />
-        </TwitterShareButton>
-
-        <FacebookShareButton url={url} className="hover:opacity-80 transition-opacity">
-          <FacebookIcon size={32} round />
-        </FacebookShareButton>
-
-        <LinkedinShareButton
-          url={url}
-          title={title}
-          summary={description}
-          className="hover:opacity-80 transition-opacity"
+      <div className="flex flex-wrap items-center gap-2">
+        {primaryPlatforms}
+        {showMore && additionalPlatforms}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowMore(!showMore)}
+          className="h-8 px-3 text-xs"
         >
-          <LinkedinIcon size={32} round />
-        </LinkedinShareButton>
-
-        <WhatsappShareButton
-          url={url}
-          title={title}
-          className="hover:opacity-80 transition-opacity"
-        >
-          <WhatsappIcon size={32} round />
-        </WhatsappShareButton>
-
-        <TelegramShareButton
-          url={url}
-          title={title}
-          className="hover:opacity-80 transition-opacity"
-        >
-          <TelegramIcon size={32} round />
-        </TelegramShareButton>
-
-        <EmailShareButton
-          url={url}
-          subject={title}
-          body={`${description}\n\nView it here: ${url}`}
-          className="hover:opacity-80 transition-opacity"
-        >
-          <EmailIcon size={32} round />
-        </EmailShareButton>
+          {showMore ? 'Less' : 'More'}
+        </Button>
       </div>
     </div>
   );
