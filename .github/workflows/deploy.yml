@@ -202,6 +202,9 @@ jobs:
     name: Rollback (Manual)
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      secrets: read
     
     steps:
       - name: Checkout code
