@@ -19,7 +19,7 @@ export interface BaseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description?: string;
+  description?: string | React.ReactNode;
   children: React.ReactNode;
   className?: string;
 

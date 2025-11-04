@@ -273,20 +273,7 @@ export const LoadingErrorState = ({ error, onRetry, compact = false }: ErrorStat
   />
 );
 
-// Loading states
-export const LoadingState = ({
-  message = 'Loading...',
-  compact = false,
-}: {
-  message?: string;
-  compact?: boolean;
-}) => (
-  <Card className="h-full flex items-center justify-center">
-    <div className={`text-center ${compact ? 'max-w-sm' : 'max-w-md'}`}>
-      <LoadingSpinner size={compact ? 'md' : 'lg'} label={message} />
-    </div>
-  </Card>
-);
+// Loading states - Removed duplicate. Use LoadingState from '@/components/shared/LoadingState' instead
 
 // Performance warning state
 export const PerformanceWarningState = ({

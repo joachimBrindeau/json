@@ -57,9 +57,25 @@ const variantConfig = {
 };
 
 /**
- * ConfirmPopover - A minimalist confirmation popover that appears near the trigger
- * Perfect for confirming destructive actions like delete
- *
+ * ConfirmPopover Component
+ * 
+ * A minimalist confirmation popover that appears near the trigger element.
+ * Use this for less critical confirmations that don't require full-screen attention.
+ * 
+ * **When to use:**
+ * - Less critical confirmations (e.g., delete a single item, clear a field)
+ * - Inline actions that don't need to block the entire screen
+ * - Quick confirmations that should appear near the action button
+ * 
+ * **When NOT to use:**
+ * - For critical/destructive actions requiring full attention, use `ConfirmationDialog` instead
+ * - For actions that need to block the entire screen
+ * 
+ * **Differences from ConfirmationDialog:**
+ * - Appears as a popover near the trigger (not full-screen)
+ * - Less intrusive, better for less critical actions
+ * - Supports async operations with loading states
+ * 
  * @example
  * <ConfirmPopover
  *   trigger={<Button icon={Trash2} iconOnly variant="outline" />}

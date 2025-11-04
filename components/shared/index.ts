@@ -50,7 +50,6 @@ export {
   UploadEmptyState,
   JsonErrorState,
   LoadingErrorState,
-  LoadingState,
   PerformanceWarningState,
 } from './EmptyStates';
 

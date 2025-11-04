@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/api/utils';
-import { validateAndBuildCreateInput } from '@/lib/api/handlers/document-create';
-import { getPublicDocuments, createJsonDocument } from '@/lib/db/queries/documents';
-import { success, created } from '@/lib/api/responses';
+import { getPublicDocuments } from '@/lib/db/queries/documents';
+import { success } from '@/lib/api/responses';
 import { withErrorHandler } from '@/lib/api/middleware';
 import { ValidationError } from '@/lib/utils/app-errors';
 import {
   parseDocumentListQuery,
   formatDocumentList,
 } from '@/lib/api/handlers/document-list';
+import { handleCreateDocument } from '@/lib/api/handlers/document-create-handler';
 
 /**
  * GET public documents from library with filtering
@@ -45,20 +45,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
  * POST create public document in library
  */
 export const POST = withAuth(async (request: NextRequest, session) => {
-  const data = await request.json();
-
-  const input = validateAndBuildCreateInput(data);
-
-  // Create the document with public visibility
-  const result = await createJsonDocument({
-    userId: session.user.id,
-    ...input,
-    visibility: 'public', // Force public visibility for public library
+  return handleCreateDocument(request, session, {
+    forceVisibility: 'public', // Force public visibility for public library
   });
-
-  if (!result.success) {
-    throw new ValidationError(result.error || 'Failed to create document');
-  }
-
-  return created(result.data, { message: 'Document created successfully' });
 });

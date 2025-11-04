@@ -5,10 +5,13 @@ import { useParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { TabsNav } from '@/components/layout/TabsNav';
 import { Viewer } from '@/components/features/viewer';
-import { FileJson } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import {
+  DocumentViewerLoading,
+  DocumentViewerError,
+} from '@/components/shared/DocumentViewerStates';
 
 export default function LibraryViewerPage() {
   const params = useParams();
@@ -74,32 +77,11 @@ export default function LibraryViewerPage() {
   }, [currentJson, shareId, id]);
 
   if (loading) {
-    return (
-      <MainLayout>
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <FileJson className="h-12 w-12 mx-auto mb-4 animate-pulse" />
-            <p className="text-muted-foreground">Loading JSON document...</p>
-          </div>
-        </div>
-      </MainLayout>
-    );
+    return <DocumentViewerLoading />;
   }
 
   if (!jsonContent) {
-    return (
-      <MainLayout>
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <FileJson className="h-12 w-12 mx-auto mb-4 text-destructive" />
-            <h2 className="text-2xl font-bold mb-2">JSON Not Found</h2>
-            <p className="text-muted-foreground">
-              This JSON document is invalid or has been removed.
-            </p>
-          </div>
-        </div>
-      </MainLayout>
-    );
+    return <DocumentViewerError />;
   }
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Controller } from 'react-hook-form';
 import { BaseModal } from '@/components/shared/BaseModal';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,7 @@ export function PublishModal({
   onPublished,
 }: PublishModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Initialize form with react-hook-form and Zod validation
   const {
@@ -118,47 +119,63 @@ export function PublishModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5 text-blue-500" />
-            Publish to Public Library
-          </DialogTitle>
-        </DialogHeader>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Loading document details...</span>
-          </div>
-        ) : (
-          <ErrorBoundary
-            level="component"
-            fallback={
-              <div className="p-6 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load publish form</p>
+    <BaseModal
+      open={isOpen}
+      onOpenChange={onClose}
+      title="Publish to Public Library"
+      description="Share your JSON with the community and make it discoverable"
+      icon={<Globe className="h-5 w-5 text-blue-500" />}
+      className="max-w-2xl"
+      maxHeight="90vh"
+      primaryAction={{
+        label: isSubmitting ? 'Publishing...' : 'Publish to Community',
+        onClick: () => {
+          formRef.current?.requestSubmit();
+        },
+        loading: isSubmitting,
+        disabled: isSubmitting || !watchedTitle?.trim() || isLoading,
+        variant: 'default',
+        testId: 'publish-button',
+      }}
+      secondaryAction={{
+        label: 'Cancel',
+        onClick: onClose,
+        variant: 'outline',
+        testId: 'publish-cancel-button',
+      }}
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <LoadingSpinner size="md" />
+          <span className="ml-2 text-muted-foreground">Loading document details...</span>
+        </div>
+      ) : (
+        <ErrorBoundary
+          level="component"
+          fallback={
+            <div className="p-6 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load publish form</p>
+            </div>
+          }
+          enableRetry
+          maxRetries={2}
+        >
+          <div className="space-y-6">
+            {/* Benefits */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-blue-900 mb-2">
+                <Users className="h-4 w-4" />
+                <span className="font-medium">Share with the community</span>
               </div>
-            }
-            enableRetry
-            maxRetries={2}
-          >
-            <div className="space-y-6">
-              {/* Benefits */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-blue-900 mb-2">
-                  <Users className="h-4 w-4" />
-                  <span className="font-medium">Share with the community</span>
-                </div>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Help other developers with real-world examples</li>
-                  <li>• Make your JSON searchable and discoverable</li>
-                  <li>• Get analytics on views and usage</li>
-                </ul>
-              </div>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Help other developers with real-world examples</li>
+                <li>• Make your JSON searchable and discoverable</li>
+                <li>• Get analytics on views and usage</li>
+              </ul>
+            </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            {/* Form */}
+            <form ref={formRef} onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
                 {/* Title */}
                 <FormInput
                   id="title"
@@ -268,40 +285,10 @@ export function PublishModal({
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClose}
-                    disabled={isSubmitting}
-                    className="order-2 sm:order-1 transition-all duration-200"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !watchedTitle?.trim()}
-                    className="order-1 sm:order-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Publishing...
-                      </>
-                    ) : (
-                      <>
-                        <Globe className="h-4 w-4 mr-2" />
-                        Publish to Community
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </ErrorBoundary>
-        )}
-      </DialogContent>
-    </Dialog>
+            </form>
+          </div>
+        </ErrorBoundary>
+      )}
+    </BaseModal>
   );
 }

@@ -3,9 +3,28 @@
  * Shared validation functions for JSON/YAML data
  */
 
-// Use require to avoid needing @types/js-yaml
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const yamlLib: any = require('js-yaml');
+// Lazy load js-yaml to avoid issues in client-side code
+// This module should only be used on the server-side
+let yamlLib: any = null;
+
+function getYamlLib() {
+  // Always return null on client-side to prevent bundle issues
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+  
+  if (yamlLib === null) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // Required for server-side YAML parsing in Node.js environment
+      yamlLib = require('js-yaml');
+    } catch {
+      // js-yaml not available, will fall back gracefully
+      yamlLib = undefined;
+    }
+  }
+  return yamlLib;
+}
 
 /**
  * Validates if a string contains valid JSON
@@ -40,7 +59,12 @@ export function safeParseJson<T = any>(json: string): T | null {
  */
 export function safeParseYaml<T = any>(text: string): T | null {
   try {
-    const res = yamlLib.load(text);
+    const lib = getYamlLib();
+    if (!lib || !lib.load) {
+      // js-yaml not available, return null
+      return null;
+    }
+    const res = lib.load(text);
     return (res as T) ?? null;
   } catch {
     return null;
@@ -48,13 +72,18 @@ export function safeParseYaml<T = any>(text: string): T | null {
 }
 
 /**
- * Try JSON first; if it fails, try YAML. Returns object or null.
+ * Try JSON first; if it fails, try YAML (server-side only). Returns object or null.
+ * On client-side, only attempts JSON parsing to avoid bundling js-yaml.
  */
 export function safeParseData<T = any>(text: string): T | null {
   if (!text?.trim()) return null;
   const asJson = safeParseJson<T>(text);
   if (asJson !== null) return asJson;
-  return safeParseYaml<T>(text);
+  // Only try YAML on server-side to avoid bundling js-yaml in client code
+  if (typeof window === 'undefined') {
+    return safeParseYaml<T>(text);
+  }
+  return null;
 }
 
 /**

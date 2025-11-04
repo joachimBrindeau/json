@@ -1,12 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { DocumentListPage } from '@/components/features/documents/DocumentListPage';
-import { useLoginModal } from '@/hooks/use-login-modal';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import {
   createPrivateLibraryConfig,
   type PrivateDocument,
@@ -16,22 +13,13 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default function MyLibraryPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { openModal } = useLoginModal();
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
-      openModal('save');
-      router.push('/');
-      return;
-    }
-  }, [session, status, router, openModal]);
+  const { isAuthenticated, isLoading } = useRequireAuth({
+    redirectTo: '/',
+    loginModalSource: 'save',
+  });
 
   // Show loading while checking auth
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="h-full flex items-center justify-center">
@@ -42,7 +30,7 @@ export default function MyLibraryPage() {
   }
 
   // Don't render if not authenticated (will redirect)
-  if (!session) {
+  if (!isAuthenticated) {
     return null;
   }
 

@@ -10,8 +10,21 @@ interface AnimatedButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
 }
 
 /**
- * AnimatedButton component
- * Button with micro-interactions (hover/tap effects)
+ * AnimatedButton Component
+ * 
+ * Low-level animated button component using framer-motion directly.
+ * 
+ * **Note:** For most use cases, prefer `AnimatedActionButton` from '@/components/ui/AnimatedActionButton'
+ * which wraps the Button component and provides better integration with the design system.
+ * 
+ * **When to use AnimatedButton:**
+ * - When you need a raw motion.button element
+ * - When you don't need Button component features (variants, styling, etc.)
+ * 
+ * **When to use AnimatedActionButton:**
+ * - For most animated buttons in the application
+ * - When you need Button component features (variants, sizes, icons, etc.)
+ * - For primary action buttons (Format, Minify, Compare, etc.)
  */
 export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
   ({ variant = 'default', children, ...props }, ref) => {

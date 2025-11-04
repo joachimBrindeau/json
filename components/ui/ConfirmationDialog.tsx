@@ -1,5 +1,30 @@
 'use client';
 
+/**
+ * ConfirmationDialog Component
+ * 
+ * A full-screen modal dialog for critical confirmations, especially destructive actions.
+ * 
+ * **When to use:**
+ * - Critical/destructive actions requiring full user attention (e.g., delete account, delete data)
+ * - Actions that need to block the entire screen
+ * - Confirmations with important consequences
+ * 
+ * **When NOT to use:**
+ * - For less critical confirmations, use `ConfirmPopover` instead
+ * - For inline confirmations that don't need full-screen attention
+ * 
+ * @example
+ * <ConfirmationDialog
+ *   open={showDeleteDialog}
+ *   onOpenChange={setShowDeleteDialog}
+ *   title="Delete Account"
+ *   description="This action cannot be undone. All your data will be permanently deleted."
+ *   variant="destructive"
+ *   onConfirm={handleDeleteAccount}
+ * />
+ */
+
 import {
   AlertDialog,
   AlertDialogAction,

@@ -1,14 +1,13 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/api/utils';
-import { validateAndBuildCreateInput } from '@/lib/api/handlers/document-create';
-import { getUserDocuments, createJsonDocument } from '@/lib/db/queries/documents';
-import { success, created } from '@/lib/api/responses';
-import { withErrorHandler } from '@/lib/api/middleware';
+import { getUserDocuments } from '@/lib/db/queries/documents';
+import { success } from '@/lib/api/responses';
 import { ValidationError } from '@/lib/utils/app-errors';
 import {
   parseDocumentListQuery,
   formatDocumentList,
 } from '@/lib/api/handlers/document-list';
+import { handleCreateDocument } from '@/lib/api/handlers/document-create-handler';
 
 const SORT_OPTIONS = ['recent', 'updated', 'views'] as const;
 
@@ -54,20 +53,7 @@ export const GET = withAuth(async (request: NextRequest, session) => {
  * POST create private document
  */
 export const POST = withAuth(async (request: NextRequest, session) => {
-  const data = await request.json();
-
-  const input = validateAndBuildCreateInput(data);
-
-  // Create the document
-  const result = await createJsonDocument({
-    userId: session.user.id,
-    ...input,
-    visibility: data.visibility || 'private',
+  return handleCreateDocument(request, session, {
+    visibility: 'private', // Default to private, but allow override from request
   });
-
-  if (!result.success) {
-    throw new ValidationError(result.error || 'Failed to create document');
-  }
-
-  return created(result.data, { message: 'Document created successfully' });
 });

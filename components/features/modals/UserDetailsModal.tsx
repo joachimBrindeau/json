@@ -1,13 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { BaseModal } from '@/components/shared/BaseModal';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -23,7 +18,6 @@ import {
   XCircle,
   Github,
   Chrome,
-  Loader2,
   AlertCircle,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -122,26 +116,27 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>User Details</DialogTitle>
-          <DialogDescription>
-            Comprehensive information about the user and their activity
-          </DialogDescription>
-        </DialogHeader>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          </div>
-        ) : !user ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-2">
-            <AlertCircle className="h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">Failed to load user details</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
+    <BaseModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="User Details"
+      description="Comprehensive information about the user and their activity"
+      icon={<User className="h-5 w-5" />}
+      className="sm:max-w-3xl"
+      maxHeight="90vh"
+      showFooter={false}
+    >
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : !user ? (
+        <div className="flex flex-col items-center justify-center py-12 space-y-2">
+          <AlertCircle className="h-12 w-12 text-muted-foreground" />
+          <p className="text-muted-foreground">Failed to load user details</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
             {/* Basic Information */}
             <Card>
               <CardHeader>
@@ -368,8 +363,7 @@ export function UserDetailsModal({ open, onOpenChange, userId }: UserDetailsModa
               </Card>
             )}
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      )}
+    </BaseModal>
   );
 }

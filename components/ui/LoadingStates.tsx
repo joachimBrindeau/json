@@ -1,25 +1,24 @@
 'use client';
 
+/**
+ * LoadingStates Component Library
+ * 
+ * Specialized loading components for various use cases.
+ * 
+ * **Note:** For basic loading needs, use:
+ * - `LoadingSpinner` from '@/components/shared/LoadingSpinner' (simple spinner)
+ * - `LoadingState` from '@/components/shared/LoadingState' (spinner + message)
+ * 
+ * These specialized components are for specific use cases:
+ * - `JsonLoading`: JSON-specific loading with progress
+ * - `ProcessingLoading`: Multi-step process loading
+ * - `SkeletonCard`: Skeleton loading for cards
+ * - `JsonViewerSkeleton`: Skeleton loading for JSON viewer
+ */
+
 import { Loader2, FileJson, Zap, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './skeleton';
-
-interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
-export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
-  };
-
-  return (
-    <Loader2 className={cn('animate-spin text-muted-foreground', sizeClasses[size], className)} />
-  );
-}
 
 interface JsonLoadingProps {
   message?: string;

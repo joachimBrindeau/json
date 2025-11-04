@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { DocumentListPage } from '@/components/features/documents/DocumentListPage';
-import { MainLayout } from '@/components/layout';
+import { SSRSkipWrapper } from '@/components/shared/SSRSkipWrapper';
 import {
   createPublicLibraryConfig,
   type PublicDocument,
@@ -14,16 +14,9 @@ export const dynamic = 'force-dynamic';
 export default function PublicLibraryPage() {
   const { data: session } = useSession();
 
-  // Skip rendering during SSR
-  if (typeof window === 'undefined') {
-    return (
-      <MainLayout>
-        <div className="h-full flex items-center justify-center">Loading...</div>
-      </MainLayout>
-    );
-  }
-
   return (
-    <DocumentListPage<PublicDocument> config={createPublicLibraryConfig(session)} />
+    <SSRSkipWrapper>
+      <DocumentListPage<PublicDocument> config={createPublicLibraryConfig(session)} />
+    </SSRSkipWrapper>
   );
 }

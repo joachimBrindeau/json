@@ -1,5 +1,19 @@
 'use client';
 
+/**
+ * LoginModal Component
+ * 
+ * Complex authentication modal with login/signup tabs and OAuth providers.
+ * 
+ * **Note:** This modal intentionally uses Dialog directly instead of BaseModal because:
+ * - It has complex tab-based navigation (login/signup)
+ * - It requires custom footer with OAuth buttons and form switching
+ * - The structure is significantly different from standard modals
+ * - BaseModal's footer actions pattern doesn't fit this use case
+ * 
+ * For simpler modals, prefer BaseModal for consistency.
+ */
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';

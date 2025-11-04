@@ -35,6 +35,17 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": "off",
       "react-hooks/exhaustive-deps": "off",
       "@next/next/no-img-element": "off",
+      // Allow require() in server-side utility files for Node.js compatibility
+      "@typescript-eslint/no-require-imports": ["error", {
+        "allow": ["js-yaml", "@prisma/client", "@/lib/db", "@/lib/api/client"]
+      }],
+    },
+  },
+  {
+    // Allow require() in lib/utils files that need Node.js compatibility
+    files: ["lib/**/*.ts", "lib/**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ];
