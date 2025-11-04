@@ -122,6 +122,19 @@ export function useMonacoEditor(
           // Also ensure a minimal global monaco API reference for test helpers
           const w = window as any;
           w.monaco = w.monaco || monaco;
+
+          // Maintain a global registry of editors to facilitate E2E tests and utilities
+          w.__monacoEditors = w.__monacoEditors || [];
+          // Avoid duplicates if the same instance is mounted twice
+          if (!w.__monacoEditors.includes(editor)) {
+            w.__monacoEditors.push(editor);
+          }
+          // Provide a stable getter for tests: window.getMonacoEditors()
+          w.getMonacoEditors = w.getMonacoEditors || (() => w.__monacoEditors);
+          // Also expose under monaco.editor.getEditors if not present (testing convenience only)
+          if (w.monaco?.editor && typeof w.monaco.editor.getEditors !== 'function') {
+            w.monaco.editor.getEditors = () => w.__monacoEditors;
+          }
         }
       } catch {}
 

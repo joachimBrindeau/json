@@ -111,20 +111,18 @@ export function useDocumentList<T extends { id: string; title?: string }>(
         const queryParams = buildQueryParams(currentPage);
         const url = `${endpoint}?${queryParams}`;
 
-        const data = await apiClient.get<{
-          documents: T[];
-          pagination?: PaginationInfo;
-        }>(url);
+        const raw = await apiClient.get<any>(url);
+        const data = raw && typeof raw === 'object' && 'success' in raw ? raw.data ?? {} : raw;
 
         if (reset) {
-          setDocuments(data.documents || []);
+          setDocuments((data?.documents as T[]) || []);
           setPage(1);
         } else {
-          setDocuments((prev) => [...prev, ...(data.documents || [])]);
+          setDocuments((prev) => [...prev, ...(((data?.documents as T[]) || []))]);
         }
 
-        setHasMore(data.pagination?.hasNext || false);
-        setTotalCount(data.pagination?.total || 0);
+        setHasMore(Boolean(data?.pagination?.hasNext));
+        setTotalCount(Number(data?.pagination?.total || 0));
       } catch (error) {
         logger.error(
           {

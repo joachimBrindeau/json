@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { BaseModal } from '@/components/shared/BaseModal';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns, showErrorToast } from '@/lib/utils/toast-helpers';
 import { useFormSubmit } from '@/hooks/use-form-submit';
@@ -23,6 +22,7 @@ import { Globe, Users, Eye, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 
 interface PublishModalProps {

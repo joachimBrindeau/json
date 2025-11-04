@@ -35,11 +35,13 @@ export interface BaseModalProps {
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
     disabled?: boolean;
     loading?: boolean;
+    testId?: string;
   };
   secondaryAction?: {
     label: string;
     onClick: () => void;
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    testId?: string;
   };
 
   // Content configuration
@@ -214,6 +216,8 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
                   <Button
                     variant={secondaryAction.variant || 'outline'}
                     onClick={secondaryAction.onClick}
+                    data-testid={secondaryAction.testId}
+                    aria-label={secondaryAction.label}
                   >
                     {secondaryAction.label}
                   </Button>
@@ -223,6 +227,8 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
                     variant={primaryAction.variant || 'default'}
                     onClick={handlePrimaryAction}
                     disabled={primaryAction.disabled || primaryAction.loading}
+                    data-testid={primaryAction.testId}
+                    aria-label={primaryAction.label}
                   >
                     {primaryAction.loading && <LoadingSpinner size="sm" className="mr-2" />}
                     {primaryAction.label}
