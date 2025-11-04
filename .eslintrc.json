@@ -17,6 +17,7 @@
     "tests/test-files/",
     "tests/downloads/",
     "app/n8n-addons-extension/**",
+    "extensions/**",
     "**/dist/**",
     "**/*.js",
     "**/n8n-addons-extension/**"
