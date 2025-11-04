@@ -31,7 +31,7 @@ jobs:
         run: npm ci
       
       - name: Run TypeScript check
-        run: npx tsc --noEmit --skipLibCheck --exclude '**/__tests__/**' --exclude '**/*.test.ts' --exclude '**/*.test.tsx'
+        run: npx tsc --noEmit --skipLibCheck
       
       - name: Run ESLint
         run: npm run lint
