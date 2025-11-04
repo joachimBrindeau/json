@@ -62,8 +62,8 @@ export async function linkOAuthAccount(
     );
 
     if (!isLinked) {
-      // Use create with skipDuplicates or check first to prevent race conditions
-      // This handles the case where multiple requests try to link simultaneously
+      // Link the OAuth account to existing user
+      // Use create with proper error handling to prevent race conditions
       try {
         await prisma.account.create({
           data: {
@@ -89,20 +89,25 @@ export async function linkOAuthAccount(
           },
           'Linked OAuth account to existing user'
         );
-      } catch (createError: any) {
+      } catch (createError: unknown) {
         // Handle unique constraint violation (race condition)
         // P2002 is Prisma's unique constraint violation code
-        if (createError?.code === 'P2002') {
-          logger.warn(
+        if (
+          createError &&
+          typeof createError === 'object' &&
+          'code' in createError &&
+          createError.code === 'P2002'
+        ) {
+          logger.info(
             {
               userId: existingUser.id,
               provider: account.provider,
               email,
             },
-            'OAuth account already linked (race condition handled)'
+            'OAuth account already linked (race condition)'
           );
-          // Account is already linked, continue with update
         } else {
+          // Re-throw other errors
           throw createError;
         }
       }

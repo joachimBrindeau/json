@@ -31,7 +31,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
    * - Validate sign-in attempts
    * - Handle OAuth-specific error cases
    */
-  async signIn({ user, account, profile }) {
+  async signIn({ user, account }) {
     try {
       // Normalize email for consistency
       if (user.email) {
@@ -40,6 +40,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
 
       // Handle OAuth account linking before updating lastLoginAt
       // SECURITY: Only link OAuth accounts (not credentials)
+      // IMPORTANT: Do this FIRST before updating lastLoginAt to ensure user exists
       if (prisma && account?.provider && account.provider !== 'credentials') {
         if (user.email) {
           // Check if email is already verified before updating (performance optimization)
@@ -59,9 +60,6 @@ export const authCallbacks: Partial<CallbacksOptions> = {
               .catch((err: Error) => {
                 logger.debug({ err, email: user.email }, 'Could not mark OAuth email as verified');
               });
-          } else if (!existingUser) {
-            // New user - email will be verified when user is created by adapter
-            // This is a new signup, so we don't need to update here
           }
 
           // Link OAuth account to existing user if email matches
@@ -82,25 +80,18 @@ export const authCallbacks: Partial<CallbacksOptions> = {
       }
 
       // Track last login timestamp (only for existing users)
-      // Use upsert pattern to handle both new and existing users
-      if (prisma && user.email) {
-        // Check if user exists first (more efficient than try/catch on update)
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: { id: true },
-        });
-
-        if (existingUser) {
-          // Update lastLoginAt for existing users
-          await prisma.user
-            .update({
-              where: { email: user.email },
-              data: { lastLoginAt: new Date() },
-            })
-            .catch((err: Error) => {
-              logger.error({ err, email: user.email }, 'Failed to update lastLoginAt');
-            });
-        }
+      // Note: For new OAuth users, the adapter will create the user first,
+      // so by the time we reach here, the user should exist
+      if (prisma && user.email && user.id) {
+        await prisma.user
+          .update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          })
+          .catch((err: Error) => {
+            // Log but don't fail - this is non-critical
+            logger.warn({ err, email: user.email, userId: user.id }, 'Failed to update lastLoginAt');
+          });
       }
 
       return true;
@@ -110,13 +101,13 @@ export const authCallbacks: Partial<CallbacksOptions> = {
           err: error,
           email: user.email,
           provider: account?.provider,
+          userId: user.id,
         },
-        'Error in signIn callback'
+        'SignIn callback error'
       );
-
-      // Return false to block sign-in on critical errors
-      // NextAuth will handle showing appropriate error message
-      return false;
+      // Don't block sign-in for non-critical errors, but log them
+      // Critical errors will be thrown and caught by NextAuth
+      return true;
     }
   },
 

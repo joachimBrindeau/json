@@ -75,8 +75,19 @@ export const authOptions: NextAuthOptions = {
         );
       }
     },
+    async signInError({ error, provider }) {
+      logger.error(
+        {
+          err: error,
+          provider,
+        },
+        'OAuth sign-in error'
+      );
+    },
   },
   session: SESSION_CONFIG,
   secret: config.auth.secret,
   debug: config.isDevelopment,
+  // Enable trust host for proper OAuth redirects
+  trustHost: true,
 };

@@ -82,7 +82,8 @@ export const githubProvider = GitHubProvider({
    * See: lib/auth/account-linking.ts for the linking implementation
    */
   allowDangerousEmailAccountLinking: true,
-  // Explicitly request user:email scope to maximize chance of getting email
+  // Explicitly request user:email scope to ensure email is available
+  // GitHub default scope includes user:email, but being explicit is better
   // Note: GitHub may still return null email if user has private email settings
   authorization: {
     params: {

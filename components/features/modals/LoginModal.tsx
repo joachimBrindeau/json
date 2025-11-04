@@ -63,26 +63,26 @@ export function LoginModal({ open, onOpenChange, context = 'general' }: LoginMod
     setIsOAuthLoading(true);
     
     try {
-      // NextAuth's signIn() for OAuth providers redirects the user to the provider
-      // Errors will come back via the callback URL, not as thrown exceptions
-      // The OAuth error handler component will handle errors from the callback URL
+      // OAuth requires a redirect, so we don't await this
+      // The redirect will happen immediately
+      // OAuth errors after redirect will be handled by NextAuth error pages
       await signIn(provider, {
         redirect: true,
         callbackUrl: window.location.href,
       });
-      
-      // Note: If we reach here, the redirect should have happened
-      // The loading state will be cleared when user returns (or on component unmount)
     } catch (error) {
-      // This catch block will only fire for immediate errors before redirect (should be rare)
-      logger.error({ err: error, provider }, 'Failed to initiate OAuth sign-in');
+      // Only catch errors that happen before redirect
+      // OAuth errors after redirect will be handled by NextAuth error pages
+      logger.error({ err: error, provider }, `Failed to initiate OAuth sign in`);
       setIsOAuthLoading(false);
       toast({
         title: 'Sign in failed',
-        description: `Failed to sign in with ${provider}. Please try again.`,
+        description: `Failed to start sign in with ${provider}. Please try again.`,
         variant: 'destructive',
       });
     }
+    // Note: Don't reset loading state here - redirect will happen
+    // If redirect fails, error handler above will reset it
   };
 
   const { submit: submitForm, isSubmitting: isLoading } = useFormSubmit(
