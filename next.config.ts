@@ -294,6 +294,15 @@ const nextConfig: NextConfig = {
       };
     }
 
+    // Exclude n8n-addons-extension from compilation
+    // Use a function that returns empty module
+    config.module.rules.push({
+      test: /app\/n8n-addons-extension/,
+      use: {
+        loader: 'ignore-loader',
+      },
+    });
+
     // Use Next.js defaults for splitChunks to avoid asset misclassification issues
     // (We intentionally disable our custom splitChunks to prevent CSS being emitted as <script> tags.)
 
