@@ -16,6 +16,7 @@
 
 // Primary modals (direct exports to avoid nested re-export issues)
 export { LoginModal } from './LoginModal';
+export { SaveModal } from './SaveModal';
 export { ShareModal } from './ShareModal';
 export { EmbedModal } from './EmbedModal';
 export { ExportModal } from './ExportModal';
