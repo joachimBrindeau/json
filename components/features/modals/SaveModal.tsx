@@ -124,7 +124,7 @@ export function SaveModal({
       title="Save JSON"
       description={isPublic ? 'Save and publish your JSON to the public library' : 'Save your JSON to your library'}
       icon={modalIcon}
-      className="sm:max-w-lg"
+      className="sm:max-w-lg lg:max-w-xl"
       maxHeight="90vh"
       closeOnEscape={!isSaving}
       closeOnOverlayClick={!isSaving}
@@ -152,7 +152,9 @@ export function SaveModal({
           maxLength={200}
           className="font-medium"
           error={form.formState.errors.title?.message as string}
-          {...form.register('title')}
+          {...form.register('title', {
+            onBlur: () => form.trigger('title'),
+          })}
         />
 
         <VisibilityToggle

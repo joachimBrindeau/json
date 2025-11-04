@@ -151,7 +151,8 @@ describe('auditJson', () => {
       deepObjects: [],
     });
 
-    const result = await auditJson('hello');
+    // Pass valid JSON string (quoted) or pass the primitive value directly
+    const result = await auditJson('"hello"');
     
     expect(result.isValid).toBe(true);
     expect(result.issues.some(i => i.message.includes('string'))).toBe(true);

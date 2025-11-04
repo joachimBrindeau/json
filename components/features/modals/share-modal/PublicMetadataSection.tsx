@@ -41,6 +41,11 @@ export function PublicMetadataSection({ form, category, disabled }: PublicMetada
           <ChevronDown className="h-4 w-4 text-blue-600" />
         )}
       </Button>
+      {!isExpanded && (
+        <p className="text-xs text-blue-600">
+          Add description, category, and tags to help others discover your JSON
+        </p>
+      )}
       {isExpanded && (
         <>
           <p className="text-sm text-blue-700">
@@ -55,7 +60,9 @@ export function PublicMetadataSection({ form, category, disabled }: PublicMetada
         rows={3}
         disabled={disabled}
         error={form.formState.errors.description?.message as string}
-        {...form.register('description')}
+        {...form.register('description', {
+          onBlur: () => form.trigger('description'),
+        })}
       />
 
       <Controller

@@ -24,12 +24,12 @@ export function VisibilityInfo({ isPublic }: VisibilityInfoProps) {
         <div className="flex items-center gap-2">
           {isPublic ? (
             <>
-              <Globe className="h-4 w-4 text-blue-600" />
+              <Globe className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-medium text-blue-900">Public Link</span>
             </>
           ) : (
             <>
-              <Lock className="h-4 w-4 text-gray-600" />
+              <Lock className="h-5 w-5 text-gray-600" />
               <span className="text-sm font-medium text-gray-900">Private Link</span>
             </>
           )}

@@ -210,31 +210,31 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
 
           {/* Footer */}
           {showFooter && (primaryAction || secondaryAction) && (
-            <DialogFooter className="flex gap-2 pt-4">
-              <div className="flex gap-2 ml-auto">
-                {secondaryAction && (
-                  <Button
-                    variant={secondaryAction.variant || 'outline'}
-                    onClick={secondaryAction.onClick}
-                    data-testid={secondaryAction.testId}
-                    aria-label={secondaryAction.label}
-                  >
-                    {secondaryAction.label}
-                  </Button>
-                )}
-                {primaryAction && (
-                  <Button
-                    variant={primaryAction.variant || 'default'}
-                    onClick={handlePrimaryAction}
-                    disabled={primaryAction.disabled || primaryAction.loading}
-                    data-testid={primaryAction.testId}
-                    aria-label={primaryAction.label}
-                  >
-                    {primaryAction.loading && <LoadingSpinner size="sm" className="mr-2" />}
-                    {primaryAction.label}
-                  </Button>
-                )}
-              </div>
+            <DialogFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-10">
+              {secondaryAction && (
+                <Button
+                  variant={secondaryAction.variant || 'outline'}
+                  onClick={secondaryAction.onClick}
+                  data-testid={secondaryAction.testId}
+                  aria-label={secondaryAction.label}
+                  className="w-full sm:w-auto min-h-[44px]"
+                >
+                  {secondaryAction.label}
+                </Button>
+              )}
+              {primaryAction && (
+                <Button
+                  variant={primaryAction.variant || 'default'}
+                  onClick={handlePrimaryAction}
+                  disabled={primaryAction.disabled || primaryAction.loading}
+                  data-testid={primaryAction.testId}
+                  aria-label={primaryAction.label}
+                  className="w-full sm:w-auto min-h-[44px]"
+                >
+                  {primaryAction.loading && <LoadingSpinner size="sm" className="mr-2" />}
+                  {primaryAction.label}
+                </Button>
+              )}
             </DialogFooter>
           )}
         </DialogContent>

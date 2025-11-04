@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
           isValid: audit.isValid,
           issues: audit.issues,
           recommendations: audit.recommendations,
+          stats: audit.stats,
         },
       },
       { headers: corsHeaders }

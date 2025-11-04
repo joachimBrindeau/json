@@ -69,7 +69,7 @@ interface BackendAppState {
 
   // Actions
   updateSession: () => Promise<void>;
-  uploadJson: (file: File, title?: string) => Promise<JsonDocument>;
+  uploadJson: (file: File, title?: string, visibility?: 'public' | 'private') => Promise<JsonDocument>;
   loadJson: (id: string) => Promise<boolean>;
   analyzeJson: (content: string) => Promise<JsonValue>;
   shareJson: () => Promise<string>;
@@ -385,13 +385,14 @@ export const useBackendStore = create<BackendAppState>()(
         return get().saveJson();
       },
 
-      uploadJson: async (file: File, title?: string) => {
+      uploadJson: async (file: File, title?: string, visibility: 'public' | 'private' = 'private') => {
         set({ isUploading: true, uploadProgress: 0 });
 
         try {
           const formData = new FormData();
           formData.append('file', file);
           if (title) formData.append('title', title);
+          formData.append('visibility', visibility);
 
           // Simulate upload progress
           const progressInterval = setInterval(() => {
@@ -454,7 +455,7 @@ export const useBackendStore = create<BackendAppState>()(
             maxDepth: document.maxDepth,
             complexity: document.complexity,
             createdAt: document.createdAt,
-            visibility: 'private',
+            visibility: visibility,
           };
 
           set({
@@ -693,7 +694,7 @@ export const useBackendStore = create<BackendAppState>()(
           const file = new File([blob], 'untitled.json', { type: 'application/json' });
 
           const uploadJson = get().uploadJson;
-          await uploadJson(file, title || 'Untitled JSON');
+          await uploadJson(file, title || 'Untitled JSON', 'private');
 
           // Notify library to refresh
           const { onLibraryUpdate: libraryUpdateCallback } = get();

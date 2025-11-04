@@ -108,7 +108,7 @@ function SidebarComponent({
       }
 
       try {
-        const document = await uploadJson(file);
+        const document = await uploadJson(file, undefined, 'private');
         toastPatterns.success.uploaded(document.title);
       } catch (error) {
         toastPatterns.error.upload(error);

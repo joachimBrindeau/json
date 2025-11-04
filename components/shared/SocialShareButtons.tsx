@@ -96,7 +96,7 @@ export function SocialShareButtons({
           variant="outline"
           size="sm"
           onClick={() => setShowMore(!showMore)}
-          className="h-8 px-3 text-xs"
+          className="h-10 px-4 text-sm min-h-[44px]"
         >
           {showMore ? 'Less' : 'More'}
         </Button>

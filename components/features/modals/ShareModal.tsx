@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { BaseModal } from '@/components/shared/BaseModal';
 import { FormInput } from '@/components/shared/FormFields';
 import { Globe, Lock, CheckCircle2, Loader2 } from 'lucide-react';
@@ -32,13 +32,10 @@ export function ShareModal({
   currentVisibility = 'private',
   onUpdated,
 }: ShareModalProps) {
-  // Get shareId from store if prop is empty (for new documents)
-  const storeShareId = useBackendStore((s) => s.shareId);
+  // Single source of truth: prefer currentDocument.shareId (most accurate)
+  // Fall back to prop, then store shareId
   const currentDocument = useBackendStore((s) => s.currentDocument);
-  
-  // Use prop shareId if provided, otherwise fall back to store
-  // After save, store will have the new shareId
-  const shareId = shareIdProp || storeShareId || currentDocument?.shareId || '';
+  const shareId = currentDocument?.shareId || shareIdProp || '';
 
   const form = useValidatedForm(shareFormSchema, {
     defaultValues: {
@@ -62,31 +59,32 @@ export function ShareModal({
     form,
   });
 
-  const {
-    isUpdating,
-    isSaving,
-    isPublic,
-    didSave,
-    setIsPublic,
-    handleSave,
-  } = useShareModalState({
-    shareId,
-    currentVisibility,
-    form,
-    onUpdated,
-    onClose: () => onOpenChange(false),
-  });
+  // Initialize isPublic from currentDocument or prop (single initialization)
+  const initialVisibility = currentDocument?.visibility || currentVisibility;
+  const [isPublic, setIsPublic] = useState(initialVisibility === 'public');
 
-  // Sync public state with visibility - check document from store if available
-  // This handles both initial load and updates after save
+  // Sync visibility when modal opens or document changes
   useEffect(() => {
     if (open) {
-      // If we have a currentDocument, use its visibility (most accurate)
-      // Otherwise fall back to currentVisibility prop
       const actualVisibility = currentDocument?.visibility || currentVisibility;
       setIsPublic(actualVisibility === 'public');
     }
-  }, [open, currentVisibility, setIsPublic, currentDocument?.visibility]);
+  }, [open, currentVisibility, currentDocument?.visibility]);
+
+  const {
+    isUpdating,
+    isSaving,
+    didSave,
+    handleSave,
+  } = useShareModalState({
+    shareId,
+    currentVisibility: initialVisibility,
+    form,
+    isPublic,
+    setIsPublic,
+    onUpdated,
+    onClose: () => onOpenChange(false),
+  });
 
   const shareUrl = useMemo(() => {
     if (!shareId) return 'Creating share link...';
@@ -97,51 +95,57 @@ export function ShareModal({
   const shareDescription =
     'Interactive JSON Sea visualization - explore JSON data in a beautiful graph format';
 
-  // Determine actual visibility for display (use document if available, else state)
+  // Determine actual visibility for display
   const actualVisibility = currentDocument?.visibility || (isPublic ? 'public' : 'private');
   const isActuallyPublic = actualVisibility === 'public';
+
+  // Dynamic modal title based on context
+  const modalTitle = isActuallyPublic
+    ? 'Share Public JSON'
+    : 'Share Private JSON';
 
   const modalIcon = isActuallyPublic ? (
     <Globe className="h-5 w-5 text-blue-500" />
   ) : (
-    <Lock className="h-4 w-4 text-muted-foreground" />
+    <Lock className="h-5 w-5 text-muted-foreground" />
   );
 
   const modalDescription = isActuallyPublic
-    ? 'Make your JSON discoverable in the public library'
+    ? 'Manage your public JSON sharing settings'
     : 'Share a private link to your JSON';
 
-  // Get primary action label based on state
+  // Improved button labels - clear and specific
   const getPrimaryActionLabel = () => {
-    if (isUpdating || isSaving) {
-      return isSaving ? 'Saving...' : 'Updating...';
+    if (isUpdating) {
+      return 'Updating...';
     }
-    if (!shareId) {
-      return 'Save & Generate Link';
+    // For existing documents - check if visibility is changing
+    const currentDocVisibility = currentDocument?.visibility === 'public';
+    if (isPublic && !currentDocVisibility) {
+      return 'Publish to Library';
     }
-    // Use actual visibility state, not just isPublic toggle
-    if (isPublic) {
-      return actualVisibility === 'public' ? 'Update Public Details' : 'Publish & Share';
+    if (!isPublic && currentDocVisibility) {
+      return 'Make Private';
     }
-    return actualVisibility === 'public' ? 'Make Private' : 'Update Private Details';
+    return 'Update Settings';
   };
 
   return (
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Share your JSON"
+      title={modalTitle}
       description={modalDescription}
       icon={modalIcon}
-      className="sm:max-w-2xl"
+      className="sm:max-w-2xl lg:max-w-3xl"
       maxHeight="90vh"
       closeOnEscape={!isUpdating}
       closeOnOverlayClick={!isUpdating}
       primaryAction={{
         label: getPrimaryActionLabel(),
         onClick: () => void handleSave(),
-        loading: isUpdating || isSaving,
-        disabled: isUpdating || isSaving || isLoadingMetadata,
+        loading: isUpdating,
+        disabled: isUpdating || isLoadingMetadata,
         variant: 'default',
         testId: 'share-save-button',
       }}
@@ -153,23 +157,26 @@ export function ShareModal({
       }}
     >
       {isLoadingMetadata && (
-        <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg mb-4">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading existing metadata...</span>
+          <span>Loading settings...</span>
         </div>
       )}
 
+      {/* Core Actions - Always Visible */}
       <div className="space-y-4">
         <FormInput
           id="title"
           label="Title"
           required
-          placeholder="e.g., E-commerce Product API Response"
+          placeholder="Give your JSON a name"
           maxLength={200}
           className="font-medium"
           disabled={isLoadingMetadata}
           error={form.formState.errors.title?.message as string}
-          {...form.register('title')}
+          {...form.register('title', {
+            onBlur: () => form.trigger('title'),
+          })}
         />
 
         <VisibilityToggle
@@ -185,19 +192,33 @@ export function ShareModal({
           hasShareId={!!shareId}
         />
 
-        <VisibilityInfo isPublic={isPublic} />
-
-        {isPublic && (
-          <PublicMetadataSection
-            form={form}
-            category={category}
-            disabled={isLoadingMetadata}
-          />
+        {/* Success Feedback */}
+        {didSave && (
+          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
+            <CheckCircle2 className="h-4 w-4" />
+            <span className="font-medium">Settings saved successfully!</span>
+          </div>
         )}
 
-        {(didSave || (shareId && !isSaving)) && (
-          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
-        )}
+        {/* Advanced Options - Separated visually */}
+        <div className="border-t pt-4 space-y-4">
+          <VisibilityInfo isPublic={isPublic} />
+
+          {isPublic && (
+            <PublicMetadataSection
+              form={form}
+              category={category}
+              disabled={isLoadingMetadata}
+            />
+          )}
+
+          {/* Social Share - Only show if link is ready */}
+          {shareId && shareUrl && (
+            <div className="pt-2">
+              <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
+            </div>
+          )}
+        </div>
       </div>
     </BaseModal>
   );

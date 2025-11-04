@@ -54,6 +54,7 @@ export const POST = withOptionalAuth(async (request, session) => {
   const formData = await request.formData();
   const file = formData.get('file') as File;
   const title = formData.get('title') as string | null;
+  const visibility = (formData.get('visibility') as 'public' | 'private') || 'private';
 
   if (!file) {
     throw new ValidationError('No file provided', [{ field: 'file', message: 'File is required' }]);
@@ -102,7 +103,7 @@ export const POST = withOptionalAuth(async (request, session) => {
         checksum: analysis.checksum,
         userId: userId,
         isAnonymous: !userId,
-        visibility: userId ? 'private' : 'private', // Default to private for all
+        visibility: userId ? visibility : 'private', // Use provided visibility for authenticated users
         metadata: {
           originalFilename: file.name,
           uploadedAt: new Date().toISOString(),

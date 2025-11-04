@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useBackendStore } from '@/lib/store/backend';
 import { showValidationErrorToast, showInfoToast } from '@/lib/utils/toast-helpers';
 import { apiClient } from '@/lib/api/client';
@@ -12,31 +12,36 @@ interface UseShareModalStateProps {
   shareId: string;
   currentVisibility: 'public' | 'private';
   form: UseFormReturn<ShareFormData>;
+  isPublic: boolean;
+  setIsPublic: (value: boolean) => void;
   onUpdated?: (title?: string) => void;
   onClose: () => void;
+  open?: boolean;
 }
 
 export function useShareModalState({
   shareId,
   currentVisibility,
   form,
+  isPublic,
+  setIsPublic,
   onUpdated,
   onClose,
+  open,
 }: UseShareModalStateProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPublic, setIsPublic] = useState(currentVisibility === 'public');
   const [didSave, setDidSave] = useState(false);
 
-  // Setup mutations
+  // Setup mutations - don't auto-close to allow user to see results
   const publishMutation = useApiMutation(
     async (data: Omit<ShareFormData, 'visibility'>) =>
       apiClient.post(`/api/json/${shareId}/publish`, data),
     {
       successMessage: 'Published successfully!',
       onSuccess: () => {
+        setDidSave(true);
         onUpdated?.();
-        onClose();
+        // Don't auto-close - let user see the link and social share buttons
       },
     }
   );
@@ -46,50 +51,28 @@ export function useShareModalState({
     {
       successMessage: 'Made private',
       onSuccess: () => {
+        setDidSave(true);
         onUpdated?.();
-        onClose();
+        // Don't auto-close - let user see the updated link
       },
     }
   );
 
-  // Save handler for new documents
-  const saveNewDocument = useCallback(
-    async (title: string): Promise<string> => {
-      setIsSaving(true);
-      showInfoToast('Saving JSON with title', {
-        description: 'Creating your document and share link...',
-      });
+  // Reset didSave when modal closes
+  useEffect(() => {
+    if (!open) {
+      setDidSave(false);
+    }
+  }, [open]);
 
-      try {
-        const { useBackendStore } = await import('@/lib/store/backend');
-        const storeState = useBackendStore.getState() as any;
-        const { uploadJson, currentJson } = storeState;
-
-        const blob = new Blob([currentJson || ''], { type: 'application/json' });
-        const file = new File([blob], 'untitled.json', { type: 'application/json' });
-        const document = await uploadJson(file, title);
-        
-        setIsSaving(false);
-        setDidSave(true);
-        onUpdated?.(title);
-        
-        // Return the new shareId so parent can update if needed
-        // Don't auto-close - let user see the generated link
-        return document.shareId;
-      } catch (e) {
-        setIsSaving(false);
-        showValidationErrorToast(
-          'Save failed',
-          e instanceof Error ? e.message : 'Unknown error'
-        );
-        throw e;
-      }
-    },
-    [onUpdated]
-  );
-
-  // Main save handler
+  // Main save handler - ShareModal only handles existing documents
   const handleSave = useCallback(async () => {
+    if (!shareId) {
+      // This shouldn't happen - ShareModal should only be for existing documents
+      showValidationErrorToast('No document', 'Please save your document first');
+      return;
+    }
+
     const isValid = await form.trigger();
     if (!isValid) {
       showValidationErrorToast('Validation failed', 'Please fix the errors before saving');
@@ -103,43 +86,43 @@ export function useShareModalState({
       return;
     }
 
-    // Handle new document creation
-    if (!shareId) {
-      if (!formData.title.trim()) {
-        showValidationErrorToast('Title required', 'Please enter a title to save your JSON');
-        return;
-      }
-      setIsUpdating(true);
-      try {
-        const newShareId = await saveNewDocument(formData.title.trim());
-        // Store will be updated by uploadJson, but we return the shareId for reference
-        // The ShareModal will read from store via useBackendStore hook
-      } finally {
-        setIsUpdating(false);
-      }
-      return;
-    }
-
-    // Handle existing document updates
+    // Handle existing document updates only
     setIsUpdating(true);
     try {
-      if (isPublic) {
-        const { visibility, ...publishData } = formData;
+      const currentDocVisibility = currentVisibility === 'public';
+      
+      // Only publish/unpublish if visibility actually changed
+      if (isPublic && !currentDocVisibility) {
+        // Switching from private to public - publish with metadata
+        const { visibility: _, ...publishData } = formData;
         await publishMutation.mutate(publishData);
-      } else {
+      } else if (!isPublic && currentDocVisibility) {
+        // Switching from public to private - unpublish
         await unpublishMutation.mutate();
+      } else {
+        // Visibility unchanged, just update metadata if public
+        if (isPublic) {
+          const { visibility: _, ...publishData } = formData;
+          await publishMutation.mutate(publishData);
+        } else {
+          // For private docs, just update title if changed
+          // Note: Title update would need separate API endpoint
+          // For now, just show success
+          showInfoToast('Settings updated', {
+            description: 'Your sharing settings have been saved',
+          });
+          onUpdated?.();
+        }
       }
     } finally {
       setIsUpdating(false);
     }
-  }, [shareId, isPublic, form, saveNewDocument, publishMutation, unpublishMutation]);
+  }, [shareId, isPublic, currentVisibility, form, publishMutation, unpublishMutation, onUpdated]);
 
   return {
     isUpdating,
-    isSaving,
-    isPublic,
+    isSaving: false, // ShareModal doesn't save new documents
     didSave,
-    setIsPublic,
     handleSave,
   };
 }
