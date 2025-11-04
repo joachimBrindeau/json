@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Script from 'next/script';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { JsonEditor } from '@/components/features/editor/JsonEditor';
 import { TabsNav } from '@/components/layout/TabsNav';
@@ -12,6 +13,7 @@ import Link from 'next/link';
 import { useBackendStore } from '@/lib/store/backend';
 import { useSearch } from '@/hooks/use-search';
 import { useViewerSettings } from '@/hooks/use-viewer-settings';
+import { STRUCTURED_DATA_TEMPLATES, renderJsonLd, DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import {
   FileJson,
   Zap,
@@ -230,11 +232,6 @@ const faqs = [
   },
 ];
 
-const colors = {
-  primary: 'blue',
-  secondary: 'green',
-} as const;
-
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('tree');
@@ -357,7 +354,7 @@ export default function HomePage() {
     name: 'JSON Viewer - Free Online JSON Formatter & Editor',
     description:
       'Professional JSON viewer, formatter, and editor with tree view, syntax highlighting, and team collaboration features. A comprehensive toolkit for developers.',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://jsonviewer.app',
+    url: DEFAULT_SEO_CONFIG.siteUrl,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Any',
     browserRequirements: 'Any modern web browser',
@@ -380,16 +377,29 @@ export default function HomePage() {
     ],
     creator: {
       '@type': 'Organization',
-      name: 'JSON Viewer Team',
+      name: DEFAULT_SEO_CONFIG.siteName,
     },
   };
 
+  const faqStructuredData = STRUCTURED_DATA_TEMPLATES.faqPage(faqs);
+
   return (
     <MainLayout>
-      <script
+      {/* Structured Data for SEO */}
+      <Script
+        id="webapp-structured-data"
         type="application/ld+json"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData, null, 2),
+          __html: renderJsonLd(structuredData),
+        }}
+      />
+      <Script
+        id="faq-structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: renderJsonLd(faqStructuredData),
         }}
       />
 

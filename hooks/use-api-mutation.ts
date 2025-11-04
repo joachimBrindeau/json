@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { showSuccessToast } from '@/lib/utils/toast-helpers';
 import type { ApiError } from '@/lib/api/client';
+import { apiClient } from '@/lib/api/client';
 
 interface UseApiMutationOptions<TData, TVariables> {
   onSuccess?: (data: TData, variables: TVariables) => void | Promise<void>;
@@ -137,8 +138,6 @@ export function useApiPost<TData, TVariables = unknown>(
   url: string,
   options?: UseApiMutationOptions<TData, TVariables>
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { apiClient } = require('@/lib/api/client');
   return useApiMutation<TData, TVariables>((data) => apiClient.post(url, data), options);
 }
 
@@ -146,8 +145,6 @@ export function useApiPut<TData, TVariables = unknown>(
   url: string | ((vars: TVariables) => string),
   options?: UseApiMutationOptions<TData, TVariables>
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { apiClient } = require('@/lib/api/client');
   return useApiMutation<TData, TVariables>((data) => {
     const endpoint = typeof url === 'function' ? url(data) : url;
     return apiClient.put(endpoint, data);
@@ -158,8 +155,6 @@ export function useApiDelete<TData, TVariables = string>(
   url: string | ((vars: TVariables) => string),
   options?: UseApiMutationOptions<TData, TVariables>
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { apiClient } = require('@/lib/api/client');
   return useApiMutation<TData, TVariables>((vars) => {
     const endpoint = typeof url === 'function' ? url(vars) : url;
     return apiClient.delete(endpoint);
@@ -170,8 +165,6 @@ export function useApiPatch<TData, TVariables = unknown>(
   url: string | ((vars: TVariables) => string),
   options?: UseApiMutationOptions<TData, TVariables>
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { apiClient } = require('@/lib/api/client');
   return useApiMutation<TData, TVariables>((data) => {
     const endpoint = typeof url === 'function' ? url(data) : url;
     return apiClient.patch(endpoint, data);

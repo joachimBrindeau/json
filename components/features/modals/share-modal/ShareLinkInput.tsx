@@ -50,13 +50,7 @@ export function ShareLinkInput({ shareUrl, isSaving, didSave, hasShareId }: Shar
       {isSaving && (
         <div className="flex items-center gap-2 text-sm text-blue-600">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Saving your JSON and generating share link...</span>
-        </div>
-      )}
-      {(didSave || hasShareId) && !isSaving && (
-        <div className="flex items-center gap-2 text-sm text-green-600" data-testid="share-success">
-          <CheckCircle2 className="h-4 w-4" />
-          <span>Your JSON is saved and ready to share!</span>
+          <span>Generating share link...</span>
         </div>
       )}
     </div>

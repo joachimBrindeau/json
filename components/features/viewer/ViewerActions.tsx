@@ -587,34 +587,18 @@ export function ViewerActions({
       <ShareModal
         open={shareModalOpen}
         onOpenChange={setShareModalOpen}
-        // Always treat editor-initiated share as a fresh save; publication is managed from Library
-        shareId={''}
+        // Pass empty string if no currentDocument - ShareModal will read from store after save
+        shareId={currentDocument?.shareId || ''}
         currentTitle={currentDocument?.title}
-        currentVisibility={shareType}
+        currentVisibility={currentDocument?.visibility || shareType}
         onUpdated={async (title?: string) => {
-          // If this is a save operation without current document, save the JSON now
-          if (!currentDocument && title) {
-            try {
-              setIsSaving(true);
-              try {
-                if (process.env.NODE_ENV === 'development') {
-                  console.log('[DEBUG] ViewerActions: calling saveJson(title)');
-                }
-              } catch {}
-              await saveJson(title);
-              // After saving, the store should be updated with new shareId and currentDocument
-              // Show success message but keep modal open to display the generated link
-              showSuccessToast('Saved', {
-                description: `JSON saved as "${title}" - link generated!`,
-              });
-            } catch (error) {
-              toastPatterns.error.save(error, 'JSON');
-            } finally {
-              setIsSaving(false);
-            }
-          } else {
-            // Regular share/update operation
+          // The modal handles saving internally via useShareModalState
+          // This callback is just for notifications
+          if (currentDocument) {
             toastPatterns.success.updated('JSON sharing settings');
+          } else {
+            // Document was just created - store is already updated by uploadJson
+            toastPatterns.success.saved('JSON');
           }
         }}
       />

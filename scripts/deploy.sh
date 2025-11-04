@@ -12,6 +12,10 @@ echo "=============================================="
 # Configuration
 SERVER="${SERVER:-klarc}"
 REMOTE_DIR="~/production/json-viewer-io"
+# GitHub repository owner and name
+GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-joachimBrindeau}"
+REPO_NAME="${REPO_NAME:-json}"
+IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}:latest"
 
 # Simple logging
 log() {
@@ -22,8 +26,8 @@ log() {
 deploy() {
     log "Starting deployment..."
 
-    # 1. Upload code
-    log "Uploading code..."
+    # 1. Upload only necessary files (docker-compose and scripts)
+    log "Uploading deployment files..."
     rsync -av --delete \
         --exclude .env \
         --exclude node_modules \
@@ -31,12 +35,19 @@ deploy() {
         --exclude .git \
         --exclude data \
         --exclude '*.log' \
+        --include 'config/docker-compose.server.yml' \
+        --include 'scripts/' \
+        --include 'scripts/*' \
+        --exclude '*' \
         . ${SERVER}:${REMOTE_DIR}/
 
     # 2. Deploy on server
     log "Deploying on server..."
-    ssh ${SERVER} << 'EOF'
+    ssh ${SERVER} << EOF
 cd ~/production/json-viewer-io
+
+# Set image name from environment
+IMAGE_NAME="${IMAGE_NAME}"
 
 # Create backup before deployment
 echo "💾 Creating backup of current deployment..."
@@ -120,9 +131,16 @@ echo "✅ Environment variables validated"
 	  docker rm -f $LEFTOVER || true
 	fi
 
-# Stop, build, start (Docker-only build with BuildKit)
-# Minimize downtime: build and recreate in-place without host Node
-DOCKER_BUILDKIT=1 docker compose -f config/docker-compose.server.yml up -d --build --remove-orphans
+# Update docker-compose with correct image name
+echo "📝 Updating docker-compose with image: ${IMAGE_NAME}"
+sed -i.bak "s|image:.*|image: ${IMAGE_NAME}|" config/docker-compose.server.yml
+
+# Pull latest image and deploy
+echo "📦 Pulling latest Docker image..."
+docker compose -f config/docker-compose.server.yml pull
+
+echo "🔄 Updating services..."
+docker compose -f config/docker-compose.server.yml up -d --remove-orphans
 
 # Wait for health
 for i in {1..30}; do
@@ -180,11 +198,8 @@ if ! ssh -o ConnectTimeout=10 ${SERVER} 'echo "OK"' >/dev/null 2>&1; then
     exit 1
 fi
 
-log "Testing local build..."
-if ! npm run build >/dev/null 2>&1; then
-    echo "ERROR: Local build failed"
-    exit 1
-fi
+# Display image name being used
+echo "📦 Using Docker image: ${IMAGE_NAME}"
 
 # Deploy
 deploy

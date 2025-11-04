@@ -42,6 +42,19 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/auth/password', () => ({
   hashPassword: vi.fn((password) => Promise.resolve(`hashed_${password}`)),
   verifyPassword: vi.fn((password, hash) => Promise.resolve(hash === `hashed_${password}`)),
+  validatePasswordStrength: vi.fn(() => ({ isValid: true, errors: [] })),
+}));
+
+vi.mock('@/lib/auth/email-verification', () => ({
+  sendVerificationEmail: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('@/lib/middleware/rate-limit', () => ({
+  signupLimiter: {
+    isAllowed: vi.fn(() => true),
+    getResetTime: vi.fn(() => null),
+    getRemainingAttempts: vi.fn(() => 5),
+  },
 }));
 
 import { prisma } from '@/lib/db';

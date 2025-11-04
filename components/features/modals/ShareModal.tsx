@@ -7,11 +7,11 @@ import { Globe, Lock, CheckCircle2, Loader2 } from 'lucide-react';
 import { SocialShareButtons } from '@/components/shared/SocialShareButtons';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { shareFormSchema } from '@/lib/validation/schemas';
+import { useBackendStore } from '@/lib/store/backend';
 import { VisibilityToggle } from './share-modal/VisibilityToggle';
 import { VisibilityInfo } from './share-modal/VisibilityInfo';
 import { ShareLinkInput } from './share-modal/ShareLinkInput';
 import { PublicMetadataSection } from './share-modal/PublicMetadataSection';
-import { ShareModalStatus } from './share-modal/ShareModalStatus';
 import { useShareModalState } from './share-modal/useShareModalState';
 import { useShareModalMetadata } from './share-modal/useShareModalMetadata';
 
@@ -27,11 +27,19 @@ interface ShareModalProps {
 export function ShareModal({
   open,
   onOpenChange,
-  shareId,
+  shareId: shareIdProp,
   currentTitle,
   currentVisibility = 'private',
   onUpdated,
 }: ShareModalProps) {
+  // Get shareId from store if prop is empty (for new documents)
+  const storeShareId = useBackendStore((s) => s.shareId);
+  const currentDocument = useBackendStore((s) => s.currentDocument);
+  
+  // Use prop shareId if provided, otherwise fall back to store
+  // After save, store will have the new shareId
+  const shareId = shareIdProp || storeShareId || currentDocument?.shareId || '';
+
   const form = useValidatedForm(shareFormSchema, {
     defaultValues: {
       title: currentTitle || '',
@@ -70,11 +78,12 @@ export function ShareModal({
   });
 
   // Sync public state with visibility prop and reset state when modal opens
+  // Also sync when shareId changes (e.g., after save)
   useEffect(() => {
     if (open) {
       setIsPublic(currentVisibility === 'public');
     }
-  }, [open, currentVisibility, setIsPublic]);
+  }, [open, currentVisibility, setIsPublic, shareId]);
 
   const shareUrl = useMemo(() => {
     if (!shareId) return 'Creating share link...';
@@ -91,18 +100,9 @@ export function ShareModal({
     <Lock className="h-4 w-4 text-muted-foreground" />
   );
 
-  const modalDescription = (
-    <>
-      {isPublic
-        ? 'Make your JSON discoverable in the public library'
-        : 'Share a private link to your JSON'}
-      {(didSave || (shareId && !isSaving)) && (
-        <span className="ml-2 text-green-700" data-testid="share-success-inline">
-          Your JSON is saved and ready to share!
-        </span>
-      )}
-    </>
-  );
+  const modalDescription = isPublic
+    ? 'Make your JSON discoverable in the public library'
+    : 'Share a private link to your JSON';
 
   // Get primary action label based on state
   const getPrimaryActionLabel = () => {
@@ -144,16 +144,14 @@ export function ShareModal({
         testId: 'share-cancel-button',
       }}
     >
-      <ShareModalStatus
-        didSave={didSave}
-        hasShareId={!!shareId}
-        isSaving={isSaving}
-        isLoadingMetadata={isLoadingMetadata}
-        isPublished={currentVisibility === 'public'}
-        shareId={shareId}
-      />
+      {isLoadingMetadata && (
+        <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading existing metadata...</span>
+        </div>
+      )}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <FormInput
           id="title"
           label="Title"
@@ -172,14 +170,14 @@ export function ShareModal({
           disabled={isLoadingMetadata}
         />
 
-        <VisibilityInfo isPublic={isPublic} />
-
         <ShareLinkInput
           shareUrl={shareUrl}
           isSaving={isSaving}
           didSave={didSave}
           hasShareId={!!shareId}
         />
+
+        <VisibilityInfo isPublic={isPublic} />
 
         {isPublic && (
           <PublicMetadataSection
@@ -189,7 +187,9 @@ export function ShareModal({
           />
         )}
 
-        <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
+        {(didSave || (shareId && !isSaving)) && (
+          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
+        )}
       </div>
     </BaseModal>
   );

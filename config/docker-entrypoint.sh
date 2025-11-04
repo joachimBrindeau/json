@@ -3,6 +3,35 @@ set -e
 
 echo "🚀 Starting JSON Viewer application..."
 
+# Validate required environment variables
+validate_env() {
+  echo "🔍 Validating environment variables..."
+  
+  required_vars="DATABASE_URL REDIS_URL NEXTAUTH_SECRET NEXTAUTH_URL"
+  missing_vars=""
+  
+  for var in $required_vars; do
+    eval value=\$$var
+    if [ -z "$value" ]; then
+      if [ -n "$missing_vars" ]; then
+        missing_vars="$missing_vars, $var"
+      else
+        missing_vars="$var"
+      fi
+    fi
+  done
+  
+  if [ -n "$missing_vars" ]; then
+    echo "❌ ERROR: Missing required environment variables: $missing_vars"
+    echo "Please ensure all required environment variables are set in your .env file"
+    exit 1
+  fi
+  
+  echo "✅ Environment variables validated"
+}
+
+validate_env
+
 # Run database migrations (best-effort, do not block app start)
 echo "🔄 Running database migrations (best-effort)..."
 
