@@ -15,7 +15,7 @@ function getYamlLib() {
   
   if (yamlLib === null) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       // Required for server-side YAML parsing in Node.js environment
       yamlLib = require('js-yaml');
     } catch {

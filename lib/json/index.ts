@@ -20,3 +20,6 @@ export * from './large-json-handler';
 
 // Streaming JSON Parser
 export * from './streaming-json-parser';
+
+// JSON Audit
+export * from './audit';

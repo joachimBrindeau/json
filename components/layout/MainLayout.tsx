@@ -3,6 +3,7 @@
 import { memo, useState, useEffect } from 'react';
 import { HeaderNav } from './HeaderNav';
 import { Sidebar } from './sidebar';
+import { ReviewsSnippet } from '@/components/shared/seo/ReviewsSnippet';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { usePathname } from 'next/navigation';
 import { PageTransition } from '@/components/animations';
@@ -46,6 +47,8 @@ function MainLayoutComponent({ children }: MainLayoutProps) {
           <ErrorBoundary>
             <PageTransition>{children}</PageTransition>
           </ErrorBoundary>
+          {/* Reviews Snippet - Visible on all pages for Google compliance */}
+          <ReviewsSnippet />
         </main>
       </div>
     </div>

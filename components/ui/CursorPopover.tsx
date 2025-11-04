@@ -228,6 +228,8 @@ export function CursorPopoverContent({
 
   // Handle click outside
   useEffect(() => {
+    if (!open) return;
+
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       if (
@@ -240,14 +242,16 @@ export function CursorPopoverContent({
       }
     }
 
-    if (open) {
-      // Small delay to prevent immediate close on trigger click
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 0);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [open, setOpen, triggerRef]);
+    // Small delay to prevent immediate close on trigger click
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open, setOpen]);
 
   // Handle escape key
   useEffect(() => {

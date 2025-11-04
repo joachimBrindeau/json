@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/db';
-import { generateSEOMetadata, PAGE_SEO, DEFAULT_SEO_CONFIG } from '@/lib/seo';
+import { generateSEOMetadata, PAGE_SEO, getCanonicalUrl } from '@/lib/seo';
+import { validateSEOSettings, validatePageKey } from '@/lib/seo/validation';
+import type { PageKey, SEOSettingsInput } from '@/lib/seo/types';
 import { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
@@ -38,9 +40,7 @@ export const getSEOSettingsFromDatabase = unstable_cache(
 /**
  * Generate metadata with database fallback to hardcoded values
  */
-export async function generateDatabaseSEOMetadata(
-  pageKey: keyof typeof PAGE_SEO
-): Promise<Metadata> {
+export async function generateDatabaseSEOMetadata(pageKey: PageKey): Promise<Metadata> {
   // Try to get from database first
   const dbSettings = await getSEOSettingsFromDatabase(pageKey);
 
@@ -48,9 +48,9 @@ export async function generateDatabaseSEOMetadata(
     return generateSEOMetadata({
       title: dbSettings.title,
       description: dbSettings.description,
-      keywords: dbSettings.keywords,
+      keywords: Array.isArray(dbSettings.keywords) ? [...dbSettings.keywords] : [],
       ogImage: dbSettings.ogImage || undefined,
-      canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/${pageKey === 'home' ? '' : pageKey}`,
+      canonicalUrl: getCanonicalUrl(pageKey === 'home' ? '' : pageKey),
     });
   }
 
@@ -59,42 +59,26 @@ export async function generateDatabaseSEOMetadata(
   return generateSEOMetadata({
     title: fallbackConfig.title,
     description: fallbackConfig.description,
-    keywords: fallbackConfig.keywords as any,
+    keywords: Array.isArray(fallbackConfig.keywords) ? [...fallbackConfig.keywords] : [],
     ogImage: fallbackConfig.ogImage,
-    canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/${pageKey === 'home' ? '' : pageKey}`,
-    noIndex: (fallbackConfig as any).noIndex,
+    canonicalUrl: getCanonicalUrl(pageKey === 'home' ? '' : pageKey),
+    noIndex: 'noIndex' in fallbackConfig ? fallbackConfig.noIndex : false,
   });
 }
 
 /**
  * Upsert SEO settings for a page
  */
-export async function upsertSEOSettings(
-  pageKey: string,
-  data: {
-    title: string;
-    description: string;
-    keywords: string[];
-    ogImage?: string;
-    isActive?: boolean;
-    priority?: number;
-  }
-) {
-  // Validate input data
-  if (!pageKey || !data.title || !data.description) {
-    throw new Error('Missing required SEO settings fields');
+export async function upsertSEOSettings(pageKey: string, data: SEOSettingsInput) {
+  // Validate page key
+  if (!validatePageKey(pageKey)) {
+    throw new Error('Invalid page key');
   }
 
-  if (data.title.length > 200) {
-    throw new Error('Title must be 200 characters or less');
-  }
-
-  if (data.description.length > 500) {
-    throw new Error('Description must be 500 characters or less');
-  }
-
-  if (data.keywords && data.keywords.length > 20) {
-    throw new Error('Maximum 20 keywords allowed');
+  // Validate input data using centralized validation
+  const validation = validateSEOSettings(data);
+  if (!validation.valid) {
+    throw new Error(validation.errors.join('; '));
   }
 
   try {
@@ -186,7 +170,12 @@ export async function seedSEOSettings() {
 
   try {
     for (const settings of defaultSettings) {
-      await upsertSEOSettings(settings.pageKey, settings as any);
+      await upsertSEOSettings(settings.pageKey, {
+        title: settings.title,
+        description: settings.description,
+        keywords: Array.isArray(settings.keywords) ? [...settings.keywords] : [],
+        ogImage: settings.ogImage,
+      });
     }
     logger.info({ count: defaultSettings.length }, 'SEO settings seeded successfully');
   } catch (error) {

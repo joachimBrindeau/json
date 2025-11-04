@@ -5,17 +5,28 @@
  * This file consolidates all process.env usage across the application.
  */
 
-// Load environment variables from .env file
-// This is required for Playwright tests and other contexts where Next.js doesn't auto-load .env
-import 'dotenv/config';
-
 import { z } from 'zod';
 
 // Check if we're on the server
 const isServer = typeof window === 'undefined';
 
+// Load environment variables from .env file only on server-side
+// This prevents dotenv from being bundled in client code
+if (isServer) {
+  try {
+     
+    require('dotenv/config');
+  } catch {
+    // dotenv not available or already loaded by Next.js
+  }
+}
+
 // Check if we're in test mode (treat Playwright builds like test)
-const isTest = process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT === '1';
+// Also check for Vitest environment variable (Vitest sets VITEST env var)
+const isTest =
+  process.env.NODE_ENV === 'test' ||
+  process.env.PLAYWRIGHT === '1' ||
+  process.env.VITEST !== undefined;
 
 // Shared environment schema for fields common to both server and client
 const sharedEnvSchema = z.object({
@@ -212,6 +223,22 @@ function validateEnv() {
     if (skipValidation) {
       // Return the raw env object without throwing; runtime container will validate with real env
       return envObject as any;
+    }
+
+    // In test mode, use more lenient validation with defaults
+    if (isTest) {
+      try {
+        const parsed = serverEnvSchema.parse(envObject);
+        return parsed;
+      } catch (error) {
+        // In test mode, if validation fails, return envObject with defaults applied
+        // This allows tests to run without full environment setup
+        if (error instanceof z.ZodError) {
+          console.warn('⚠️  Environment validation failed in test mode, using defaults');
+          return envObject as any;
+        }
+        throw error;
+      }
     }
 
     // On the server, validate all environment variables

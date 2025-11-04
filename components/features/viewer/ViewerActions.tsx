@@ -127,13 +127,6 @@ export function ViewerActions({
   }, [value, onChange, toast]);
 
   const handleSave = useCallback(async () => {
-    try {
-      console.log('[DEBUG] ViewerActions.handleSave: invoked', {
-        hasSession: !!session,
-        hasCurrentJson: !!currentJson,
-        hasCurrentDocument: !!currentDocument,
-      });
-    } catch {}
 
     if (!currentJson) {
       toastPatterns.validation.noJson('save');
@@ -169,9 +162,7 @@ export function ViewerActions({
       if (!target) return;
       const btn = target.closest('[data-testid="save-button"]');
       if (btn) {
-        try {
-          console.log('[DEBUG] ViewerActions: global save-button click captured');
-        } catch {}
+        // Global save button click handler
         // Prevent double triggering when our onClick also fires
         if (!isSaving) {
           void handleSave();
@@ -587,41 +578,25 @@ export function ViewerActions({
       <ShareModal
         open={shareModalOpen}
         onOpenChange={setShareModalOpen}
-        // Always treat editor-initiated share as a fresh save; publication is managed from Library
-        shareId={''}
+        // Pass empty string if no currentDocument - ShareModal will read from store after save
+        shareId={currentDocument?.shareId || ''}
         currentTitle={currentDocument?.title}
-        currentVisibility={shareType}
+        currentVisibility={currentDocument?.visibility || shareType}
         onUpdated={async (title?: string) => {
-          // If this is a save operation without current document, save the JSON now
-          if (!currentDocument && title) {
-            try {
-              setIsSaving(true);
-              try {
-                if (process.env.NODE_ENV === 'development') {
-                  console.log('[DEBUG] ViewerActions: calling saveJson(title)');
-                }
-              } catch {}
-              await saveJson(title);
-              // After saving, the store should be updated with new shareId and currentDocument
-              // Show success message but keep modal open to display the generated link
-              showSuccessToast('Saved', {
-                description: `JSON saved as "${title}" - link generated!`,
-              });
-            } catch (error) {
-              toastPatterns.error.save(error, 'JSON');
-            } finally {
-              setIsSaving(false);
-            }
-          } else {
-            // Regular share/update operation
+          // The modal handles saving internally via useShareModalState
+          // This callback is just for notifications
+          if (currentDocument) {
             toastPatterns.success.updated('JSON sharing settings');
+          } else {
+            // Document was just created - store is already updated by uploadJson
+            toastPatterns.success.saved('JSON');
           }
         }}
       />
 
       <EmbedModal
-        isOpen={embedModalOpen}
-        onClose={() => setEmbedModalOpen(false)}
+        open={embedModalOpen}
+        onOpenChange={setEmbedModalOpen}
         shareId={shareId || ''}
         jsonPreview={currentJson ? currentJson.slice(0, 500) : undefined}
       />

@@ -96,6 +96,11 @@ const colors = {
 let themesDefinedFlag = false;
 
 export function defineMonacoThemes(monaco: Monaco) {
+  // Guard: Ensure monaco is fully initialized
+  if (!monaco || !monaco.editor || typeof monaco.editor.defineTheme !== 'function') {
+    return;
+  }
+
   // Only define themes once to avoid errors
   if (themesDefinedFlag) {
     return;

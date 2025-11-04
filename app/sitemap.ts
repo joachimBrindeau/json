@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { unstable_cache } from 'next/cache';
 import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
@@ -9,14 +10,18 @@ function getPrisma() {
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const { prisma } = require('@/lib/db');
   return prisma;
 }
 
 const prisma = getPrisma();
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+/**
+ * Internal sitemap generation function
+ * This is wrapped in unstable_cache for performance
+ */
+async function generateSitemapInternal(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = DEFAULT_SEO_CONFIG.siteUrl;
 
   // Static pages
@@ -58,6 +63,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/convert`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/save`,
       lastModified: new Date(),
       changeFrequency: 'daily',
@@ -93,79 +104,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const queries = [];
-
-    // Get public documents for dynamic sitemap
-    queries.push(
-      prisma.jsonDocument.findMany({
-        where: {
-          visibility: 'public',
-          publishedAt: { not: null },
-        },
-        select: {
-          shareId: true,
-          slug: true,
-          updatedAt: true,
-          publishedAt: true,
-          title: true,
-        },
-        orderBy: {
-          publishedAt: 'desc',
-        },
-        take: 1000, // Limit for performance
-      })
-    );
-
-    // Get popular shared documents (viewer URLs)
-    queries.push(
-      prisma.jsonDocument.findMany({
-        where: {
-          OR: [{ visibility: 'public' }, { visibility: 'unlisted' }],
-        },
-        select: {
-          shareId: true,
-          updatedAt: true,
-          viewCount: true,
-        },
-        orderBy: {
-          viewCount: 'desc',
-        },
-        take: 500,
-      })
-    );
-
-    const [publicDocuments, sharedDocuments] = (await Promise.race([
-      Promise.all(queries),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 1000)),
-    ])) as [unknown[], unknown[]];
+    // Optimized single query for public documents
+    // Combine both queries into one for better performance
+    const publicDocuments = await prisma.jsonDocument.findMany({
+      where: {
+        visibility: 'public',
+        publishedAt: { not: null },
+      },
+      select: {
+        shareId: true,
+        slug: true,
+        updatedAt: true,
+        publishedAt: true,
+        viewCount: true,
+      },
+      orderBy: [
+        { publishedAt: 'desc' }, // Primary sort by publication date
+        { viewCount: 'desc' }, // Secondary sort by popularity
+      ],
+      take: 1500, // Increased limit, but still reasonable
+    });
 
     const dynamicPages: MetadataRoute.Sitemap = [];
 
     // Add public documents to library (/library/...)
+    // Use optimized single query result
     if (publicDocuments && Array.isArray(publicDocuments)) {
-      publicDocuments.forEach((doc: unknown) => {
-        const docTyped = doc as { shareId?: string; slug?: string; updatedAt: Date };
-        if (docTyped.shareId || docTyped.slug) {
+      publicDocuments.forEach((doc) => {
+        const docId = doc.slug || doc.shareId;
+        if (docId) {
           dynamicPages.push({
-            url: `${baseUrl}/library/${docTyped.slug || docTyped.shareId}`,
-            lastModified: docTyped.updatedAt,
+            url: `${baseUrl}/library/${docId}`,
+            lastModified: doc.updatedAt,
             changeFrequency: 'weekly' as const,
             priority: 0.8,
-          });
-        }
-      });
-    }
-
-    // Add shared documents to library (/library/...)
-    if (sharedDocuments && Array.isArray(sharedDocuments)) {
-      sharedDocuments.forEach((doc: unknown) => {
-        const docTyped = doc as { shareId?: string; updatedAt: Date };
-        if (docTyped.shareId) {
-          dynamicPages.push({
-            url: `${baseUrl}/library/${docTyped.shareId}`,
-            lastModified: docTyped.updatedAt,
-            changeFrequency: 'monthly' as const,
-            priority: 0.7,
           });
         }
       });
@@ -189,4 +161,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
     return staticPages; // Return static pages as fallback
   }
+}
+
+/**
+ * Cached sitemap generation with 1 hour revalidation
+ * This prevents expensive database queries on every request
+ */
+const generateCachedSitemap = unstable_cache(
+  generateSitemapInternal,
+  ['sitemap'],
+  {
+    revalidate: 3600, // Cache for 1 hour
+    tags: ['sitemap'],
+  }
+);
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return generateCachedSitemap();
 }

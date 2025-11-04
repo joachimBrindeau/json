@@ -242,8 +242,8 @@ const DocumentRow = memo(function DocumentRow({
       />
 
       <PublishModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
         shareId={document.shareId}
         currentTitle={document.title}
         onPublished={() => {
@@ -401,7 +401,10 @@ function LibraryPageComponent() {
           }
         }
       }
-    } catch {}
+    } catch (error) {
+      // Log error but continue with available documents
+      logger.warn({ err: error }, 'Error building effective documents list');
+    }
     return list;
   }, [documents, status, storeCurrentDocument, lastSavedMeta]);
 

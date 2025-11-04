@@ -469,6 +469,8 @@ export function formatDocumentForResponse(doc: any, includeContent = false) {
     tags: doc.tags || [],
     category: doc.category,
     author: doc.user,
+    userId: doc.userId, // Include userId for checking anonymous status
+    isAnonymous: doc.isAnonymous, // Include isAnonymous flag
     ...(includeContent && {
       content: doc.content,
       metadata: doc.metadata,

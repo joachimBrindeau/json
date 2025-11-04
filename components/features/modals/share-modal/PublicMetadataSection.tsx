@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Controller } from 'react-hook-form';
-import { Users, Eye } from 'lucide-react';
+import { Users, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FormTextarea, FormSelect } from '@/components/shared/FormFields';
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
@@ -16,19 +18,34 @@ interface PublicMetadataSectionProps {
 }
 
 export function PublicMetadataSection({ form, category, disabled }: PublicMetadataSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const title = form.watch('title');
   const description = form.watch('description');
   const tags = form.watch('tags') || [];
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-blue-50/50">
-      <div className="flex items-center gap-2 text-blue-900">
-        <Users className="h-4 w-4" />
-        <span className="font-medium">Public Library Details</span>
-      </div>
-      <p className="text-sm text-blue-700 -mt-2">
-        Help others discover your JSON by adding details below
-      </p>
+      <Button
+        type="button"
+        variant="ghost"
+        className="w-full justify-between p-0 h-auto hover:bg-transparent"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-2 text-blue-900">
+          <Users className="h-4 w-4" />
+          <span className="font-medium">Public Library Details (Optional)</span>
+        </div>
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4 text-blue-600" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-blue-600" />
+        )}
+      </Button>
+      {isExpanded && (
+        <>
+          <p className="text-sm text-blue-700">
+            Help others discover your JSON by adding details below
+          </p>
 
       <FormTextarea
         id="description"
@@ -99,6 +116,8 @@ export function PublicMetadataSection({ form, category, disabled }: PublicMetada
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

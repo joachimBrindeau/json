@@ -1,4 +1,5 @@
-import { generateSEOMetadata, DEFAULT_SEO_CONFIG } from '@/lib/seo';
+import { generateSEOMetadata } from '@/lib/seo';
+import { getCanonicalUrl } from '@/lib/seo/url-utils';
 
 export const metadata = generateSEOMetadata({
   title: 'JSON Converter - Convert JSON to YAML, XML, CSV, TOML & More',
@@ -19,6 +20,6 @@ export const metadata = generateSEOMetadata({
     'online converter',
     'free json tools',
   ],
-  ogImage: '/og-convert.png',
-  canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/convert`,
+  ogImage: '/og-convert.png.svg',
+  canonicalUrl: getCanonicalUrl('/convert'),
 });

@@ -192,15 +192,22 @@ function JsonEditorComponent() {
   // Validation decorations
   const updateValidationDecorations = useCallback(
     (editor: editor.IStandaloneCodeEditor, monaco: Monaco, content: string) => {
+      // Guard: Ensure monaco and editor are fully initialized
+      if (!monaco || !monaco.editor || !editor) {
+        return;
+      }
+
       const model = editor.getModel();
       if (!model) return;
 
       try {
         JSON.parse(content);
-        // Clear error markers
-        monaco.editor.setModelMarkers(model, 'json', []);
+        // Clear error markers - guard against undefined monaco.editor
+        if (monaco.editor && typeof monaco.editor.setModelMarkers === 'function') {
+          monaco.editor.setModelMarkers(model, 'json', []);
+        }
       } catch (error) {
-        if (content.trim() && error instanceof Error) {
+        if (content.trim() && error instanceof Error && monaco.editor && monaco.MarkerSeverity) {
           // Add error marker
           const lines = content.split('\n');
           let line = 1;
@@ -213,16 +220,19 @@ function JsonEditorComponent() {
             column = parseInt(match[2]);
           }
 
-          monaco.editor.setModelMarkers(model, 'json', [
-            {
-              severity: monaco.MarkerSeverity.Error,
-              message: error.message,
-              startLineNumber: line,
-              startColumn: column,
-              endLineNumber: line,
-              endColumn: column + 1,
-            },
-          ]);
+          // Guard: Ensure setModelMarkers is available
+          if (typeof monaco.editor.setModelMarkers === 'function') {
+            monaco.editor.setModelMarkers(model, 'json', [
+              {
+                severity: monaco.MarkerSeverity.Error,
+                message: error.message,
+                startLineNumber: line,
+                startColumn: column,
+                endLineNumber: line,
+                endColumn: column + 1,
+              },
+            ]);
+          }
         }
       }
     },

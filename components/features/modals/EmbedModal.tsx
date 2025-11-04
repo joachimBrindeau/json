@@ -30,8 +30,8 @@ import {
 import { useClipboard } from '@/hooks/use-clipboard';
 
 interface EmbedModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   shareId: string;
   jsonPreview?: string;
 }
@@ -40,7 +40,7 @@ type EmbedType = 'widget' | 'block' | 'card';
 type ViewMode = 'smart' | 'editor' | 'flow' | 'tree' | 'list' | 'tabs';
 type Theme = 'light' | 'dark' | 'auto';
 
-export function EmbedModal({ isOpen, onClose, shareId, jsonPreview }: EmbedModalProps) {
+export function EmbedModal({ open, onOpenChange, shareId, jsonPreview }: EmbedModalProps) {
   const [embedType, setEmbedType] = useState<EmbedType>('widget');
   const [viewMode, setViewMode] = useState<ViewMode>('smart');
   const [theme, setTheme] = useState<Theme>('auto');
@@ -229,9 +229,10 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
 
   return (
     <BaseModal
-      open={isOpen}
-      onOpenChange={onClose}
+      open={open}
+      onOpenChange={onOpenChange}
       title="Embed Your JSON"
+      description="Generate embed code to display your JSON on any website"
       icon={<Sparkles className="h-5 w-5 text-blue-500" />}
       className="max-w-5xl w-[95vw]"
       maxHeight="90vh"

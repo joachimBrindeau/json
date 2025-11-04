@@ -54,7 +54,7 @@ export function useShareModalState({
 
   // Save handler for new documents
   const saveNewDocument = useCallback(
-    async (title: string) => {
+    async (title: string): Promise<string> => {
       setIsSaving(true);
       showInfoToast('Saving JSON with title', {
         description: 'Creating your document and share link...',
@@ -67,11 +67,15 @@ export function useShareModalState({
 
         const blob = new Blob([currentJson || ''], { type: 'application/json' });
         const file = new File([blob], 'untitled.json', { type: 'application/json' });
-        await uploadJson(file, title);
+        const document = await uploadJson(file, title);
+        
         setIsSaving(false);
         setDidSave(true);
         onUpdated?.(title);
-        setTimeout(() => onClose(), 1500);
+        
+        // Return the new shareId so parent can update if needed
+        // Don't auto-close - let user see the generated link
+        return document.shareId;
       } catch (e) {
         setIsSaving(false);
         showValidationErrorToast(
@@ -81,7 +85,7 @@ export function useShareModalState({
         throw e;
       }
     },
-    [onUpdated, onClose]
+    [onUpdated]
   );
 
   // Main save handler
@@ -107,7 +111,9 @@ export function useShareModalState({
       }
       setIsUpdating(true);
       try {
-        await saveNewDocument(formData.title.trim());
+        const newShareId = await saveNewDocument(formData.title.trim());
+        // Store will be updated by uploadJson, but we return the shareId for reference
+        // The ShareModal will read from store via useBackendStore hook
       } finally {
         setIsUpdating(false);
       }

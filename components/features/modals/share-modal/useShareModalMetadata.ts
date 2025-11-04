@@ -24,7 +24,14 @@ export function useShareModalMetadata({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!open || !shareId) {
+    // Only reset form if modal is closed or shareId is empty
+    // Don't reset on every shareId change to avoid race conditions
+    if (!open) {
+      return;
+    }
+
+    if (!shareId) {
+      // New document - reset to defaults
       form.reset({
         title: currentTitle || '',
         description: '',
@@ -35,6 +42,7 @@ export function useShareModalMetadata({
       return;
     }
 
+    // Load metadata for existing document
     const loadMetadata = async () => {
       setIsLoading(true);
       try {
@@ -48,15 +56,21 @@ export function useShareModalMetadata({
           };
         }>(`/api/json/${shareId}`);
 
+        // Use document's actual visibility, not prop
+        const documentVisibility = (response.document.visibility === 'public' || response.document.visibility === 'private')
+          ? (response.document.visibility as 'public' | 'private')
+          : currentVisibility;
+
         form.reset({
           title: response.document.title || currentTitle || '',
           description: response.document.description || '',
           category: (response.document.category || '') as any,
           tags: response.document.tags || [],
-          visibility: currentVisibility,
+          visibility: documentVisibility,
         });
       } catch (error) {
         logger.debug({ err: error, shareId }, 'Could not load metadata');
+        // Fallback to defaults on error
         form.reset({
           title: currentTitle || '',
           description: '',

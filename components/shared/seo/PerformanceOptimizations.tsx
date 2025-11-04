@@ -154,36 +154,7 @@ export function PerformanceOptimizations() {
 }
 
 /**
- * Schema.org structured data for performance metrics
+ * PerformanceSchema removed - WebApplication structured data is handled
+ * in root layout (app/layout.tsx) to avoid duplicates per SEO audit CRIT-2.
+ * This component now focuses only on performance optimizations.
  */
-export function PerformanceSchema() {
-  const performanceData = {
-    '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: 'JSON Viewer',
-    applicationCategory: 'DeveloperApplication',
-    featureList: [
-      'Real-time JSON formatting',
-      'Instant validation',
-      'Zero-latency editing',
-      'Progressive loading for large files',
-      'Offline functionality',
-    ],
-    requirements: 'Modern web browser with JavaScript enabled',
-    softwareVersion: '2.0',
-    operatingSystem: 'Any',
-    processorRequirements: 'Any',
-    memoryRequirements: 'Minimal - runs efficiently on low-end devices',
-    storageRequirements: 'None - purely web-based application',
-  };
-
-  return (
-    <Script
-      id="performance-schema"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(performanceData),
-      }}
-    />
-  );
-}

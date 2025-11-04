@@ -194,6 +194,7 @@ export function useDocumentList<T extends { id: string; title?: string }>(
     filters.complexity,
     filters.minSize,
     filters.maxSize,
+    fetchDocuments,
   ]);
 
   // Load more when page changes
@@ -202,7 +203,7 @@ export function useDocumentList<T extends { id: string; title?: string }>(
     if (page > 1 && enabled && typeof window !== 'undefined') {
       fetchDocuments(false);
     }
-  }, [page, enabled]);
+  }, [page, enabled, fetchDocuments]);
 
   return {
     documents,
