@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { DynamicBreadcrumb } from '@/components/layout/DynamicBreadcrumb';
 import { UserMenu } from '@/components/layout/UserMenu';
+import { ReviewsBadge } from '@/components/shared/seo/ReviewsBadge';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/hooks/use-login-modal';
@@ -165,6 +166,11 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
 
           {/* Right side - Action buttons */}
           <div className="flex items-center gap-2">
+            {/* Reviews Badge - Visible on all pages for Google compliance */}
+            <div className="hidden sm:flex">
+              <ReviewsBadge />
+            </div>
+
             {isUploading && (
               <div className="hidden sm:flex items-center gap-2 text-sm text-blue-600">
                 <Loader2 className="h-4 w-4 animate-spin" />

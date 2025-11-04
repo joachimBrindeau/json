@@ -7,7 +7,8 @@ import { GlobalLoginModal } from '@/components/features/modals';
 import { WebVitals } from '@/components/shared/seo/WebVitals';
 import { VersionChecker } from '@/components/shared/VersionChecker';
 import { ServiceWorkerManager } from '@/components/shared/ServiceWorkerManager';
-import { generateWebApplicationStructuredData, renderJsonLd } from '@/lib/seo';
+import { Analytics } from '@/components/shared/seo/analytics';
+import { generateWebApplicationStructuredData, renderJsonLd, getApplicationReviews } from '@/lib/seo';
 import { generateDatabaseSEOMetadata } from '@/lib/seo/database';
 import { logger } from '@/lib/logger';
 import { OAuthErrorHandler } from '@/components/shared/OAuthErrorHandler';
@@ -43,7 +44,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = generateWebApplicationStructuredData();
+  // Include review data in WebApplication structured data
+  const reviewData = getApplicationReviews();
+  const jsonLd = generateWebApplicationStructuredData(undefined, reviewData);
 
   // Debug: Log the JSON-LD only in development
   if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
@@ -76,6 +79,7 @@ export default function RootLayout({
           <NavigationProvider>
             <OAuthErrorHandler />
             <WebVitals />
+            <Analytics />
             <VersionChecker />
             <ServiceWorkerManager />
             {children}

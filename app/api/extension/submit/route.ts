@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { analyzeJsonStream, createPerformanceMonitor } from '@/lib/json';
+import { analyzeJsonStream, createPerformanceMonitor, auditJson } from '@/lib/json';
 import { logger } from '@/lib/logger';
 import { success, badRequest, internalServerError } from '@/lib/api/responses';
 
@@ -41,6 +41,26 @@ export async function POST(request: NextRequest) {
       trackPaths: false,
       findLargeArrays: false,
     });
+
+    // Audit JSON for issues and recommendations (non-blocking)
+    let audit;
+    try {
+      audit = await auditJson(parsedContent as string | object);
+    } catch (auditError) {
+      // Audit failures shouldn't block the request
+      logger.warn({ err: auditError }, 'JSON audit failed, continuing without audit results');
+      audit = {
+        isValid: true,
+        issues: [],
+        stats: {
+          size: analysis.size,
+          nodeCount: analysis.nodeCount,
+          maxDepth: analysis.maxDepth,
+          complexity: analysis.complexity,
+        },
+        recommendations: [],
+      };
+    }
 
     // Create a temporary share without authentication
     // Set visibility to public and isAnonymous to true for easy access
@@ -88,6 +108,11 @@ export async function POST(request: NextRequest) {
           nodeCount: document.nodeCount,
           maxDepth: document.maxDepth,
           processingTime: performance.duration,
+        },
+        audit: {
+          isValid: audit.isValid,
+          issues: audit.issues,
+          recommendations: audit.recommendations,
         },
       },
       { headers: corsHeaders }

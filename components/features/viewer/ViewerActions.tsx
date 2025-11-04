@@ -127,13 +127,6 @@ export function ViewerActions({
   }, [value, onChange, toast]);
 
   const handleSave = useCallback(async () => {
-    try {
-      console.log('[DEBUG] ViewerActions.handleSave: invoked', {
-        hasSession: !!session,
-        hasCurrentJson: !!currentJson,
-        hasCurrentDocument: !!currentDocument,
-      });
-    } catch {}
 
     if (!currentJson) {
       toastPatterns.validation.noJson('save');
@@ -169,9 +162,7 @@ export function ViewerActions({
       if (!target) return;
       const btn = target.closest('[data-testid="save-button"]');
       if (btn) {
-        try {
-          console.log('[DEBUG] ViewerActions: global save-button click captured');
-        } catch {}
+        // Global save button click handler
         // Prevent double triggering when our onClick also fires
         if (!isSaving) {
           void handleSave();

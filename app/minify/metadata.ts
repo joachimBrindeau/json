@@ -1,4 +1,5 @@
-import { generateSEOMetadata, DEFAULT_SEO_CONFIG } from '@/lib/seo';
+import { generateSEOMetadata } from '@/lib/seo';
+import { getCanonicalUrl } from '@/lib/seo/url-utils';
 
 export const metadata = generateSEOMetadata({
   title: 'JSON Minifier - Compress and Minify JSON Online',
@@ -16,6 +17,6 @@ export const metadata = generateSEOMetadata({
     'free json tools',
     'json compression',
   ],
-  ogImage: '/og-minify.png',
-  canonicalUrl: `${DEFAULT_SEO_CONFIG.siteUrl}/minify`,
+  ogImage: '/og-minify.png.svg',
+  canonicalUrl: getCanonicalUrl('/minify'),
 });

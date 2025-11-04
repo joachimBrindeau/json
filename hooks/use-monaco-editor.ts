@@ -103,7 +103,7 @@ export function useMonacoEditor(
 
   // Update Monaco theme when dark mode changes
   useEffect(() => {
-    if (monacoRef.current && editorRef.current) {
+    if (monacoRef.current?.editor && typeof monacoRef.current.editor.setTheme === 'function' && editorRef.current) {
       const theme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
       monacoRef.current.editor.setTheme(theme);
     }
@@ -112,6 +112,13 @@ export function useMonacoEditor(
   // Handle editor mount
   const handleEditorDidMount: OnMount = useCallback(
     (editor, monaco) => {
+      // Guard: Ensure monaco is fully initialized
+      if (!monaco || !monaco.editor) {
+        setEditorError('Monaco editor not fully initialized');
+        logger.error({ monaco }, 'Monaco instance is undefined or incomplete');
+        return;
+      }
+
       editorRef.current = editor;
       monacoRef.current = monaco;
 
@@ -121,7 +128,10 @@ export function useMonacoEditor(
           (window as any).monacoEditorInstance = editor;
           // Also ensure a minimal global monaco API reference for test helpers
           const w = window as any;
-          w.monaco = w.monaco || monaco;
+          // Only set if monaco is fully initialized
+          if (monaco && monaco.editor) {
+            w.monaco = monaco;
+          }
 
           // Maintain a global registry of editors to facilitate E2E tests and utilities
           w.__monacoEditors = w.__monacoEditors || [];
@@ -136,21 +146,25 @@ export function useMonacoEditor(
             w.monaco.editor.getEditors = () => w.__monacoEditors;
           }
         }
-      } catch {}
+      } catch (error) {
+        logger.warn({ err: error }, 'Error exposing Monaco editor for tests');
+      }
 
       try {
-        // Define custom themes immediately
-        defineMonacoThemes(monaco);
+        // Define custom themes immediately - guard against undefined monaco
+        if (monaco && monaco.editor) {
+          defineMonacoThemes(monaco);
 
-        // Set the correct theme based on current dark mode state
-        const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-        monaco.editor.setTheme(currentTheme);
+          // Set the correct theme based on current dark mode state
+          const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
+          monaco.editor.setTheme(currentTheme);
 
-        // Use optimized options based on content size
-        const optimizedOptions = getOptimizedMonacoOptions(contentLength);
-        editor.updateOptions(optimizedOptions);
+          // Use optimized options based on content size
+          const optimizedOptions = getOptimizedMonacoOptions(contentLength);
+          editor.updateOptions(optimizedOptions);
 
-        setEditorError(null);
+          setEditorError(null);
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to initialize editor';
         setEditorError(errorMessage);

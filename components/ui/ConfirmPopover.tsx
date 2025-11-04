@@ -116,7 +116,10 @@ export function ConfirmPopover({
       await onConfirm();
       setOpen(false);
     } catch (error) {
-      console.error('Confirmation action failed:', error);
+      // Error is handled by the onConfirm callback - just prevent unhandled rejection
+      if (error instanceof Error) {
+        // Silently handle - caller should handle error display
+      }
     } finally {
       setIsLoading(false);
     }

@@ -77,13 +77,16 @@ export function ShareModal({
     onClose: () => onOpenChange(false),
   });
 
-  // Sync public state with visibility prop and reset state when modal opens
-  // Also sync when shareId changes (e.g., after save)
+  // Sync public state with visibility - check document from store if available
+  // This handles both initial load and updates after save
   useEffect(() => {
     if (open) {
-      setIsPublic(currentVisibility === 'public');
+      // If we have a currentDocument, use its visibility (most accurate)
+      // Otherwise fall back to currentVisibility prop
+      const actualVisibility = currentDocument?.visibility || currentVisibility;
+      setIsPublic(actualVisibility === 'public');
     }
-  }, [open, currentVisibility, setIsPublic, shareId]);
+  }, [open, currentVisibility, setIsPublic, currentDocument?.visibility]);
 
   const shareUrl = useMemo(() => {
     if (!shareId) return 'Creating share link...';
@@ -94,13 +97,17 @@ export function ShareModal({
   const shareDescription =
     'Interactive JSON Sea visualization - explore JSON data in a beautiful graph format';
 
-  const modalIcon = isPublic ? (
+  // Determine actual visibility for display (use document if available, else state)
+  const actualVisibility = currentDocument?.visibility || (isPublic ? 'public' : 'private');
+  const isActuallyPublic = actualVisibility === 'public';
+
+  const modalIcon = isActuallyPublic ? (
     <Globe className="h-5 w-5 text-blue-500" />
   ) : (
     <Lock className="h-4 w-4 text-muted-foreground" />
   );
 
-  const modalDescription = isPublic
+  const modalDescription = isActuallyPublic
     ? 'Make your JSON discoverable in the public library'
     : 'Share a private link to your JSON';
 
@@ -112,10 +119,11 @@ export function ShareModal({
     if (!shareId) {
       return 'Save & Generate Link';
     }
+    // Use actual visibility state, not just isPublic toggle
     if (isPublic) {
-      return 'Publish & Share';
+      return actualVisibility === 'public' ? 'Update Public Details' : 'Publish & Share';
     }
-    return 'Make Private & Share';
+    return actualVisibility === 'public' ? 'Make Private' : 'Update Private Details';
   };
 
   return (

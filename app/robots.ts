@@ -3,19 +3,25 @@ import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = DEFAULT_SEO_CONFIG.siteUrl;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   return {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: isProduction ? '/' : '/',
         disallow: [
           '/api/',
           '/admin/',
           '/superadmin/',
+          '/private/',
           '/library/draft-*',
-          '/*?*', // Query parameters
+          '/auth/',
           '/auth/*',
+          // Disallow query parameters for better indexing
+          '/?*',
+          // Disallow embedded views from being indexed separately
+          '/embed/*',
         ],
       },
       {
@@ -30,7 +36,20 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: 'CCBot',
         disallow: ['/'],
       },
+      {
+        userAgent: 'ChatGPT-User',
+        disallow: ['/'],
+      },
+      {
+        userAgent: 'anthropic-ai',
+        disallow: ['/'],
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    ...(isProduction
+      ? {}
+      : {
+          host: baseUrl,
+        }),
   };
 }

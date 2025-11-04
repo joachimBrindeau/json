@@ -401,7 +401,10 @@ function LibraryPageComponent() {
           }
         }
       }
-    } catch {}
+    } catch (error) {
+      // Log error but continue with available documents
+      logger.warn({ err: error }, 'Error building effective documents list');
+    }
     return list;
   }, [documents, status, storeCurrentDocument, lastSavedMeta]);
 

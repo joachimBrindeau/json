@@ -18,7 +18,7 @@ export function createAuthAdapter(): Adapter | undefined {
     return undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const { prisma } = require('@/lib/db');
   return PrismaAdapter(prisma) as Adapter;
 }
@@ -34,7 +34,7 @@ export function getPrismaClient() {
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const { prisma } = require('@/lib/db');
   return prisma;
 }

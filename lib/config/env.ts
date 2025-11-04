@@ -14,7 +14,7 @@ const isServer = typeof window === 'undefined';
 // This prevents dotenv from being bundled in client code
 if (isServer) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     require('dotenv/config');
   } catch {
     // dotenv not available or already loaded by Next.js
