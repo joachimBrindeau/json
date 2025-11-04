@@ -32,7 +32,7 @@ import {
   showInfoToast,
 } from '@/lib/utils/toast-helpers';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
-import { ShareModal } from '@/components/features/modals';
+import { ShareModal, SaveModal } from '@/components/features/modals';
 import { EmbedModal } from '@/components/features/modals/EmbedModal';
 import { ExportModal } from '@/components/features/modals/ExportModal';
 import { useSession } from 'next-auth/react';
@@ -71,6 +71,7 @@ export function ViewerActions({
   const deleteDocument = useBackendStore((s) => s.deleteDocument);
 
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [embedModalOpen, setEmbedModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -138,9 +139,9 @@ export function ViewerActions({
       return;
     }
 
-    // If it's a new document (no currentDocument) and has no title, open share modal for title input
+    // If it's a new document (no currentDocument), open save modal
     if (!currentDocument) {
-      setShareModalOpen(true);
+      setSaveModalOpen(true);
       return;
     }
 
@@ -539,21 +540,21 @@ export function ViewerActions({
 
             {/* Share options for mobile - use native share if available */}
             <DropdownMenuItem
-              onClick={() => handleShare('public')}
+              onClick={currentDocument ? () => handleShare('public') : handleQuickShare}
               disabled={!currentJson || isSharing}
               className="text-sm"
             >
               <Globe className="h-3 w-3 mr-2" />
-              Public link
+              {currentDocument ? 'Share settings' : 'Quick share'}
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              onClick={() => handleShare('private')}
+              onClick={currentDocument ? () => handleShare('private') : handleQuickShare}
               disabled={!currentJson || isSharing}
               className="text-sm"
             >
               <Lock className="h-3 w-3 mr-2" />
-              Private link
+              {currentDocument ? 'Share settings' : 'Quick share'}
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={handleEmbed} disabled={!currentJson} className="text-sm">
@@ -575,22 +576,25 @@ export function ViewerActions({
         </DropdownMenu>
       </div>
 
+      <SaveModal
+        open={saveModalOpen}
+        onOpenChange={setSaveModalOpen}
+        currentTitle={currentDocument?.title}
+        onSaved={async (title?: string) => {
+          toastPatterns.success.saved('JSON');
+          // After save, user can share via ShareModal if needed
+        }}
+      />
+
       <ShareModal
         open={shareModalOpen}
         onOpenChange={setShareModalOpen}
-        // Pass empty string if no currentDocument - ShareModal will read from store after save
+        // ShareModal only for existing documents
         shareId={currentDocument?.shareId || ''}
         currentTitle={currentDocument?.title}
         currentVisibility={currentDocument?.visibility || shareType}
         onUpdated={async (title?: string) => {
-          // The modal handles saving internally via useShareModalState
-          // This callback is just for notifications
-          if (currentDocument) {
-            toastPatterns.success.updated('JSON sharing settings');
-          } else {
-            // Document was just created - store is already updated by uploadJson
-            toastPatterns.success.saved('JSON');
-          }
+          toastPatterns.success.updated('JSON sharing settings');
         }}
       />
 
