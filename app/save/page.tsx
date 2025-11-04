@@ -242,8 +242,8 @@ const DocumentRow = memo(function DocumentRow({
       />
 
       <PublishModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
         shareId={document.shareId}
         currentTitle={document.title}
         onPublished={() => {

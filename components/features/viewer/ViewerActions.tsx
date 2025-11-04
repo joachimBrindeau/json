@@ -620,8 +620,8 @@ export function ViewerActions({
       />
 
       <EmbedModal
-        isOpen={embedModalOpen}
-        onClose={() => setEmbedModalOpen(false)}
+        open={embedModalOpen}
+        onOpenChange={setEmbedModalOpen}
         shareId={shareId || ''}
         jsonPreview={currentJson ? currentJson.slice(0, 500) : undefined}
       />

@@ -159,10 +159,14 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
         onClick: handleExport,
         loading: isExporting,
         disabled: isExporting || !dataToExport,
+        variant: 'default',
+        testId: 'export-download-button',
       }}
       secondaryAction={{
         label: 'Cancel',
         onClick: () => onOpenChange(false),
+        variant: 'outline',
+        testId: 'export-cancel-button',
       }}
     >
       <ErrorBoundary

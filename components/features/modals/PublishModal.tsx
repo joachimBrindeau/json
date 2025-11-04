@@ -26,16 +26,16 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { DOCUMENT_CATEGORIES } from '@/lib/constants/categories';
 
 interface PublishModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   shareId: string;
   currentTitle?: string;
   onPublished?: () => void;
 }
 
 export function PublishModal({
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
   shareId,
   currentTitle,
   onPublished,
@@ -71,7 +71,7 @@ export function PublishModal({
 
   // Load existing data when modal opens
   useEffect(() => {
-    if (isOpen && shareId) {
+    if (open && shareId) {
       setIsLoading(true);
       apiClient
         .get<{
@@ -103,7 +103,7 @@ export function PublishModal({
           setIsLoading(false);
         });
     }
-  }, [isOpen, shareId, currentTitle, reset]);
+  }, [open, shareId, currentTitle, reset]);
 
   // Submit handler with type-safe form data
   const onSubmit = async (data: PublishFormData) => {
@@ -111,7 +111,7 @@ export function PublishModal({
       await apiClient.post(`/api/json/${shareId}/publish`, data);
       toastPatterns.success.published('JSON');
       onPublished?.();
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       logger.error({ err: error, shareId, formData: data }, 'Failed to publish JSON to library');
       toastPatterns.error.publish(error);
@@ -120,8 +120,8 @@ export function PublishModal({
 
   return (
     <BaseModal
-      open={isOpen}
-      onOpenChange={onClose}
+      open={open}
+      onOpenChange={onOpenChange}
       title="Publish to Public Library"
       description="Share your JSON with the community and make it discoverable"
       icon={<Globe className="h-5 w-5 text-blue-500" />}
@@ -137,12 +137,12 @@ export function PublishModal({
         variant: 'default',
         testId: 'publish-button',
       }}
-      secondaryAction={{
-        label: 'Cancel',
-        onClick: onClose,
-        variant: 'outline',
-        testId: 'publish-cancel-button',
-      }}
+          secondaryAction={{
+            label: 'Cancel',
+            onClick: () => onOpenChange(false),
+            variant: 'outline',
+            testId: 'publish-cancel-button',
+          }}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
