@@ -178,7 +178,7 @@ jobs:
           echo "🔍 Verifying deployment..."
           
           # Run verification script on server
-          ssh ${SERVER_USER}@${SERVER_HOST} << ENDSSH
+          ssh ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
             cd ${DEPLOY_PATH}
             ./scripts/verify-deployment.sh ${APP_URL}
           ENDSSH
