@@ -404,13 +404,13 @@ export function handleDatabaseError(error: unknown): {
  * Verify document ownership with authentication
  * Returns the document if found and user has access, or an error response
  */
-export async function verifyDocumentOwnership(
+export async function verifyDocumentOwnership<T = { id: string; userId: string | null; version: number }>(
   id: string,
   userId: string,
-  selectFields?: any
+  selectFields?: Record<string, boolean>
 ): Promise<{
   success: boolean;
-  data?: any;
+  data?: T;
   error?: string;
   status?: number;
 }> {
@@ -432,7 +432,7 @@ export async function verifyDocumentOwnership(
       return { success: false, error: 'Document not found', status: 404 };
     }
 
-    if ((document as any).userId !== userId) {
+    if ((document as { userId: string | null }).userId !== userId) {
       return { success: false, error: 'Access denied - not document owner', status: 403 };
     }
 
@@ -451,7 +451,23 @@ export async function verifyDocumentOwnership(
 /**
  * Format document for API response
  */
-export function formatDocumentForResponse(doc: any, includeContent = false) {
+export function formatDocumentForResponse(
+  doc: {
+    id?: string;
+    shareId?: string;
+    title?: string | null;
+    description?: string | null;
+    size?: bigint | number;
+    nodeCount?: number | null;
+    maxDepth?: number | null;
+    complexity?: string | null;
+    visibility?: string | null;
+    content?: unknown;
+    createdAt?: Date | string;
+    updatedAt?: Date | string | null;
+  },
+  includeContent = false
+) {
   return {
     id: doc.shareId || doc.id,
     shareId: doc.shareId,

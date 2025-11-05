@@ -5,7 +5,8 @@
 
 // Lazy load js-yaml to avoid issues in client-side code
 // This module should only be used on the server-side
-let yamlLib: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let yamlLib: { load: (text: string) => unknown } | null | undefined = null;
 
 function getYamlLib() {
   // Always return null on client-side to prevent bundle issues
@@ -46,7 +47,7 @@ export function validateJson(json: string): boolean {
  * @param json - String to parse
  * @returns Parsed object or null
  */
-export function safeParseJson<T = any>(json: string): T | null {
+export function safeParseJson<T = unknown>(json: string): T | null {
   try {
     return JSON.parse(json) as T;
   } catch {
@@ -57,7 +58,7 @@ export function safeParseJson<T = any>(json: string): T | null {
 /**
  * Parses YAML safely, returning null on error
  */
-export function safeParseYaml<T = any>(text: string): T | null {
+export function safeParseYaml<T = unknown>(text: string): T | null {
   try {
     const lib = getYamlLib();
     if (!lib || !lib.load) {
@@ -75,7 +76,7 @@ export function safeParseYaml<T = any>(text: string): T | null {
  * Try JSON first; if it fails, try YAML (server-side only). Returns object or null.
  * On client-side, only attempts JSON parsing to avoid bundling js-yaml.
  */
-export function safeParseData<T = any>(text: string): T | null {
+export function safeParseData<T = unknown>(text: string): T | null {
   if (!text?.trim()) return null;
   const asJson = safeParseJson<T>(text);
   if (asJson !== null) return asJson;

@@ -470,7 +470,7 @@ export function ViewerActions({
           disabled={!(value?.trim() || currentJson)}
           title="Export Options"
           className="h-7 w-7"
-          data-testid="export-options"
+          data-testid="export-button"
         >
           <MoreHorizontal className="h-3 w-3" />
         </Button>

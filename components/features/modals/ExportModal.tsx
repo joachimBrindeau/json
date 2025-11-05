@@ -154,13 +154,14 @@ export function ExportModal({ open, onOpenChange, jsonData, filteredData }: Expo
       title="Export JSON Data"
       icon={<Download className="h-5 w-5" />}
       className="sm:max-w-[600px]"
+      testId="export-modal"
       primaryAction={{
         label: isExporting ? 'Exporting...' : 'Export & Download',
         onClick: handleExport,
         loading: isExporting,
         disabled: isExporting || !dataToExport,
         variant: 'default',
-        testId: 'export-download-button',
+        testId: 'confirm-export',
       }}
       secondaryAction={{
         label: 'Cancel',

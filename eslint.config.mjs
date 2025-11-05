@@ -29,10 +29,10 @@ const eslintConfig = [
       // Enforce absolute imports using @ alias
       "no-restricted-imports": "off",
       // Warn about console statements (should use logger)
-      "no-console": "off",
+      "no-console": "warn",
       // Downgrade TypeScript strict rules to warnings
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
       "react-hooks/exhaustive-deps": "off",
       "@next/next/no-img-element": "off",
       // Allow require() in server-side utility files for Node.js compatibility

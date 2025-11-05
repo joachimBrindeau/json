@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { success, badRequest, unauthorized, internalServerError, error as errorResponse } from '@/lib/api/responses';
+import { success, badRequest, internalServerError, error as errorResponse } from '@/lib/api/responses';
 import { verifyEmailToken, markEmailAsVerified } from '@/lib/auth/email-verification';
 import { normalizeEmail } from '@/lib/utils/email';
 import { emailVerificationLimiter } from '@/lib/middleware/rate-limit';

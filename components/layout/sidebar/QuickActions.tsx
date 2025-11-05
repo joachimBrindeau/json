@@ -31,6 +31,7 @@ function QuickActionsComponent({ onNewDraft, onUploadClick }: QuickActionsProps)
       </div>
 
       <Button
+        data-testid="upload-button"
         variant="outline"
         size="sm"
         className="w-full justify-start gap-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm group"

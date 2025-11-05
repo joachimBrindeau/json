@@ -59,6 +59,9 @@ export interface BaseModalProps {
   // Event handlers
   onClose?: () => void;
   onAfterOpen?: () => void;
+
+  // Testing hooks
+  testId?: string;
 }
 
 export interface BaseModalRef {
@@ -114,6 +117,9 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
       // Events
       onClose,
       onAfterOpen,
+
+      // Testing
+      testId,
     },
     ref
   ) => {
@@ -169,12 +175,13 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
         <DialogContent
           ref={contentRef}
           className={`
-          ${variantStyles[variant]} 
+          ${variantStyles[variant]}
           ${className}
         `.trim()}
           onEscapeKeyDown={closeOnEscape ? undefined : (e) => e.preventDefault()}
           onPointerDownOutside={closeOnOverlayClick ? undefined : (e) => e.preventDefault()}
           aria-describedby={description ? 'modal-description' : undefined}
+          data-testid={testId}
         >
           {/* Header */}
           <DialogHeader className="space-y-2">

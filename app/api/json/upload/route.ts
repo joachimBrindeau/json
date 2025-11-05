@@ -90,65 +90,71 @@ export const POST = withOptionalAuth(async (request, session) => {
   const chunks = analysis.size > 1024 * 1024 ? chunkJsonData(parsedContent as any) : [];
 
   // Save to database with transaction - Prisma errors automatically handled by middleware
-  const result = await prisma.$transaction(async (tx) => {
-    // Create main document
-    const document = await tx.jsonDocument.create({
-      data: {
-        title: title || file.name,
-        content: parsedContent as any,
-        size: BigInt(analysis.size),
-        nodeCount: analysis.nodeCount,
-        maxDepth: analysis.maxDepth,
-        complexity: analysis.complexity,
-        checksum: analysis.checksum,
-        userId: userId,
-        isAnonymous: !userId,
-        visibility: userId ? visibility : 'private', // Use provided visibility for authenticated users
-        metadata: {
-          originalFilename: file.name,
-          uploadedAt: new Date().toISOString(),
-          largeArrays: analysis.largeArrays,
-          deepObjects: analysis.deepObjects,
-          paths: analysis.paths.slice(0, 1000), // Limit paths for performance
+  const txTimeout = Number(process.env.PRISMA_TX_TIMEOUT_MS || 30_000);
+  const txMaxWait = Number(process.env.PRISMA_TX_MAX_WAIT_MS || 10_000);
+
+  const result = await prisma.$transaction(
+    async (tx) => {
+      // Create main document
+      const document = await tx.jsonDocument.create({
+        data: {
+          title: title || file.name,
+          content: parsedContent as any,
+          size: BigInt(analysis.size),
+          nodeCount: analysis.nodeCount,
+          maxDepth: analysis.maxDepth,
+          complexity: analysis.complexity,
+          checksum: analysis.checksum,
+          userId: userId,
+          isAnonymous: !userId,
+          visibility: userId ? visibility : 'private', // Use provided visibility for authenticated users
+          metadata: {
+            originalFilename: file.name,
+            uploadedAt: new Date().toISOString(),
+            largeArrays: analysis.largeArrays,
+            deepObjects: analysis.deepObjects,
+            paths: analysis.paths.slice(0, 1000), // Limit paths for performance
+          },
         },
-      },
-    });
-
-    // Save chunks if needed
-    if (chunks.length > 0) {
-      await tx.jsonChunk.createMany({
-        data: chunks.map((chunk) => ({
-          documentId: document.id,
-          chunkIndex: chunk.index,
-          content: chunk.content as any,
-          size: chunk.size,
-          path: chunk.path,
-          checksum: chunk.checksum,
-        })),
       });
-    }
 
-    // Create analytics entry
-    const performance = monitor.end();
-    await tx.jsonAnalytics.create({
-      data: {
-        documentId: document.id,
-        parseTime: Math.round(performance.duration),
-        memoryUsage: performance.memoryUsage ? BigInt(performance.memoryUsage) : null,
-        userAgent: request.headers.get('user-agent') || undefined,
-        ipHash:
-          request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-            ? createHash('sha256')
-                .update(
-                  request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || ''
-                )
-                .digest('hex')
-            : undefined,
-      },
-    });
+      // Save chunks if needed
+      if (chunks.length > 0) {
+        await tx.jsonChunk.createMany({
+          data: chunks.map((chunk) => ({
+            documentId: document.id,
+            chunkIndex: chunk.index,
+            content: chunk.content as any,
+            size: chunk.size,
+            path: chunk.path,
+            checksum: chunk.checksum,
+          })),
+        });
+      }
 
-    return document;
-  });
+      // Create analytics entry
+      const performance = monitor.end();
+      await tx.jsonAnalytics.create({
+        data: {
+          documentId: document.id,
+          parseTime: Math.round(performance.duration),
+          memoryUsage: performance.memoryUsage ? BigInt(performance.memoryUsage) : null,
+          userAgent: request.headers.get('user-agent') || undefined,
+          ipHash:
+            request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+              ? createHash('sha256')
+                  .update(
+                    request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || ''
+                  )
+                  .digest('hex')
+              : undefined,
+        },
+      });
+
+      return document;
+    },
+    { timeout: txTimeout, maxWait: txMaxWait }
+  );
 
   // Post-save log
   try {

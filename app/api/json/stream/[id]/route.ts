@@ -4,12 +4,14 @@ import { createJsonStream, JsonCache, createPerformanceMonitor } from '@/lib/jso
 import { createHash } from 'crypto';
 import { logger } from '@/lib/logger';
 import { notFound, internalServerError } from '@/lib/api/responses';
-import { withAuth } from '@/lib/api/utils';
+import { withOptionalAuth } from '@/lib/api/utils';
+
+import { Readable } from 'stream';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-export const GET = withAuth(
+export const GET = withOptionalAuth(
   async (request, session, { params }: { params: Promise<{ id: string }> }) => {
     const monitor = createPerformanceMonitor();
     const { id } = await params;
@@ -19,7 +21,8 @@ export const GET = withAuth(
       const cachedData = await JsonCache.get(id);
       if (cachedData) {
         const stream = createJsonStream(cachedData);
-        return new Response(stream as unknown as ReadableStream, {
+        const webStream = Readable.toWeb(stream as any) as unknown as ReadableStream;
+        return new Response(webStream, {
           headers: {
             'Content-Type': 'application/json',
             'Transfer-Encoding': 'chunked',
@@ -39,28 +42,32 @@ export const GET = withAuth(
       const whereCondition = isUUID(id)
         ? {
             OR: [{ id }, { shareId: id }],
-            // CRITICAL SECURITY: Only allow access to public documents OR private documents owned by the user
+            // Allow access to:
+            // - Public documents
+            // - Private documents owned by the authenticated user
+            // - Anonymous documents accessed via their id/shareId
             AND: [
               {
                 OR: [
                   { visibility: 'public' },
-                  {
-                    AND: [{ visibility: 'private' }, { userId: session?.user?.id || null }],
-                  },
+                  { AND: [{ visibility: 'private' }, { userId: session?.user?.id || null }] },
+                  { isAnonymous: true },
                 ],
               },
             ],
           }
         : {
             shareId: id,
-            // CRITICAL SECURITY: Only allow access to public documents OR private documents owned by the user
+            // Allow access to:
+            // - Public documents
+            // - Private documents owned by the authenticated user
+            // - Anonymous documents accessed via their share link
             AND: [
               {
                 OR: [
                   { visibility: 'public' },
-                  {
-                    AND: [{ visibility: 'private' }, { userId: session?.user?.id || null }],
-                  },
+                  { AND: [{ visibility: 'private' }, { userId: session?.user?.id || null }] },
+                  { isAnonymous: true },
                 ],
               },
             ],
@@ -182,7 +189,8 @@ export const GET = withAuth(
         headers['X-Share-ID'] = document.shareId;
       }
 
-      return new Response(stream as unknown as ReadableStream, { headers });
+      const webStream = Readable.toWeb(stream as any) as unknown as ReadableStream;
+      return new Response(webStream, { headers });
     } catch (error) {
       logger.error(
         { err: error, documentId: id, userId: session?.user?.id },

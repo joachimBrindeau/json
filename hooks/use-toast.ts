@@ -159,6 +159,23 @@ function toast({ ...props }: Toast) {
     },
   });
 
+  // Test aid: expose last toast to window for E2E fallback checks (dev/test only)
+  try {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      const last = {
+        title: (props as any).title ?? '',
+        description: (props as any).description ?? '',
+        variant: (props as any).variant ?? 'default',
+      };
+      (window as any).__lastToast = last;
+      const hist = Array.isArray((window as any).__toastHistory)
+        ? (window as any).__toastHistory
+        : [];
+      hist.unshift(last);
+      (window as any).__toastHistory = hist.slice(0, 5);
+    }
+  } catch {}
+
   return {
     id: id,
     dismiss,

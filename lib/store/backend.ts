@@ -8,6 +8,7 @@ import { apiClient, api } from '@/lib/api/client';
 import { createCommonViewerSetters } from './shared-setters';
 import type { JsonValue } from '@/lib/types/json';
 import { config } from '@/lib/config';
+import type { UploadResponse, Document } from '@/lib/api/types';
 
 interface JsonDocument {
   id: string;
@@ -417,7 +418,7 @@ export const useBackendStore = create<BackendAppState>()(
           try {
             console.log('[DEBUG] uploadJson: POST /api/json/upload with title', title || '(none)');
           } catch {}
-          const rawResponse = await apiClient.post<any>('/api/json/upload', formData);
+          const rawResponse = await apiClient.post<UploadResponse | { data: UploadResponse }>('/api/json/upload', formData);
           // API may return either { document: ... } or { success: true, data: { document: ... } }
           const result =
             rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
@@ -484,50 +485,27 @@ export const useBackendStore = create<BackendAppState>()(
 
       loadJson: async (id: string) => {
         try {
-          // First, try to get metadata
-          const metaResponse = await api.head(`api/json/stream/${id}`);
+          // Prefer full-content endpoint to avoid client-side reconstruction of stream
+          const result = await apiClient.get<{ success: boolean; document: Document } | { data: { document: Document } }>(
+            `/api/json/${id}/content`,
+            { skipErrorToast: true, errorContext: 'Load JSON content' }
+          );
 
-          if (!metaResponse.ok) {
+          const doc = ('document' in result ? result.document : result.data?.document) ?? null;
+          if (!doc) {
             return false;
           }
-
-          // Get the streaming data
-          const response = await api.get(`api/json/stream/${id}`);
-
-          if (!response.ok) {
-            return false;
-          }
-
-          // For now, read the entire response
-          // In a real implementation, you'd want to stream this
-          const reader = response.body?.getReader();
-          let chunks = '';
-
-          if (reader) {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              chunks += new TextDecoder().decode(value);
-            }
-          }
-
-          // Parse the streamed data
-          const lines = chunks.trim().split('\n');
-          const data = lines.map((line) => JSON.parse(line));
-
-          // Reconstruct the JSON from chunks
-          const reconstructed = data.length === 1 ? data[0].data : data;
 
           const document: JsonDocument = {
-            id: metaResponse.headers.get('X-Document-ID') || id,
-            shareId: metaResponse.headers.get('X-Share-ID') || id,
-            title: metaResponse.headers.get('X-Title') || 'Untitled',
-            content: reconstructed,
-            size: parseInt(metaResponse.headers.get('X-Size') || '0'),
-            nodeCount: parseInt(metaResponse.headers.get('X-Node-Count') || '0'),
-            maxDepth: parseInt(metaResponse.headers.get('X-Max-Depth') || '0'),
-            complexity: metaResponse.headers.get('X-Complexity') || 'Low',
-            createdAt: new Date(metaResponse.headers.get('X-Created-At') || Date.now()),
+            id: doc.id ?? id,
+            shareId: doc.shareId ?? id,
+            title: doc.title || 'Untitled',
+            content: doc.content,
+            size: Number(doc.size || 0),
+            nodeCount: Number(doc.nodeCount || 0),
+            maxDepth: Number(doc.maxDepth || 0),
+            complexity: doc.complexity || 'Low',
+            createdAt: new Date(doc.createdAt || Date.now()),
           };
 
           set({
@@ -539,8 +517,53 @@ export const useBackendStore = create<BackendAppState>()(
 
           return true;
         } catch (error) {
-          logger.error({ err: error, id }, 'Failed to load JSON');
-          return false;
+          // Fallback to streaming endpoint for backward compatibility
+          try {
+            const metaResponse = await api.head(`/api/json/stream/${id}`);
+            if (!metaResponse.ok) return false;
+
+            const response = await api.get(`/api/json/stream/${id}`);
+            if (!response.ok) return false;
+
+            const reader = response.body?.getReader();
+            let chunks = '';
+            if (reader) {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks += new TextDecoder().decode(value);
+              }
+            }
+
+            const trimmed = chunks.trim();
+            const lines = trimmed ? trimmed.split('\n') : [];
+            const data = lines.map((line) => JSON.parse(line));
+            const reconstructed = data.length === 1 ? data[0].data : data;
+
+            const document: JsonDocument = {
+              id: metaResponse.headers.get('X-Document-ID') || id,
+              shareId: metaResponse.headers.get('X-Share-ID') || id,
+              title: metaResponse.headers.get('X-Title') || 'Untitled',
+              content: reconstructed,
+              size: parseInt(metaResponse.headers.get('X-Size') || '0'),
+              nodeCount: parseInt(metaResponse.headers.get('X-Node-Count') || '0'),
+              maxDepth: parseInt(metaResponse.headers.get('X-Max-Depth') || '0'),
+              complexity: metaResponse.headers.get('X-Complexity') || 'Low',
+              createdAt: new Date(metaResponse.headers.get('X-Created-At') || Date.now()),
+            };
+
+            set({
+              currentDocument: document,
+              currentJson: JSON.stringify(document.content, null, 2),
+              shareId: document.shareId,
+              isDirty: false,
+            });
+
+            return true;
+          } catch (e) {
+            logger.error({ err: error, id }, 'Failed to load JSON');
+            return false;
+          }
         }
       },
 
@@ -757,7 +780,7 @@ export const useBackendStore = create<BackendAppState>()(
         }
       },
 
-      ...createCommonViewerSetters<BackendAppState>(set as any, get as any),
+      ...createCommonViewerSetters<BackendAppState>(set, get),
 
       setLibraryUpdateCallback: (callback: () => void) => {
         // Only update if the callback is actually different to prevent unnecessary re-renders

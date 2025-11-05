@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireSuperAdmin } from '@/lib/auth/admin';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';

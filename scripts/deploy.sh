@@ -45,13 +45,13 @@ deploy() {
 
     # 2. Deploy on server
     log "Deploying on server..."
-    ssh ${SERVER} << 'EOF'
+    ssh ${SERVER} << EOF
 cd ~/production/json-viewer-io
 
-# Set image name from environment
+# Set image name from environment (passed from deploy script)
 IMAGE_NAME="${IMAGE_NAME}"
 # Ensure HOME is set in non-interactive shells (resolve on remote)
-HOME="${HOME:-$HOME}"
+HOME="\${HOME:-$HOME}"
 
 # Create backup before deployment
 echo "💾 Creating backup of current deployment..."
@@ -137,6 +137,9 @@ echo "✅ Environment variables validated"
 
 # Inform the target image for app only (postgres/redis images are unchanged)
 echo "📝 Using app image: ${IMAGE_NAME}"
+
+# Export IMAGE_NAME so it's available in the shell
+export IMAGE_NAME="${IMAGE_NAME}"
 
 # Pull latest app image and deploy (without rewriting compose file)
 echo "📦 Pulling latest Docker image..."

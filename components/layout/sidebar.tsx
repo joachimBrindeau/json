@@ -200,6 +200,7 @@ function SidebarComponent({
         />
         <input
           id="sidebar-file-upload"
+          data-testid="file-input"
           type="file"
           accept=".json,.txt"
           className="hidden"

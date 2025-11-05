@@ -219,12 +219,16 @@ function validateEnv() {
     // On the client, only validate public environment variables
     if (!isServer) {
       const parsed = clientEnvSchema.parse(envObject);
-      return parsed as any; // Type assertion for compatibility
+      // Type assertion needed because client schema is subset of full schema
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return parsed as any;
     }
 
     // Allow skipping strict validation during image builds or Next.js build phase where .env is not available
     if (skipValidation || isBuildPhase) {
       // Return the raw env object without throwing; runtime container will validate with real env
+      // Type assertion needed because we're bypassing validation in build phase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return envObject as any;
     }
 
@@ -238,6 +242,8 @@ function validateEnv() {
         // This allows tests to run without full environment setup
         if (error instanceof z.ZodError) {
           console.warn('⚠️  Environment validation failed in test mode, using defaults');
+          // Type assertion needed for test mode fallback when validation fails
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return envObject as any;
         }
         throw error;

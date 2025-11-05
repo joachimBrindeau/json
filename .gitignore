@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+**/coverage
+/.nyc_output
+**/.nyc_output
 
 # next.js
 /.next/
@@ -48,11 +51,29 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+**/*.tsbuildinfo
 next-env.d.ts
 
 # test artifacts
 /test-results/
 /playwright-report/
+**/test-results/
+**/playwright-report/
+**/playwright/.cache/
+# Screenshots and videos from tests
+screenshots/
+videos/
+traces/
+# Test databases
+test-db/
+*.test.db
+*.test.sqlite
+# Temporary test files
+*.temp
+*.tmp
+# Test logs
+*.test.log
+test-*.log
 
 /lib/generated/prisma
 *.bak
@@ -70,6 +91,9 @@ Thumbs.db
 *.log
 /.augment-logs/
 
+# debug screenshots
+debug-*.png
+
 # caches / temp
 .turbo/
 .cache/
@@ -79,6 +103,11 @@ temp/
 
 # distribution builds
 /dist/
+**/dist/
+/build/
+**/build/
+/out/
+**/out/
 
 # additional test artifacts
 /tests/downloads/

@@ -88,9 +88,9 @@ export function withAuth<T extends any[]>(
  * Allows anonymous access but provides session if available
  */
 export function withOptionalAuth<T extends any[]>(
-  handler: (req: NextRequest, session: Session | null, ...args: T) => Promise<NextResponse>
+  handler: (req: NextRequest, session: Session | null, ...args: T) => Promise<NextResponse | Response>
 ) {
-  return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
+  return async (req: NextRequest, ...args: T): Promise<NextResponse | Response> => {
     try {
       const session = await getServerSession(authOptions);
       return await handler(req, session as Session | null, ...args);

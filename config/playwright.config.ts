@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
 // Use a single source of truth for test server URL
-const SERVER_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3456';
+// Prefer 127.0.0.1 to avoid IPv6 (::1) DNS resolution issues on some systems
+const SERVER_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3456';
 const baseURL = SERVER_URL;
 
 /**
@@ -42,6 +43,9 @@ export default defineConfig({
 
     /* Record video on failure */
     video: 'retain-on-failure',
+
+    /* Ensure download reliability across browsers */
+    acceptDownloads: true,
 
     /* Global timeout for each action */
     actionTimeout: 15_000,
@@ -127,7 +131,7 @@ export default defineConfig({
 
   /* Start a dev server for tests to avoid a Next.js 15 build bug on /404 */
   webServer: {
-    command: "bash -lc 'next dev -p 3456'",
+    command: 'npm run dev:next',
     url: SERVER_URL,
     reuseExistingServer: true,
     timeout: 180_000,

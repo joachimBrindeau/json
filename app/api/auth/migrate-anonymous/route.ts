@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { success, badRequest } from '@/lib/api/responses';
 import { withAuth } from '@/lib/api/utils';
-import { withValidationHandler } from '@/lib/api/middleware';
 
 /**
  * Schema for anonymous data migration request

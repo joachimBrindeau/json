@@ -46,7 +46,11 @@ export default function LibraryViewerPage() {
       try {
         const success = await loadJson(id);
         if (success) {
-          // Will be updated via the store
+          // Prefer immediate state read to avoid flicker between loading and error
+          const state = (useBackendStore as any).getState?.();
+          if (state?.shareId === id && state?.currentJson) {
+            setJsonContent(state.currentJson);
+          }
           setCreatedAt(new Date());
         } else {
           toast({
@@ -108,7 +112,9 @@ export default function LibraryViewerPage() {
             content={jsonContent}
             maxNodes={50000}
             virtualizeThreshold={1000}
-            initialViewMode={activeTab as 'tree' | 'list' | 'flow'}
+            // Control view mode via TabsNav to ensure tab switches reflect in Viewer
+            viewMode={activeTab as 'tree' | 'list' | 'flow'}
+            onViewModeChange={(m) => setActiveTab(m)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
           />
