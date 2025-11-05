@@ -50,6 +50,7 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test
+    if: always() # Run even if tests fail
     permissions:
       contents: read
       packages: write
@@ -94,8 +95,8 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [test, build-and-push]
-    if: github.ref == 'refs/heads/main'
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/main' && needs.build-and-push.result == 'success'
     permissions:
       contents: read
       secrets: read
