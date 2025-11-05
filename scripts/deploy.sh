@@ -12,10 +12,12 @@ echo "=============================================="
 # Configuration
 SERVER="${SERVER:-klarc}"
 REMOTE_DIR="~/production/json-viewer-io"
-# GitHub repository owner and name
-GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-joachimBrindeau}"
+# GitHub repository owner and name (normalized to lowercase for GHCR)
+GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-joachimbrindeau}"
 REPO_NAME="${REPO_NAME:-json}"
-IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY_OWNER}/${REPO_NAME}:latest"
+OWNER_LC=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+REPO_LC=$(echo "${REPO_NAME}" | tr '[:upper:]' '[:lower:]')
+IMAGE_NAME="ghcr.io/${OWNER_LC}/${REPO_LC}:latest"
 
 # Simple logging
 log() {
