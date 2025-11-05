@@ -45,11 +45,13 @@ deploy() {
 
     # 2. Deploy on server
     log "Deploying on server..."
-    ssh ${SERVER} << EOF
+    ssh ${SERVER} << 'EOF'
 cd ~/production/json-viewer-io
 
 # Set image name from environment
 IMAGE_NAME="${IMAGE_NAME}"
+# Ensure HOME is set in non-interactive shells (resolve on remote)
+HOME="${HOME:-$HOME}"
 
 # Create backup before deployment
 echo "💾 Creating backup of current deployment..."
@@ -133,16 +135,15 @@ echo "✅ Environment variables validated"
 	  docker rm -f $LEFTOVER || true
 	fi
 
-# Update docker-compose with correct image name
-echo "📝 Updating docker-compose with image: ${IMAGE_NAME}"
-sed -i.bak "s|image:.*|image: ${IMAGE_NAME}|" config/docker-compose.server.yml
+# Inform the target image for app only (postgres/redis images are unchanged)
+echo "📝 Using app image: ${IMAGE_NAME}"
 
-# Pull latest image and deploy
+# Pull latest app image and deploy (without rewriting compose file)
 echo "📦 Pulling latest Docker image..."
-docker compose -f config/docker-compose.server.yml pull
+APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pull app
 
 echo "🔄 Updating services..."
-docker compose -f config/docker-compose.server.yml up -d --remove-orphans
+APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml up -d --remove-orphans
 
 # Wait for health
 for i in {1..30}; do

@@ -43,7 +43,7 @@ services:
     # Image is built and pushed by GitHub Actions
     # Format: ghcr.io/joachimBrindeau/json:latest
     # For private repos: ensure you're authenticated with docker login ghcr.io
-    image: ghcr.io/joachimBrindeau/json:latest
+    image: ${APP_IMAGE:-ghcr.io/joachimbrindeau/json:latest}
     pull_policy: always  # Always pull latest on deploy
     restart: unless-stopped
     env_file: ../.env
