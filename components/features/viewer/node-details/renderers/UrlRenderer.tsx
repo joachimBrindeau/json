@@ -2,7 +2,6 @@
 
 import { memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Copy, Check, Globe, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { UrlDetection } from '../types';
