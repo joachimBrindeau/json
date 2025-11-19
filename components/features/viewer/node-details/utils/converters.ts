@@ -220,7 +220,7 @@ export function jsonToXML(obj: unknown, rootName: string = 'root'): string {
     }
 
     if (Array.isArray(value)) {
-      return value.map((item, index) => convert(item, `item`)).join('\n');
+      return value.map((item) => convert(item, `item`)).join('\n');
     }
 
     if (typeof value === 'object') {
