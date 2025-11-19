@@ -37,7 +37,6 @@ export const useAutoOptimize = (
     const estimatedNodes = estimateNodeCount(data);
 
     // Use centralized config with optional override
-    const nodeThreshold = maxNodes ?? VIEWER_CONFIG.performance.maxNodes;
     const shouldVirtualize = shouldVirtualizeHelper(sizeMB, estimatedNodes);
     const performanceLevel = getPerformanceLevel(sizeMB, estimatedNodes);
 
