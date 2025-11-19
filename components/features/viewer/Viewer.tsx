@@ -6,7 +6,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TreePine as TreeIcon, Code, Waves, Eye, Database, Download } from 'lucide-react';
 import { ViewerTree } from './ViewerTree';
