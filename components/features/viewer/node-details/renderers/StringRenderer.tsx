@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check, Hash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { StringRendererProps } from '../types';
-import { formatCharCount, formatWordCount, formatLineCount } from '../utils/formatters';
 import { hashSHA256 } from '../utils/converters';
 
 export const StringRenderer = memo(({ value, detections }: StringRendererProps) => {
