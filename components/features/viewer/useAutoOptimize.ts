@@ -4,7 +4,6 @@
 
 import { useMemo } from 'react';
 import {
-  VIEWER_CONFIG,
   getPerformanceLevel,
   shouldVirtualize as shouldVirtualizeHelper,
   type PerformanceLevel,
