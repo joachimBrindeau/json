@@ -20,7 +20,7 @@ interface MediaRendererProps {
 
 export const MediaRenderer = memo(({ value, detection }: MediaRendererProps) => {
   const { type, metadata } = detection;
-  const { url, base64, mimeType, extension } = metadata;
+  const { url, base64, extension } = metadata;
 
   const mediaUrl = url || base64 || value;
   const isBase64 = value.startsWith('data:');
