@@ -29,7 +29,14 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
+    child: vi.fn((context) => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(),
+    })),
   },
+  logError: vi.fn(),
 }));
 
 vi.mock('@/lib/middleware/rate-limit', () => ({
