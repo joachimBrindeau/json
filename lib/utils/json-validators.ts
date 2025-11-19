@@ -10,7 +10,8 @@ let yamlLib: { load: (text: string) => unknown } | null | undefined = null;
 
 function getYamlLib() {
   // Always return null on client-side to prevent bundle issues
-  if (typeof window !== 'undefined') {
+  // Check for actual browser environment, not just window existence (window can exist in tests)
+  if (typeof window !== 'undefined' && typeof process === 'undefined') {
     return null;
   }
   
@@ -81,7 +82,8 @@ export function safeParseData<T = unknown>(text: string): T | null {
   const asJson = safeParseJson<T>(text);
   if (asJson !== null) return asJson;
   // Only try YAML on server-side to avoid bundling js-yaml in client code
-  if (typeof window === 'undefined') {
+  // Check for actual browser environment, not just window existence (window can exist in tests)
+  if (typeof window === 'undefined' || typeof process !== 'undefined') {
     return safeParseYaml<T>(text);
   }
   return null;
