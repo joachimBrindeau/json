@@ -25,7 +25,7 @@ interface GeoRendererProps {
 
 export const GeoRenderer = memo(({ detection }: GeoRendererProps) => {
   const [isClient, setIsClient] = useState(false);
-  const { lat, lng, format } = detection.metadata;
+  const { lat, lng } = detection.metadata;
 
   useEffect(() => {
     setIsClient(true);
