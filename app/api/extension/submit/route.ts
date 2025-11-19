@@ -44,7 +44,6 @@ const SOURCE_TYPE_TITLES: Record<string, string> = {
   'chrome-extension': 'Chrome Extension Output',
 };
 
-const DEFAULT_SOURCE_TYPE = 'n8n-node';
 const DEFAULT_TITLE_PREFIX = 'n8n Node Output';
 
 // Allowed CORS origins (can be moved to config)
@@ -270,7 +269,7 @@ async function handleExtensionSubmit(
 // Export handlers with middleware
 export const POST = withErrorHandler(
   withValidationHandler(
-    async (request: NextRequest, context: { params: Promise<Record<string, string>> }) => {
+    async (request: NextRequest, _context: { params: Promise<Record<string, string>> }) => {
       const body = extensionSubmitSchema.parse(await request.json());
       const response = await handleExtensionSubmit(request, body);
       return response;

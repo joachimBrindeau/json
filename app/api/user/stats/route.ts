@@ -69,11 +69,3 @@ export const GET = withAuth(async (_request: NextRequest, session) => {
   }
 });
 
-/**
- * Invalidate cache for a specific user
- * Call this when user's documents change
- */
-function invalidateUserStatsCache(userId: string) {
-  statsCache.delete(userId);
-  logger.debug({ userId }, 'Invalidated user stats cache');
-}

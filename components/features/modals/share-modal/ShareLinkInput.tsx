@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Check, Loader2, CheckCircle2 } from 'lucide-react';
+import { Copy, Check, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';

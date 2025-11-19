@@ -1,12 +1,12 @@
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
-import { analyzeJsonStream, chunkJsonData, createPerformanceMonitor, JsonCache } from '@/lib/json';
+import { analyzeJsonStream, createPerformanceMonitor, JsonCache } from '@/lib/json';
 import { logger } from '@/lib/logger';
 import { success, created, badRequest, error, internalServerError } from '@/lib/api/responses';
 import { config } from '@/lib/config';
 import { sanitizeString, withAuth } from '@/lib/api/utils';
 import { publishLimiter } from '@/lib/middleware/rate-limit';
-import { RateLimitError, ValidationError } from '@/lib/utils/app-errors';
+import { RateLimitError } from '@/lib/utils/app-errors';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';

@@ -23,7 +23,6 @@ import {
   Settings,
   Trash2,
   Link2,
-  Plus,
   Github,
   Chrome,
   Key,
@@ -41,7 +40,7 @@ export default function ProfilePage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [linkedAccounts, setLinkedAccounts] = useState<any[]>([]);
   const [hasPassword, setHasPassword] = useState(false);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [_loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Redirect if not authenticated
   useEffect(() => {

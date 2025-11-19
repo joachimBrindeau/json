@@ -34,7 +34,6 @@ import {
 } from '@/components/ui/DropdownMenu';
 import {
   Database,
-  Plus,
   FileJson,
   Search,
   MoreHorizontal,
@@ -54,7 +53,6 @@ import {
   Lock,
   Edit,
 } from 'lucide-react';
-import Link from 'next/link';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useAppStore } from '@/lib/store';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -293,7 +291,7 @@ const SortableTableHead = memo(function SortableTableHead({
 });
 
 function LibraryPageComponent() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -408,7 +406,6 @@ function LibraryPageComponent() {
     return list;
   }, [documents, status, storeCurrentDocument, lastSavedMeta]);
 
-  const totalCount = data?.pagination?.total || 0;
 
   // Register for library updates
   useEffect(() => {

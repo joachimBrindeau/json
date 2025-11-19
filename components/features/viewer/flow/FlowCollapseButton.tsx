@@ -8,7 +8,7 @@ interface FlowCollapseButtonProps {
 }
 
 const FlowCollapseButtonComponent = ({
-  nodeId,
+  nodeId: _nodeId,
   isCollapsed,
   onToggle,
   position = 'right',

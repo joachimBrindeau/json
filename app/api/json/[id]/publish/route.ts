@@ -84,7 +84,7 @@ export const POST = withAuth(
  * DELETE unpublish document from public library
  */
 export const DELETE = withAuth(
-  async (request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
+  async (_request: NextRequest, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
 
     // Prisma errors automatically handled by middleware

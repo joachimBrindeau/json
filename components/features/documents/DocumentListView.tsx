@@ -123,7 +123,7 @@ export function DocumentListView<T extends BaseDocument>({
           initial="hidden"
           animate="visible"
         >
-          {safeDocuments.map((doc, index) => (
+          {safeDocuments.map((doc) => (
             <motion.div
               key={doc.id}
               variants={VARIANTS.slideUp}
@@ -138,7 +138,7 @@ export function DocumentListView<T extends BaseDocument>({
                 }
                 showBulkSelect={showBulkSelect}
                 isSelected={selectedIds.includes(doc.id)}
-                onSelect={(id, checked) => {
+                onSelect={(_id, checked) => {
                   if (checked) {
                     setSelectedIds((prev) => [...prev, doc.id]);
                   } else {

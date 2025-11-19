@@ -18,7 +18,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { FormInput } from '@/components/shared/FormFields';
 import {
@@ -34,7 +33,7 @@ import { useFormSubmit } from '@/hooks/use-form-submit';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { normalizeEmail } from '@/lib/utils/email';
-import type { LoginFormData, SignupFormData } from '@/lib/auth/types';
+import type { SignupFormData } from '@/lib/auth/types';
 import { LOGIN_CONTEXT_MESSAGES, AUTH_ERROR_MESSAGES } from '@/lib/auth/constants';
 import { PasswordStrengthIndicator } from '@/components/shared/PasswordStrengthIndicator';
 

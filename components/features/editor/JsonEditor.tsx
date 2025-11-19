@@ -27,7 +27,7 @@ function JsonEditorComponent() {
   const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
   const [localContent, setLocalContent] = useState('');
   const { searchTerm, setSearchTerm } = useSearch();
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const decorationsRef = useRef<string[]>([]);
   const isLargeFileFlag = isLargeFile(currentJson.length);
@@ -160,7 +160,6 @@ function JsonEditorComponent() {
     if (!editorRef.current || !monacoRef.current) return;
 
     const editor = editorRef.current;
-    const monaco = monacoRef.current;
 
     if (term) {
       const model = editor.getModel();
@@ -209,7 +208,6 @@ function JsonEditorComponent() {
       } catch (error) {
         if (content.trim() && error instanceof Error && monaco.editor && monaco.MarkerSeverity) {
           // Add error marker
-          const lines = content.split('\n');
           let line = 1;
           let column = 1;
 

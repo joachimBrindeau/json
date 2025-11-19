@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useDocumentList, UseDocumentListOptions } from '@/hooks/use-document-list';
+import { useDocumentList } from '@/hooks/use-document-list';
 import { DocumentFilters } from '@/components/features/documents/DocumentFilters';
 import { DocumentListView } from '@/components/features/documents/DocumentListView';
 import { BaseDocument } from '@/components/features/documents';

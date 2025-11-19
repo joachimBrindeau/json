@@ -3,7 +3,7 @@
  * Detects special data types within string values
  */
 
-import type { DetectionResult, DetectedType } from '../types';
+import type { DetectionResult } from '../types';
 
 // ============================================================================
 // Detection Patterns

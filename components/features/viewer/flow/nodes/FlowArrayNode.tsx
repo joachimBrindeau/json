@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 import { NodeProps, Handle, Position, useEdges } from '@xyflow/react';
-import { NodeType, ArrayNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
 import {
   isEmptyArray,
   encloseSquareBrackets,

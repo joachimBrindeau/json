@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import {
   handleApiError,
   withAuth,
@@ -6,11 +6,11 @@ import {
   formatDocumentResponse,
 } from '@/lib/api/utils';
 import { getDocumentById, updateDocument } from '@/lib/db/queries/documents';
-import { success, badRequest, notFound, error as errorResponse } from '@/lib/api/responses';
+import { success, badRequest, error as errorResponse } from '@/lib/api/responses';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 

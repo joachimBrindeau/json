@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { success, internalServerError } from '@/lib/api/responses';
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 

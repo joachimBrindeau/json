@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BaseModal } from '@/components/shared/BaseModal';
 import { FormInput } from '@/components/shared/FormFields';
-import { Save, Globe, Lock } from 'lucide-react';
+import { Globe, Lock } from 'lucide-react';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { z } from 'zod';
 import { useBackendStore } from '@/lib/store/backend';
@@ -15,7 +15,6 @@ const saveFormSchema = z.object({
   visibility: z.enum(['public', 'private']).default('private'),
 });
 
-type SaveFormData = z.infer<typeof saveFormSchema>;
 
 interface SaveModalProps {
   open: boolean;
@@ -90,7 +89,7 @@ export function SaveModal({
       const blob = new Blob([currentJson || ''], { type: 'application/json' });
       const file = new File([blob], 'untitled.json', { type: 'application/json' });
       const visibility = isPublic ? 'public' : 'private';
-      const document = await uploadJson(file, formData.title.trim(), visibility);
+      await uploadJson(file, formData.title.trim(), visibility);
 
       // If creating as public with metadata, we'll need to publish separately
       // But for now, just save the document

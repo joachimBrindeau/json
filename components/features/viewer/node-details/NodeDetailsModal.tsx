@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/ScrollArea';
 import { Package, Database, Type, Hash, ToggleLeft, X, FileJson } from 'lucide-react';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import type { NodeDetails } from './types';
@@ -26,7 +25,7 @@ import { ColorRenderer } from './renderers/ColorRenderer';
 import { DateRenderer } from './renderers/DateRenderer';
 import { GeoRenderer } from './renderers/GeoRenderer';
 import { MediaRenderer } from './renderers/MediaRenderer';
-import { formatSize, formatJsonPath } from './utils/formatters';
+import { formatJsonPath } from './utils/formatters';
 
 interface NodeDetailsModalProps {
   open: boolean;

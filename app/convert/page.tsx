@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { useBackendStore } from '@/lib/store/backend';
 import {
   FileJson,
@@ -21,12 +20,9 @@ import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { validateJson } from '@/lib/utils/json-validators';
 import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
-import { useClipboard } from '@/hooks/use-clipboard';
-import { useDownload } from '@/hooks/use-download';
 import type { EditorAction } from '@/types/editor-actions';
 import {
   createResetAction,
-  createConvertAction,
   createUndoAction,
   createRedoAction,
 } from '@/lib/editor/action-factories';
@@ -147,21 +143,12 @@ export default function ConvertPage() {
   const [selectedFormat, setSelectedFormat] = useState<ConversionFormat>('yaml');
   const [inputFormat, setInputFormat] = useState<InputFormat>('autodetect');
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Reserved for future use
 
   // Use Monaco editor hook for both editors
   const inputEditor = useMonacoEditor(input.length);
   const outputEditor = useMonacoEditor(output.length, { readOnly: true });
 
-  // Clipboard and download hooks
-  const { copy, copied } = useClipboard({
-    successMessage: 'Copied!',
-    successDescription: 'Converted data copied to clipboard',
-  });
-  const { download } = useDownload({
-    successMessage: 'Downloaded!',
-    successDescription: 'File downloaded successfully',
-  });
 
   // Initialize input from currentJson when page loads
   useEffect(() => {
@@ -703,14 +690,6 @@ export default data;`;
     }
   }, [selectedFormat, inputFormat, input, hasValidInput]);
 
-  const handleReset = useCallback(() => {
-    setInput('');
-    setOutput('');
-    toast({
-      title: 'Reset',
-      description: 'Cleared input and output',
-    });
-  }, [toast]);
 
   const getOutputLanguage = () => {
     switch (selectedFormat) {

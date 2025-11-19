@@ -1,7 +1,7 @@
 import * as dagre from 'dagre';
 import { Edge, XYPosition } from '@xyflow/react';
 import { sizes } from './flow-constants';
-import { SeaNode, NodeType } from './flow-types';
+import { SeaNode } from './flow-types';
 import { isArraySeaNode, isObjectSeaNode, isPrimitiveSeaNode } from './flow-utils';
 
 /**
@@ -31,7 +31,7 @@ const calculateNodeHeight = (flowNode: SeaNode): number => {
  * Get initial position for a node (before layout)
  * KISS: Simple placeholder position, dagre will calculate the real position
  */
-export const getXYPosition = (depth: number): XYPosition => {
+export const getXYPosition = (_depth: number): XYPosition => {
   return { x: 0, y: 0 };
 };
 

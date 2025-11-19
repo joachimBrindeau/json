@@ -9,7 +9,7 @@ type Props = {
   totalItems: number;
 };
 
-const ArrayNodeItemComponent = ({ nodeId, itemIndex, childNodeId, totalItems }: Props) => {
+const ArrayNodeItemComponent = ({ nodeId: _nodeId, itemIndex, childNodeId: _childNodeId, totalItems }: Props) => {
   const isLastItem = itemIndex === totalItems - 1;
 
   return (

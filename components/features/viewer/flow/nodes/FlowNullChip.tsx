@@ -6,7 +6,7 @@ type Props = {
   className?: string;
 };
 
-const _NullChip = ({ size = 'default', className }: Props) => {
+const _NullChip = ({ size: _size = 'default', className }: Props) => {
   return (
     <Badge className={className} variant="secondary">
       {JSON.stringify(null)}

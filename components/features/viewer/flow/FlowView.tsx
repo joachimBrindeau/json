@@ -63,7 +63,7 @@ function JsonFlowViewInner({ json, className, onNodeClick, searchTerm = '' }: Js
 
   // Handle node click events
   const handleNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
+    (_event: React.MouseEvent, node: Node) => {
       onNodeClick?.(node);
     },
     [onNodeClick]
@@ -71,7 +71,7 @@ function JsonFlowViewInner({ json, className, onNodeClick, searchTerm = '' }: Js
 
   // Handle node double-click to show details
   const handleNodeDoubleClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
+    (_event: React.MouseEvent, node: Node) => {
       openModal(node);
     },
     [openModal]

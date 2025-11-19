@@ -49,7 +49,7 @@ export function ShareModal({
   });
 
   const category = form.watch('category');
-  const title = form.watch('title');
+  form.watch('title'); // Needed for form reactivity
 
   const { isLoading: isLoadingMetadata } = useShareModalMetadata({
     open,

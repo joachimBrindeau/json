@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useBackendStore } from '@/lib/store/backend';
 import { showValidationErrorToast, showInfoToast } from '@/lib/utils/toast-helpers';
 import { apiClient } from '@/lib/api/client';
 import { useApiMutation } from '@/hooks/use-api-mutation';
@@ -24,9 +23,9 @@ export function useShareModalState({
   currentVisibility,
   form,
   isPublic,
-  setIsPublic,
+  setIsPublic: _setIsPublic,
   onUpdated,
-  onClose,
+  onClose: _onClose,
   open,
 }: UseShareModalStateProps) {
   const [isUpdating, setIsUpdating] = useState(false);

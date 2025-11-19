@@ -5,7 +5,7 @@ import { api } from '@/lib/api/client';
 import { success, notFound, internalServerError } from '@/lib/api/responses';
 import { withAuth } from '@/lib/api/utils';
 
-export const POST = withAuth(async (request, session) => {
+export const POST = withAuth(async (_request, session) => {
   try {
     // Get current user data from database
     const user = await prisma.user.findUnique({
@@ -67,7 +67,7 @@ export const POST = withAuth(async (request, session) => {
   }
 });
 
-export const GET = withAuth(async (request, session) => {
+export const GET = withAuth(async (_request, session) => {
   try {
     // Get current user data from database
     const user = await prisma.user.findUnique({

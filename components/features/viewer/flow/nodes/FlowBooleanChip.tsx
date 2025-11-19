@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-const _BooleanChip = ({ value, size = 'default', className }: Props) => {
+const _BooleanChip = ({ value, size: _size = 'default', className }: Props) => {
   return (
     <Badge className={className} variant={value ? 'default' : 'destructive'}>
       {JSON.stringify(value)}

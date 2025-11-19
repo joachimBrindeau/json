@@ -1,7 +1,5 @@
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { success } from '@/lib/api/responses';
-import { withDatabaseHandler } from '@/lib/api/middleware';
 import { withAuth } from '@/lib/api/utils';
 import { NotFoundError, AuthorizationError } from '@/lib/utils/app-errors';
 
@@ -9,10 +7,9 @@ export const runtime = 'nodejs';
 
 /**
  * GET document metadata for authenticated user
- * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
 export const GET = withAuth(
-  async (request, session, { params }: { params: Promise<{ id: string }> }) => {
+  async (_request, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
 
     const document = await prisma.jsonDocument.findFirst({
@@ -45,7 +42,7 @@ export const GET = withAuth(
  * Now using withDatabaseHandler for automatic error handling and Prisma error mapping
  */
 export const DELETE = withAuth(
-  async (request, session, { params }: { params: Promise<{ id: string }> }) => {
+  async (_request, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
 
     // SECURITY: Verify document exists and user owns it before deleting

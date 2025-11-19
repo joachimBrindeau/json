@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,14 +56,6 @@ export function JsonMetadataForm({
   onCancel,
 }: JsonMetadataFormProps) {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    description: initialData?.description || '',
-    richContent: initialData?.richContent || '',
-    category: initialData?.category || '',
-    tags: initialData?.tags || [],
-    visibility: initialData?.visibility || ('private' as 'private' | 'public'),
-  });
 
   const form = useValidatedForm(jsonMetadataFormSchema, {
     defaultValues: {

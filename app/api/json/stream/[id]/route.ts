@@ -205,7 +205,7 @@ export const GET = withOptionalAuth(
 );
 
 // Get document metadata without content
-export async function HEAD(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function HEAD(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   try {

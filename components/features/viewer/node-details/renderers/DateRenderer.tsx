@@ -10,7 +10,7 @@ interface DateRendererProps {
   detection: DateDetection;
 }
 
-export const DateRenderer = memo(({ value, detection }: DateRendererProps) => {
+export const DateRenderer = memo(({ detection }: DateRendererProps) => {
   const { timestamp } = detection.metadata;
   const date = new Date(timestamp);
 

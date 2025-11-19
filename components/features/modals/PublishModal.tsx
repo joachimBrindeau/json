@@ -5,7 +5,6 @@ import { Controller } from 'react-hook-form';
 import { BaseModal } from '@/components/shared/BaseModal';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns, showErrorToast } from '@/lib/utils/toast-helpers';
-import { useFormSubmit } from '@/hooks/use-form-submit';
 import { useValidatedForm } from '@/hooks/use-validated-form';
 import { publishFormSchema, PublishFormData } from '@/lib/validation/schemas';
 import dynamic from 'next/dynamic';
@@ -18,7 +17,7 @@ const RichTextEditor = dynamic(
 );
 import { TagManagementSection } from '@/components/features/shared/TagManagementSection';
 import { FormInput, FormTextarea, FormSelect, FormRichText } from '@/components/shared/FormFields';
-import { Globe, Users, Eye, Loader2 } from 'lucide-react';
+import { Globe, Users, Eye } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/api/client';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
@@ -48,7 +47,6 @@ export function PublishModal({
     register,
     handleSubmit,
     watch,
-    setValue,
     control,
     reset,
     formState: { errors, isSubmitting },

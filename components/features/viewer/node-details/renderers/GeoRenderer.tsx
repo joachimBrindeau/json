@@ -23,7 +23,7 @@ interface GeoRendererProps {
   detection: CoordinatesDetection;
 }
 
-export const GeoRenderer = memo(({ value, detection }: GeoRendererProps) => {
+export const GeoRenderer = memo(({ detection }: GeoRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const { lat, lng, format } = detection.metadata;
 

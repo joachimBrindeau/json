@@ -1,13 +1,11 @@
 import { memo, useCallback } from 'react';
 import { NodeProps, useEdges } from '@xyflow/react';
-import { NodeType, ObjectNodeData } from '@/components/features/viewer/flow/utils/flow-types';
+import { NodeType } from '@/components/features/viewer/flow/utils/flow-types';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowObjectNodeProperty } from '@/components/features/viewer/flow/nodes/FlowObjectNodeProperty';
 import { FlowChainHandles } from '@/components/features/viewer/flow/nodes/FlowChainHandles';
-import { FlowCollapseButton } from '@/components/features/viewer/flow/FlowCollapseButton';
 import { FlowNodeToolbar } from '@/components/features/viewer/flow/components/FlowNodeToolbar';
 import { useFlowNodeToolbar } from '@/components/features/viewer/flow/hooks/useFlowNodeToolbar';
-import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-edge-factory';
 
 const ObjectNodeComponent = ({ id, data }: NodeProps<any>) => {
   const { obj, isRootNode, collapsedBranches, onToggleCollapse, stringifiedJson, isHighlighted } =

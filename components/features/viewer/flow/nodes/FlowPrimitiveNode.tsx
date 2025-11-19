@@ -9,7 +9,6 @@ import { FlowBooleanChip } from '@/components/features/viewer/flow/nodes/FlowBoo
 import { FlowNullChip } from '@/components/features/viewer/flow/nodes/FlowNullChip';
 import { FlowNodeShell } from '@/components/features/viewer/flow/nodes/FlowNodeShell';
 import { FlowChainHandles } from '@/components/features/viewer/flow/nodes/FlowChainHandles';
-import { addPrefixChain } from '@/components/features/viewer/flow/utils/flow-edge-factory';
 
 /**
  * Lookup pattern for rendering different primitive types

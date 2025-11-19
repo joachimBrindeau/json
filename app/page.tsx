@@ -238,7 +238,7 @@ export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('tree');
   const { searchTerm, setSearchTerm } = useSearch();
-  const [showFlowHint, setShowFlowHint] = useState(false);
+  const [_showFlowHint, setShowFlowHint] = useState(false);
   const [hasInteractedWithTabs, setHasInteractedWithTabs] = useState(false);
   const currentJson = useBackendStore((s) => s.currentJson);
   const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
