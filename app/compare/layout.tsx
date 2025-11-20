@@ -2,4 +2,4 @@ import { createMetadataGenerator, createSimpleLayout } from '@/lib/seo/metadata-
 
 export const generateMetadata = createMetadataGenerator('compare');
 
-export default createSimpleLayout('Compare');
+export default createSimpleLayout('Compare', 'compare');

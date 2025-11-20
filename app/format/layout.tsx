@@ -2,4 +2,4 @@ import { createMetadataGenerator, createSimpleLayout } from '@/lib/seo/metadata-
 
 export const generateMetadata = createMetadataGenerator('format');
 
-export default createSimpleLayout('Format');
+export default createSimpleLayout('Format', 'format');

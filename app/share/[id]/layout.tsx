@@ -1,9 +1,14 @@
 import { Metadata } from 'next';
-import { generateSEOMetadata } from '@/lib/seo';
+import Script from 'next/script';
+import {
+  generateSEOMetadata,
+  generateArticleStructuredData,
+  generateBreadcrumbStructuredData,
+  renderJsonLd,
+  DEFAULT_SEO_CONFIG,
+} from '@/lib/seo';
 import { getCanonicalUrl } from '@/lib/seo/url-utils';
 import { getDocumentByShareId } from '@/lib/db/queries/documents';
-import Script from 'next/script';
-import { generateArticleStructuredData, renderJsonLd } from '@/lib/seo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -92,6 +97,14 @@ async function getStructuredData(id: string) {
 export default async function ShareLayout({ children, params }: LayoutProps) {
   const { id } = await params;
   const structuredData = await getStructuredData(id);
+  
+  // Generate breadcrumb structured data
+  const breadcrumbs = [
+    { name: 'Home', url: DEFAULT_SEO_CONFIG.siteUrl },
+    { name: structuredData?.headline || 'Shared JSON Document', url: getCanonicalUrl(`share/${id}`) },
+  ];
+  
+  const breadcrumbSchema = generateBreadcrumbStructuredData(breadcrumbs);
 
   return (
     <>
@@ -105,6 +118,14 @@ export default async function ShareLayout({ children, params }: LayoutProps) {
           }}
         />
       )}
+      <Script
+        id="share-document-breadcrumb-structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: renderJsonLd(breadcrumbSchema),
+        }}
+      />
       {children}
     </>
   );

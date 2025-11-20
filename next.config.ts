@@ -138,6 +138,10 @@ const nextConfig: NextConfig = {
             value: 'on',
           },
           {
+            key: 'Content-Language',
+            value: 'en-US',
+          },
+          {
             key: 'X-Frame-Options',
             value: 'DENY',
           },

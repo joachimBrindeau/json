@@ -15,8 +15,11 @@ export interface SEOMetadataInput {
   canonicalUrl?: string;
   noIndex?: boolean;
   publishedAt?: string;
+  modifiedAt?: string;
   author?: string;
   richContent?: string;
+  articleTags?: string[];
+  articleSection?: string;
 }
 
 export interface DatabaseSEOSettings {
@@ -103,4 +106,25 @@ export interface AggregateRating {
 export interface ReviewStructuredDataInput {
   aggregateRating: AggregateRating;
   reviews: Review[];
+}
+
+/**
+ * HowTo types for structured data
+ * Following schema.org HowTo specification
+ */
+export interface HowToStep {
+  name: string;
+  text: string;
+  image?: string;
+  url?: string;
+}
+
+export interface HowToInput {
+  name: string;
+  description: string;
+  image?: string;
+  totalTime?: string; // ISO 8601 duration (e.g., "PT15M")
+  steps: HowToStep[];
+  supply?: Array<{ name: string }>;
+  tool?: Array<{ name: string }>;
 }

@@ -12,7 +12,7 @@ export const DEFAULT_SEO_CONFIG = {
   defaultTitle: 'JSON Viewer - Free Online JSON Formatter, Editor & Validator',
   titleTemplate: '%s | JSON Viewer',
   defaultDescription:
-    'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool.',
+    'Free online JSON viewer, formatter, and editor. Format, validate, and visualize JSON with syntax highlighting, tree view, and instant sharing. No installation required.',
   keywords: [
     'json viewer',
     'json formatter',
@@ -53,7 +53,7 @@ export const PAGE_SEO = {
   home: {
     title: 'JSON Viewer - Free Online JSON Formatter, Editor & Validator',
     description:
-      'Free online JSON viewer, formatter, and editor with syntax highlighting, tree view, and instant sharing. Validate, beautify, and visualize JSON data with our powerful web-based tool. No installation required. Process large files, real-time collaboration.',
+      'Free online JSON viewer, formatter, and editor. Format, validate, and visualize JSON with syntax highlighting, tree view, and instant sharing. Process large files, no installation required.',
     keywords: [
       // Primary keywords
       'json viewer',
@@ -94,7 +94,7 @@ export const PAGE_SEO = {
   library: {
     title: 'Public JSON Library - Browse Shared JSON Examples & Templates',
     description:
-      'Discover and explore thousands of shared JSON examples from the community. Find real-world JSON structures, API responses, configurations, database schemas, and templates for every use case.',
+      'Browse thousands of shared JSON examples from the community. Find real-world JSON structures, API responses, configurations, and templates for every use case.',
     keywords: [
       'json examples',
       'json templates',
@@ -111,7 +111,7 @@ export const PAGE_SEO = {
   edit: {
     title: 'JSON Editor - Create, Edit & Validate JSON Online',
     description:
-      'Professional online JSON editor with real-time syntax highlighting, auto-completion, validation, and error detection. Create, edit, and format JSON documents with powerful features.',
+      'Professional online JSON editor with real-time syntax highlighting, auto-completion, and validation. Create, edit, and format JSON documents with powerful features.',
     keywords: [
       'json editor',
       'json creator',
@@ -126,7 +126,7 @@ export const PAGE_SEO = {
   format: {
     title: 'JSON Formatter - Beautify, Minify & Pretty Print JSON',
     description:
-      'Format and beautify JSON online with our free tool. Minify JSON for production, prettify for readability, or validate syntax. Supports large files and complex structures.',
+      'Format and beautify JSON online for free. Minify for production, prettify for readability, or validate syntax. Supports large files and complex structures.',
     keywords: [
       'json formatter',
       'json beautifier',

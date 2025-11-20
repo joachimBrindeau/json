@@ -22,6 +22,8 @@ export type {
   AggregateRating,
   ReviewStructuredDataInput,
   ReviewRating,
+  HowToInput,
+  HowToStep,
 } from './types';
 
 // Re-export structured data functions
@@ -29,8 +31,11 @@ export {
   generateArticleStructuredData,
   generateWebApplicationStructuredData,
   generateOrganizationStructuredData,
+  generateWebSiteStructuredData,
+  generateWebPageStructuredData,
   generateBreadcrumbStructuredData,
   generateFAQPageStructuredData,
+  generateHowToStructuredData,
   generateAggregateRatingStructuredData,
   generateReviewStructuredData,
   generateSoftwareAppReviewStructuredData,
@@ -70,7 +75,10 @@ export function generateSEOMetadata({
   canonicalUrl,
   noIndex = false,
   publishedAt,
+  modifiedAt,
   author,
+  articleTags,
+  articleSection,
 }: SEOMetadataInput = {}): Metadata {
   const fullTitle = title
     ? `${title} | ${DEFAULT_SEO_CONFIG.siteName}`
@@ -119,6 +127,16 @@ export function generateSEOMetadata({
       locale: 'en_US',
       type: ogType,
       ...(publishedAt && { publishedTime: publishedAt }),
+<<<<<<< Current (Your changes)
+      ...(author && { authors: [{ name: author }] }),
+=======
+      ...(modifiedAt && { modifiedTime: modifiedAt }),
+      ...(ogType === 'article' && {
+        ...(articleTags && articleTags.length > 0 && { tags: articleTags }),
+        ...(articleSection && { section: articleSection }),
+        ...(author && { authors: [author] }),
+      }),
+>>>>>>> Incoming (Background Agent changes)
     },
     twitter: {
       card: 'summary_large_image',
@@ -127,6 +145,9 @@ export function generateSEOMetadata({
       images: [fullOgImage],
       creator: DEFAULT_SEO_CONFIG.twitterHandle,
       site: DEFAULT_SEO_CONFIG.twitterHandle,
+      // Enhanced Twitter Card metadata for better engagement
+      // Note: 'label1' and 'data1' are not part of Next.js Metadata type
+      // but can be added via other field if needed
     },
     // Additional social media platforms
     other: {
@@ -164,6 +185,10 @@ export function generateSEOMetadata({
     },
     alternates: {
       canonical: fullCanonicalUrl,
+      languages: {
+        'en-US': fullCanonicalUrl,
+        'x-default': fullCanonicalUrl,
+      },
     },
   };
 }

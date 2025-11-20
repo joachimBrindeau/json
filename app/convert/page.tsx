@@ -15,6 +15,7 @@ import {
 import { FormatSelector } from '@/components/ui/FormatSelector';
 import { ViewerActions } from '@/components/features/viewer';
 import { EditorPane } from '@/components/features/editor/EditorPane';
+import { RelatedTools } from '@/components/shared/seo/RelatedTools';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
@@ -769,74 +770,77 @@ export default data;`;
 
   return (
     <MainLayout>
-      <div className="h-full min-h-0 flex flex-col lg:flex-row overflow-hidden">
-        <EditorPane
-          title="Input"
-          value={input}
-          language={inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat}
-          onChange={(value) => {
-            const newValue = value || '';
-            setInput(newValue);
-            setCurrentJson(newValue);
-          }}
-          actions={inputActions}
-          customActions={
-            <ViewerActions
-              value={input}
-              onChange={setInput}
-              customMagicActions={convertMagicAction}
-            />
-          }
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-          headerContent={
-            <FormatSelector
-              value={inputFormat}
-              onValueChange={(value) => setInputFormat(value as InputFormat)}
-              options={inputFormatOptions}
-            />
-          }
-          validationBadge={
-            hasValidInput ? (
-              <Button
-                variant="green"
-                size="sm"
-                onClick={() => performConversion()}
-                className="h-6 text-xs"
-              >
-                <ArrowRightLeft className="h-3 w-3 mr-1" />
-                Convert {getFormatLabel(inputFormat)} to {getFormatLabel(selectedFormat)}
-              </Button>
-            ) : null
-          }
-          theme={inputEditor.theme}
-          onMount={inputEditor.handleEditorDidMount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
-          options={inputEditor.editorOptions}
-          className="border-r"
-        />
+      <div className="h-full min-h-0 flex flex-col">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          <EditorPane
+            title="Input"
+            value={input}
+            language={inputFormat === 'autodetect' ? detectInputFormat(input) : inputFormat}
+            onChange={(value) => {
+              const newValue = value || '';
+              setInput(newValue);
+              setCurrentJson(newValue);
+            }}
+            actions={inputActions}
+            customActions={
+              <ViewerActions
+                value={input}
+                onChange={setInput}
+                customMagicActions={convertMagicAction}
+              />
+            }
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            headerContent={
+              <FormatSelector
+                value={inputFormat}
+                onValueChange={(value) => setInputFormat(value as InputFormat)}
+                options={inputFormatOptions}
+              />
+            }
+            validationBadge={
+              hasValidInput ? (
+                <Button
+                  variant="green"
+                  size="sm"
+                  onClick={() => performConversion()}
+                  className="h-6 text-xs"
+                >
+                  <ArrowRightLeft className="h-3 w-3 mr-1" />
+                  Convert {getFormatLabel(inputFormat)} to {getFormatLabel(selectedFormat)}
+                </Button>
+              ) : null
+            }
+            theme={inputEditor.theme}
+            onMount={inputEditor.handleEditorDidMount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={inputEditor.editorOptions}
+            className="border-r"
+          />
 
-        <EditorPane
-          title="Output"
-          value={output}
-          language={getOutputLanguage()}
-          readOnly
-          actions={outputActions}
-          customActions={<ViewerActions value={output} onChange={setOutput} />}
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-          headerContent={
-            <FormatSelector
-              value={selectedFormat}
-              onValueChange={(value) => setSelectedFormat(value as ConversionFormat)}
-              options={conversionOptions}
-            />
-          }
-          theme={outputEditor.theme}
-          onMount={outputEditor.handleEditorDidMount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
-          options={outputEditor.editorOptions}
-        />
+          <EditorPane
+            title="Output"
+            value={output}
+            language={getOutputLanguage()}
+            readOnly
+            actions={outputActions}
+            customActions={<ViewerActions value={output} onChange={setOutput} />}
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            headerContent={
+              <FormatSelector
+                value={selectedFormat}
+                onValueChange={(value) => setSelectedFormat(value as ConversionFormat)}
+                options={conversionOptions}
+              />
+            }
+            theme={outputEditor.theme}
+            onMount={outputEditor.handleEditorDidMount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={outputEditor.editorOptions}
+          />
+        </div>
+        <RelatedTools currentTool="convert" />
       </div>
     </MainLayout>
   );

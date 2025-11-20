@@ -117,6 +117,7 @@ async function generateSitemapInternal(): Promise<MetadataRoute.Sitemap> {
         updatedAt: true,
         publishedAt: true,
         viewCount: true,
+        title: true,
       },
       orderBy: [
         { publishedAt: 'desc' }, // Primary sort by publication date
@@ -133,11 +134,19 @@ async function generateSitemapInternal(): Promise<MetadataRoute.Sitemap> {
       publicDocuments.forEach((doc) => {
         const docId = doc.slug || doc.shareId;
         if (docId) {
+          // Calculate priority based on popularity (viewCount)
+          // Popular documents (1000+ views) get higher priority
+          const viewCount = doc.viewCount || 0;
+          const priority = viewCount > 1000 ? 0.9 : viewCount > 100 ? 0.85 : 0.7;
+          
+          // Adjust change frequency based on activity
+          const changeFrequency = viewCount > 500 ? ('daily' as const) : ('weekly' as const);
+          
           dynamicPages.push({
             url: `${baseUrl}/library/${docId}`,
             lastModified: doc.updatedAt,
-            changeFrequency: 'weekly' as const,
-            priority: 0.8,
+            changeFrequency,
+            priority,
           });
         }
       });

@@ -9,73 +9,83 @@ import net from 'net';
 import { hashPassword } from '@/lib/auth/password';
 
 async function globalSetup(config: FullConfig) {
-  console.log('🚀 Global setup started');
+  // Wrap entire setup in timeout to prevent hanging
+  const SETUP_TIMEOUT = 300_000; // 5 minutes max for setup
+  
+  return Promise.race([
+    (async () => {
+      console.log('🚀 Global setup started');
 
-  // Initialize deterministic faker with fixed seed
-  console.log('🎲 Initializing deterministic faker...');
-  initializeFaker();
-  console.log('✅ Faker initialized with seed');
+      // Initialize deterministic faker with fixed seed
+      console.log('🎲 Initializing deterministic faker...');
+      initializeFaker();
+      console.log('✅ Faker initialized with seed');
 
-  // Check and start Docker dependencies FIRST
-  console.log('🐳 Checking Docker dependencies...');
-  await ensureDockerDependencies();
+      // Check and start Docker dependencies FIRST
+      console.log('🐳 Checking Docker dependencies...');
+      await ensureDockerDependencies();
 
-  // Ensure a writable downloads directory exists for tests that save files
-  try {
-    const downloadsDir = path.join(process.cwd(), 'tests', 'downloads');
-    if (!fs.existsSync(downloadsDir)) {
-      fs.mkdirSync(downloadsDir, { recursive: true });
-    }
-    console.log('📁 Ensured downloads dir:', downloadsDir);
-  } catch (e) {
-    console.warn('⚠️ Could not ensure downloads dir:', (e as Error).message);
-  }
+      // Ensure a writable downloads directory exists for tests that save files
+      try {
+        const downloadsDir = path.join(process.cwd(), 'tests', 'downloads');
+        if (!fs.existsSync(downloadsDir)) {
+          fs.mkdirSync(downloadsDir, { recursive: true });
+        }
+        console.log('📁 Ensured downloads dir:', downloadsDir);
+      } catch (e) {
+        console.warn('⚠️ Could not ensure downloads dir:', (e as Error).message);
+      }
 
-  // Get base URL from config
-  const baseURL =
-    config.projects?.find((p) => p.name !== 'setup')?.use?.baseURL || 'http://localhost:3456';
-  console.log(`📡 Using base URL: ${baseURL}`);
+      // Get base URL from config
+      const baseURL =
+        config.projects?.find((p) => p.name !== 'setup')?.use?.baseURL || 'http://localhost:3456';
+      console.log(`📡 Using base URL: ${baseURL}`);
 
-  // Launch browser for global setup operations
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    ignoreHTTPSErrors: true,
-    extraHTTPHeaders: {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-  });
-  const page = await context.newPage();
+      // Launch browser for global setup operations
+      const browser = await chromium.launch({ headless: true });
+      const context = await browser.newContext({
+        ignoreHTTPSErrors: true,
+        extraHTTPHeaders: {
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+      });
+      const page = await context.newPage();
 
-  try {
-    // Always check server readiness to fail fast
-    console.log('📡 Checking if server is available...');
-    await waitForServer(page, baseURL);
-    console.log('✅ Server is available');
+      try {
+        // Always check server readiness to fail fast
+        console.log('📡 Checking if server is available...');
+        await waitForServer(page, baseURL);
+        console.log('✅ Server is available');
 
-    // Clean up existing test users before creating new ones
-    console.log('🧹 Cleaning up existing test users...');
-    await cleanupTestUsers();
+        // Clean up existing test users before creating new ones
+        console.log('🧹 Cleaning up existing test users...');
+        await cleanupTestUsers();
 
-    // Setup test users
-    console.log('👤 Creating test users...');
-    await setupTestUsersDirect();
+        // Setup test users
+        console.log('👤 Creating test users...');
+        await setupTestUsersDirect();
 
-    // Verify basic app functionality
-    console.log('🔍 Verifying basic app functionality...');
-    await verifyBasicApp(page, baseURL);
+        // Verify basic app functionality
+        console.log('🔍 Verifying basic app functionality...');
+        await verifyBasicApp(page, baseURL);
 
-    console.log('🎯 Global setup completed successfully');
-  } catch (error) {
-    console.error('❌ Global setup failed:', error);
-    throw error;
-  } finally {
-    await context.close();
-    await browser.close();
-  }
+        console.log('🎯 Global setup completed successfully');
+      } catch (error) {
+        console.error('❌ Global setup failed:', error);
+        throw error;
+      } finally {
+        await context.close();
+        await browser.close();
+      }
+    })(),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Global setup timed out after ${SETUP_TIMEOUT}ms`)), SETUP_TIMEOUT)
+    ),
+  ]);
 }
 
-async function waitForServer(page: any, baseURL: string, maxRetries = 20) {
+async function waitForServer(page: any, baseURL: string, maxRetries = 10) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       // Prefer API health endpoint (more stable in dev) and fall back to root page
@@ -86,7 +96,7 @@ async function waitForServer(page: any, baseURL: string, maxRetries = 20) {
       }
 
       const response = await page.goto(baseURL, {
-        timeout: 10000,
+        timeout: 5000, // Reduced from 10s to 5s for faster failure
         waitUntil: 'domcontentloaded',
       });
 
@@ -106,8 +116,8 @@ async function waitForServer(page: any, baseURL: string, maxRetries = 20) {
     }
 
     if (i < maxRetries - 1) {
-      console.log(`⏳ Waiting 3 seconds before retry...`);
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log(`⏳ Waiting 2 seconds before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Reduced from 3s to 2s
     }
   }
 
@@ -377,7 +387,7 @@ async function ensureDockerDependencies() {
         try {
           console.log('  🚀 Attempting to start Docker service...');
           execSync('sudo systemctl start docker', { stdio: 'ignore' });
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Reduced from 2s to 1s
           
           try {
             execSync('docker info', { stdio: 'ignore' });
@@ -506,7 +516,7 @@ async function ensureDockerDependencies() {
 /**
  * Wait for Docker containers to report healthy status
  */
-async function waitForDockerHealth(maxRetries = 60) {
+async function waitForDockerHealth(maxRetries = 30) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       let postgresHealthy = false;
@@ -573,17 +583,27 @@ async function waitForDockerHealth(maxRetries = 60) {
 }
 
 /**
- * Verify PostgreSQL is accessible
+ * Verify PostgreSQL is accessible with retries
  */
-async function verifyPostgreSQL() {
-  try {
-    const prisma = new PrismaClient();
-    await prisma.$connect();
-    await prisma.$disconnect();
-    console.log('  ✅ PostgreSQL is accessible');
-  } catch (error) {
-    console.error('  ❌ PostgreSQL connection failed:', (error as Error).message);
-    throw new Error('PostgreSQL is not accessible - check DATABASE_URL in .env');
+async function verifyPostgreSQL(maxRetries = 15) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const prisma = new PrismaClient();
+      await prisma.$connect();
+      await prisma.$disconnect();
+      console.log('  ✅ PostgreSQL is accessible');
+      return;
+    } catch (error) {
+      if (i < maxRetries - 1) {
+        if (i % 5 === 0) {
+          console.log(`  ⏳ Waiting for PostgreSQL to be ready (${i + 1}/${maxRetries})...`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Reduced from 2s to 1s
+      } else {
+        console.error('  ❌ PostgreSQL connection failed:', (error as Error).message);
+        throw new Error('PostgreSQL is not accessible - check DATABASE_URL in .env');
+      }
+    }
   }
 }
 

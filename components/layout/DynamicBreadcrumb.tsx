@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { ChevronRight, Home, Edit2 } from 'lucide-react';
 import {
@@ -12,6 +13,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { generateBreadcrumbStructuredData, renderJsonLd } from '@/lib/seo';
+import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
 
 interface BreadcrumbSegment {
   label: string;
@@ -131,6 +134,20 @@ export function DynamicBreadcrumb({
     return items;
   }, [pathname, currentTitle]);
 
+  // Generate structured data for breadcrumbs
+  const breadcrumbStructuredData = useMemo(() => {
+    const breadcrumbItems = breadcrumbs
+      .filter((item) => item.href || item.isLast)
+      .map((item, index) => ({
+        name: item.label || 'Home',
+        url: item.href ? `${DEFAULT_SEO_CONFIG.siteUrl}${item.href}` : DEFAULT_SEO_CONFIG.siteUrl,
+      }));
+    
+    if (breadcrumbItems.length === 0) return null;
+    
+    return generateBreadcrumbStructuredData(breadcrumbItems);
+  }, [breadcrumbs]);
+
   // For mobile, show only first and last items when there are more than 2
   const shouldCollapse = breadcrumbs.length > 2;
   const visibleBreadcrumbs = shouldCollapse
@@ -138,7 +155,19 @@ export function DynamicBreadcrumb({
     : breadcrumbs;
 
   return (
-    <Breadcrumb className="flex-1 min-w-0">
+    <>
+      {/* Breadcrumb Structured Data for SEO */}
+      {breadcrumbStructuredData && (
+        <Script
+          id="breadcrumb-structured-data"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: renderJsonLd(breadcrumbStructuredData),
+          }}
+        />
+      )}
+      <Breadcrumb className="flex-1 min-w-0" itemScope itemType="https://schema.org/BreadcrumbList">
       {/* Mobile view - collapsed */}
       <BreadcrumbList className="flex-wrap sm:flex-nowrap sm:hidden">
         {visibleBreadcrumbs.map((item, index) => (
@@ -241,6 +270,7 @@ export function DynamicBreadcrumb({
           </React.Fragment>
         ))}
       </BreadcrumbList>
-    </Breadcrumb>
+      </Breadcrumb>
+    </>
   );
 }

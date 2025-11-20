@@ -4,7 +4,7 @@ import { getCanonicalUrl } from '@/lib/seo/url-utils';
 export const metadata = generateSEOMetadata({
   title: 'JSON Minifier - Compress and Minify JSON Online',
   description:
-    'Free online JSON minifier tool. Compress and minify JSON files to reduce size. Remove whitespace and formatting while preserving data integrity. Fast, secure, and easy to use.',
+    'Minify and compress JSON files instantly. Reduce file size while preserving data integrity. Free online tool - start compressing now.',
   keywords: [
     'json minifier',
     'minify json',

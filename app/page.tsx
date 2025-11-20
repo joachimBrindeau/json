@@ -382,9 +382,9 @@ export default function HomePage() {
         }}
       />
 
-      <div className="min-h-full">
+      <main className="min-h-full">
         {/* Hero Section */}
-        <div className="relative bg-gradient-to-b from-background to-muted/30 border-b">
+        <section className="relative bg-gradient-to-b from-background to-muted/30 border-b" aria-labelledby="hero-heading">
           <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
             <div className="text-center mb-8">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6">
@@ -403,7 +403,7 @@ export default function HomePage() {
                   For Developers
                 </Badge>
               </div>
-              <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 tracking-tight text-foreground px-4 sm:px-0">
+              <h1 id="hero-heading" className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 tracking-tight text-foreground px-4 sm:px-0">
                 JSON Viewer, Formatter & Editor
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4 sm:px-0">
@@ -559,7 +559,7 @@ export default function HomePage() {
                   size="lg"
                   className="gap-2 text-sm sm:text-base px-4 sm:px-8 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
                 >
-                  <Link href="/edit">
+                  <Link href="/edit" title="Open our full-featured JSON editor">
                     <Code2 className="w-5 h-5" aria-hidden="true" />
                     Open Full Editor
                     <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -571,7 +571,7 @@ export default function HomePage() {
                   size="lg"
                   className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
                 >
-                  <Link href="/format">
+                  <Link href="/format" title="Format and beautify JSON online">
                     <FileJson className="w-5 h-5" aria-hidden="true" />
                     Format JSON
                   </Link>
@@ -582,7 +582,7 @@ export default function HomePage() {
                   size="lg"
                   className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
                 >
-                  <Link href="/compare">
+                  <Link href="/compare" title="Compare and diff two JSON files">
                     <Copy className="w-5 h-5" aria-hidden="true" />
                     Compare JSON
                   </Link>
@@ -593,7 +593,7 @@ export default function HomePage() {
                   size="lg"
                   className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
                 >
-                  <Link href="/convert">
+                  <Link href="/convert" title="Convert JSON to YAML, XML, CSV and more">
                     <ArrowRightLeft className="w-5 h-5" aria-hidden="true" />
                     Convert JSON
                   </Link>
@@ -604,7 +604,7 @@ export default function HomePage() {
                   size="lg"
                   className="gap-2 text-sm px-4 w-full sm:w-auto py-3 min-h-[48px] sm:min-h-[40px]"
                 >
-                  <Link href="/library">
+                  <Link href="/library" title="Browse our public JSON library with thousands of examples">
                     <Database className="w-5 h-5" aria-hidden="true" />
                     Browse Examples
                   </Link>
@@ -612,7 +612,7 @@ export default function HomePage() {
               </nav>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Features Section */}
         <section className="bg-white dark:bg-gray-950" aria-labelledby="features-heading">
@@ -636,6 +636,7 @@ export default function HomePage() {
                   href={feature.link}
                   className="group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
                   aria-label={`${feature.title}: ${feature.description}`}
+                  title={`Learn more about ${feature.title.toLowerCase()}`}
                 >
                   <Card className="group border-0 shadow-sm hover:shadow-lg transition-all duration-300 h-full bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <CardContent className="p-8">
@@ -991,7 +992,7 @@ export default function HomePage() {
         </section>
 
         {/* Final CTA */}
-        <section className="bg-gray-50 dark:bg-gray-900/50 border-t" aria-labelledby="cta-heading">
+        <section className="bg-gray-50 dark:bg-gray-900/50 border-t" aria-labelledby="cta-heading" role="region">
           <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
             <div className="text-center max-w-4xl mx-auto">
               <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
@@ -1047,7 +1048,7 @@ export default function HomePage() {
             </Button>
           </div>
         )}
-      </div>
+      </main>
     </MainLayout>
   );
 }

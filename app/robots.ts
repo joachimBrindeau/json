@@ -18,10 +18,10 @@ export default function robots(): MetadataRoute.Robots {
           '/library/draft-*',
           '/auth/',
           '/auth/*',
-          // Disallow query parameters for better indexing
-          '/?*',
           // Disallow embedded views from being indexed separately
           '/embed/*',
+          // Note: Removed '/?*' pattern as canonical tags handle duplicate content
+          // from query parameters better than blocking all query strings
         ],
       },
       {

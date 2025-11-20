@@ -36,7 +36,7 @@ export const UrlRenderer = memo(({ value, detection }: UrlRendererProps) => {
       <div className="flex items-center gap-3">
         <img
           src={faviconUrl}
-          alt={`${domain} favicon`}
+          alt={`Website favicon for ${domain}`}
           className="w-6 h-6 rounded flex-shrink-0"
           onError={(e) => {
             (e.target as HTMLImageElement).src =

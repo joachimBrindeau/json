@@ -1,6 +1,12 @@
 import { Metadata } from 'next';
 import Script from 'next/script';
-import { generateSEOMetadata, generateArticleStructuredData, renderJsonLd } from '@/lib/seo';
+import {
+  generateSEOMetadata,
+  generateArticleStructuredData,
+  generateBreadcrumbStructuredData,
+  renderJsonLd,
+  DEFAULT_SEO_CONFIG,
+} from '@/lib/seo';
 import { getCanonicalUrl } from '@/lib/seo/url-utils';
 import { getDocumentByShareId } from '@/lib/db/queries/documents';
 
@@ -48,6 +54,17 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         ? new Date(document.publishedAt).toISOString()
         : undefined,
       author: document.userId || document.isAnonymous ? undefined : 'Anonymous',
+      // Enhanced article metadata
+      ...(document.updatedAt && {
+        modifiedAt: new Date(document.updatedAt).toISOString(),
+      }),
+      // Add tags and section for better article metadata
+      ...(document.tags && document.tags.length > 0 && {
+        articleTags: document.tags,
+      }),
+      ...(document.category && {
+        articleSection: document.category,
+      }),
     });
   } catch {
     // Fallback on error
@@ -94,6 +111,15 @@ async function getStructuredData(id: string) {
 export default async function LibraryDocumentLayout({ children, params }: LayoutProps) {
   const { id } = await params;
   const structuredData = await getStructuredData(id);
+  
+  // Generate breadcrumb structured data
+  const breadcrumbs = [
+    { name: 'Home', url: DEFAULT_SEO_CONFIG.siteUrl },
+    { name: 'Library', url: `${DEFAULT_SEO_CONFIG.siteUrl}/library` },
+    { name: structuredData?.headline || 'JSON Document', url: getCanonicalUrl(`library/${id}`) },
+  ];
+  
+  const breadcrumbSchema = generateBreadcrumbStructuredData(breadcrumbs);
 
   return (
     <>
@@ -107,6 +133,14 @@ export default async function LibraryDocumentLayout({ children, params }: Layout
           }}
         />
       )}
+      <Script
+        id="library-document-breadcrumb-structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: renderJsonLd(breadcrumbSchema),
+        }}
+      />
       {children}
     </>
   );

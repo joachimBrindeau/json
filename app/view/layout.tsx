@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import { generateSEOMetadata } from '@/lib/seo';
-import { getCanonicalUrl } from '@/lib/seo/url-utils';
+import Script from 'next/script';
+import { generateSEOMetadata, generateWebPageStructuredData, generateBreadcrumbStructuredData, renderJsonLd, DEFAULT_SEO_CONFIG, getCanonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'JSON Viewer - Interactive JSON Explorer',
@@ -23,6 +23,39 @@ export default function ViewLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  const pageUrl = getCanonicalUrl('/view');
+  const breadcrumbs = [
+    { name: 'Home', url: DEFAULT_SEO_CONFIG.siteUrl },
+    { name: 'JSON Viewer', url: pageUrl },
+  ];
+  
+  const webPageSchema = generateWebPageStructuredData({
+    name: 'JSON Viewer - Interactive JSON Explorer',
+    url: pageUrl,
+    description: 'View and explore JSON documents with interactive tree navigation',
+    breadcrumbs,
+  });
+
+  return (
+    <>
+      <Script
+        id="view-webpage-structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: renderJsonLd(webPageSchema),
+        }}
+      />
+      <Script
+        id="view-breadcrumb-structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: renderJsonLd(generateBreadcrumbStructuredData(breadcrumbs)),
+        }}
+      />
+      {children}
+    </>
+  );
 }
 

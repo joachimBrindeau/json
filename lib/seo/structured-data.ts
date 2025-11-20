@@ -7,6 +7,7 @@ import type {
   ReviewStructuredDataInput,
   AggregateRating,
   Review,
+  HowToInput,
 } from './types';
 
 /**
@@ -158,9 +159,81 @@ export function generateOrganizationStructuredData() {
     '@type': 'Organization',
     name: DEFAULT_SEO_CONFIG.siteName,
     url: DEFAULT_SEO_CONFIG.siteUrl,
-    logo: `${DEFAULT_SEO_CONFIG.siteUrl}/logo.png`,
-    sameAs: ['https://twitter.com/jsonviewer', 'https://github.com/jsonviewer'],
+    logo: `${DEFAULT_SEO_CONFIG.siteUrl}/icon.svg`,
+    sameAs: [
+      process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com/jsonviewer',
+      process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/jsonviewer',
+    ].filter(Boolean),
   };
+}
+
+/**
+ * Generate WebSite structured data with searchAction
+ * This enables Google site search
+ */
+export function generateWebSiteStructuredData() {
+  const siteUrl = DEFAULT_SEO_CONFIG.siteUrl;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: DEFAULT_SEO_CONFIG.siteName,
+    url: siteUrl,
+    description: DEFAULT_SEO_CONFIG.defaultDescription,
+    publisher: {
+      '@type': 'Organization',
+      name: DEFAULT_SEO_CONFIG.siteName,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/icon.svg`,
+      },
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${siteUrl}/library?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+}
+
+/**
+ * Generate WebPage structured data
+ */
+export function generateWebPageStructuredData(data: {
+  name: string;
+  url: string;
+  description?: string;
+  breadcrumbs?: BreadcrumbItem[];
+}) {
+  const baseSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: data.name,
+    url: data.url,
+    description: data.description || DEFAULT_SEO_CONFIG.defaultDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: DEFAULT_SEO_CONFIG.siteName,
+      url: DEFAULT_SEO_CONFIG.siteUrl,
+    },
+    about: {
+      '@type': 'Thing',
+      name: 'JSON Tools',
+      description: 'Online JSON viewer, formatter, editor, and validator tools',
+    },
+  };
+
+  // Add breadcrumbs if provided
+  if (data.breadcrumbs && data.breadcrumbs.length > 0) {
+    return {
+      ...baseSchema,
+      breadcrumb: generateBreadcrumbStructuredData(data.breadcrumbs),
+    };
+  }
+
+  return baseSchema;
 }
 
 /**
@@ -198,6 +271,60 @@ export function generateFAQPageStructuredData(faqs: FAQItem[]) {
 }
 
 /**
+ * Generate HowTo structured data
+ * Following schema.org HowTo specification
+ */
+export function generateHowToStructuredData(howTo: HowToInput) {
+  const baseSchema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: howTo.name,
+    description: howTo.description,
+    step: howTo.steps.map((step, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      ...(step.image && {
+        image: {
+          '@type': 'ImageObject',
+          url: step.image,
+        },
+      }),
+      ...(step.url && { url: step.url }),
+    })),
+  };
+
+  // Add optional fields if provided
+  if (howTo.image) {
+    baseSchema.image = {
+      '@type': 'ImageObject',
+      url: howTo.image,
+    };
+  }
+
+  if (howTo.totalTime) {
+    baseSchema.totalTime = howTo.totalTime;
+  }
+
+  if (howTo.supply && howTo.supply.length > 0) {
+    baseSchema.supply = howTo.supply.map((item) => ({
+      '@type': 'HowToSupply',
+      name: item.name,
+    }));
+  }
+
+  if (howTo.tool && howTo.tool.length > 0) {
+    baseSchema.tool = howTo.tool.map((item) => ({
+      '@type': 'HowToTool',
+      name: item.name,
+    }));
+  }
+
+  return baseSchema;
+}
+
+/**
  * Safe JSON-LD rendering helper
  * Escapes special characters for safe embedding in HTML
  */
@@ -216,8 +343,11 @@ export const StructuredDataGenerator = {
   webApplication: generateWebApplicationStructuredData,
   article: generateArticleStructuredData,
   organization: generateOrganizationStructuredData,
+  webSite: generateWebSiteStructuredData,
+  webPage: generateWebPageStructuredData,
   breadcrumbs: generateBreadcrumbStructuredData,
   faqPage: generateFAQPageStructuredData,
+  howTo: generateHowToStructuredData,
   aggregateRating: generateAggregateRatingStructuredData,
   review: generateReviewStructuredData,
   softwareAppReviews: generateSoftwareAppReviewStructuredData,

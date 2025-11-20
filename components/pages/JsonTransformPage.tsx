@@ -11,6 +11,7 @@ import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { validateJson } from '@/lib/utils/json-validators';
 import { toastPatterns } from '@/lib/utils/toast-helpers';
+import { RelatedTools } from '@/components/shared/seo/RelatedTools';
 import type { EditorAction } from '@/types/editor-actions';
 import {
   createResetAction,
@@ -125,47 +126,50 @@ export function JsonTransformPage({
 
   return (
     <MainLayout>
-      <div className="h-full min-h-0 flex flex-col lg:flex-row overflow-hidden">
-        <EditorPane
-          title="Input JSON"
-          value={input}
-          onChange={(value) => {
-            const newValue = value || '';
-            setInput(newValue);
-            setCurrentJson(newValue);
-          }}
-          actions={inputActions}
-          customActions={<ViewerActions value={input} onChange={setInput} />}
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-          validationBadge={
-            hasValidInput ? (
-              <Button variant="green" size="sm" onClick={handleTransform} className="h-6 text-xs">
-                {buttonIcon}
-                {actionVerb} JSON
-              </Button>
-            ) : null
-          }
-          theme={inputEditor.theme}
-          onMount={inputEditor.handleEditorDidMount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
-          options={inputEditor.editorOptions}
-          className="border-r"
-        />
+      <div className="h-full min-h-0 flex flex-col">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          <EditorPane
+            title="Input JSON"
+            value={input}
+            onChange={(value) => {
+              const newValue = value || '';
+              setInput(newValue);
+              setCurrentJson(newValue);
+            }}
+            actions={inputActions}
+            customActions={<ViewerActions value={input} onChange={setInput} />}
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            validationBadge={
+              hasValidInput ? (
+                <Button variant="green" size="sm" onClick={handleTransform} className="h-6 text-xs">
+                  {buttonIcon}
+                  {actionVerb} JSON
+                </Button>
+              ) : null
+            }
+            theme={inputEditor.theme}
+            onMount={inputEditor.handleEditorDidMount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={inputEditor.editorOptions}
+            className="border-r"
+          />
 
-        <EditorPane
-          title={outputTitle}
-          value={output}
-          readOnly
-          actions={outputActions}
-          customActions={<ViewerActions value={output} onChange={setOutput} />}
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-          theme={outputEditor.theme}
-          onMount={outputEditor.handleEditorDidMount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
-          options={outputEditor.editorOptions}
-        />
+          <EditorPane
+            title={outputTitle}
+            value={output}
+            readOnly
+            actions={outputActions}
+            customActions={<ViewerActions value={output} onChange={setOutput} />}
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            theme={outputEditor.theme}
+            onMount={outputEditor.handleEditorDidMount}
+            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            options={outputEditor.editorOptions}
+          />
+        </div>
+        <RelatedTools currentTool={actionVerb.toLowerCase()} />
       </div>
     </MainLayout>
   );

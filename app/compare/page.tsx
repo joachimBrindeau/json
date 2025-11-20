@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ViewerCompare } from '@/components/features/viewer';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { RelatedTools } from '@/components/shared/seo/RelatedTools';
 import { useBackendStore } from '@/lib/store/backend';
 
 export default function ComparePage() {
@@ -57,6 +58,7 @@ export default function ComparePage() {
             />
           </ErrorBoundary>
         </div>
+        <RelatedTools currentTool="compare" />
       </div>
     </MainLayout>
   );

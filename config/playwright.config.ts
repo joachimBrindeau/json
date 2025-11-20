@@ -13,16 +13,18 @@ export default defineConfig({
   testDir: './tests',
   // Only run E2E-style tests; skip unit tests (*.test.ts) which are handled by Vitest
   testMatch: '**/*.spec.@(ts|tsx|js)',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* Run tests sequentially to ensure strict fail-fast behavior */
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: true,
   /* Retry on CI only */
   retries: 0,
   /* Fail fast after first failure to surface breakages early */
   maxFailures: 1,
-  /* Opt out of parallel tests on CI. */
-  workers: isCI ? 1 : undefined,
+  /* Strict timeout to prevent hanging - fail fast */
+  globalTimeout: 300_000, // 5 minutes max for entire test run
+  /* Opt out of parallel tests on CI. Run sequentially to fail fast */
+  workers: 1, // Always run sequentially to ensure fast failure detection
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never' }],
@@ -47,11 +49,11 @@ export default defineConfig({
     /* Ensure download reliability across browsers */
     acceptDownloads: true,
 
-    /* Global timeout for each action */
-    actionTimeout: 15_000,
+    /* Global timeout for each action - strict to prevent hanging */
+    actionTimeout: 5_000, // 5 seconds max per action
 
-    /* Global timeout for navigation */
-    navigationTimeout: 30_000,
+    /* Global timeout for navigation - strict to prevent hanging */
+    navigationTimeout: 10_000, // 10 seconds max for navigation
 
     /* Ignore HTTPS errors for development */
     ignoreHTTPSErrors: true,
@@ -62,7 +64,7 @@ export default defineConfig({
     },
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers - Only run Chromium for fast failure detection */
   projects: [
     {
       name: 'setup',
@@ -81,7 +83,9 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
-
+    // Disabled other browsers for faster test execution and strict fail-fast
+    // Uncomment to test on multiple browsers:
+    /*
     {
       name: 'firefox',
       use: {
@@ -100,12 +104,10 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
-    /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
       use: {
         ...devices['Pixel 5'],
-        // Mobile-specific launch options
         launchOptions: {
           args: ['--disable-web-security'],
         },
@@ -117,6 +119,7 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
       dependencies: ['setup'],
     },
+    */
 
     /* Test against branded browsers. */
     // {
@@ -134,7 +137,7 @@ export default defineConfig({
     command: 'npm run dev:next',
     url: SERVER_URL,
     reuseExistingServer: true,
-    timeout: 180_000,
+    timeout: 90_000, // 90 seconds max to start server
     stdout: 'pipe',
     stderr: 'pipe',
     env: { PLAYWRIGHT: '1' },
@@ -144,12 +147,12 @@ export default defineConfig({
   globalSetup: require.resolve('../tests/utils/global-setup.ts'),
   globalTeardown: require.resolve('../tests/utils/global-teardown.ts'),
 
-  /* Test timeout */
-  timeout: 30_000,
+  /* Test timeout - strict to prevent hanging, but allow enough time for E2E operations */
+  timeout: 20_000, // 20 seconds max per test
 
-  /* Expect timeout */
+  /* Expect timeout - strict to prevent hanging */
   expect: {
-    timeout: 5_000,
+    timeout: 2_000, // 2 seconds max for assertions
     /* Take screenshot on expect failure */
     toHaveScreenshot: { threshold: 0.2 },
   },

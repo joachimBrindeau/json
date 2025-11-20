@@ -4,7 +4,7 @@ import { getCanonicalUrl } from '@/lib/seo/url-utils';
 export const metadata = generateSEOMetadata({
   title: 'JSON Converter - Convert JSON to YAML, XML, CSV, TOML & More',
   description:
-    'Free online JSON converter tool. Convert JSON to YAML, XML, CSV, TOML, Properties, TypeScript, and JavaScript formats. Fast, secure, and easy to use with syntax highlighting.',
+    'Convert JSON to YAML, XML, CSV, TOML, and more instantly. Free online converter with syntax highlighting. Transform your data now.',
   keywords: [
     'json converter',
     'json to yaml',
