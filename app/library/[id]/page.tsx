@@ -59,7 +59,7 @@ export default function LibraryViewerPage() {
             variant: 'destructive',
           });
         }
-      } catch (_error) {
+      } catch {
         toast({
           title: 'Error',
           description: 'Failed to load JSON document',

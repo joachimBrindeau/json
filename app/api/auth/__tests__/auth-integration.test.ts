@@ -3,7 +3,7 @@
  * Tests signup, login, logout, and account deletion flows
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { POST as signupPOST } from '../signup/route';
 import { DELETE as deleteAccountDELETE } from '../delete-account/route';
 import { POST as migrateAnonymousPOST } from '../migrate-anonymous/route';

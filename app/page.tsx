@@ -293,11 +293,8 @@ export default function HomePage() {
           setValue: (json: string) => {
             try {
               setCurrentJson(json);
-            } catch (error) {
+            } catch {
               // Silently fail - this is for E2E testing convenience only
-              if (process.env.NODE_ENV === 'development') {
-                console.warn('Failed to set JSON in Monaco stub:', error);
-              }
             }
           },
           trigger: () => {},
@@ -517,11 +514,8 @@ export default function HomePage() {
                               setCurrentJson(JSON.stringify(parsed, null, 2));
                             }
                           }
-                        } catch (error) {
+                        } catch {
                           // Silently fail - JSON parsing errors are expected for invalid input
-                          if (process.env.NODE_ENV === 'development') {
-                            console.debug('JSON parse error in textarea onChange:', error);
-                          }
                         }
                       }}
                       onKeyDown={(e) => {
@@ -537,11 +531,8 @@ export default function HomePage() {
                             const parsed = JSON.parse(v);
                             setCurrentJson(JSON.stringify(parsed, null, 2));
                           }
-                        } catch (error) {
+                        } catch {
                           // Silently fail - JSON parsing errors are expected for invalid input
-                          if (process.env.NODE_ENV === 'development') {
-                            console.debug('JSON parse error in textarea onKeyDown:', error);
-                          }
                         }
                       }}
                       style={{

@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         : undefined,
       author: document.userId || document.isAnonymous ? undefined : 'Anonymous',
     });
-  } catch (error) {
+  } catch {
     // Fallback on error
     return generateSEOMetadata({
       title: 'JSON Document - JSON Viewer',

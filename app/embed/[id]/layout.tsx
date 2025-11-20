@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         : undefined,
       noIndex: true, // Embed pages should not be indexed
     });
-  } catch (error) {
+  } catch {
     // Fallback on error
     return generateSEOMetadata({
       title: 'Embedded JSON Viewer - JSON Viewer',

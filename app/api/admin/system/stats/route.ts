@@ -1,11 +1,10 @@
-import { NextRequest } from 'next/server';
 import { requireSuperAdmin } from '@/lib/auth/admin';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { success, forbidden, internalServerError } from '@/lib/api/responses';
 import { config } from '@/lib/config';
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     await requireSuperAdmin();
 

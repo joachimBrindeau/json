@@ -269,7 +269,7 @@ async function handleExtensionSubmit(
 // Export handlers with middleware
 export const POST = withErrorHandler(
   withValidationHandler(
-    async (request: NextRequest, _context: { params: Promise<Record<string, string>> }) => {
+    async (request: NextRequest) => {
       const body = extensionSubmitSchema.parse(await request.json());
       const response = await handleExtensionSubmit(request, body);
       return response;

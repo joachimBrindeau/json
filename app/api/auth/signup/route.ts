@@ -28,7 +28,7 @@ const signupSchema = z.object({
  * Now using withValidationHandler for automatic Zod validation and Prisma error handling
  */
 export const POST = withValidationHandler(
-  async (request: NextRequest, _context: { params: Promise<Record<string, string>> }) => {
+  async (request: NextRequest) => {
     // Apply rate limiting to prevent signup abuse
     const identifier =
       request.headers.get('x-forwarded-for') ||

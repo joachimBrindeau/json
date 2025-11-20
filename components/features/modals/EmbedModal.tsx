@@ -194,7 +194,7 @@ ${jsonPreview ? jsonPreview.slice(0, 300) + (jsonPreview.length > 300 ? '\n...' 
           'Preview Failed'
         );
       }
-    } catch (error) {
+    } catch {
       setPreviewError(true);
       showErrorToast('Failed to generate preview. Please try again.', 'Preview Error');
     }

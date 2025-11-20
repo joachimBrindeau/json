@@ -81,7 +81,7 @@ function JsonEditorComponent() {
         setCurrentJson(formatted);
         setLoadingProgress(0);
         toastPatterns.success.formatted('JSON');
-      } catch (error) {
+      } catch {
         toastPatterns.error.format();
       } finally {
         setIsLoading(false);

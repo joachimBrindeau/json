@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     });
 
     return success({ received: true }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
-  } catch (err) {
+  } catch {
     return internalServerError('Failed to record web vitals');
   }
 }

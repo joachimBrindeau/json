@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { success, badRequest, internalServerError } from '@/lib/api/responses';
