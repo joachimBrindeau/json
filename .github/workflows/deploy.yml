@@ -130,9 +130,9 @@ jobs:
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}:latest
         run: |
           echo "🚀 Deploying to production server..."
-          ssh ${SERVER_USER}@${SERVER_HOST} << ENDSSH
+          ssh ${SERVER_USER}@${SERVER_HOST} DEPLOY_PATH="${DEPLOY_PATH}" IMAGE_NAME="${IMAGE_NAME}" bash << 'ENDSSH'
             set -e
-            cd ${DEPLOY_PATH}
+            cd "${DEPLOY_PATH}"
             
             echo "📦 Pulling latest Docker image: ${IMAGE_NAME}"
             APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pull app
