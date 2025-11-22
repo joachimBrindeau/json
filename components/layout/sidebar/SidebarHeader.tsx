@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { FileJson, X } from 'lucide-react';
 
 interface SidebarHeaderProps {
@@ -16,6 +17,9 @@ function SidebarHeaderComponent({ isMobile, onClose }: SidebarHeaderProps) {
       <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
         <FileJson className="h-6 w-6 text-primary transition-transform hover:scale-110" />
         <span className="text-xl font-semibold text-foreground">JSON Viewer</span>
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-medium">
+          Beta
+        </Badge>
       </Link>
 
       {/* Close button for mobile */}
