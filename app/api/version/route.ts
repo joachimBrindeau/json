@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { success } from '@/lib/api/responses';
 import { config } from '@/lib/config';
@@ -29,7 +29,33 @@ function getBuildId(): string {
     return cachedBuildId;
   }
 
-  cachedBuildId = (config.app.buildId as string) || Date.now().toString();
+  // Try to read Next.js build ID from filesystem (most reliable)
+  try {
+    const buildIdPath = join(process.cwd(), '.next', 'BUILD_ID');
+    if (existsSync(buildIdPath)) {
+      cachedBuildId = readFileSync(buildIdPath, 'utf-8').trim();
+      return cachedBuildId;
+    }
+  } catch {
+    // Fall through to other methods
+  }
+
+  // Try environment variables (set at build time)
+  // Only use if it's not a runtime-generated timestamp (check if it's a reasonable build ID format)
+  if (config.app.buildId) {
+    // If buildId looks like a timestamp (all digits, 13+ chars), it might be runtime-generated
+    // Otherwise, it's likely a proper build ID from env var
+    const isLikelyTimestamp = /^\d{13,}$/.test(config.app.buildId);
+    if (!isLikelyTimestamp) {
+      cachedBuildId = config.app.buildId;
+      return cachedBuildId;
+    }
+  }
+
+  // Last resort: use a stable fallback based on package version
+  // This ensures the buildId doesn't change on every request
+  const version = getAppVersion();
+  cachedBuildId = `${version}-stable`;
   return cachedBuildId;
 }
 

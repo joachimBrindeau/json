@@ -16,6 +16,18 @@ export function VersionChecker() {
       return;
     }
 
+    // Prevent infinite reload loops - check if we just reloaded
+    const lastReloadTime = sessionStorage.getItem('last-reload-time');
+    const now = Date.now();
+    if (lastReloadTime) {
+      const timeSinceReload = now - parseInt(lastReloadTime, 10);
+      // If we reloaded less than 5 seconds ago, skip version check to prevent loops
+      if (timeSinceReload < 5000) {
+        logger.info({ timeSinceReload }, 'Skipping version check - recent reload detected');
+        return;
+      }
+    }
+
     const checkVersion = async () => {
       try {
         // Fetch current version from API
@@ -51,6 +63,9 @@ export function VersionChecker() {
 
           // Update stored version
           localStorage.setItem('app-version', APP_VERSION);
+
+          // Mark reload time to prevent loops
+          sessionStorage.setItem('last-reload-time', now.toString());
 
           // Reload page to get fresh content
           setTimeout(() => {
