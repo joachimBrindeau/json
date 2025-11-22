@@ -10,7 +10,8 @@ env:
   NODE_VERSION: '20'
   DOCKER_BUILDKIT: 1
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Use lowercase repository name to match deploy script
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/json
 
 jobs:
   build-and-push:
@@ -38,14 +39,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=,format=short
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
+        env:
+          SKIP_ENV_VALIDATION: "true"
+          NODE_ENV: "production"
         with:
           context: .
           file: ./Dockerfile
