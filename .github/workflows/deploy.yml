@@ -130,15 +130,17 @@ jobs:
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}:latest
         run: |
           echo "🚀 Deploying to production server..."
-          ssh ${SERVER_USER}@${SERVER_HOST} DEPLOY_PATH="${DEPLOY_PATH}" IMAGE_NAME="${IMAGE_NAME}" 'bash -s' << 'REMOTE_SCRIPT'
+          ssh ${SERVER_USER}@${SERVER_HOST} bash -s << REMOTE_SCRIPT
             set -e
-            cd "${DEPLOY_PATH}"
+            export DEPLOY_PATH="${DEPLOY_PATH}"
+            export IMAGE_NAME="${IMAGE_NAME}"
+            cd "\${DEPLOY_PATH}"
             
-            echo "📦 Pulling latest Docker image: ${IMAGE_NAME}"
-            APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pull app
+            echo "📦 Pulling latest Docker image: \${IMAGE_NAME}"
+            APP_IMAGE="\${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pull app
             
             echo "🔄 Updating services..."
-            APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml up -d --remove-orphans
+            APP_IMAGE="\${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml up -d --remove-orphans
             
             echo "🏥 Waiting for health check..."
             MAX_ATTEMPTS=30
