@@ -106,7 +106,7 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           echo "📦 Syncing deployment files to server..."
-          rsync -avz --delete \
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete \
             --exclude '.env*' \
             --exclude 'node_modules' \
             --exclude '.next' \
