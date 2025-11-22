@@ -528,7 +528,16 @@ export const useBackendStore = create<BackendAppState>()(
 
             const trimmed = chunks.trim();
             const lines = trimmed ? trimmed.split('\n') : [];
-            const data = lines.map((line) => JSON.parse(line));
+            const data = lines
+              .filter((line) => line.trim())
+              .map((line) => {
+                try {
+                  return JSON.parse(line);
+                } catch {
+                  return null;
+                }
+              })
+              .filter((item) => item !== null);
             const reconstructed = data.length === 1 ? data[0].data : data;
 
             const document: JsonDocument = {

@@ -353,7 +353,15 @@ export function ViewerCompare({
           }
           theme={editor1.theme}
           onMount={handleEditor1Mount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          beforeMount={(monaco) => {
+            if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+              try {
+                defineMonacoThemes(monaco);
+              } catch (error) {
+                // Theme definition will be retried in onMount if it fails here
+              }
+            }
+          }}
           options={editor1.editorOptions}
           className="border-r"
         />
@@ -367,7 +375,15 @@ export function ViewerCompare({
           validationBadge={null}
           theme={editor2.theme}
           onMount={handleEditor2Mount}
-          beforeMount={(monaco) => defineMonacoThemes(monaco)}
+          beforeMount={(monaco) => {
+            if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+              try {
+                defineMonacoThemes(monaco);
+              } catch (error) {
+                // Theme definition will be retried in onMount if it fails here
+              }
+            }
+          }}
           options={editor2.editorOptions}
         />
       </div>

@@ -100,7 +100,16 @@ export default function EmbedPage({ params }: EmbedPageProps) {
 
         // Parse the streamed data
         const lines = chunks.trim().split('\n');
-        const data = lines.map((line) => JSON.parse(line));
+        const data = lines
+          .filter((line) => line.trim())
+          .map((line) => {
+            try {
+              return JSON.parse(line);
+            } catch {
+              return null;
+            }
+          })
+          .filter((item) => item !== null);
         const reconstructed = data.length === 1 ? data[0].data : data;
 
         setJsonData(JSON.stringify(reconstructed, null, 2));

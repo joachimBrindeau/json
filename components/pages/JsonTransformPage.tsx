@@ -148,7 +148,15 @@ export function JsonTransformPage({
             }
             theme={inputEditor.theme}
             onMount={inputEditor.handleEditorDidMount}
-            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            beforeMount={(monaco) => {
+              if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+                try {
+                  defineMonacoThemes(monaco);
+                } catch (error) {
+                  // Theme definition will be retried in onMount if it fails here
+                }
+              }
+            }}
             options={inputEditor.editorOptions}
             className="border-r"
           />
@@ -163,7 +171,15 @@ export function JsonTransformPage({
             onSearchChange={setSearchTerm}
             theme={outputEditor.theme}
             onMount={outputEditor.handleEditorDidMount}
-            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+            beforeMount={(monaco) => {
+              if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+                try {
+                  defineMonacoThemes(monaco);
+                } catch (error) {
+                  // Theme definition will be retried in onMount if it fails here
+                }
+              }
+            }}
             options={outputEditor.editorOptions}
           />
         </div>
