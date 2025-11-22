@@ -32,7 +32,23 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npx prisma generate
 
 # Build the application (skip strict env validation during image build)
-RUN SKIP_ENV_VALIDATION=true npm run build
+# Provide minimal required environment variables for build
+ENV SKIP_ENV_VALIDATION=true
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_APP_URL=https://json-viewer.io
+ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+ENV REDIS_URL=redis://localhost:6379
+ENV NEXTAUTH_URL=https://json-viewer.io
+ENV NEXTAUTH_SECRET=dummy-secret-for-build-only-min-32-chars
+ENV GITHUB_CLIENT_ID=dummy
+ENV GITHUB_CLIENT_SECRET=dummy
+ENV GOOGLE_CLIENT_ID=dummy
+ENV GOOGLE_CLIENT_SECRET=dummy
+ENV SMTP_HOST=dummy
+ENV SMTP_PORT=587
+ENV SMTP_USERNAME=dummy
+ENV SMTP_PASSWORD=dummy
+RUN npm run build
 
 # If using npm comment out above and use below instead
 # RUN npm run build
