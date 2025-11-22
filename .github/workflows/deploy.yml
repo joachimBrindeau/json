@@ -78,7 +78,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      secrets: read
     
     steps:
       - name: Checkout code
