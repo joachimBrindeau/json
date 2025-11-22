@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 
 interface VersionInfo {
@@ -10,8 +10,6 @@ interface VersionInfo {
 }
 
 export function VersionChecker() {
-  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
-
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') {
@@ -32,8 +30,6 @@ export function VersionChecker() {
 
         const data: VersionInfo = await response.json();
         const APP_VERSION = data.versionHash; // Use versionHash for cache busting
-
-        setCurrentVersion(APP_VERSION);
 
         const storedVersion = localStorage.getItem('app-version');
 
