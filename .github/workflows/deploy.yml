@@ -130,24 +130,47 @@ jobs:
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}:latest
         run: |
           echo "🚀 Deploying to production server..."
-          ssh ${SERVER_USER}@${SERVER_HOST} "cd ${DEPLOY_PATH} && \
-            export IMAGE_NAME='${IMAGE_NAME}' && \
-            echo '📦 Pulling latest Docker image: '\${IMAGE_NAME} && \
-            APP_IMAGE=\${IMAGE_NAME} docker compose -f config/docker-compose.server.yml pull app && \
-            echo '🔄 Updating services...' && \
-            APP_IMAGE=\${IMAGE_NAME} docker compose -f config/docker-compose.server.yml up -d --remove-orphans && \
-            echo '🏥 Waiting for health check...' && \
-            for i in \$(seq 1 30); do \
-              if curl -f -s http://localhost:3456/api/health | grep -q '\"status\":\"ok\"'; then \
-                echo '✅ Application is healthy! (attempt '\$i'/30)' && \
-                exit 0; \
-              fi; \
-              echo '⏳ Waiting for application... (attempt '\$i'/30)'; \
-              sleep 2; \
-            done && \
-            echo '❌ Health check failed after 30 attempts' && \
-            docker compose -f config/docker-compose.server.yml logs app --tail=50 && \
-            exit 1"
+          ssh ${SERVER_USER}@${SERVER_HOST} << EOF
+            set -e
+            cd ${DEPLOY_PATH}
+            export IMAGE_NAME='${IMAGE_NAME}'
+            
+            echo "📦 Pulling latest Docker image: \${IMAGE_NAME}"
+            APP_IMAGE="\${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pull app
+            
+            echo "🔄 Updating services..."
+            APP_IMAGE="\${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml up -d --remove-orphans
+            
+            echo "🏥 Waiting for health check..."
+            MAX_ATTEMPTS=30
+            ATTEMPT=0
+            HEALTHY=false
+            
+            while [ \$ATTEMPT -lt \$MAX_ATTEMPTS ]; do
+              ATTEMPT=\$((ATTEMPT + 1))
+              HTTP_STATUS=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3456/api/health 2>/dev/null || echo "000")
+              
+              if [ "\$HTTP_STATUS" = "200" ]; then
+                HEALTH_RESPONSE=\$(curl -s http://localhost:3456/api/health 2>/dev/null || echo '{"status":"error"}')
+                if echo "\$HEALTH_RESPONSE" | grep -q '"status":"ok"'; then
+                  echo "✅ Application is healthy! (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+                  HEALTHY=true
+                  break
+                fi
+              fi
+              
+              echo "⏳ Waiting for application... (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+              sleep 2
+            done
+            
+            if [ "\$HEALTHY" = "false" ]; then
+              echo "❌ Health check failed after \$MAX_ATTEMPTS attempts"
+              docker compose -f config/docker-compose.server.yml logs app --tail=50
+              exit 1
+            fi
+            
+            echo "✅ Deployment successful!"
+          EOF
       
       - name: Verify deployment
         env:
