@@ -15,11 +15,12 @@ function getAppVersion(): string {
   try {
     const packageJsonPath = join(process.cwd(), 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    cachedVersion = packageJson.version || '1.0.0';
+    cachedVersion = (packageJson.version as string) || '1.0.0';
     return cachedVersion;
-  } catch (error) {
+  } catch {
     // Fallback if package.json can't be read
-    return '1.0.0';
+    cachedVersion = '1.0.0';
+    return cachedVersion;
   }
 }
 
@@ -28,7 +29,7 @@ function getBuildId(): string {
     return cachedBuildId;
   }
 
-  cachedBuildId = config.app.buildId || Date.now().toString();
+  cachedBuildId = (config.app.buildId as string) || Date.now().toString();
   return cachedBuildId;
 }
 

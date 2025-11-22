@@ -42,7 +42,7 @@ interface UseApiMutationReturn<TData, TVariables> {
  *   {
  *     successMessage: 'Document deleted',
  *     onSuccess: () => router.push('/library'),
- *     onError: (error) => { /* Handle error */ }
+ *     onError: (err) => console.error(err)
  *   }
  * );
  *

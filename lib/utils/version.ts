@@ -12,7 +12,7 @@ function getPackageVersion(): string {
     const packageJsonPath = join(process.cwd(), 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
     return packageJson.version || '1.0.0';
-  } catch (error) {
+  } catch {
     // Fallback if package.json can't be read (e.g., in browser or during build)
     return '1.0.1';
   }
