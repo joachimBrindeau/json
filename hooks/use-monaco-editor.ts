@@ -5,6 +5,7 @@ import type { OnMount, Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { getOptimizedMonacoOptions } from '@/lib/editor/optimizations';
+import { configureMonacoLoader, waitForMonacoReady } from '@/lib/editor/monaco-loader';
 import { logger } from '@/lib/logger';
 
 /**
@@ -79,8 +80,52 @@ export function useMonacoEditor(
 ): UseMonacoEditorReturn {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [editorError, setEditorError] = useState<string | null>(null);
+  const [isMonacoReady, setIsMonacoReady] = useState(false);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const initializationRetryCount = useRef(0);
+  const maxRetries = 3;
+
+  // Configure Monaco loader on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeMonaco = async () => {
+      try {
+        await configureMonacoLoader();
+        await waitForMonacoReady();
+        if (isMounted) {
+          setIsMonacoReady(true);
+          setEditorError(null);
+          initializationRetryCount.current = 0;
+        }
+      } catch (error) {
+        if (isMounted) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to initialize Monaco loader';
+          logger.error({ err: error, retryCount: initializationRetryCount.current }, 'Monaco loader initialization error');
+          
+          // Retry initialization
+          if (initializationRetryCount.current < maxRetries) {
+            initializationRetryCount.current += 1;
+            setTimeout(() => {
+              if (isMounted) {
+                initializeMonaco();
+              }
+            }, 1000 * initializationRetryCount.current); // Exponential backoff
+          } else {
+            setEditorError(errorMessage);
+            setIsMonacoReady(false);
+          }
+        }
+      }
+    };
+
+    initializeMonaco();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Detect dark mode and watch for changes
   useEffect(() => {
@@ -111,12 +156,30 @@ export function useMonacoEditor(
 
   // Handle editor mount
   const handleEditorDidMount: OnMount = useCallback(
-    (editor, monaco) => {
+    async (editor, monaco) => {
       // Guard: Ensure monaco is fully initialized
       if (!monaco || !monaco.editor) {
-        setEditorError('Monaco editor not fully initialized');
-        logger.error({ monaco }, 'Monaco instance is undefined or incomplete');
-        return;
+        // Wait a bit and retry if Monaco isn't ready yet
+        if (!isMonacoReady) {
+          logger.warn('Monaco not ready on mount, waiting...');
+          try {
+            await waitForMonacoReady();
+            // Monaco should be ready now, but we need to check again
+            if (!monaco || !monaco.editor) {
+              setEditorError('Monaco editor not fully initialized after wait');
+              logger.error({ monaco }, 'Monaco instance still undefined after wait');
+              return;
+            }
+          } catch (error) {
+            setEditorError('Monaco editor failed to initialize');
+            logger.error({ err: error }, 'Monaco initialization failed');
+            return;
+          }
+        } else {
+          setEditorError('Monaco editor not fully initialized');
+          logger.error({ monaco }, 'Monaco instance is undefined or incomplete');
+          return;
+        }
       }
 
       editorRef.current = editor;
@@ -151,19 +214,46 @@ export function useMonacoEditor(
       }
 
       try {
+        // Ensure Monaco is fully ready before proceeding
+        await waitForMonacoReady();
+
         // Define custom themes immediately - guard against undefined monaco
         if (monaco && monaco.editor) {
-          defineMonacoThemes(monaco);
+          const themesDefined = defineMonacoThemes(monaco);
+          if (!themesDefined) {
+            logger.warn('Failed to define Monaco themes, retrying...');
+            // Retry theme definition after a short delay
+            setTimeout(() => {
+              if (monaco && monaco.editor) {
+                defineMonacoThemes(monaco);
+              }
+            }, 100);
+          }
 
           // Set the correct theme based on current dark mode state
           const currentTheme = isDarkMode ? 'shadcn-dark' : 'shadcn-light';
-          monaco.editor.setTheme(currentTheme);
+          try {
+            monaco.editor.setTheme(currentTheme);
+          } catch (themeError) {
+            logger.warn({ err: themeError }, 'Failed to set theme, will retry');
+            // Retry theme setting after themes are defined
+            setTimeout(() => {
+              if (monaco && monaco.editor) {
+                try {
+                  monaco.editor.setTheme(currentTheme);
+                } catch (e) {
+                  logger.error({ err: e }, 'Failed to set theme on retry');
+                }
+              }
+            }, 200);
+          }
 
           // Use optimized options based on content size
           const optimizedOptions = getOptimizedMonacoOptions(contentLength);
           editor.updateOptions(optimizedOptions);
 
           setEditorError(null);
+          setIsMonacoReady(true);
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to initialize editor';
@@ -171,7 +261,7 @@ export function useMonacoEditor(
         logger.error({ err: error }, 'Monaco editor initialization error');
       }
     },
-    [contentLength, isDarkMode]
+    [contentLength, isDarkMode, isMonacoReady]
   );
 
   // Compute editor options

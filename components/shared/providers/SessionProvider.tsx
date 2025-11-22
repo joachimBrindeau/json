@@ -42,8 +42,8 @@ export function AuthSessionProvider({ children, session }: AuthSessionProviderPr
       session={session}
       // Refetch session every 5 minutes
       refetchInterval={5 * 60}
-      // Refetch session when window gains focus
-      refetchOnWindowFocus={true}
+      // Only refetch on window focus if session is stale (reduces unnecessary re-renders)
+      refetchOnWindowFocus={false}
       // Only refetch if session is older than 1 minute
       refetchWhenOffline={false}
     >

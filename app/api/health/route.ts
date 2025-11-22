@@ -9,22 +9,28 @@ export async function GET() {
     const health = await checkDBHealth();
 
     const isHealthy = health.postgres && health.redis;
-    // Always return 200 so reverse proxies and orchestrators don't flap during partial outages.
-    // Surface component health in the payload for observability.
-    return success(
-      {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        services: {
-          database: health.postgres ? 'healthy' : 'unhealthy',
-          redis: health.redis ? 'healthy' : 'unhealthy',
-        },
-        version: APP_VERSION,
-        environment: config.nodeEnv,
-        healthy: isHealthy,
+    
+    const healthData = {
+      status: isHealthy ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: health.postgres ? 'healthy' : 'unhealthy',
+        redis: health.redis ? 'healthy' : 'unhealthy',
       },
-      { status: 200 }
-    );
+      version: APP_VERSION,
+      environment: config.nodeEnv,
+      healthy: isHealthy,
+    };
+
+    // Return 200 if healthy, 503 if unhealthy
+    // This allows reverse proxies and orchestrators to properly detect failures
+    if (isHealthy) {
+      return success(healthData, { status: 200 });
+    } else {
+      // Return 503 (Service Unavailable) when unhealthy
+      // This allows reverse proxies and orchestrators to detect failures
+      return success(healthData, { status: 503 });
+    }
   } catch (error) {
     logger.error(
       {

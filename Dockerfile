@@ -32,22 +32,39 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npx prisma generate
 
 # Build the application (skip strict env validation during image build)
-# Provide minimal required environment variables for build
+# Use ARG for build-time only values (not persisted in final image)
+# These placeholders are only used during build and are replaced at runtime
+ARG DATABASE_URL=postgresql://build_user:build_password@localhost:5432/build_database
+ARG REDIS_URL=redis://localhost:6379
+ARG NEXTAUTH_URL=https://json-viewer.io
+ARG NEXTAUTH_SECRET=build-time-secret-placeholder-min-32-chars-required-for-validation
+ARG NEXT_PUBLIC_APP_URL=https://json-viewer.io
+ARG GITHUB_CLIENT_ID=build-time-github-client-id-placeholder
+ARG GITHUB_CLIENT_SECRET=build-time-github-client-secret-placeholder
+ARG GOOGLE_CLIENT_ID=build-time-google-client-id-placeholder.apps.googleusercontent.com
+ARG GOOGLE_CLIENT_SECRET=build-time-google-client-secret-placeholder
+ARG SMTP_HOST=smtp.build-time-placeholder.com
+ARG SMTP_PORT=587
+ARG SMTP_USERNAME=build-time-smtp-username
+ARG SMTP_PASSWORD=build-time-smtp-password-placeholder
+
+# Set as ENV for build process (these won't persist to final image)
 ENV SKIP_ENV_VALIDATION=true
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_APP_URL=https://json-viewer.io
-ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
-ENV REDIS_URL=redis://localhost:6379
-ENV NEXTAUTH_URL=https://json-viewer.io
-ENV NEXTAUTH_SECRET=dummy-secret-for-build-only-min-32-chars
-ENV GITHUB_CLIENT_ID=dummy
-ENV GITHUB_CLIENT_SECRET=dummy
-ENV GOOGLE_CLIENT_ID=dummy
-ENV GOOGLE_CLIENT_SECRET=dummy
-ENV SMTP_HOST=dummy
-ENV SMTP_PORT=587
-ENV SMTP_USERNAME=dummy
-ENV SMTP_PASSWORD=dummy
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV DATABASE_URL=${DATABASE_URL}
+ENV REDIS_URL=${REDIS_URL}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+ENV GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+ENV SMTP_HOST=${SMTP_HOST}
+ENV SMTP_PORT=${SMTP_PORT}
+ENV SMTP_USERNAME=${SMTP_USERNAME}
+ENV SMTP_PASSWORD=${SMTP_PASSWORD}
+
 RUN npm run build
 
 # If using npm comment out above and use below instead

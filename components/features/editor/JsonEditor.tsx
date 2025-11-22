@@ -16,6 +16,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { useSearch } from '@/hooks/use-search';
 import { defineMonacoThemes } from '@/lib/editor/themes';
+import { logger } from '@/lib/logger';
 import {
   isLargeFile,
   getDebounceDelay,
@@ -295,39 +296,48 @@ function JsonEditorComponent() {
             }}
             theme={theme}
             onMount={handleCustomEditorMount}
-            beforeMount={(monaco) => {
-              // Safely configure JSON language support
-              // Note: beforeMount is called before editor is fully initialized,
-              // so we only configure language features, not editor features
-              if (
-                monaco &&
-                monaco.languages &&
-                monaco.languages.json &&
-                monaco.languages.json.jsonDefaults &&
-                typeof monaco.languages.json.jsonDefaults.setDiagnosticsOptions === 'function'
-              ) {
-                try {
-                  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                    validate: true,
-                    allowComments: false,
-                    schemaValidation: 'warning',
-                    // Disable schema validation to avoid parse errors during initialization
-                    enableSchemaRequest: false,
-                  });
-                } catch (error) {
-                  // Ignore if JSON language isn't ready yet
-                  // This is expected in some cases during initialization
+            beforeMount={async (monaco) => {
+              // Ensure Monaco is fully ready before configuring
+              // beforeMount is called after Monaco loads but before editor creation
+              try {
+                // Safely configure JSON language support
+                if (
+                  monaco &&
+                  monaco.languages &&
+                  monaco.languages.json &&
+                  monaco.languages.json.jsonDefaults &&
+                  typeof monaco.languages.json.jsonDefaults.setDiagnosticsOptions === 'function'
+                ) {
+                  try {
+                    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                      validate: true,
+                      allowComments: false,
+                      schemaValidation: 'warning',
+                      // Disable schema validation to avoid parse errors during initialization
+                      enableSchemaRequest: false,
+                    });
+                  } catch (error) {
+                    // Ignore if JSON language isn't ready yet
+                    // This is expected in some cases during initialization
+                    logger.warn({ err: error }, 'Failed to configure JSON language defaults');
+                  }
                 }
-              }
 
-              // Define themes in beforeMount - Monaco should be ready at this point
-              // but we add defensive checks
-              if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
-                try {
-                  defineMonacoThemes(monaco);
-                } catch (error) {
-                  // If theme definition fails, it will be retried in onMount
+                // Define themes in beforeMount - Monaco should be ready at this point
+                // but we add defensive checks
+                if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+                  try {
+                    const themesDefined = defineMonacoThemes(monaco);
+                    if (!themesDefined) {
+                      logger.warn('Failed to define themes in beforeMount, will retry in onMount');
+                    }
+                  } catch (error) {
+                    // If theme definition fails, it will be retried in onMount
+                    logger.warn({ err: error }, 'Theme definition failed in beforeMount');
+                  }
                 }
+              } catch (error) {
+                logger.error({ err: error }, 'Error in Monaco beforeMount handler');
               }
             }}
             options={editorOptions}

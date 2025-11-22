@@ -60,7 +60,9 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3456/api/health"]
+      # Verify health endpoint returns 200 and status is "ok"
+      # curl -f fails on non-2xx status codes, and we verify response body contains "ok"
+      test: ["CMD-SHELL", "curl -f http://localhost:3456/api/health | grep -q '\"status\":\"ok\"' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

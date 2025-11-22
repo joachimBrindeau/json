@@ -74,11 +74,13 @@ function MainLayoutComponent({ children }: MainLayoutProps) {
           onChange={handleGlobalUpload}
         />
 
-        <main className="flex-1 min-h-0 overflow-y-auto">
-          <ErrorBoundary>
-            <PageTransition>{children}</PageTransition>
-          </ErrorBoundary>
-          {/* Reviews Snippet - Visible on all pages for Google compliance */}
+        <main className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+          <div className="flex-1 min-h-0">
+            <ErrorBoundary>
+              <PageTransition>{children}</PageTransition>
+            </ErrorBoundary>
+          </div>
+          {/* Reviews Snippet - Visible on all pages for Google compliance, appears below main content */}
           <ReviewsSnippet />
         </main>
       </div>

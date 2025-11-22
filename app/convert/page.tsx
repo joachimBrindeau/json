@@ -770,8 +770,8 @@ export default data;`;
 
   return (
     <MainLayout>
-      <div className="h-full min-h-0 flex flex-col">
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className="h-full flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
           <EditorPane
             title="Input"
             value={input}
@@ -856,7 +856,10 @@ export default data;`;
             options={outputEditor.editorOptions}
           />
         </div>
-        <RelatedTools currentTool="convert" />
+        {/* Related Tools - Appears below main content area for SEO */}
+        <div className="flex-shrink-0">
+          <RelatedTools currentTool="convert" />
+        </div>
       </div>
     </MainLayout>
   );

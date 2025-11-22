@@ -96,7 +96,10 @@ missing_vars=()
 for var in "${required_vars[@]}"; do
     if ! grep -q "^${var}=" .env; then
         missing_vars+=("$var")
-    elif grep -q "^${var}=.*REPLACE.*" .env || grep -q "^${var}=.*your-.*" .env; then
+    elif grep -q "^${var}=.*REPLACE.*" .env || \
+         grep -q "^${var}=.*your-.*" .env || \
+         grep -q "^${var}=.*build-time.*" .env || \
+         grep -q "^${var}=.*placeholder.*" .env; then
         echo "⚠️  WARNING: ${var} appears to contain placeholder value"
         missing_vars+=("$var")
     fi
@@ -148,14 +151,36 @@ APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml pul
 echo "🔄 Updating services..."
 APP_IMAGE="${IMAGE_NAME}" docker compose -f config/docker-compose.server.yml up -d --remove-orphans
 
-# Wait for health
-for i in {1..30}; do
-    if curl -f -s http://localhost:3456/api/health >/dev/null 2>&1; then
-        echo "Application is healthy!"
+# Wait for health check with proper failure handling
+MAX_HEALTH_CHECK_ATTEMPTS=30
+HEALTH_CHECK_INTERVAL=2
+HEALTH_CHECK_PASSED=false
+
+echo "🏥 Waiting for application health check..."
+for i in $(seq 1 $MAX_HEALTH_CHECK_ATTEMPTS); do
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3456/api/health 2>/dev/null || echo "000")
+    HEALTH_RESPONSE=$(curl -s http://localhost:3456/api/health 2>/dev/null || echo '{"status":"error"}')
+    HEALTH_STATUS=$(echo "$HEALTH_RESPONSE" | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+    
+    if [ "$HTTP_STATUS" = "200" ] && [ "$HEALTH_STATUS" = "ok" ]; then
+        echo "✅ Application is healthy! (attempt $i/$MAX_HEALTH_CHECK_ATTEMPTS)"
+        HEALTH_CHECK_PASSED=true
         break
+    elif [ "$HTTP_STATUS" != "000" ]; then
+        echo "⏳ Application responding but not fully healthy (HTTP: $HTTP_STATUS, status: $HEALTH_STATUS)... (attempt $i/$MAX_HEALTH_CHECK_ATTEMPTS)"
+    else
+        echo "⏳ Waiting for application to start... (attempt $i/$MAX_HEALTH_CHECK_ATTEMPTS)"
     fi
-    sleep 2
+    sleep $HEALTH_CHECK_INTERVAL
 done
+
+if [ "$HEALTH_CHECK_PASSED" != "true" ]; then
+    echo "❌ ERROR: Health check failed after $MAX_HEALTH_CHECK_ATTEMPTS attempts"
+    echo "Application may not have started correctly"
+    echo "Checking container logs..."
+    docker compose -f config/docker-compose.server.yml logs --tail=50 app || true
+    exit 1
+fi
 
 # Cache busting - clear any reverse proxy caches
 echo "Clearing caches..."

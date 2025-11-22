@@ -65,7 +65,7 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* Resource Hints for Performance */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
@@ -83,6 +83,38 @@ export default function RootLayout({
           <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         )}
 
+        {/* Theme initialization - MUST run before React hydration to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  // Get theme from localStorage
+                  const theme = localStorage.getItem('theme');
+                  const html = document.documentElement;
+                  
+                  // Apply theme immediately before React hydrates
+                  if (theme === 'dark') {
+                    html.classList.add('dark');
+                  } else if (theme === 'light') {
+                    html.classList.remove('dark');
+                  } else {
+                    // Auto theme - use system preference
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (prefersDark) {
+                      html.classList.add('dark');
+                    } else {
+                      html.classList.remove('dark');
+                    }
+                  }
+                } catch (e) {
+                  // Ignore localStorage errors (e.g., in private browsing)
+                }
+              })();
+            `,
+          }}
+        />
+        
         {/* Ensure JSON is always available (polyfill for production builds) */}
         <script
           dangerouslySetInnerHTML={{

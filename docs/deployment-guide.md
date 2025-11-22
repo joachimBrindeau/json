@@ -203,11 +203,12 @@ jobs:
       - name: Build application (test)
         run: npm run build
         env:
-          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          DATABASE_URL: postgresql://build_user:build_password@localhost:5432/build_database
           REDIS_URL: redis://localhost:6379
-          NEXTAUTH_SECRET: dummy-secret-for-build
+          NEXTAUTH_SECRET: build-time-secret-placeholder-min-32-chars-required
           NEXTAUTH_URL: http://localhost:3000
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+          SKIP_ENV_VALIDATION: "true"
 
   build-and-push:
     name: Build and Push Docker Image

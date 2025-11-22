@@ -25,7 +25,7 @@ export default function ComparePage() {
     <MainLayout>
       <div className="h-full flex flex-col">
         {/* Tab bar matching the editor layout */}
-        <div className="border-b bg-background">
+        <div className="border-b bg-background flex-shrink-0">
           <Tabs
             value={activeTab}
             onValueChange={(tab) => {
@@ -58,7 +58,10 @@ export default function ComparePage() {
             />
           </ErrorBoundary>
         </div>
-        <RelatedTools currentTool="compare" />
+        {/* Related Tools - Appears below main content area for SEO */}
+        <div className="flex-shrink-0">
+          <RelatedTools currentTool="compare" />
+        </div>
       </div>
     </MainLayout>
   );
