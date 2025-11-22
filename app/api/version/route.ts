@@ -42,12 +42,13 @@ function getBuildId(): string {
 
   // Try environment variables (set at build time)
   // Only use if it's not a runtime-generated timestamp (check if it's a reasonable build ID format)
-  if (config.app.buildId) {
+  const envBuildId = config.app.buildId;
+  if (envBuildId && typeof envBuildId === 'string') {
     // If buildId looks like a timestamp (all digits, 13+ chars), it might be runtime-generated
     // Otherwise, it's likely a proper build ID from env var
-    const isLikelyTimestamp = /^\d{13,}$/.test(config.app.buildId);
+    const isLikelyTimestamp = /^\d{13,}$/.test(envBuildId);
     if (!isLikelyTimestamp) {
-      cachedBuildId = config.app.buildId;
+      cachedBuildId = envBuildId;
       return cachedBuildId;
     }
   }
