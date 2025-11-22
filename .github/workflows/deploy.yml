@@ -59,10 +59,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          no-cache-filters: |
-            !.next
-            !node_modules
+          # Disable cache to ensure fresh builds with all routes
+          no-cache: true
           build-args: |
             BUILDKIT_INLINE_CACHE=1
