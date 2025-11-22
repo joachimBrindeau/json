@@ -23,7 +23,7 @@ export interface PaginationInfo {
   currentPage?: number;
 }
 
-export interface UseDocumentListOptions<T> {
+export interface UseDocumentListOptions<_T = any> {
   endpoint: string;
   enabled?: boolean;
   pageSize?: number;

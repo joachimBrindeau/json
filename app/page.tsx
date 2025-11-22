@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { useBackendStore } from '@/lib/store/backend';
 import { useSearch } from '@/hooks/use-search';
 import { useViewerSettings } from '@/hooks/use-viewer-settings';
-import { STRUCTURED_DATA_TEMPLATES, renderJsonLd, generateBreadcrumbStructuredData } from '@/lib/seo';
+import { renderJsonLd, generateBreadcrumbStructuredData, generateFAQPageStructuredData } from '@/lib/seo';
 import { DEFAULT_SEO_CONFIG } from '@/lib/seo';
 import { ReviewsDisplay } from '@/components/shared/seo/ReviewsDisplay';
 import {
@@ -238,7 +238,6 @@ export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('tree');
   const { searchTerm, setSearchTerm } = useSearch();
-  const [_showFlowHint, setShowFlowHint] = useState(false);
   const [hasInteractedWithTabs, setHasInteractedWithTabs] = useState(false);
   const currentJson = useBackendStore((s) => s.currentJson);
   const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
@@ -253,32 +252,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'editor' && currentJson && !hasInteractedWithTabs) {
-      try {
-        const hasSeenFlowHint = localStorage.getItem('hasSeenFlowHint');
-        if (hasSeenFlowHint) return;
-
-        // Avoid heavy parsing for large payloads
-        const size = new Blob([currentJson]).size;
-        if (size < 1_000_000) {
-          try {
-            const parsed = JSON.parse(currentJson);
-            if (parsed && typeof parsed === 'object') {
-              const timer = setTimeout(() => {
-                setShowFlowHint(true);
-              }, 3000);
-              return () => clearTimeout(timer);
-            }
-          } catch {
-            // Invalid JSON, don't show hint
-          }
-        }
-      } catch {
-        // ignore
-      }
-    } else {
-      setShowFlowHint(false);
-    }
+    // Flow hint feature removed
   }, [activeTab, currentJson, hasInteractedWithTabs]);
 
   // Provide a lightweight Monaco stub in development/test so E2E can set JSON fast
@@ -353,7 +327,7 @@ export default function HomePage() {
   // FAQ structured data - page-specific, not duplicated
   // Note: WebApplication structured data is handled in root layout (app/layout.tsx)
   // to avoid duplicates per SEO audit CRIT-2
-  const faqStructuredData = STRUCTURED_DATA_TEMPLATES.faqPage(faqs);
+  const faqStructuredData = generateFAQPageStructuredData(faqs);
   
   // Breadcrumb structured data for homepage
   const breadcrumbData = generateBreadcrumbStructuredData([
@@ -473,7 +447,6 @@ export default function HomePage() {
                     onValueChange={(tab) => {
                       setActiveTab(tab);
                       setHasInteractedWithTabs(true);
-                      setShowFlowHint(false);
                       if (tab === 'flow') {
                         localStorage.setItem('hasSeenFlowHint', 'true');
                       }

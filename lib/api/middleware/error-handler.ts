@@ -8,7 +8,6 @@ import { ZodError } from 'zod';
 import { AppError, ValidationError, normalizeError } from '@/lib/utils/app-errors';
 import { mapPrismaError, isPrismaError } from '@/lib/db/errors';
 import { logger, logError } from '@/lib/logger';
-import * as responses from '@/lib/api/responses';
 
 /**
  * API route handler function type

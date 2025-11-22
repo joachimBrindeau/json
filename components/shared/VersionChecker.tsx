@@ -1,19 +1,40 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 
+interface VersionInfo {
+  version: string;
+  buildId: string;
+  versionHash: string;
+}
+
 export function VersionChecker() {
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') {
       return;
     }
 
-    const APP_VERSION = '1.0.1';
-
-    const checkVersion = () => {
+    const checkVersion = async () => {
       try {
+        // Fetch current version from API
+        const response = await fetch('/api/version', {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          logger.warn('Failed to fetch version from API');
+          return;
+        }
+
+        const data: VersionInfo = await response.json();
+        const APP_VERSION = data.versionHash; // Use versionHash for cache busting
+
+        setCurrentVersion(APP_VERSION);
+
         const storedVersion = localStorage.getItem('app-version');
 
         if (storedVersion && storedVersion !== APP_VERSION) {

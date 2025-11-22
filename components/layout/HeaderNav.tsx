@@ -4,7 +4,7 @@ import { useState, useCallback, memo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Menu, Loader2, Edit2 } from 'lucide-react';
+import { Check, X, Menu, Loader2 } from 'lucide-react';
 import { useBackendStore } from '@/lib/store/backend';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,7 +13,6 @@ import { UserMenu } from '@/components/layout/UserMenu';
 import { ReviewsBadge } from '@/components/shared/seo/ReviewsBadge';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useLoginModal } from '@/hooks/use-login-modal';
 
 interface HeaderNavProps {
   onMobileMenuToggle?: () => void;
@@ -23,14 +22,9 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
   const { toast } = useToast();
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { openModal } = useLoginModal();
-  const currentJson = useBackendStore((s) => s.currentJson);
   const currentDocument = useBackendStore((s) => s.currentDocument);
-  const shareId = useBackendStore((s) => s.shareId);
   const isUploading = useBackendStore((s) => s.isUploading);
   const uploadProgress = useBackendStore((s) => s.uploadProgress);
-  const isDirty = useBackendStore((s) => s.isDirty);
-  const showLibraryHint = useBackendStore((s) => s.showLibraryHint);
   const updateTitle = useBackendStore((s) => s.updateTitle);
   const updateSession = useBackendStore((s) => s.updateSession);
   const migrateAnonymousData = useBackendStore((s) => s.migrateAnonymousData);
@@ -112,7 +106,6 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
               }
               onTitleEdit={pathname === '/' && currentDocument ? handleEditTitle : undefined}
               isEditingTitle={isEditingTitle}
-              shareId={shareId}
               editTitleComponent={
                 isEditingTitle ? (
                   <div className="flex items-center gap-2">

@@ -195,7 +195,7 @@ export const ListNodeRenderer = memo<ListNodeRendererProps>(
       renderKey={
         renderKey ||
         (showPath
-          ? (key, node) => (
+          ? (_key, node) => (
               <span className="font-mono text-xs text-gray-500 min-w-0 truncate mr-2">
                 {node.path.replace('root.', '') || 'root'}
               </span>

@@ -48,7 +48,6 @@ export class StreamingJsonParser {
 
     const totalBytes = jsonString.length;
     const truncated = false;
-    let maxDepthReached = false;
 
     try {
       const result = await this.parseValueStreaming();
@@ -61,7 +60,6 @@ export class StreamingJsonParser {
       };
     } catch (error) {
       if (error instanceof MaxDepthError) {
-        maxDepthReached = true;
         return {
           result: { __truncated: 'Max depth reached', __error: error.message },
           stats: this.getStats(totalBytes),

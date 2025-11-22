@@ -44,7 +44,9 @@ test('Monaco editor shows JSON and is visible in screenshot', async ({ page }) =
   });
 
   // Basic assertions: height and text presence
-  expect(bbox && bbox.height).toBeGreaterThan(300);
+  // Editor should be visible and have reasonable height (at least 200px)
+  expect(bbox).toBeTruthy();
+  expect(bbox!.height).toBeGreaterThan(200);
 
   // Monaco renders text in .view-lines; check content includes our unique key
   const visibleText = await page

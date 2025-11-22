@@ -8,7 +8,6 @@ import { logger } from '@/lib/logger';
 import { linkOAuthAccount } from './account-linking';
 import { getPrismaClient } from './adapter';
 import { normalizeEmail } from '@/lib/utils/email';
-import { config } from '@/lib/config';
 
 const prisma = getPrismaClient();
 
@@ -120,7 +119,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
    * - Refresh user data from database on update trigger
    * - Maintain token consistency
    */
-  async jwt({ token, user, account, trigger }) {
+  async jwt({ token, user, account: _account, trigger }) {
     // On initial sign-in, populate token with user data
     if (user) {
       token.id = user.id;

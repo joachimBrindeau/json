@@ -73,7 +73,7 @@ export function useApiData<T, TRaw = T>(options: UseApiDataOptions<T, TRaw>): Us
     transform,
     enabled = true,
     refreshInterval,
-    dependencies = [],
+    dependencies: _dependencies = [],
   } = options;
 
   const { toast } = useToast();

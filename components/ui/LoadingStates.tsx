@@ -16,7 +16,7 @@
  * - `JsonViewerSkeleton`: Skeleton loading for JSON viewer
  */
 
-import { Loader2, FileJson, Zap, Activity } from 'lucide-react';
+import { Loader2, FileJson, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './skeleton';
 

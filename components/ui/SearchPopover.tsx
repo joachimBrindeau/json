@@ -36,7 +36,7 @@ interface SearchPopoverProps {
  * <SearchPopover
  *   trigger={<Button icon={Search} iconOnly />}
  *   placeholder="Search..."
- *   onSearch={(value) => console.log(value)}
+ *   onSearch={(value) => handleSearch(value)}
  * />
  */
 export function SearchPopover({

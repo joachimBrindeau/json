@@ -8,7 +8,7 @@ import { apiClient, api } from '@/lib/api/client';
 import { createCommonViewerSetters } from './shared-setters';
 import type { JsonValue } from '@/lib/types/json';
 import { config } from '@/lib/config';
-import type { UploadResponse, Document } from '@/lib/api/types';
+import type { Document } from '@/lib/api/types';
 
 interface JsonDocument {
   id: string;
@@ -415,9 +415,6 @@ export const useBackendStore = create<BackendAppState>()(
             };
           }
 
-          try {
-            console.log('[DEBUG] uploadJson: POST /api/json/upload with title', title || '(none)');
-          } catch {}
           const rawResponse = await apiClient.post<UploadResponse | { data: UploadResponse }>('/api/json/upload', formData);
           // API may return either { document: ... } or { success: true, data: { document: ... } }
           const result =
@@ -425,12 +422,6 @@ export const useBackendStore = create<BackendAppState>()(
               ? (rawResponse as { data: UploadResponse }).data
               : (rawResponse as UploadResponse);
 
-          try {
-            console.log(
-              '[DEBUG] uploadJson: response received for',
-              result?.document?.id || '(unknown)'
-            );
-          } catch {}
 
           clearInterval(progressInterval);
           set({ uploadProgress: 100 });
@@ -500,7 +491,7 @@ export const useBackendStore = create<BackendAppState>()(
             id: doc.id ?? id,
             shareId: doc.shareId ?? id,
             title: doc.title || 'Untitled',
-            content: doc.content,
+            content: doc.content as JsonValue,
             size: Number(doc.size || 0),
             nodeCount: Number(doc.nodeCount || 0),
             maxDepth: Number(doc.maxDepth || 0),
@@ -560,7 +551,7 @@ export const useBackendStore = create<BackendAppState>()(
             });
 
             return true;
-          } catch (e) {
+          } catch {
             logger.error({ err: error, id }, 'Failed to load JSON');
             return false;
           }

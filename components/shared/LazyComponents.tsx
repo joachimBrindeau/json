@@ -1,7 +1,7 @@
 'use client';
 
 import { lazy, Suspense, ComponentType } from 'react';
-import { JsonViewerSkeleton, LibrarySkeleton, Skeleton } from '@/components/ui/skeleton';
+import { JsonViewerSkeleton, Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load heavy components
 export const LazyViewer = lazy(() =>

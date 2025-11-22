@@ -432,13 +432,15 @@ export async function verifyDocumentOwnership<T = { id: string; userId: string |
       return { success: false, error: 'Document not found', status: 404 };
     }
 
-    if ((document as { userId: string | null }).userId !== userId) {
+    // Type assertion to check userId - document may have different shapes based on selectFields
+    const docWithUserId = document as { userId?: string | null };
+    if (docWithUserId.userId !== userId) {
       return { success: false, error: 'Access denied - not document owner', status: 403 };
     }
 
     return {
       success: true,
-      data: document,
+      data: document as T,
     };
   } catch (error) {
     return {
@@ -462,9 +464,19 @@ export function formatDocumentForResponse(
     maxDepth?: number | null;
     complexity?: string | null;
     visibility?: string | null;
+    publishedAt?: Date | string | null;
     content?: unknown;
     createdAt?: Date | string;
     updatedAt?: Date | string | null;
+    viewCount?: number | null;
+    tags?: string[] | null;
+    category?: string | null;
+    user?: unknown;
+    userId?: string | null;
+    isAnonymous?: boolean | null;
+    metadata?: unknown;
+    checksum?: string | null;
+    version?: number | null;
   },
   includeContent = false
 ) {
@@ -478,7 +490,7 @@ export function formatDocumentForResponse(
     maxDepth: doc.maxDepth,
     complexity: doc.complexity,
     visibility: doc.visibility,
-    publishedAt: doc.publishedAt,
+    publishedAt: doc.publishedAt || null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
     viewCount: doc.viewCount,

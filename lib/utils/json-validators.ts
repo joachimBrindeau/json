@@ -5,7 +5,6 @@
 
 // Lazy load js-yaml to avoid issues in client-side code
 // This module should only be used on the server-side
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let yamlLib: { load: (text: string) => unknown } | null | undefined = null;
 
 function getYamlLib() {
@@ -17,9 +16,9 @@ function getYamlLib() {
   
   if (yamlLib === null) {
     try {
-       
       // Required for server-side YAML parsing in Node.js environment
-      yamlLib = require('js-yaml');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+      yamlLib = require('js-yaml') as any;
     } catch {
       // js-yaml not available, will fall back gracefully
       yamlLib = undefined;

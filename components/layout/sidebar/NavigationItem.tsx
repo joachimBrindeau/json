@@ -54,7 +54,6 @@ function NavigationItemContent({
   description,
   showBadge,
   badgeCount,
-  current,
   isLocked,
 }: {
   icon: LucideIcon;
@@ -62,7 +61,6 @@ function NavigationItemContent({
   description: string;
   showBadge: boolean;
   badgeCount?: number;
-  current: boolean;
   isLocked: boolean;
 }) {
   return (
@@ -109,7 +107,6 @@ function NavigationItemComponent({
             description={description}
             showBadge={showBadge}
             badgeCount={badgeCount}
-            current={current}
             isLocked={true}
           />
         </Button>
@@ -145,7 +142,6 @@ function NavigationItemComponent({
           description={description}
           showBadge={showBadge}
           badgeCount={badgeCount}
-          current={current}
           isLocked={false}
         />
       </div>

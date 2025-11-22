@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import { useMemo, useCallback, useState, useRef } from 'react';
 import { VIEWER_CONFIG } from '@/lib/config/viewer-config';
 
 import { encodePointerSegment } from '@/lib/utils/json-pointer';
@@ -166,19 +166,38 @@ export const useJsonProcessing = (
     expandedNodes = new Set(['root']),
   } = options;
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingProgress, setProcessingProgress] = useState(0);
+  const [isProcessing] = useState(false);
+  const [processingProgress] = useState(0);
   const performanceRef = useRef<number>(0);
 
   // Validate and parse JSON
   const validation = useMemo((): JsonValidationResult => {
-    if (!enableValidation) {
+    // Ensure JSON is available (safety check for production builds)
+    if (typeof JSON === 'undefined' || typeof JSON.parse !== 'function') {
       return {
-        isValid: true,
-        error: null,
-        parsedData: typeof content === 'string' ? JSON.parse(content) : content,
+        isValid: false,
+        error: 'JSON parser is not available',
+        parsedData: null,
         stats: null,
       };
+    }
+
+    if (!enableValidation) {
+      try {
+        return {
+          isValid: true,
+          error: null,
+          parsedData: typeof content === 'string' ? JSON.parse(content) : content,
+          stats: null,
+        };
+      } catch (error) {
+        return {
+          isValid: false,
+          error: error instanceof Error ? error.message : 'Invalid JSON',
+          parsedData: null,
+          stats: null,
+        };
+      }
     }
 
     const startTime = performance.now();
@@ -240,7 +259,6 @@ export const useJsonProcessing = (
       };
     }
 
-    const nodes: JsonNode[] = [];
     let nodeCount = 0;
     let maxDepth = 0;
     let totalSize = 0;

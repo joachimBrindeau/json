@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toastPatterns, showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers';
@@ -12,10 +11,7 @@ import {
   Plus,
   Minus,
   Edit,
-  RotateCcw,
   Download,
-  Zap,
-  Copy,
   AlertTriangle,
   Link,
   Unlink,
@@ -25,12 +21,11 @@ import {
   DiffResult,
   DiffOperation,
   generateDiffSummary,
-  formatDiffOperation,
 } from '@/lib/json/json-diff';
 import { useBackendStore } from '@/lib/store/backend';
 import { EditorPane } from '@/components/features/editor/EditorPane';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
-import { validateJson, copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
+import { validateJson, downloadJson } from '@/lib/json/json-utils';
 import { defineMonacoThemes } from '@/lib/editor/themes';
 import { logger } from '@/lib/logger';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
@@ -167,41 +162,7 @@ export function ViewerCompare({
     }
   }, [canCompare, diffResult, onViewChange]);
 
-  const handleReset = useCallback(() => {
-    setJson1('');
-    setJson2('');
-    if (onViewChange) {
-      onViewChange('input');
-    }
-  }, [onViewChange]);
 
-  const handleCopyJson1 = useCallback(() => {
-    if (!json1) {
-      toastPatterns.validation.noJson('copy');
-      return;
-    }
-    copyJsonToClipboard(json1, (title, desc, variant) => {
-      if (variant === 'destructive') {
-        showErrorToast(desc || 'Failed to copy', title);
-      } else {
-        showSuccessToast(title, { description: desc });
-      }
-    });
-  }, [json1]);
-
-  const handleCopyJson2 = useCallback(() => {
-    if (!json2) {
-      toastPatterns.validation.noJson('copy');
-      return;
-    }
-    copyJsonToClipboard(json2, (title, desc, variant) => {
-      if (variant === 'destructive') {
-        showErrorToast(desc || 'Failed to copy', title);
-      } else {
-        showSuccessToast(title, { description: desc });
-      }
-    });
-  }, [json2]);
 
   const handleDownloadDiff = useCallback(() => {
     if (!diffResult) return;

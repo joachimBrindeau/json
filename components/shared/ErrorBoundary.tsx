@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, RefreshCw, Bug, ChevronDown, ChevronUp } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { apiClient } from '@/lib/api/client';
 
 interface Props {
   children: ReactNode;

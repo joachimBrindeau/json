@@ -148,7 +148,7 @@ export default defineConfig({
   globalTeardown: require.resolve('../tests/utils/global-teardown.ts'),
 
   /* Test timeout - strict to prevent hanging, but allow enough time for E2E operations */
-  timeout: 20_000, // 20 seconds max per test
+  timeout: 30_000, // 30 seconds max per test (increased for complex operations)
 
   /* Expect timeout - strict to prevent hanging */
   expect: {

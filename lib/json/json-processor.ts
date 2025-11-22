@@ -1,23 +1,8 @@
 import { createHash } from 'crypto';
-import { Transform, Readable } from 'stream';
-import { JSONPath } from 'jsonpath-plus';
-import fastJsonStringify from 'fast-json-stringify';
-import { prisma } from '@/lib/db';
-import { logger } from '@/lib/logger';
+import { Readable } from 'stream';
 import { config } from '@/lib/config';
+import { logger } from '@/lib/logger';
 import type { JsonValue } from '@/lib/api/types';
-
-// Fast JSON stringify schema for common structures
-const stringify = fastJsonStringify({
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    content: { type: 'object' },
-    metadata: { type: 'object' },
-    size: { type: 'number' },
-  },
-  additionalProperties: true,
-});
 
 export interface JsonAnalysisResult {
   size: number;
@@ -48,7 +33,6 @@ export async function analyzeJsonStream(
   } = {}
 ): Promise<JsonAnalysisResult> {
   const {
-    maxChunkSize = config.performance.jsonStreamingChunkSize,
     trackPaths = true,
     findLargeArrays = true,
   } = options;

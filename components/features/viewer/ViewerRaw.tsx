@@ -16,7 +16,7 @@ export const ViewerRaw = ({ data, height = 600 }: ViewerRawProps) => {
   const formatted = useMemo(() => {
     try {
       return JSON.stringify(data, null, 2);
-    } catch (e) {
+    } catch {
       return 'Error formatting JSON';
     }
   }, [data]);

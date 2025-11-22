@@ -45,7 +45,7 @@ export function AdvancedSearch({
     'Template',
     'Example',
   ],
-  availableTags = [],
+  availableTags: _availableTags = [],
   className,
 }: AdvancedSearchProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);

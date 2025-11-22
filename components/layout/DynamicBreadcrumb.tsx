@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Home, Edit2 } from 'lucide-react';
+import { ChevronRight, Home } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -42,16 +42,16 @@ const routeLabels: Record<string, string> = {
 // Special route handlers for dynamic segments
 const dynamicRouteHandlers: Record<
   string,
-  (segment: string, index: number, segments: string[]) => string
+  (segment: string, index: number) => string
 > = {
-  s: (segment, index, segments) => {
+  s: (segment, index) => {
     // For shared links, show "Shared JSON" or document title if available
     return index === 1 ? 'Shared JSON' : segment;
   },
-  embed: (segment, index, segments) => {
+  embed: (segment, index) => {
     return index === 1 ? 'Embedded View' : segment;
   },
-  viewer: (segment, index, segments) => {
+  viewer: (segment, index) => {
     return index === 1 ? 'JSON Document' : segment;
   },
 };
@@ -61,7 +61,6 @@ interface DynamicBreadcrumbProps {
   onTitleEdit?: () => void;
   isEditingTitle?: boolean;
   editTitleComponent?: React.ReactNode;
-  shareId?: string;
 }
 
 export function DynamicBreadcrumb({
@@ -69,7 +68,6 @@ export function DynamicBreadcrumb({
   onTitleEdit,
   isEditingTitle,
   editTitleComponent,
-  shareId,
 }: DynamicBreadcrumbProps) {
   const pathname = usePathname();
 
@@ -101,7 +99,7 @@ export function DynamicBreadcrumb({
       if (index > 0) {
         const previousSegment = segments[index - 1];
         if (dynamicRouteHandlers[previousSegment]) {
-          label = dynamicRouteHandlers[previousSegment](segment, index, segments);
+          label = dynamicRouteHandlers[previousSegment](segment, index) || segment;
         }
       }
 
@@ -138,7 +136,7 @@ export function DynamicBreadcrumb({
   const breadcrumbStructuredData = useMemo(() => {
     const breadcrumbItems = breadcrumbs
       .filter((item) => item.href || item.isLast)
-      .map((item, index) => ({
+      .map((item) => ({
         name: item.label || 'Home',
         url: item.href ? `${DEFAULT_SEO_CONFIG.siteUrl}${item.href}` : DEFAULT_SEO_CONFIG.siteUrl,
       }));
@@ -252,7 +250,7 @@ export function DynamicBreadcrumb({
                   >
                     <BreadcrumbPage className="flex items-center gap-1">
                       {item.label}
-                      <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {/* Edit icon removed - unused */}
                     </BreadcrumbPage>
                   </div>
                 ) : (

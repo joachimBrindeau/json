@@ -63,14 +63,22 @@ export const isNull = (v: unknown): v is null => {
  */
 export const isValidJson = (code: string): boolean => {
   try {
+    // Ensure JSON is available (safety check for production builds)
+    if (typeof JSON === 'undefined' || typeof JSON.parse !== 'function') {
+      return false;
+    }
     const parsedCode = JSON.parse(code);
     return isObject(parsedCode) || isArray(parsedCode);
-  } catch (error) {
+  } catch {
     return false;
   }
 };
 
 export const formatJsonLikeData = (data: object | unknown[] | string): string => {
+  // Ensure JSON is available (safety check for production builds)
+  if (typeof JSON === 'undefined' || typeof JSON.parse !== 'function' || typeof JSON.stringify !== 'function') {
+    throw new Error('JSON parser is not available');
+  }
   const stringifyTarget = isString(data) ? JSON.parse(data) : data;
   const replacer: (number | string)[] | null = null;
   const space: string | number = 2;

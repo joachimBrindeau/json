@@ -1,9 +1,7 @@
-import { Metadata } from 'next';
-import { DEFAULT_SEO_CONFIG, PAGE_SEO } from './constants';
-import { getCanonicalUrl, getOgImageUrl } from './url-utils';
+import type { Metadata } from 'next';
+import { DEFAULT_SEO_CONFIG } from './constants';
+import { getOgImageUrl } from './url-utils';
 import type { SEOMetadataInput } from './types';
-
-type SEOProps = SEOMetadataInput;
 
 /**
  * Centralized SEO functions and exports
@@ -127,16 +125,12 @@ export function generateSEOMetadata({
       locale: 'en_US',
       type: ogType,
       ...(publishedAt && { publishedTime: publishedAt }),
-<<<<<<< Current (Your changes)
-      ...(author && { authors: [{ name: author }] }),
-=======
       ...(modifiedAt && { modifiedTime: modifiedAt }),
       ...(ogType === 'article' && {
         ...(articleTags && articleTags.length > 0 && { tags: articleTags }),
         ...(articleSection && { section: articleSection }),
         ...(author && { authors: [author] }),
       }),
->>>>>>> Incoming (Background Agent changes)
     },
     twitter: {
       card: 'summary_large_image',
@@ -193,18 +187,3 @@ export function generateSEOMetadata({
   };
 }
 
-/**
- * Legacy structured data templates for backward compatibility
- * @deprecated Use StructuredDataGenerator from './structured-data' instead
- */
-import {
-  generateOrganizationStructuredData,
-  generateBreadcrumbStructuredData,
-  generateFAQPageStructuredData,
-} from './structured-data';
-
-export const STRUCTURED_DATA_TEMPLATES = {
-  organization: generateOrganizationStructuredData(),
-  breadcrumbs: generateBreadcrumbStructuredData,
-  faqPage: generateFAQPageStructuredData,
-};

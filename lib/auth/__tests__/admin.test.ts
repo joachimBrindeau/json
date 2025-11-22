@@ -3,7 +3,7 @@
  * Tests isSuperAdmin, checkSuperAdmin, and requireSuperAdmin functions
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('Admin Role Checking', () => {
   describe('isSuperAdmin', () => {

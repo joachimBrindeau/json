@@ -3,7 +3,7 @@
  * Tests withAuth and withOptionalAuth functions
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('Authentication Middleware', () => {
   describe('withAuth', () => {

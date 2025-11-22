@@ -5,7 +5,6 @@
  * Import these types instead of using 'any' or duplicating type definitions.
  */
 
-import type { User as PrismaUser } from '@prisma/client';
 
 /**
  * Authentication user object

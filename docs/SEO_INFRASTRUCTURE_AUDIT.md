@@ -673,9 +673,9 @@ const documents = await prisma.jsonDocument.findMany({
 **Optimization:**
 ```typescript
 // Add to page layouts
-import { STRUCTURED_DATA_TEMPLATES } from '@/lib/seo';
+import { generateBreadcrumbStructuredData } from '@/lib/seo';
 
-const breadcrumbs = STRUCTURED_DATA_TEMPLATES.breadcrumbs([
+const breadcrumbs = generateBreadcrumbStructuredData([
   { name: 'Home', url: baseUrl },
   { name: 'Library', url: `${baseUrl}/library` },
   { name: document.title, url: currentUrl },
@@ -903,9 +903,9 @@ twitter: {
 **Optimization:**
 ```typescript
 // app/page.tsx
-import { STRUCTURED_DATA_TEMPLATES } from '@/lib/seo';
+import { generateFAQPageStructuredData } from '@/lib/seo';
 
-const faqSchema = STRUCTURED_DATA_TEMPLATES.faqPage(faqs.map(f => ({
+const faqSchema = generateFAQPageStructuredData(faqs.map(f => ({
   question: f.question,
   answer: f.answer,
 })));

@@ -78,29 +78,27 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-
-<<<<<<< Current (Your changes)
-        {/* DNS Prefetch for external resources - improves performance */}
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-
-        {/* Preconnect for critical external resources */}
-        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-=======
-        {/* Resource hints for better performance */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         )}
->>>>>>> Incoming (Background Agent changes)
 
+        {/* Ensure JSON is always available (polyfill for production builds) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // JSON availability check - no-op in modern browsers
+              if (typeof JSON === 'undefined') {
+                // JSON not available - should not happen in modern browsers
+              }
+              // Ensure JSON.parse and JSON.stringify are always functions
+              if (typeof JSON !== 'undefined' && (typeof JSON.parse !== 'function' || typeof JSON.stringify !== 'function')) {
+                // JSON methods not available - should not happen in modern browsers
+              }
+            `,
+          }}
+        />
+        
         {/* Preload Monaco Editor for faster loading */}
         <script src="/scripts/monaco-preload.js" defer />
 

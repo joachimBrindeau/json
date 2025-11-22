@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/ScrollArea';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ChevronRight,
   ChevronDown,
@@ -16,8 +16,6 @@ import {
   Waves,
   Copy,
   Download,
-  Settings,
-  Filter,
   FileJson,
 } from 'lucide-react';
 import { useJsonProcessing, JsonNode } from './hooks/useJsonProcessing';
@@ -300,7 +298,7 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(
           title: 'Copied!',
           description: 'JSON copied to clipboard',
         });
-      } catch (error) {
+      } catch {
         toast({
           title: 'Failed to copy',
           description: 'Unable to copy to clipboard',
@@ -317,7 +315,7 @@ export const JsonViewerBase = memo<JsonViewerBaseProps>(
           title: 'Downloaded!',
           description: 'JSON file has been downloaded',
         });
-      } catch (error) {
+      } catch {
         toast({
           title: 'Download failed',
           description: 'Unable to download JSON file',

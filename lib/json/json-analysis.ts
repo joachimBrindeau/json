@@ -34,7 +34,7 @@ export const analyzeJson = (content: string): JsonStats => {
     }
 
     traverse(parsed);
-  } catch (error) {
+  } catch {
     // Invalid JSON - return basic stats
   }
 

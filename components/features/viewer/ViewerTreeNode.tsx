@@ -5,37 +5,64 @@
 'use client';
 
 import { memo, useCallback } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { HIGHLIGHT_ANIMATIONS, TRANSITIONS } from '@/components/animations';
 import type { JsonNode } from './types';
 
-// Shallow object scanner: checks first-level string/numeric/boolean values and up to one nested level for strings
-function objectContainsTermShallow(obj: any, term: string, maxProps: number = 50): boolean {
+// Deep object scanner: recursively searches through nested objects to find matches
+function objectContainsTermDeep(
+  obj: any,
+  term: string,
+  currentDepth: number = 0,
+  maxDepth: number = 10,
+  maxProps: number = 100
+): boolean {
+  if (currentDepth > maxDepth) return false;
+  if (!obj || typeof obj !== 'object') return false;
+
   try {
     let checked = 0;
     for (const [k, v] of Object.entries(obj)) {
       if (checked++ > maxProps) break;
+
+      // Check key
       if (typeof k === 'string' && k.toLowerCase().includes(term)) return true;
+
+      // Check primitive values
       if (typeof v === 'string' && v.toLowerCase().includes(term)) return true;
       if (typeof v === 'number' || typeof v === 'boolean') {
         if (String(v).toLowerCase().includes(term)) return true;
       }
+
+      // Recursively check nested objects and arrays
       if (v && typeof v === 'object') {
-        // one level deeper (limited)
-        let innerChecked = 0;
-        for (const [ik, iv] of Object.entries(v)) {
-          if (innerChecked++ > Math.floor(maxProps / 5)) break;
-          if (typeof ik === 'string' && ik.toLowerCase().includes(term)) return true;
-          if (typeof iv === 'string' && iv.toLowerCase().includes(term)) return true;
-          if (typeof iv === 'number' || typeof iv === 'boolean') {
-            if (String(iv).toLowerCase().includes(term)) return true;
+        if (Array.isArray(v)) {
+          // For arrays, check each element (limited)
+          for (let i = 0; i < Math.min(v.length, 20); i++) {
+            const item = v[i];
+            if (typeof item === 'string' && item.toLowerCase().includes(term)) return true;
+            if (typeof item === 'number' || typeof item === 'boolean') {
+              if (String(item).toLowerCase().includes(term)) return true;
+            }
+            if (item && typeof item === 'object') {
+              if (objectContainsTermDeep(item, term, currentDepth + 1, maxDepth, Math.floor(maxProps / 2))) {
+                return true;
+              }
+            }
+          }
+        } else {
+          // For objects, recursively search
+          if (objectContainsTermDeep(v, term, currentDepth + 1, maxDepth, Math.floor(maxProps / 2))) {
+            return true;
           }
         }
       }
     }
-  } catch {}
+  } catch {
+    // ignore structured clone errors or circular references
+  }
   return false;
 }
 
@@ -44,23 +71,48 @@ interface ViewerTreeNodeProps {
   isExpanded: boolean;
   onToggle: (nodeId: string) => void;
   searchTerm?: string;
+  isMatch?: boolean; // Whether this node ID is in the search matches set
   style?: React.CSSProperties;
   onDoubleClick?: (node: JsonNode) => void;
 }
 
 export const ViewerTreeNode = memo(
-  ({ node, isExpanded, onToggle, searchTerm = '', style, onDoubleClick }: ViewerTreeNodeProps) => {
+  ({ node, isExpanded, onToggle, searchTerm = '', isMatch = false, style, onDoubleClick }: ViewerTreeNodeProps) => {
     const hasChildren = node.childCount > 0;
     const isComplexField = node.type === 'object' || node.type === 'array';
 
-    // Check if node matches search
+    // Check if node matches search (with deep object scanning for nested values)
+    // First check if this node ID is in the matches set from the search hook
+    // This is more reliable for deeply nested matches found in raw data
     const isHighlighted = (() => {
-      if (!searchTerm) return false;
-      const term = searchTerm.toLowerCase();
-      if (node.key.toLowerCase().includes(term)) return true;
+      if (!searchTerm || !searchTerm.trim()) return false;
+      
+      // If the search hook marked this node as a match, use that
+      if (isMatch) return true;
+      
+      // Otherwise, fall back to checking the node's key/value directly
+      // This is important for cases where the matches set might not have the correct node ID
+      // or for nodes that are rendered before the search completes
+      const term = searchTerm.toLowerCase().trim();
+      
+      // Check key
+      if (node.key && node.key.toLowerCase().includes(term)) return true;
+      
       const v: any = node.value as any;
-      if (typeof v === 'string') return v.toLowerCase().includes(term);
-      if (v && typeof v === 'object') return objectContainsTermShallow(v, term);
+      
+      // Check primitive values - this is critical for deeply nested string values
+      if (typeof v === 'string') {
+        if (v.toLowerCase().includes(term)) return true;
+      }
+      if (typeof v === 'number' || typeof v === 'boolean') {
+        if (String(v).toLowerCase().includes(term)) return true;
+      }
+      
+      // For objects and arrays, use deep search to find nested matches
+      if (v && typeof v === 'object') {
+        if (objectContainsTermDeep(v, term, 0, 10)) return true;
+      }
+      
       return false;
     })();
 
@@ -116,7 +168,7 @@ export const ViewerTreeNode = memo(
         style={style}
         className={`json-node flex items-center gap-2 px-2 py-1 cursor-pointer transition-colors duration-150 ${
           isHighlighted
-            ? 'bg-red-50 border-l-4 border-red-500 highlighted'
+            ? 'bg-red-50 border-l-4 border-red-500 highlighted search-result'
             : isComplexField
               ? 'hover:bg-blue-50 border-l-2 border-transparent hover:border-blue-200'
               : 'hover:bg-gray-50'

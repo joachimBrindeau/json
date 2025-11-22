@@ -11,7 +11,6 @@ export default function FormatPage() {
       outputTitle="Formatted Output"
       buttonIcon={<Zap className="h-3 w-3 mr-1" />}
       transform={(obj) => JSON.stringify(obj, null, 2)}
-      copySuccessDescription="Formatted JSON copied to clipboard"
     />
   );
 }

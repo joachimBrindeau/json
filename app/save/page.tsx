@@ -291,7 +291,7 @@ const SortableTableHead = memo(function SortableTableHead({
 });
 
 function LibraryPageComponent() {
-  const { data: _session, status } = useSession();
+  const { status } = useSession();
   const { setLibraryUpdateCallback } = useBackendStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');

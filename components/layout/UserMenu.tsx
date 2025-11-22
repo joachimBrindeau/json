@@ -12,12 +12,10 @@ import {
 } from '@/components/ui/DropdownMenu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  User,
   Settings,
   LogOut,
   LogIn,
   Database,
-  BarChart,
   HelpCircle,
   Moon,
   Sun,

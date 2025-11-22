@@ -15,6 +15,7 @@ import { formatJsonWithWorker, loadJsonProgressive, debounce } from '@/lib/edito
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { useMonacoEditor } from '@/hooks/use-monaco-editor';
 import { useSearch } from '@/hooks/use-search';
+import { defineMonacoThemes } from '@/lib/editor/themes';
 import {
   isLargeFile,
   getDebounceDelay,
@@ -27,7 +28,6 @@ function JsonEditorComponent() {
   const setCurrentJson = useBackendStore((s) => s.setCurrentJson);
   const [localContent, setLocalContent] = useState('');
   const { searchTerm, setSearchTerm } = useSearch();
-  const [_isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const decorationsRef = useRef<string[]>([]);
   const isLargeFileFlag = isLargeFile(currentJson.length);
@@ -63,7 +63,6 @@ function JsonEditorComponent() {
   const formatJson = useCallback(async () => {
     if (editorRef.current) {
       const content = editorRef.current.getValue();
-      setIsLoading(true);
       try {
         // Use Web Worker for large files
         const formatted = await formatJsonWithWorker(content);
@@ -84,7 +83,6 @@ function JsonEditorComponent() {
       } catch {
         toastPatterns.error.format();
       } finally {
-        setIsLoading(false);
         setLoadingProgress(0);
       }
     }
@@ -93,7 +91,6 @@ function JsonEditorComponent() {
   // Custom editor mount handler to add commands and validation
   const handleCustomEditorMount = useCallback(
     (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-      setIsLoading(false);
 
       // Call the base mount handler from the hook
       handleEditorDidMount(editor, monaco);
@@ -199,6 +196,11 @@ function JsonEditorComponent() {
       const model = editor.getModel();
       if (!model) return;
 
+      // Guard: Ensure JSON is available
+      if (typeof JSON === 'undefined' || typeof JSON.parse !== 'function') {
+        return;
+      }
+
       try {
         JSON.parse(content);
         // Clear error markers - guard against undefined monaco.editor
@@ -293,6 +295,41 @@ function JsonEditorComponent() {
             }}
             theme={theme}
             onMount={handleCustomEditorMount}
+            beforeMount={(monaco) => {
+              // Safely configure JSON language support
+              // Note: beforeMount is called before editor is fully initialized,
+              // so we only configure language features, not editor features
+              if (
+                monaco &&
+                monaco.languages &&
+                monaco.languages.json &&
+                monaco.languages.json.jsonDefaults &&
+                typeof monaco.languages.json.jsonDefaults.setDiagnosticsOptions === 'function'
+              ) {
+                try {
+                  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: true,
+                    allowComments: false,
+                    schemaValidation: 'warning',
+                    // Disable schema validation to avoid parse errors during initialization
+                    enableSchemaRequest: false,
+                  });
+                } catch (error) {
+                  // Ignore if JSON language isn't ready yet
+                  // This is expected in some cases during initialization
+                }
+              }
+
+              // Define themes in beforeMount - Monaco should be ready at this point
+              // but we add defensive checks
+              if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
+                try {
+                  defineMonacoThemes(monaco);
+                } catch (error) {
+                  // If theme definition fails, it will be retried in onMount
+                }
+              }
+            }}
             options={editorOptions}
           />
         </ErrorBoundary>

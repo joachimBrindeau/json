@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Script from 'next/script';
-import { logger } from '@/lib/logger';
 import type { Logger } from 'pino';
 
 declare global {

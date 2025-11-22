@@ -13,7 +13,7 @@ import { EDITOR_CONFIG, type EditorConfig } from '@/lib/config/editor-config';
  * @example
  * ```tsx
  * const config = useEditorSettings();
- * console.log(config.codemirror.theme);
+ * const theme = config.codemirror.theme;
  * ```
  */
 export function useEditorSettings(): EditorConfig {

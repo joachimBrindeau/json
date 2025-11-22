@@ -380,8 +380,8 @@ test.describe('Smoke Tests @smoke', () => {
 
     // Test mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    // Wait for layout to adjust by checking for main content
-    await page.locator('main').waitFor({ state: 'visible', timeout: 5000 });
+    // Wait for layout to adjust by checking for main content (use first() to avoid strict mode violation)
+    await page.locator('main').first().waitFor({ state: 'visible', timeout: 5000 });
 
     // Navigation should still be functional
     const responsiveResults = await layoutPage.testResponsiveLayout();

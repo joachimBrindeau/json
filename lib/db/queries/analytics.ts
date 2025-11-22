@@ -1,14 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../db';
-import {
-  buildPagination,
-  buildPaginationResult,
-  handleDatabaseError,
-  PaginationParams,
-  PaginationResult,
-} from './common';
+import { handleDatabaseError, PaginationParams } from './common';
 import { logger } from '@/lib/logger';
-import { cacheGetOrSet, CacheKeys, CacheTTL, CacheInvalidation } from '@/lib/cache/redis-cache';
+import { cacheGetOrSet, CacheKeys, CacheTTL } from '@/lib/cache/redis-cache';
 
 // Analytics input types
 export interface ViewTrackingInput {

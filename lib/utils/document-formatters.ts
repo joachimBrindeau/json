@@ -108,7 +108,7 @@ export function generateDocumentPreview(content: JsonValue, maxLength: number = 
     }
 
     return jsonString.slice(0, maxLength) + '...';
-  } catch (error) {
+  } catch {
     return 'Invalid JSON content';
   }
 }

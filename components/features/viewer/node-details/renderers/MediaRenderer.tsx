@@ -98,9 +98,6 @@ const ImageRenderer = memo(
                 <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                   <img
                     src={url}
-<<<<<<< Current (Your changes)
-                    alt={`JSON data preview image${isBase64 ? ' (base64 encoded)' : ''}`}
-=======
                     alt={
                       isBase64
                         ? 'Base64 encoded image preview'
@@ -113,7 +110,6 @@ const ImageRenderer = memo(
                             }
                           })()
                     }
->>>>>>> Incoming (Background Agent changes)
                     className="w-full h-auto max-h-96 object-contain"
                     onLoad={handleImageLoad}
                     onError={() => setError(true)}

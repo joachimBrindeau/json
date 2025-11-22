@@ -6,14 +6,8 @@
 
 import { PrismaClient } from '@prisma/client';
 import { performance } from 'perf_hooks';
-import { cacheGet, cacheSet, CacheKeys, CacheTTL } from '../lib/cache/redis-cache';
-import {
-  getTagAnalytics,
-  getUserAnalytics,
-  getDocumentAnalytics,
-} from '../lib/db/queries/analytics';
+import { getTagAnalytics, getUserAnalytics } from '../lib/db/queries/analytics';
 import { getPublicDocuments, getDocumentStats } from '../lib/db/queries/documents';
-import { logger } from '../lib/logger';
 
 const prisma = new PrismaClient();
 

@@ -64,7 +64,6 @@ export function CursorPopoverTrigger({ children, asChild = true }: CursorPopover
   const { open, setOpen, triggerRef } = context;
 
   if (asChild && React.isValidElement(children)) {
-    const childProps = children.props as any;
     return React.cloneElement(children, {
       ref: (node: HTMLElement) => {
         triggerRef.current = node;
@@ -76,7 +75,7 @@ export function CursorPopoverTrigger({ children, asChild = true }: CursorPopover
           ref.current = node;
         }
       },
-      onClick: (e: React.MouseEvent) => {
+      onClick: (_e: React.MouseEvent) => {
         setOpen(!open);
         // Don't call original onClick - the popover content will handle the action
         // This prevents the action from being triggered when opening the popover

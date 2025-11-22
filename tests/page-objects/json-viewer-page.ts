@@ -1072,7 +1072,6 @@ export class JsonViewerPage extends BasePage {
           const w = window as any;
           const editor = w.monacoEditorInstance;
           if (!editor || !w.monaco?.editor) return { parseError: false, markerError: false };
-          const model = editor.getModel?.();
           const value = editor.getValue?.() ?? '';
 
           let parseError = false;
@@ -1164,7 +1163,7 @@ export class JsonViewerPage extends BasePage {
   /**
    * Validate JSON structure is displayed correctly
    */
-  async validateJSONStructure(expectedStructure: any) {
+  async validateJSONStructure(_expectedStructure: any) {
     const nodeCounts = await this.getNodeCounts();
 
     // Basic validation - ensure nodes are rendered

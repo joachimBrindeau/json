@@ -1,6 +1,5 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
-import { redis } from '../redis';
 import { logger } from '../logger';
 
 /**
@@ -51,16 +50,6 @@ class RedisRateLimiter {
     this.windowMs = windowMs;
     this.maxAttempts = maxAttempts;
     this.keyPrefix = keyPrefix;
-  }
-
-  private async isRedisAvailable(): Promise<boolean> {
-    if (!redis) return false;
-    try {
-      await redis.ping();
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   isAllowed(identifier: string): boolean {

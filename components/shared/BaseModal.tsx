@@ -54,7 +54,6 @@ export interface BaseModalProps {
   // Animation & accessibility
   closeOnEscape?: boolean;
   closeOnOverlayClick?: boolean;
-  trapFocus?: boolean;
 
   // Event handlers
   onClose?: () => void;
@@ -112,7 +111,6 @@ export const BaseModal = forwardRef<BaseModalRef, BaseModalProps>(
       // Behavior
       closeOnEscape = true,
       closeOnOverlayClick = true,
-      trapFocus = true,
 
       // Events
       onClose,

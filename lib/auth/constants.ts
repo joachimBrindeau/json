@@ -3,7 +3,6 @@
  * Shared constants used across authentication modules
  */
 
-import type { LoginContext } from './types';
 
 /**
  * Session configuration

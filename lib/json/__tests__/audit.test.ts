@@ -4,7 +4,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { auditJson } from '../audit';
-import type { AuditResult } from '../audit';
 
 // Mock analyzeJsonStream
 vi.mock('../json-processor', () => ({

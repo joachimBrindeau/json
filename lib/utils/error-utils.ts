@@ -68,7 +68,7 @@ export const validateJson = (value: string): string | null => {
   try {
     JSON.parse(value);
     return null;
-  } catch (error) {
+  } catch {
     return 'Invalid JSON format';
   }
 };

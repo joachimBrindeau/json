@@ -8,7 +8,7 @@ import { vi } from 'vitest';
 // Mock environment variables if needed
 // Set NODE_ENV directly (works in test environment)
 if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = 'test';
+  (process.env as { NODE_ENV?: string }).NODE_ENV = 'test';
 }
 
 // Mock Next.js router if needed

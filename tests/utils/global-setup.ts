@@ -1,4 +1,4 @@
-import { chromium, FullConfig, BrowserContext } from '@playwright/test';
+import { chromium, FullConfig } from '@playwright/test';
 import { TEST_USERS } from '../fixtures/users';
 import { PrismaClient } from '@prisma/client';
 import { execSync } from 'child_process';
@@ -231,7 +231,10 @@ async function setupTestUsersDirect() {
 }
 
 
-async function setupTestUsers(context: BrowserContext, baseURL: string) {
+// Setup test users via API (currently unused but kept for future use)
+// Commented out to avoid build errors - can be uncommented if needed
+/*
+async function _setupTestUsers(context: any, baseURL: string) {
   const testUsers = [
     TEST_USERS.regular,
     TEST_USERS.admin,
@@ -311,6 +314,7 @@ async function setupTestUsers(context: BrowserContext, baseURL: string) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
+*/
 
 // Find a free TCP port on localhost starting from a base value
 async function isPortFree(port: number): Promise<boolean> {

@@ -6,35 +6,32 @@
 
 import fuzzysort from 'fuzzysort';
 
-// Simple profanity filter without external dependency
-class SimpleProfanityFilter {
-  private badWords = new Set([
-    'spam',
-    'abuse',
-    'hate',
-    'violence',
-    'drug',
-    'porn',
-    'xxx',
-    'scam',
-    'illegal',
-    'hack',
-    'crack',
-    'pirate',
-    'torrent',
-  ]);
+// Simple profanity filter without external dependency (currently unused, kept for future use)
+// class SimpleProfanityFilter {
+//   private badWords = new Set([
+//     'spam',
+//     'abuse',
+//     'hate',
+//     'violence',
+//     'drug',
+//     'porn',
+//     'xxx',
+//     'scam',
+//     'illegal',
+//     'hack',
+//     'crack',
+//     'pirate',
+//     'torrent',
+//   ]);
 
-  isProfane(text: string): boolean {
-    const lower = text.toLowerCase();
-    for (const word of this.badWords) {
-      if (lower.includes(word)) return true;
-    }
-    return false;
-  }
-}
-
-// Initialize profanity filter
-const profanityFilter = new SimpleProfanityFilter();
+//   isProfane(text: string): boolean {
+//     const lower = text.toLowerCase();
+//     for (const word of this.badWords) {
+//       if (lower.includes(word)) return true;
+//     }
+//     return false;
+//   }
+// }
 
 // Common programming language mappings
 const LANGUAGE_MAPPINGS: Record<string, string> = {

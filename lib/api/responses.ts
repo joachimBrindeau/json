@@ -412,7 +412,6 @@ export function jsonStream(
 ): NextResponse {
   const readableStream = new ReadableStream({
     start(controller) {
-      const encoder = new TextEncoder();
 
       try {
         const jsonString = JSON.stringify(data, null, 2);
@@ -425,6 +424,7 @@ export function jsonStream(
         }
 
         // Send chunks
+        const encoder = new TextEncoder();
         chunks.forEach((chunk) => {
           controller.enqueue(encoder.encode(chunk));
         });
@@ -520,7 +520,6 @@ export function serverSentEvents(
  * Formats SSE data
  */
 export function formatSSEData(data: unknown, event?: string): string {
-  const encoder = new TextEncoder();
   let formatted = '';
 
   if (event) {

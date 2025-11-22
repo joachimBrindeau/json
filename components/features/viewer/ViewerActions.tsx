@@ -29,7 +29,6 @@ import {
   toastPatterns,
   showErrorToast,
   showSuccessToast,
-  showInfoToast,
 } from '@/lib/utils/toast-helpers';
 import { copyJsonToClipboard, downloadJson } from '@/lib/json/json-utils';
 import { ShareModal, SaveModal } from '@/components/features/modals';
@@ -65,8 +64,6 @@ export function ViewerActions({
   const currentJson = useBackendStore((s) => s.currentJson);
   const currentDocument = useBackendStore((s) => s.currentDocument);
   const shareId = useBackendStore((s) => s.shareId);
-  const isDirty = useBackendStore((s) => s.isDirty);
-  const shareJson = useBackendStore((s) => s.shareJson);
   const saveJson = useBackendStore((s) => s.saveJson);
   const deleteDocument = useBackendStore((s) => s.deleteDocument);
 
@@ -603,7 +600,7 @@ export function ViewerActions({
         open={saveModalOpen}
         onOpenChange={setSaveModalOpen}
         currentTitle={currentDocument?.title}
-        onSaved={async (title?: string) => {
+        onSaved={async () => {
           toastPatterns.success.saved('JSON');
           // After save, user can share via ShareModal if needed
         }}
@@ -616,7 +613,7 @@ export function ViewerActions({
         shareId={currentDocument?.shareId || ''}
         currentTitle={currentDocument?.title}
         currentVisibility={currentDocument?.visibility || shareType}
-        onUpdated={async (title?: string) => {
+        onUpdated={async () => {
           toastPatterns.success.updated('JSON sharing settings');
         }}
       />

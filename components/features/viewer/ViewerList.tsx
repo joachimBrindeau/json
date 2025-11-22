@@ -94,7 +94,7 @@ export const ViewerList = ({
   height = 600,
   virtualizeThreshold,
   searchTerm = '',
-  onSearchChange,
+  onSearchChange: _onSearchChange,
 }: ViewerListProps) => {
   const flatItems = useMemo(() => {
     if (!data) return [];

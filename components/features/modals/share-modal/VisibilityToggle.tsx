@@ -2,6 +2,7 @@
 
 import { Globe, Lock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface VisibilityToggleProps {
   isPublic: boolean;
@@ -11,29 +12,31 @@ interface VisibilityToggleProps {
 
 export function VisibilityToggle({ isPublic, onToggle, disabled }: VisibilityToggleProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
-      <div className="flex-1 space-y-1">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isPublic ? (
-            <Globe className="h-5 w-5 text-blue-500" />
+            <Globe className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <Lock className="h-5 w-5 text-muted-foreground" />
+            <Lock className="h-4 w-4 text-muted-foreground" />
           )}
-          <span className="font-medium">{isPublic ? 'Public' : 'Private'}</span>
+          <Label htmlFor="visibility" className="text-sm font-medium">
+            {isPublic ? 'Public' : 'Private'}
+          </Label>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {isPublic
-            ? 'Anyone can discover this JSON in the public library'
-            : 'Only people with the link can access this JSON'}
-        </p>
+        <Switch
+          id="visibility"
+          checked={isPublic}
+          onCheckedChange={onToggle}
+          disabled={disabled}
+          aria-label="Toggle public/private visibility"
+        />
       </div>
-      <Switch
-        checked={isPublic}
-        onCheckedChange={onToggle}
-        disabled={disabled}
-        aria-label="Toggle public/private visibility"
-        className="sm:flex-shrink-0"
-      />
+      <p className="text-xs text-muted-foreground">
+        {isPublic
+          ? 'Anyone can discover this in the public library'
+          : 'Only people with the link can access this'}
+      </p>
     </div>
   );
 }

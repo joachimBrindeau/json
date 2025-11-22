@@ -12,7 +12,7 @@ export interface ViewerConfigState {
 
 export function createCommonViewerSetters<T extends ViewerConfigState>(
   set: SetFn<T>,
-  get: GetFn<T>
+  _get: GetFn<T>
 ) {
   return {
     setShareId: (id: string) => {

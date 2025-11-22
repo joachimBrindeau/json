@@ -1,10 +1,26 @@
 // Version management for cache busting
 // This file tracks the application version and build timestamp
 
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
 
-export const APP_VERSION = '1.0.1'; // Increment this when making breaking changes
+// Read version from package.json dynamically
+function getPackageVersion(): string {
+  try {
+    const packageJsonPath = join(process.cwd(), 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+    return packageJson.version || '1.0.0';
+  } catch (error) {
+    // Fallback if package.json can't be read (e.g., in browser or during build)
+    return '1.0.1';
+  }
+}
+
+// Only read on server-side, use fallback on client
+export const APP_VERSION =
+  typeof window === 'undefined' ? getPackageVersion() : '1.0.1';
 export const BUILD_ID = config.app.buildId;
 export const BUILD_TIME = new Date().toISOString();
 

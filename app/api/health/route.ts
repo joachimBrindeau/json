@@ -2,6 +2,7 @@ import { checkDBHealth } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { success, error as errorResponse } from '@/lib/api/responses';
 import { config } from '@/lib/config';
+import { APP_VERSION } from '@/lib/utils/version';
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
           database: health.postgres ? 'healthy' : 'unhealthy',
           redis: health.redis ? 'healthy' : 'unhealthy',
         },
-        version: '1.0.0',
+        version: APP_VERSION,
         environment: config.nodeEnv,
         healthy: isHealthy,
       },

@@ -16,6 +16,10 @@ export const useJsonParser = (jsonString: string): ParseResult => {
     }
 
     try {
+      // Ensure JSON is available (safety check for production builds)
+      if (typeof JSON === 'undefined' || typeof JSON.parse !== 'function') {
+        throw new Error('JSON parser is not available');
+      }
       const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const data = JSON.parse(jsonString);
       const end = typeof performance !== 'undefined' ? performance.now() : Date.now();

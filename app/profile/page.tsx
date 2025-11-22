@@ -40,7 +40,6 @@ export default function ProfilePage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [linkedAccounts, setLinkedAccounts] = useState<any[]>([]);
   const [hasPassword, setHasPassword] = useState(false);
-  const [_loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -66,8 +65,6 @@ export default function ProfilePage() {
       setHasPassword(data.hasPassword || false);
     } catch (error) {
       logger.error({ err: error, userId: session?.user?.id }, 'Failed to fetch linked accounts');
-    } finally {
-      setLoadingAccounts(false);
     }
   };
 

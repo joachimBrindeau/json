@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BarChart3 } from 'lucide-react';
-import { analyzeJson, getRecommendedViewer, type JsonStats } from '@/lib/json/json-analysis';
+import { analyzeJson, getRecommendedViewer } from '@/lib/json/json-analysis';
 
 interface PerformanceMonitorProps {
   content: string;

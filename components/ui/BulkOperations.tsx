@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/AlertDialog';
-import { CheckSquare, Square, Trash2, Download, Archive, MoreVertical, X } from 'lucide-react';
+import { Trash2, Download, Archive, MoreVertical, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -64,14 +64,6 @@ export function BulkOperations({
       onSelectionChange([]);
     } else {
       onSelectionChange(items.map((item) => item.id));
-    }
-  };
-
-  const toggleItem = (id: string) => {
-    if (selectedIds.includes(id)) {
-      onSelectionChange(selectedIds.filter((selectedId) => selectedId !== id));
-    } else {
-      onSelectionChange([...selectedIds, id]);
     }
   };
 
@@ -250,7 +242,7 @@ export function BulkOperations({
 
 // Individual item checkbox component for use in list items
 export function BulkCheckbox({
-  id,
+  id: _id,
   checked,
   onCheckedChange,
   disabled = false,

@@ -29,7 +29,7 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-    child: vi.fn((context) => ({
+    child: vi.fn((_context) => ({
       info: vi.fn(),
       warn: vi.fn(),
       error: vi.fn(),

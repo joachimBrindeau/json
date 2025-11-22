@@ -24,7 +24,6 @@ export type JsonTransformPageProps = {
   outputTitle: string;
   buttonIcon: React.ReactNode;
   transform: (obj: unknown) => string; // e.g., JSON.stringify(obj, null, 2) or JSON.stringify(obj)
-  copySuccessDescription: string;
 };
 
 export function JsonTransformPage({
@@ -32,7 +31,6 @@ export function JsonTransformPage({
   outputTitle,
   buttonIcon,
   transform,
-  copySuccessDescription,
 }: JsonTransformPageProps) {
   const currentJson = useBackendStore((s) => s.currentJson);
   const setCurrentJson = useBackendStore((s) => s.setCurrentJson);

@@ -241,7 +241,6 @@ function validateEnv() {
         // In test mode, if validation fails, return envObject with defaults applied
         // This allows tests to run without full environment setup
         if (error instanceof z.ZodError) {
-          console.warn('⚠️  Environment validation failed in test mode, using defaults');
           // Type assertion needed for test mode fallback when validation fails
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return envObject as any;
@@ -255,11 +254,8 @@ function validateEnv() {
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('❌ Environment validation failed:');
-      error.issues.forEach((issue) => {
-        console.error(`  • ${issue.path.join('.')}: ${issue.message}`);
-      });
-      throw new Error('Invalid environment configuration. Please check your .env file.');
+      const errorMessage = `Invalid environment configuration: ${error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')}`;
+      throw new Error(errorMessage);
     }
     throw error;
   }

@@ -1,9 +1,6 @@
 import type { NextConfig } from 'next';
 import path from 'path';
 
-// Disable certain experiments for Playwright runs to avoid dev vendor-chunk issues
-const isPlaywright = !!process.env.PLAYWRIGHT;
-
 const nextConfig: NextConfig = {
   // Optimize for production
   compress: true,
@@ -286,7 +283,7 @@ const nextConfig: NextConfig = {
   },
 
   // Optimize bundling
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { isServer }) => {
     // Exclude server-only modules from client bundle
     if (!isServer) {
       config.resolve.fallback = {

@@ -13,7 +13,7 @@ import { VIEWER_CONFIG, type ViewerConfig } from '@/lib/config/viewer-config';
  * @example
  * ```tsx
  * const config = useViewerSettings();
- * console.log(config.performance.renderThreshold);
+ * const threshold = config.performance.renderThreshold;
  * ```
  */
 export function useViewerSettings(): ViewerConfig {

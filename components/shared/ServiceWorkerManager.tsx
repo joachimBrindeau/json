@@ -14,6 +14,8 @@ export function ServiceWorkerManager() {
       return;
     }
 
+    let intervalId: NodeJS.Timeout | null = null;
+
     const registerServiceWorker = async () => {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
@@ -24,7 +26,7 @@ export function ServiceWorkerManager() {
           .catch((err) => logger.error({ err }, 'Service worker update check failed'));
 
         // Check for updates periodically
-        const intervalId = setInterval(
+        intervalId = setInterval(
           () => {
             registration
               .update()
@@ -32,15 +34,19 @@ export function ServiceWorkerManager() {
           },
           60 * 60 * 1000
         ); // Every hour
-
-        // Cleanup
-        return () => clearInterval(intervalId);
       } catch (error) {
         logger.error({ err: error }, 'Service Worker registration failed');
       }
     };
 
     registerServiceWorker();
+
+    // Cleanup function
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, []);
 
   return null;

@@ -16,6 +16,7 @@ import { NodeDetailsModal } from '@/components/features/viewer/node-details/Node
 import { VARIANTS } from '@/components/animations';
 import type { JsonNode } from './types';
 
+
 interface ViewerTreeProps {
   data: any;
   virtualized?: boolean;
@@ -32,51 +33,43 @@ export const ViewerTree = ({
   height = 600,
   enableSearch = true,
   searchTerm = '',
-  onSearchChange,
-  maxNodes,
+  onSearchChange: _onSearchChange,
+  maxNodes: _maxNodes,
 }: ViewerTreeProps) => {
-  const fullFlatten = false;
   const { nodes, expandedNodes, toggleNode, expandAll, collapseAll } = useViewerTreeState(
     data,
     false,
     false
   );
-  const { filteredNodes, matchCount } = useViewerTreeSearch(nodes, searchTerm);
+  // Re-run search when nodes change (after expansion) to catch newly created nodes
+  // When search is active, we still want to show all nodes but highlight matches
+  // This avoids issues with nodes not existing until parents are expanded
+  const { filteredNodes, matchCount, matches } = useViewerTreeSearch(nodes, searchTerm, data);
+  
+  // When search is active, show all nodes (not just filtered) so matches are visible after expansion
+  // The highlighting will still work because ViewerTreeNode checks searchTerm
+  const nodesToRender = searchTerm && searchTerm.trim() 
+    ? nodes // Show all nodes when searching, let highlighting handle visibility
+    : filteredNodes; // Normal filtering when not searching
 
-  // Precompute lightweight type counts for E2E and metrics without forcing DOM rendering
-  const typeCounts = useMemo(() => {
-    let objects = 0,
-      arrays = 0,
-      strings = 0,
-      numbers = 0,
-      booleans = 0,
-      nulls = 0;
-    for (const n of filteredNodes) {
-      switch (n.type) {
-        case 'object':
-          objects++;
-          break;
-        case 'array':
-          arrays++;
-          break;
-        case 'string':
-          strings++;
-          break;
-        case 'number':
-          numbers++;
-          break;
-        case 'boolean':
-          booleans++;
-          break;
-        case 'null':
-          nulls++;
-          break;
-        default:
-          break;
-      }
+  // Auto-expand all nodes when search is active to make all matches visible
+  // This is more aggressive but ensures deep matches are always found
+  const lastSearchTermRef = useRef<string>('');
+  
+  useEffect(() => {
+    if (searchTerm && searchTerm.trim() && searchTerm !== lastSearchTermRef.current) {
+      lastSearchTermRef.current = searchTerm;
+      
+      // When search is active, expand all nodes IMMEDIATELY to ensure matches are visible
+      // This is necessary because matches might be in deeply nested, collapsed nodes
+      // We expand immediately (not in a timeout) to ensure nodes are created before search runs
+      expandAll();
+    } else if (!searchTerm.trim() && lastSearchTermRef.current) {
+      // When search is cleared, collapse all to restore normal view
+      lastSearchTermRef.current = '';
+      collapseAll();
     }
-    return { objects, arrays, strings, numbers, booleans, nulls };
-  }, [filteredNodes]);
+  }, [searchTerm, expandAll, collapseAll]);
 
   // Estimate total node/type counts by walking raw data without forcing UI expansion
   const stats = useMemo(() => {
@@ -294,17 +287,18 @@ export const ViewerTree = ({
         <List
           ref={listRef as any}
           height={height}
-          itemCount={filteredNodes.length}
+          itemCount={nodesToRender.length}
           itemSize={() => 32}
-          itemKey={(index) => filteredNodes[index].id}
+          itemKey={(index) => nodesToRender[index].id}
           width="100%"
         >
           {({ index, style }) => (
             <ViewerTreeNode
-              node={filteredNodes[index]}
-              isExpanded={expandedNodes.has(filteredNodes[index].id)}
+              node={nodesToRender[index]}
+              isExpanded={expandedNodes.has(nodesToRender[index].id)}
               onToggle={toggleNode}
               searchTerm={searchTerm}
+              isMatch={matches.has(nodesToRender[index].id)}
               style={style}
               onDoubleClick={handleNodeDoubleClick}
             />
@@ -359,13 +353,14 @@ export const ViewerTree = ({
         initial="hidden"
         animate="visible"
       >
-        {filteredNodes.map((node, index) => (
+        {nodesToRender.map((node, index) => (
           <motion.div key={node.id} variants={VARIANTS.slideUp} custom={index}>
             <ViewerTreeNode
               node={node}
               isExpanded={expandedNodes.has(node.id)}
               onToggle={toggleNode}
               searchTerm={searchTerm}
+              isMatch={matches.has(node.id)}
               onDoubleClick={handleNodeDoubleClick}
             />
           </motion.div>

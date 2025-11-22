@@ -14,7 +14,7 @@ const createLogger = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isBrowser = typeof window !== 'undefined';
 
-  // Browser configuration
+  // Browser configuration - use no-op functions to avoid console logging
   if (isBrowser) {
     return pino({
       level: isDevelopment ? 'debug' : 'info',
@@ -22,10 +22,10 @@ const createLogger = () => {
         asObject: true,
         serialize: true,
         write: {
-          debug: (obj: unknown) => console.debug(obj),
-          info: (obj: unknown) => console.info(obj),
-          warn: (obj: unknown) => console.warn(obj),
-          error: (obj: unknown) => console.error(obj),
+          debug: () => {},
+          info: () => {},
+          warn: () => {},
+          error: () => {},
         },
       },
     });

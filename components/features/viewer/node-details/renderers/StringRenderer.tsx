@@ -27,7 +27,7 @@ export const StringRenderer = memo(({ value, detections }: StringRendererProps) 
     try {
       const hashValue = await hashSHA256(value);
       setHash(hashValue);
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to generate hash', variant: 'destructive' });
     } finally {
       setIsHashing(false);

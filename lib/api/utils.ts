@@ -510,7 +510,7 @@ export function validateAndAnalyzeJson(content: any) {
   let parsedContent;
   try {
     parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON content');
   }
 

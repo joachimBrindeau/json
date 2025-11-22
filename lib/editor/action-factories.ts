@@ -3,7 +3,6 @@ import {
   Copy,
   Download,
   Trash2,
-  FileJson,
   Zap,
   Minimize2,
   ArrowRightLeft,

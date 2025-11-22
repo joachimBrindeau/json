@@ -92,20 +92,30 @@ const colors = {
   },
 };
 
-// Track if themes have been defined
+// Track if themes have been defined successfully
 let themesDefinedFlag = false;
 
-export function defineMonacoThemes(monaco: Monaco) {
-  // Guard: Ensure monaco is fully initialized
-  if (!monaco || !monaco.editor || typeof monaco.editor.defineTheme !== 'function') {
-    return;
+export function defineMonacoThemes(monaco: Monaco): boolean {
+  // Guard: Ensure monaco is fully initialized with all required properties
+  if (!monaco) {
+    return false;
+  }
+
+  // Check if editor namespace exists and has defineTheme
+  if (!monaco.editor) {
+    return false;
+  }
+
+  if (typeof monaco.editor.defineTheme !== 'function') {
+    return false;
   }
 
   // Only define themes once to avoid errors
   if (themesDefinedFlag) {
-    return;
+    return true; // Already defined
   }
-  themesDefinedFlag = true;
+
+  try {
 
   // Define light theme matching shadcn/ui
   monaco.editor.defineTheme('shadcn-light', {
@@ -190,4 +200,12 @@ export function defineMonacoThemes(monaco: Monaco) {
       'scrollbarSlider.activeBackground': colors.dark.mutedForeground + '99',
     },
   });
+
+    themesDefinedFlag = true;
+    return true;
+  } catch (error) {
+    // If theme definition fails, reset flag so we can try again
+    themesDefinedFlag = false;
+    return false;
+  }
 }

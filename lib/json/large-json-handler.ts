@@ -102,7 +102,7 @@ export class LargeJsonHandler {
           parseTime: performance.now() - start,
         },
       };
-    } catch (error) {
+    } catch {
       // Fallback: stream parse with limits
       return this.streamParseWithLimits(jsonString, size, start);
     }

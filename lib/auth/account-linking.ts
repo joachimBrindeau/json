@@ -1,4 +1,4 @@
-import { PrismaClient, User, Account } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { Account as NextAuthAccount } from 'next-auth';
 import type { User as NextAuthUser } from 'next-auth';
 import type { UserUpdateData } from './types';

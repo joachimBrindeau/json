@@ -30,14 +30,14 @@
  * ```
  */
 
-import { useForm, UseFormProps, UseFormReturn } from 'react-hook-form';
+import { useForm, UseFormProps } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 /**
  * Configuration options for validated forms
  */
-interface ValidatedFormOptions<TSchema extends z.ZodType>
+interface ValidatedFormOptions<_TSchema extends z.ZodType = any>
   extends Omit<UseFormProps<any>, 'resolver'> {
   /**
    * When to validate the form

@@ -7,7 +7,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TreePine as TreeIcon, Code, Waves, Eye, Database, Download } from 'lucide-react';
+import { TreePine as TreeIcon, Code, Waves, Database } from 'lucide-react';
 import { ViewerTree } from './ViewerTree';
 import { ViewerRaw } from './ViewerRaw';
 import dynamic from 'next/dynamic';
@@ -26,11 +26,9 @@ import { useAutoOptimize } from './useAutoOptimize';
 import { useSearch } from '@/hooks/use-search';
 import type { ViewMode } from './types';
 import type { JsonValue } from '@/lib/types/json';
-import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { analyzeJson } from '@/lib/json/json-analysis';
-import { downloadJson } from '@/lib/json/json-utils';
 
 interface ViewerProps {
   jsonString?: string;
@@ -180,7 +178,7 @@ export const Viewer = ({
     setMounted(true);
   }, []);
 
-  const { shouldVirtualize, performanceLevel } = useAutoOptimize(jsonStr, data, maxNodes);
+  const { shouldVirtualize } = useAutoOptimize(jsonStr, data, maxNodes);
   // Pre-format stats for E2E and UI
   const fileSizeText = useMemo(() => {
     const s = stats?.size ?? 0;

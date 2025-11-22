@@ -537,7 +537,7 @@ export async function updateDocument(
       version: true,
     });
 
-    if (!verification.success) {
+    if (!verification.success || !verification.data) {
       return verification;
     }
 
@@ -595,7 +595,7 @@ export async function deleteDocument(
       title: true,
     });
 
-    if (!verification.success) {
+    if (!verification.success || !verification.data) {
       return verification;
     }
 
@@ -643,7 +643,7 @@ export async function deleteDocument(
  * Find documents by content similarity (using PostgreSQL's JSONB operations)
  */
 export async function findDocumentsByContent(
-  searchContent: any,
+  _searchContent: any,
   userId?: string,
   options: DocumentQueryOptions = {}
 ): Promise<{
@@ -711,7 +711,7 @@ export async function publishDocument(
       visibility: true,
     });
 
-    if (!verification.success) {
+    if (!verification.success || !verification.data) {
       return verification;
     }
 
