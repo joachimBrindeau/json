@@ -192,6 +192,7 @@ export function ShareModal({
               checked={isPublic}
               onCheckedChange={setIsPublic}
               disabled={isLoading}
+              aria-label="Toggle public/private visibility"
             />
           </div>
           <p className="text-xs text-muted-foreground">
