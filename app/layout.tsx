@@ -21,6 +21,7 @@ import { OAuthErrorHandler } from '@/components/shared/OAuthErrorHandler';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
+// eslint-disable-next-line @next/next/google-font-preconnect
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -28,6 +29,7 @@ const geistSans = Geist({
   preload: true,
 });
 
+// eslint-disable-next-line @next/next/google-font-preconnect
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],

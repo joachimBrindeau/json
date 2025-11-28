@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-const _BooleanChip = ({ value, size: _size = 'default', className }: Props) => {
+const _BooleanChip = ({ value, size: _size = 'default', className }: Props) => { // eslint-disable-line @typescript-eslint/no-unused-vars
   return (
     <Badge className={className} variant={value ? 'default' : 'destructive'}>
       {JSON.stringify(value)}

@@ -31,7 +31,7 @@ const calculateNodeHeight = (flowNode: SeaNode): number => {
  * Get initial position for a node (before layout)
  * KISS: Simple placeholder position, dagre will calculate the real position
  */
-export const getXYPosition = (_depth: number): XYPosition => {
+export const getXYPosition = (_depth: number): XYPosition => { // eslint-disable-line @typescript-eslint/no-unused-vars
   return { x: 0, y: 0 };
 };
 

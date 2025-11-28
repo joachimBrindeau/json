@@ -17,6 +17,7 @@ export const MonacoEditor = dynamic(
     try {
       await configureMonacoLoader();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Monaco loader configuration failed, will retry:', error);
     }
     return import('@monaco-editor/react');

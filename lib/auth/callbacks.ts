@@ -119,7 +119,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
    * - Refresh user data from database on update trigger
    * - Maintain token consistency
    */
-  async jwt({ token, user, account: _account, trigger }) {
+  async jwt({ token, user, account: _account, trigger }) { // eslint-disable-line @typescript-eslint/no-unused-vars
     // On initial sign-in, populate token with user data
     if (user) {
       token.id = user.id;

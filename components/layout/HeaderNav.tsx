@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { DynamicBreadcrumb } from '@/components/layout/DynamicBreadcrumb';
 import { UserMenu } from '@/components/layout/UserMenu';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ReviewsBadge } from '@/components/shared/seo/ReviewsBadge';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -171,6 +172,9 @@ function HeaderNavComponent({ onMobileMenuToggle }: HeaderNavProps) {
                 <span className="md:hidden">{uploadProgress}%</span>
               </div>
             )}
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             {/* User menu / Sign in button */}
             <div className="ml-2">

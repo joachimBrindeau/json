@@ -33,8 +33,8 @@ export const ViewerTree = ({
   height = 600,
   enableSearch = true,
   searchTerm = '',
-  onSearchChange: _onSearchChange,
-  maxNodes: _maxNodes,
+  onSearchChange: _onSearchChange, // eslint-disable-line @typescript-eslint/no-unused-vars
+  maxNodes: _maxNodes, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: ViewerTreeProps) => {
   const { nodes, expandedNodes, toggleNode, expandAll, collapseAll } = useViewerTreeState(
     data,

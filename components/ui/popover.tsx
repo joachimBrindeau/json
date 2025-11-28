@@ -60,7 +60,7 @@ export function PopoverTrigger({
 export function PopoverContent({
   children,
   className = '',
-  align: _align = 'center',
+  align: _align = 'center', // eslint-disable-line @typescript-eslint/no-unused-vars
 }: {
   children: React.ReactNode;
   className?: string;

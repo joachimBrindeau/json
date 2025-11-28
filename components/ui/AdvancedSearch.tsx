@@ -45,7 +45,7 @@ export function AdvancedSearch({
     'Template',
     'Example',
   ],
-  availableTags: _availableTags = [],
+  availableTags: _availableTags = [], // eslint-disable-line @typescript-eslint/no-unused-vars
   className,
 }: AdvancedSearchProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);

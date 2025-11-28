@@ -242,7 +242,7 @@ export function BulkOperations({
 
 // Individual item checkbox component for use in list items
 export function BulkCheckbox({
-  id: _id,
+  id: _id, // eslint-disable-line @typescript-eslint/no-unused-vars
   checked,
   onCheckedChange,
   disabled = false,

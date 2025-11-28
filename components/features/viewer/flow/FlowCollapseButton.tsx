@@ -8,7 +8,7 @@ interface FlowCollapseButtonProps {
 }
 
 const FlowCollapseButtonComponent = ({
-  nodeId: _nodeId,
+  nodeId: _nodeId, // eslint-disable-line @typescript-eslint/no-unused-vars
   isCollapsed,
   onToggle,
   position = 'right',

@@ -242,7 +242,7 @@ function validateEnv() {
         // This allows tests to run without full environment setup
         if (error instanceof z.ZodError) {
           // Type assertion needed for test mode fallback when validation fails
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           return envObject as any;
         }
         throw error;

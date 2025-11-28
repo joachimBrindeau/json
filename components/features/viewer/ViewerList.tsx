@@ -94,7 +94,7 @@ export const ViewerList = ({
   height = 600,
   virtualizeThreshold,
   searchTerm = '',
-  onSearchChange: _onSearchChange,
+  onSearchChange: _onSearchChange, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: ViewerListProps) => {
   const flatItems = useMemo(() => {
     if (!data) return [];

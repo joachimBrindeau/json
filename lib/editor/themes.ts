@@ -203,7 +203,7 @@ export function defineMonacoThemes(monaco: Monaco): boolean {
 
     themesDefinedFlag = true;
     return true;
-  } catch (error) {
+  } catch {
     // If theme definition fails, reset flag so we can try again
     themesDefinedFlag = false;
     return false;

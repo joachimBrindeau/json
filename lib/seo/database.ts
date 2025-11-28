@@ -14,6 +14,18 @@ import { logger } from '@/lib/logger';
 export const getSEOSettingsFromDatabase = unstable_cache(
   async (pageKey: string) => {
     try {
+      // Check if prisma is available (may not be during build)
+      // During build, prisma might throw when accessed, so we catch that
+      let prismaAvailable = false;
+      try {
+        prismaAvailable = prisma && typeof prisma === 'object' && typeof prisma.seoSettings !== 'undefined';
+      } catch {
+        prismaAvailable = false;
+      }
+      
+      if (!prismaAvailable) {
+        return null;
+      }
       const settings = await prisma.seoSettings.findFirst({
         where: {
           pageKey,
@@ -82,6 +94,17 @@ export async function upsertSEOSettings(pageKey: string, data: SEOSettingsInput)
   }
 
   try {
+    // Check if prisma is available (may throw during build)
+    let prismaAvailable = false;
+    try {
+      prismaAvailable = prisma && typeof prisma === 'object' && typeof prisma.seoSettings !== 'undefined';
+    } catch {
+      prismaAvailable = false;
+    }
+    
+    if (!prismaAvailable) {
+      throw new Error('Database not available');
+    }
     return await Promise.race([
       prisma.seoSettings.upsert({
         where: { pageKey },
@@ -110,6 +133,17 @@ export async function upsertSEOSettings(pageKey: string, data: SEOSettingsInput)
  */
 export async function getAllSEOSettings() {
   try {
+    // Check if prisma is available (may throw during build)
+    let prismaAvailable = false;
+    try {
+      prismaAvailable = prisma && typeof prisma === 'object' && typeof prisma.seoSettings !== 'undefined';
+    } catch {
+      prismaAvailable = false;
+    }
+    
+    if (!prismaAvailable) {
+      return [];
+    }
     return await prisma.seoSettings.findMany({
       orderBy: [{ pageKey: 'asc' }, { priority: 'desc' }],
     });

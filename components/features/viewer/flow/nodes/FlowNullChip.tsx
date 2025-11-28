@@ -6,7 +6,7 @@ type Props = {
   className?: string;
 };
 
-const _NullChip = ({ size: _size = 'default', className }: Props) => {
+const _NullChip = ({ size: _size = 'default', className }: Props) => { // eslint-disable-line @typescript-eslint/no-unused-vars
   return (
     <Badge className={className} variant="secondary">
       {JSON.stringify(null)}

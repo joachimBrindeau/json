@@ -75,7 +75,7 @@ export function CursorPopoverTrigger({ children, asChild = true }: CursorPopover
           ref.current = node;
         }
       },
-      onClick: (_e: React.MouseEvent) => {
+      onClick: (_e: React.MouseEvent) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         setOpen(!open);
         // Don't call original onClick - the popover content will handle the action
         // This prevents the action from being triggered when opening the popover

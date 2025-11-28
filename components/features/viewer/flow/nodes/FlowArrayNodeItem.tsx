@@ -9,7 +9,12 @@ type Props = {
   totalItems: number;
 };
 
-const ArrayNodeItemComponent = ({ nodeId: _nodeId, itemIndex, childNodeId: _childNodeId, totalItems }: Props) => {
+const ArrayNodeItemComponent = ({ 
+  nodeId: _nodeId, // eslint-disable-line @typescript-eslint/no-unused-vars
+  itemIndex, 
+  childNodeId: _childNodeId, // eslint-disable-line @typescript-eslint/no-unused-vars
+  totalItems 
+}: Props) => {
   const isLastItem = itemIndex === totalItems - 1;
 
   return (

@@ -12,7 +12,7 @@ export interface ViewerConfigState {
 
 export function createCommonViewerSetters<T extends ViewerConfigState>(
   set: SetFn<T>,
-  _get: GetFn<T>
+  _get: GetFn<T> // eslint-disable-line @typescript-eslint/no-unused-vars
 ) {
   return {
     setShareId: (id: string) => {

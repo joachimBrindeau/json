@@ -10,9 +10,41 @@ function getPrisma() {
     return null;
   }
 
-   
-  const { prisma } = require('@/lib/db');
-  return prisma;
+  // During build time, skip Prisma initialization if database URL is a placeholder
+  const isBuildTime =
+    process.env.SKIP_ENV_VALIDATION === 'true' ||
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.npm_lifecycle_event === 'build';
+  
+  const dbUrl = config.database.url;
+  const isPlaceholderUrl =
+    dbUrl?.includes('build_user') ||
+    dbUrl?.includes('build_database') ||
+    dbUrl?.includes('localhost:5432/build');
+
+  // Don't try to use Prisma during build with placeholder URLs
+  if (isBuildTime && isPlaceholderUrl) {
+    return null;
+  }
+
+  try {
+    const { prisma } = require('@/lib/db');
+    // Try to access a Prisma property to see if it's actually available
+    // If it throws, Prisma is not available (e.g., during build)
+    try {
+      // Just check if prisma exists and has the expected structure
+      if (prisma && typeof prisma === 'object') {
+        return prisma;
+      }
+    } catch {
+      // Prisma not available
+      return null;
+    }
+    return prisma;
+  } catch {
+    // Prisma not available during build or database not configured
+    return null;
+  }
 }
 
 const prisma = getPrisma();
@@ -106,6 +138,9 @@ async function generateSitemapInternal(): Promise<MetadataRoute.Sitemap> {
   try {
     // Optimized single query for public documents
     // Combine both queries into one for better performance
+    if (!prisma) {
+      throw new Error('Prisma not available');
+    }
     const publicDocuments = await prisma.jsonDocument.findMany({
       where: {
         visibility: 'public',

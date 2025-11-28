@@ -357,7 +357,7 @@ export function ViewerCompare({
             if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
               try {
                 defineMonacoThemes(monaco);
-              } catch (error) {
+              } catch {
                 // Theme definition will be retried in onMount if it fails here
               }
             }
@@ -379,7 +379,7 @@ export function ViewerCompare({
             if (monaco && monaco.editor && typeof monaco.editor.defineTheme === 'function') {
               try {
                 defineMonacoThemes(monaco);
-              } catch (error) {
+              } catch {
                 // Theme definition will be retried in onMount if it fails here
               }
             }
